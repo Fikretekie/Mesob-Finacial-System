@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - main
-      - staging
+      - marystagingtest
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -35,13 +36,13 @@ jobs:
           REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION=${{ secrets.STRIPE_PRICE_MONTHLY_PRODUCTION }}
           EOF
 
-      - name: Create .env file (Staging)
-        if: github.ref == 'refs/heads/staging'
+      - name: Create .env file (Mary Staging Test)
+        if: github.ref == 'refs/heads/marystagingtest'
         run: |
           cat > .env << EOF
           REACT_APP_API_URL=${{ secrets.STAGING_API_URL }}
           REACT_APP_ENV=staging
-          REACT_APP_S3_BUCKET=${{ secrets.STAGING_S3_BUCKET }}
+          REACT_APP_S3_BUCKET=marystagingtest
           REACT_APP_STAGING_APP_URL=${{ secrets.STAGING_APP_URL }}
           REACT_APP_STAGING_COGNITO_USER_POOL_ID=${{ secrets.STAGING_COGNITO_USER_POOL_ID }}
           REACT_APP_STAGING_COGNITO_CLIENT_ID=${{ secrets.STAGING_COGNITO_CLIENT_ID }}
@@ -51,26 +52,18 @@ jobs:
           REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
           EOF
 
-      - name: Debug - Show .env contents
+      - name: Verify .env exists
         run: |
-          echo "=== .env file contents ==="
-          cat .env
-          echo ""
-          echo "=== Check for empty values ==="
-          grep -E "^REACT_APP_STAGING.*=$" .env && echo "❌ Found empty staging vars!" || echo "✅ All staging vars have values"
-
-      - name: Verify .env exists (env is baked into build – no .env on S3)
-        run: |
-          if [ ! -f .env ]; then echo "::error::No .env created. Check that workflow ran for main or staging."; exit 1; fi
-          echo "REACT_APP_ENV is set. Add GitHub Secrets if any REACT_APP_* values are empty."
+          if [ ! -f .env ]; then echo "::error::No .env created. Check branch name."; exit 1; fi
+          echo ".env created successfully"
 
       - name: Build React App
         run: npm install --legacy-peer-deps && npm run build
 
       - name: Deploy to Production S3
         if: github.ref == 'refs/heads/main'
-        run: aws s3 sync ./build/ s3://app.meksova.com
+        run: aws s3 sync ./build/ s3://app.meksova.com --delete
 
-      - name: Deploy to Staging S3
-        if: github.ref == 'refs/heads/staging'
-        run: aws s3 sync ./build/ s3://staging.meksova.com
+      - name: Deploy to Mary Staging Test S3
+        if: github.ref == 'refs/heads/marystagingtest'
+        run: aws s3 sync ./build/ s3://marystagingtest --delete
