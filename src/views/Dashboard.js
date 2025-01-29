@@ -208,7 +208,7 @@ function Dashboard() {
       </Helmet>
       <PanelHeader size="sm" />
       {userRole === 0 && (
-        <div className="content" style={{ marginBottom: "20px" }}>
+        <div className="content" style={{ marginBottom: "20px", minHeight: '100px' }}>
           <Row>
             <Col xs={12}>
               <Card>

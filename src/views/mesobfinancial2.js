@@ -115,8 +115,8 @@ const MesobFinancial2 = () => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "NotYetPaid"
-            ? "NotYetPaid"
-            : "Pay",
+              ? "NotYetPaid"
+              : "Pay",
         transactionPurpose:
           transactionPurpose === "manual" ? manualPurpose : transactionPurpose,
         transactionAmount: parseFloat(transactionAmount),
@@ -600,7 +600,7 @@ const MesobFinancial2 = () => {
 
       <NotificationAlert ref={notificationAlertRef} />
       {userRole === 0 && (
-        <div className="content" style={{ marginBottom: "-30px" }}>
+        <div className="content" style={{ marginBottom: "-30px", minHeight: '100px' }}>
           <Row style={{ margin: "0" }}>
             <Col xs={12}>
               <Card style={{ marginBottom: "0" }}>
@@ -1222,89 +1222,89 @@ const MesobFinancial2 = () => {
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "NotYetPaid") && (
-              <>
-                <FormGroup>
-                  <Label>Purpose:</Label>
-                  <Input
-                    type="select"
-                    value={transactionPurpose}
-                    onChange={(e) => setTransactionPurpose(e.target.value)}
-                  >
-                    <option value="">Select purpose</option>
-                    {transactionType === "receive" && (
-                      <>
-                        <option value="Freight Income">Freight Income</option>
-                        <option value="Lease Income">Lease Income</option>
-                        <option value="Fuel Surcharge Revenue">
-                          Fuel Surcharge Revenue
-                        </option>
-                        <option value="manual">Enter Manually</option>
-                      </>
-                    )}
-                    {transactionType === "pay" && paymentMode === "new" && (
-                      <>
-                        <option value="Fuel Expense">Fuel Expense</option>
-                        <option value="Truck Repairs and Maintenance">
-                          Truck Repairs and Maintenance
-                        </option>
-                        <option value="Driver Salaries/Wages">
-                          Driver Salaries/Wages
-                        </option>
-                        <option value="Insurance Premiums">
-                          Insurance Premiums
-                        </option>
-                        <option value="Toll Charges">Toll Charges</option>
-                        <option value="Loan Payment">Loan Payment</option>
-                        <option value="Accounts Payable">
-                          Accounts Payable
-                        </option>
-                        <option value="manual">Enter Manually</option>
-                      </>
-                    )}
-                    {transactionType === "NotYetPaid" && (
-                      <>
-                        <option value="PPMOTS">
-                          Provider Payments (Expense) / Money Owed to Suppliers
-                          (Expense)
-                        </option>
-                        <option value="FC">Freight Costs (Expense)</option>
-                        <option value="Wages">Wages (Expense)</option>
-                        <option value="Utilities">Utilities (Expense)</option>
-                        <option value="Taxes">Taxes (Expense)</option>
-                        <option value="Rent">Rent (Expense)</option>
-                        <option value="Insurance">Insurance (Expense)</option>
-                        <option value="Other">Other (Expense)</option>
-                      </>
-                    )}
-                  </Input>
-                  {transactionPurpose === "manual" && (
+                <>
+                  <FormGroup>
+                    <Label>Purpose:</Label>
                     <Input
-                      type="text"
-                      placeholder="Enter purpose manually"
-                      value={manualPurpose}
-                      onChange={(e) => setManualPurpose(e.target.value)}
-                      style={{ marginTop: "10px" }}
-                    />
-                  )}
-                </FormGroup>
+                      type="select"
+                      value={transactionPurpose}
+                      onChange={(e) => setTransactionPurpose(e.target.value)}
+                    >
+                      <option value="">Select purpose</option>
+                      {transactionType === "receive" && (
+                        <>
+                          <option value="Freight Income">Freight Income</option>
+                          <option value="Lease Income">Lease Income</option>
+                          <option value="Fuel Surcharge Revenue">
+                            Fuel Surcharge Revenue
+                          </option>
+                          <option value="manual">Enter Manually</option>
+                        </>
+                      )}
+                      {transactionType === "pay" && paymentMode === "new" && (
+                        <>
+                          <option value="Fuel Expense">Fuel Expense</option>
+                          <option value="Truck Repairs and Maintenance">
+                            Truck Repairs and Maintenance
+                          </option>
+                          <option value="Driver Salaries/Wages">
+                            Driver Salaries/Wages
+                          </option>
+                          <option value="Insurance Premiums">
+                            Insurance Premiums
+                          </option>
+                          <option value="Toll Charges">Toll Charges</option>
+                          <option value="Loan Payment">Loan Payment</option>
+                          <option value="Accounts Payable">
+                            Accounts Payable
+                          </option>
+                          <option value="manual">Enter Manually</option>
+                        </>
+                      )}
+                      {transactionType === "NotYetPaid" && (
+                        <>
+                          <option value="PPMOTS">
+                            Provider Payments (Expense) / Money Owed to Suppliers
+                            (Expense)
+                          </option>
+                          <option value="FC">Freight Costs (Expense)</option>
+                          <option value="Wages">Wages (Expense)</option>
+                          <option value="Utilities">Utilities (Expense)</option>
+                          <option value="Taxes">Taxes (Expense)</option>
+                          <option value="Rent">Rent (Expense)</option>
+                          <option value="Insurance">Insurance (Expense)</option>
+                          <option value="Other">Other (Expense)</option>
+                        </>
+                      )}
+                    </Input>
+                    {transactionPurpose === "manual" && (
+                      <Input
+                        type="text"
+                        placeholder="Enter purpose manually"
+                        value={manualPurpose}
+                        onChange={(e) => setManualPurpose(e.target.value)}
+                        style={{ marginTop: "10px" }}
+                      />
+                    )}
+                  </FormGroup>
 
-                <FormGroup>
-                  <Label>Amount ($):</Label>
-                  <Input
-                    type="number"
-                    value={transactionAmount}
-                    onChange={(e) => setTransactionAmount(e.target.value)}
-                  />
-                </FormGroup>
-                <Button
-                  color="success"
-                  onClick={handleAddTransaction}
-                  disabled={isAddingTransaction}
-                >
-                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                </Button>
-              </>
-            )}
+                  <FormGroup>
+                    <Label>Amount ($):</Label>
+                    <Input
+                      type="number"
+                      value={transactionAmount}
+                      onChange={(e) => setTransactionAmount(e.target.value)}
+                    />
+                  </FormGroup>
+                  <Button
+                    color="success"
+                    onClick={handleAddTransaction}
+                    disabled={isAddingTransaction}
+                  >
+                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                  </Button>
+                </>
+              )}
           </ModalBody>
         </Modal>
       </div>
