@@ -1,0 +1,95 @@
+/* Container styling */
+.income-statement {
+    width: 100%;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  /* Title styling */
+  .income-statement h1 {
+    text-align: left;
+    font-size: 20px;
+    margin-bottom: 30px;
+  }
+  
+  /* Table styling */
+  .statement-table table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid grey;
+  }
+  
+  /* Table cell styling */
+  .statement-table td {
+    padding: 12px 15px;
+    border: 1px solid grey;
+  }
+  
+  /* Header cells */
+  .statement-table td:first-child {
+    width: 70%;
+  }
+  
+  .statement-table td:last-child {
+    width: 30%;
+    text-align: right;
+  }
+  
+  /* Category headers (Revenue, Expense) */
+  .statement-table tr td strong {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  /* Net Income row */
+  .statement-table tr:last-child {
+    background-color: #f0f0f0;
+  }
+  
+  .statement-table tr:last-child td {
+    font-weight: bold;
+  }
+  
+  /* Formula display */
+  .net-income-formula {
+    text-align: right;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .income-statement {
+      margin: 20px;
+      padding: 10px;
+    }
+    
+    .statement-table td {
+      padding: 8px;
+      font-size: 14px;
+    }
+    
+    .income-statement h1 {
+      font-size: 20px;
+    }
+  }
+  
+  /* Optional hover effects */
+  .statement-table tr:hover {
+    background-color: #f8f8f8;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Print styling */
+  @media print {
+    .income-statement {
+      box-shadow: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .statement-table td {
+      border: 1px solid #000;
+    }
+  }
