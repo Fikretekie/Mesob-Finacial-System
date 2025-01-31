@@ -78,7 +78,7 @@ const MesobFinancial2 = () => {
         cashOnHand += amount;
       } else if (
         transaction.transactionType === "Pay" ||
-        transaction.transactionType === "NotYetPaid"
+        transaction.transactionType === "Payable"
       ) {
         expenses += amount;
       }
@@ -114,9 +114,9 @@ const MesobFinancial2 = () => {
         transactionType:
           transactionType === "receive"
             ? "Receive"
-            : transactionType === "NotYetPaid"
-              ? "NotYetPaid"
-              : "Pay",
+            : transactionType === "Payable"
+            ? "Payable"
+            : "Pay",
         transactionPurpose:
           transactionPurpose === "manual" ? manualPurpose : transactionPurpose,
         transactionAmount: parseFloat(transactionAmount),
@@ -255,10 +255,9 @@ const MesobFinancial2 = () => {
   const filterItemsByTimeRange = (items, range) => {
     if (!range || !range.from || !range.to) return items;
 
+    // Parse the datetime strings to Date objects
     const fromDate = new Date(range.from);
-    fromDate.setHours(0, 0, 0, 0);
     const toDate = new Date(range.to);
-    toDate.setHours(23, 59, 59, 999);
 
     return items.filter((item) => {
       const itemDate = new Date(item.createdAt);
@@ -323,11 +322,11 @@ const MesobFinancial2 = () => {
         newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
       } else if (
         transaction.transactionType === "Pay" ||
-        transaction.transactionType === "NotYetPaid"
+        transaction.transactionType === "Payable"
       ) {
         const purpose = transaction.transactionPurpose;
         newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
-        if (transaction.transactionType === "NotYetPaid") {
+        if (transaction.transactionType === "Payable") {
           newAccountsPayable[purpose] =
             (newAccountsPayable[purpose] || 0) + amount;
         }
@@ -411,7 +410,7 @@ const MesobFinancial2 = () => {
       )
       .then((response) => {
         const unpaidOnly = response.data.filter(
-          (t) => t.transactionType === "NotYetPaid"
+          (t) => t.transactionType === "Payable"
         );
 
         // Add outstanding debt as an unpaid transaction
@@ -421,7 +420,7 @@ const MesobFinancial2 = () => {
         if (outstandingDebt > 0) {
           unpaidOnly.push({
             id: "outstanding-debt",
-            transactionType: "NotYetPaid",
+            transactionType: "Payable",
             transactionPurpose: "Initial Outstanding Debt",
             transactionAmount: outstandingDebt,
             createdAt: new Date().toISOString(),
@@ -600,7 +599,10 @@ const MesobFinancial2 = () => {
 
       <NotificationAlert ref={notificationAlertRef} />
       {userRole === 0 && (
-        <div className="content" style={{ marginBottom: "-30px", minHeight: '100px' }}>
+        <div
+          className="content"
+          style={{ marginBottom: "-30px", minHeight: "100px" }}
+        >
           <Row style={{ margin: "0" }}>
             <Col xs={12}>
               <Card style={{ marginBottom: "0" }}>
@@ -823,7 +825,7 @@ const MesobFinancial2 = () => {
           <Col xs={12}>
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Financial Statement</CardTitle>
+                <CardTitle tag="h4">Income Statement</CardTitle>
               </CardHeader>
               <CardBody>
                 <div className="statement-table">
@@ -859,19 +861,19 @@ const MesobFinancial2 = () => {
 
                       <tr>
                         <td>
-                          <strong>Expenses</strong>
+                          <strong>Toatal Expenses</strong>
                         </td>
                         <td style={{ backgroundColor: "#ff998d" }}>
                           ${calculateTotalExpenses()}
                         </td>
                       </tr>
 
-                      <tr>
+                      {/* <tr>
                         <td>
                           <strong>Accounts Payable</strong>
                         </td>
                         <td></td>
-                      </tr>
+                      </tr> */}
                       {Object.entries(accountsPayable).map(
                         ([purpose, amount]) => (
                           <tr key={`payable-${purpose}`}>
@@ -937,7 +939,7 @@ const MesobFinancial2 = () => {
                         <td></td>
                       </tr>
                       <tr>
-                        <td>New Items Bought</td>
+                        <td>New Items</td>
                         <td
                           style={{
                             backgroundColor: "#fffd9d",
@@ -964,7 +966,7 @@ const MesobFinancial2 = () => {
                         <td></td>
                       </tr>
                       <tr>
-                        <td>Payable to seller</td>
+                        <td>Payable </td>
                         <td></td>
                         <td
                           style={{
@@ -1106,10 +1108,10 @@ const MesobFinancial2 = () => {
                 </Button>
                 <Button
                   color={
-                    transactionType === "NotYetPaid" ? "primary" : "secondary"
+                    transactionType === "Payable" ? "primary" : "secondary"
                   }
                   onClick={() => {
-                    setTransactionType("NotYetPaid");
+                    setTransactionType("Payable");
                     setPaymentMode(null);
                   }}
                 >
@@ -1221,90 +1223,90 @@ const MesobFinancial2 = () => {
             {/* Show regular form fields for other cases */}
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
-              transactionType === "NotYetPaid") && (
-                <>
-                  <FormGroup>
-                    <Label>Purpose:</Label>
-                    <Input
-                      type="select"
-                      value={transactionPurpose}
-                      onChange={(e) => setTransactionPurpose(e.target.value)}
-                    >
-                      <option value="">Select purpose</option>
-                      {transactionType === "receive" && (
-                        <>
-                          <option value="Freight Income">Freight Income</option>
-                          <option value="Lease Income">Lease Income</option>
-                          <option value="Fuel Surcharge Revenue">
-                            Fuel Surcharge Revenue
-                          </option>
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "pay" && paymentMode === "new" && (
-                        <>
-                          <option value="Fuel Expense">Fuel Expense</option>
-                          <option value="Truck Repairs and Maintenance">
-                            Truck Repairs and Maintenance
-                          </option>
-                          <option value="Driver Salaries/Wages">
-                            Driver Salaries/Wages
-                          </option>
-                          <option value="Insurance Premiums">
-                            Insurance Premiums
-                          </option>
-                          <option value="Toll Charges">Toll Charges</option>
-                          <option value="Loan Payment">Loan Payment</option>
-                          <option value="Accounts Payable">
-                            Accounts Payable
-                          </option>
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "NotYetPaid" && (
-                        <>
-                          <option value="PPMOTS">
-                            Provider Payments (Expense) / Money Owed to Suppliers
-                            (Expense)
-                          </option>
-                          <option value="FC">Freight Costs (Expense)</option>
-                          <option value="Wages">Wages (Expense)</option>
-                          <option value="Utilities">Utilities (Expense)</option>
-                          <option value="Taxes">Taxes (Expense)</option>
-                          <option value="Rent">Rent (Expense)</option>
-                          <option value="Insurance">Insurance (Expense)</option>
-                          <option value="Other">Other (Expense)</option>
-                        </>
-                      )}
-                    </Input>
-                    {transactionPurpose === "manual" && (
-                      <Input
-                        type="text"
-                        placeholder="Enter purpose manually"
-                        value={manualPurpose}
-                        onChange={(e) => setManualPurpose(e.target.value)}
-                        style={{ marginTop: "10px" }}
-                      />
-                    )}
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label>Amount ($):</Label>
-                    <Input
-                      type="number"
-                      value={transactionAmount}
-                      onChange={(e) => setTransactionAmount(e.target.value)}
-                    />
-                  </FormGroup>
-                  <Button
-                    color="success"
-                    onClick={handleAddTransaction}
-                    disabled={isAddingTransaction}
+              transactionType === "Payable") && (
+              <>
+                <FormGroup>
+                  <Label>Purpose:</Label>
+                  <Input
+                    type="select"
+                    value={transactionPurpose}
+                    onChange={(e) => setTransactionPurpose(e.target.value)}
                   >
-                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                  </Button>
-                </>
-              )}
+                    <option value="">Select purpose</option>
+                    {transactionType === "receive" && (
+                      <>
+                        <option value="Freight Income">Freight Income</option>
+                        <option value="Lease Income">Lease Income</option>
+                        <option value="Fuel Surcharge Revenue">
+                          Fuel Surcharge Revenue
+                        </option>
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "pay" && paymentMode === "new" && (
+                      <>
+                        <option value="Fuel Expense">Fuel Expense</option>
+                        <option value="Truck Repairs and Maintenance">
+                          Truck Repairs and Maintenance
+                        </option>
+                        <option value="Driver Salaries/Wages">
+                          Driver Salaries/Wages
+                        </option>
+                        <option value="Insurance Premiums">
+                          Insurance Premiums
+                        </option>
+                        <option value="Toll Charges">Toll Charges</option>
+                        <option value="Loan Payment">Loan Payment</option>
+                        <option value="Accounts Payable">
+                          Accounts Payable
+                        </option>
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "Payable" && (
+                      <>
+                        <option value="PPMOTS">
+                          Provider Payments (Expense) / Money Owed to Suppliers
+                          (Expense)
+                        </option>
+                        <option value="FC">Freight Costs (Expense)</option>
+                        <option value="Wages">Wages (Expense)</option>
+                        <option value="Utilities">Utilities (Expense)</option>
+                        <option value="Taxes">Taxes (Expense)</option>
+                        <option value="Rent">Rent (Expense)</option>
+                        <option value="Insurance">Insurance (Expense)</option>
+                        <option value="Other">Other (Expense)</option>
+                      </>
+                    )}
+                  </Input>
+                  {transactionPurpose === "manual" && (
+                    <Input
+                      type="text"
+                      placeholder="Enter purpose manually"
+                      value={manualPurpose}
+                      onChange={(e) => setManualPurpose(e.target.value)}
+                      style={{ marginTop: "10px" }}
+                    />
+                  )}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Amount ($):</Label>
+                  <Input
+                    type="number"
+                    value={transactionAmount}
+                    onChange={(e) => setTransactionAmount(e.target.value)}
+                  />
+                </FormGroup>
+                <Button
+                  color="success"
+                  onClick={handleAddTransaction}
+                  disabled={isAddingTransaction}
+                >
+                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                </Button>
+              </>
+            )}
           </ModalBody>
         </Modal>
       </div>

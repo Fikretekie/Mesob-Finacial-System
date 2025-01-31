@@ -69,7 +69,7 @@ function DemoNavbar(props) {
 
   const updateColor = () => {
     if (window.innerWidth < 993 && isOpen) {
-      setColor("white");
+      setColor("red");
     } else {
       setColor("transparent");
     }

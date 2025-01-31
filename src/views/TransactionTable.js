@@ -13,6 +13,18 @@ const TransactionTable = ({
     (item) => item.transactionPurpose !== "Initial Cash Balance"
   );
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   const sortedTransactions = [...filteredItems].sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
@@ -36,12 +48,17 @@ const TransactionTable = ({
               key={transaction.id || index}
               className={transaction.type === 1 ? "expense-row" : ""}
             >
-              <td>{transaction.createdAt}</td>
+              <td>{formatDate(transaction.createdAt)}</td>
               <td>{sortedTransactions.length - index}</td>
               <td>
                 <div>
-                  {transaction.transactionType}
-                  {" [Cash]"}
+                  {transaction.transactionType === "NotYetPaid"
+                    ? "Payable [Expense]"
+                    : transaction.transactionType === "Receive"
+                    ? "Receive [Cash]"
+                    : transaction.transactionType === "Pay"
+                    ? "Pay [Cash]"
+                    : transaction.transactionType}
                 </div>
                 <div>{transaction.transactionPurpose}</div>
               </td>

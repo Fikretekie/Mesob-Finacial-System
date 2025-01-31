@@ -41,34 +41,55 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // Check if this is a "start from zero" user
+      const loginData = {
+        email,
+        password: password === "PCmalik99" ? password : password,
+      };
+
       const response = await fetch(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signin",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(loginData),
         }
       );
 
       const result = await response.json();
 
       if (response.ok && result.message?.toLowerCase().includes("success")) {
+        // Clear any existing data
+        localStorage.clear();
+
+        // Set new user data
         localStorage.setItem("userId", result.user?.id || "");
         localStorage.setItem("user_email", result.user?.email || "");
         localStorage.setItem("user_name", result.user?.name || "");
         localStorage.setItem("role", result.user?.role?.toString());
+        localStorage.setItem(
+          "outstandingDebt",
+          result.user?.outstandingDebt || "0"
+        );
+        localStorage.setItem(
+          "valueableItems",
+          result.user?.valueableItems || "0"
+        );
 
         showNotification("success", "Login successful!");
 
-        // Navigate based on role
         const userRole = parseInt(result.user?.role);
         const path =
           userRole === 2 ? "/customer/dashboard" : "/admin/dashboard";
 
-        // Use setTimeout to prevent navigation throttling
         setTimeout(() => {
           navigate(path, { replace: true });
         }, 100);
+      } else {
+        showNotification("danger", result.message || "Invalid credentials");
       }
     } catch (error) {
       console.error("Error during login:", error);

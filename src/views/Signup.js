@@ -129,20 +129,29 @@ const SignupPage = () => {
   };
 
   const handleStartFromZero = async () => {
+    if (!name || !companyName || !email || !phone) {
+      showNotification("warning", "Please fill in all required fields first");
+      return;
+    }
+
     const data = {
       name,
       companyName,
       email,
+      phone,
       password: "PCmalik99",
       businessType: "Trucking",
-      cashBalanace: "0",
+      cashBalance: "0",
       outstandingDebt: "0",
-      valueableItems: "",
-      role: 2, // Set customer role
+      valueableItems: "0",
+      role: 2,
       startFromZero: true,
     };
 
     try {
+      // Clear any existing data first
+      localStorage.clear();
+
       const response = await fetch(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
         {
@@ -159,15 +168,18 @@ const SignupPage = () => {
         localStorage.setItem("userId", result.user?.id || "");
         localStorage.setItem("user_email", result.user?.email || "");
         localStorage.setItem("user_name", result.user?.name || "");
-        localStorage.setItem("role", "2"); // Set customer role
+        localStorage.setItem("role", "2");
+        localStorage.setItem("outstandingDebt", "0");
+        localStorage.setItem("valueableItems", "0");
+        localStorage.setItem("cashBalance", "0");
 
         showNotification(
           "success",
           "Account created successfully. Starting from zero!"
         );
-        setTimeout(() => {
-          navigate("/customer/dashboard");
-        }, 100);
+
+        // Use window.location for full page refresh
+        window.location.href = "/customer/dashboard";
       } else {
         showNotification(
           "danger",
@@ -202,7 +214,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.name ? "red" : "transparent",
+                borderColor: errors.name ? "red" : "#000",
               }}
             />
             {errors.name && <p style={styles.error}>{errors.name}</p>}
@@ -216,7 +228,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.companyName ? "red" : "transparent",
+                borderColor: errors.companyName ? "red" : "#000",
               }}
             />
             {errors.companyName && (
@@ -232,7 +244,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.email ? "red" : "transparent",
+                borderColor: errors.email ? "red" : "#000",
               }}
             />
             {errors.email && <p style={styles.error}>{errors.email}</p>}
@@ -247,7 +259,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.phone ? "red" : "transparent",
+                borderColor: errors.phone ? "red" : "#000",
               }}
             />
             {errors.phone && <p style={styles.error}>{errors.phone}</p>}
@@ -262,7 +274,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.password ? "red" : "transparent",
+                borderColor: errors.password ? "red" : "#000",
               }}
             />
             {errors.password && <p style={styles.error}>{errors.password}</p>}
@@ -325,15 +337,25 @@ const SignupPage = () => {
               financially today. This includes how much cash you have, any money
               owed to you, any debt you owe, and any valuable items (like
               inventory) you own. This helps us build an accurate financial
-              picture of your business (recommended). If you want to start from
-              zero, click below:
+              picture of your business (recommended). <br></br>
+              If you want to start from zero,{" "}
+              <a
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleStartFromZero();
+                }}
+                href="#"
+              >
+                Click Here
+              </a>
+              :
             </p>
-            <button
+            {/* <button
               onClick={handleStartFromZero}
               style={{ ...styles.button, backgroundColor: "#3b82f6" }}
             >
               Click Here
-            </button>
+            </button> */}
             <input
               type="text"
               placeholder="Cash Balance (e.g., $10,000)"
@@ -429,7 +451,7 @@ const styles = {
     padding: "10px",
     marginBottom: "10px",
     borderRadius: "5px",
-    border: "1px solid transparent",
+    border: "1px solid #000",
     backgroundColor: "#fff",
     color: "#000",
   },
