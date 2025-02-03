@@ -137,15 +137,37 @@ function Dashboard() {
   const fetchFinancialData = async (uid = null) => {
     try {
       const targetUserId = uid || localStorage.getItem("userId");
+
+      // Fetch user initial data
+      const userResponse = await axios.get(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+      );
+
+      const initialCashBalance =
+        parseFloat(userResponse.data?.user?.cashBalance) || 0;
+      const outstandingDebt =
+        parseFloat(userResponse.data?.user?.outstandingDebt) || 0;
+      const valuableItems =
+        parseFloat(userResponse.data?.user?.valueableItems) || 0;
+
+      // Fetch transactions
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
       );
       const transactions = response.data;
 
-      let cashOnHand = 0;
-      let expenses = 0;
-      let payable = 0;
-      const monthlyData = {};
+      let cashOnHand = initialCashBalance;
+      let expenses = outstandingDebt;
+      let payable = outstandingDebt;
+      const monthlyData = {
+        Initial: {
+          month: "Initial Balance",
+          cashOnHand: initialCashBalance,
+          revenue: initialCashBalance + valuableItems,
+          payable: outstandingDebt,
+          expenses: outstandingDebt,
+        },
+      };
 
       transactions.forEach((transaction) => {
         const amount = parseFloat(transaction.transactionAmount);
@@ -155,10 +177,10 @@ function Dashboard() {
         if (!monthlyData[monthYear]) {
           monthlyData[monthYear] = {
             month: monthYear,
-            cashOnHand: 0,
-            revenue: 0,
-            payable: 0,
-            expenses: 0,
+            cashOnHand: initialCashBalance,
+            revenue: initialCashBalance + valuableItems,
+            payable: outstandingDebt,
+            expenses: outstandingDebt,
           };
         }
 
@@ -208,7 +230,10 @@ function Dashboard() {
       </Helmet>
       <PanelHeader size="sm" />
       {userRole === 0 && (
-        <div className="content" style={{ marginBottom: "20px", minHeight: '100px' }}>
+        <div
+          className="content"
+          style={{ marginBottom: "20px", minHeight: "100px" }}
+        >
           <Row>
             <Col xs={12}>
               <Card>

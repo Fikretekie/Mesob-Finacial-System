@@ -53,6 +53,27 @@ const MesobFinancial2 = () => {
   const [selectedUnpaidTransaction, setSelectedUnpaidTransaction] =
     useState(null);
   const [initialBalance, setInitialBalance] = useState(0);
+  const [receipt, setReceipt] = useState(null);
+  const fileInputRef = useRef(null);
+  // Add receipt handling function
+  const handleReceiptUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setReceipt(file);
+      try {
+        const formData = new FormData();
+        formData.append("receipt", file);
+        formData.append("userId", localStorage.getItem("userId"));
+
+        notify("tr", "Receipt uploaded successfully", "success");
+        setShowAddTransaction(false); // Close the modal
+        resetForm(); // Reset the form after successful upload
+      } catch (error) {
+        console.error("Error uploading receipt:", error);
+        notify("tr", "Failed to upload receipt", "danger");
+      }
+    }
+  };
 
   //fetching users
   const fetchUsers = async () => {
@@ -184,6 +205,12 @@ const MesobFinancial2 = () => {
     setTransactionAmount("");
     setManualPurpose("");
     setEditingTransaction(null);
+    setReceipt(null);
+    setPaymentMode(null);
+    setSelectedUnpaidTransaction(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Clear the file input
+    }
   };
 
   const handleUpdateTransaction = async (transaction) => {
@@ -1177,6 +1204,34 @@ const MesobFinancial2 = () => {
                     ))}
                   </Input>
                 </FormGroup>
+                <FormGroup>
+                  <Label>Receipt:</Label>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <Button
+                      color="info"
+                      onClick={() => fileInputRef.current.click()}
+                      style={{ marginBottom: "0" }}
+                    >
+                      {receipt ? "Change Receipt" : "Upload Receipt"}
+                    </Button>
+                    {receipt && (
+                      <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                    )}
+                  </div>
+                  <Input
+                    type="file"
+                    innerRef={fileInputRef}
+                    onChange={handleReceiptUpload}
+                    accept="image/*,.pdf"
+                    style={{ display: "none" }}
+                  />
+                </FormGroup>
                 <Button
                   color="success"
                   onClick={() =>
@@ -1192,6 +1247,7 @@ const MesobFinancial2 = () => {
                 </Button>
               </>
             )}
+
             {transactionType === "pay" && paymentMode === "boughtItem" && (
               <>
                 <FormGroup>
@@ -1211,6 +1267,34 @@ const MesobFinancial2 = () => {
                     onChange={(e) => setTransactionAmount(e.target.value)}
                   />
                 </FormGroup>
+                <FormGroup>
+                  <Label>Receipt:</Label>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <Button
+                      color="info"
+                      onClick={() => fileInputRef.current.click()}
+                      style={{ marginBottom: "0" }}
+                    >
+                      {receipt ? "Change Receipt" : "Upload Receipt"}
+                    </Button>
+                    {receipt && (
+                      <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                    )}
+                  </div>
+                  <Input
+                    type="file"
+                    innerRef={fileInputRef}
+                    onChange={handleReceiptUpload}
+                    accept="image/*,.pdf"
+                    style={{ display: "none" }}
+                  />
+                </FormGroup>
                 <Button
                   color="success"
                   onClick={handleAddTransaction}
@@ -1220,6 +1304,7 @@ const MesobFinancial2 = () => {
                 </Button>
               </>
             )}
+
             {/* Show regular form fields for other cases */}
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
@@ -1289,7 +1374,6 @@ const MesobFinancial2 = () => {
                     />
                   )}
                 </FormGroup>
-
                 <FormGroup>
                   <Label>Amount ($):</Label>
                   <Input
@@ -1298,6 +1382,36 @@ const MesobFinancial2 = () => {
                     onChange={(e) => setTransactionAmount(e.target.value)}
                   />
                 </FormGroup>
+                {transactionType === "pay" && paymentMode === "new" && (
+                  <FormGroup>
+                    <Label>Receipt:</Label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <Button
+                        color="info"
+                        onClick={() => fileInputRef.current.click()}
+                        style={{ marginBottom: "0" }}
+                      >
+                        {receipt ? "Change Receipt" : "Upload Receipt"}
+                      </Button>
+                      {receipt && (
+                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      innerRef={fileInputRef}
+                      onChange={handleReceiptUpload}
+                      accept="image/*,.pdf"
+                      style={{ display: "none" }}
+                    />
+                  </FormGroup>
+                )}
                 <Button
                   color="success"
                   onClick={handleAddTransaction}
