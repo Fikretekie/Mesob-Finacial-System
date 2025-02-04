@@ -2,19 +2,35 @@ import React from "react";
 import "../assets/css/BalanceSheet.css";
 
 const BalanceSheet = ({ items = [] }) => {
-  const calculateTotalCash = (transactions) => {
-    if (!transactions || !Array.isArray(transactions)) return "0.00";
+  const calculateTotalCash = () => {
+    let cash = initialBalance || 0;
 
-    let cash = 0;
-    transactions.forEach((transaction) => {
+    if (!items || !Array.isArray(items)) {
+      return "0.00";
+    }
+
+    items.forEach((transaction) => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
       if (transaction.transactionType === "Receive") {
         cash += amount;
-      } else if (transaction.transactionType === "Pay") {
+      } else if (
+        transaction.transactionType === "Pay" ||
+        transaction.transactionType === "Asset"
+      ) {
         cash -= amount;
       }
     });
+
     return cash.toFixed(2);
+  };
+
+  const calculateTotalRevenue = () => {
+    if (!items || !Array.isArray(items)) return "0.00";
+
+    return items
+      .filter((t) => t.transactionType === "Receive")
+      .reduce((sum, t) => sum + parseFloat(t.transactionAmount), 0)
+      .toFixed(2);
   };
 
   const calculateAccountsPayable = (transactions) => {

@@ -55,6 +55,7 @@ const MesobFinancial2 = () => {
   const [initialBalance, setInitialBalance] = useState(0);
   const [receipt, setReceipt] = useState(null);
   const fileInputRef = useRef(null);
+
   // Add receipt handling function
   const handleReceiptUpload = async (e) => {
     const file = e.target.files[0];
@@ -372,7 +373,7 @@ const MesobFinancial2 = () => {
     );
     const valuableItemsAmount =
       parseFloat(localStorage.getItem("valueableItems")) || 0;
-    return (revenueTotal + initialBalance + valuableItemsAmount).toFixed(2);
+    return (revenueTotal + valuableItemsAmount).toFixed(2);
   };
 
   const calculateTotalExpenses = () => {
@@ -888,7 +889,7 @@ const MesobFinancial2 = () => {
 
                       <tr>
                         <td>
-                          <strong>Toatal Expenses</strong>
+                          <strong>Total Expenses</strong>
                         </td>
                         <td style={{ backgroundColor: "#ff998d" }}>
                           ${calculateTotalExpenses()}
@@ -966,7 +967,7 @@ const MesobFinancial2 = () => {
                         <td></td>
                       </tr>
                       <tr>
-                        <td>New Items</td>
+                        <td>Inventory</td>
                         <td
                           style={{
                             backgroundColor: "#fffd9d",
@@ -1253,12 +1254,26 @@ const MesobFinancial2 = () => {
                 <FormGroup>
                   <Label>Item Description:</Label>
                   <Input
-                    type="text"
-                    placeholder="Enter item description (e.g., New Truck)"
+                    type="select"
                     value={manualPurpose}
                     onChange={(e) => setManualPurpose(e.target.value)}
-                  />
+                  >
+                    <option value="">Select Option</option>
+                    <option value="manual">Enter Manually</option>
+                  </Input>
+
+                  {/* Show text input when "Enter Manually" is selected */}
+                  {manualPurpose === "manual" && (
+                    <Input
+                      type="text"
+                      placeholder="Enter item description"
+                      value={manualPurpose === "manual" ? "" : manualPurpose}
+                      onChange={(e) => setManualPurpose(e.target.value)}
+                      className="mt-2"
+                    />
+                  )}
                 </FormGroup>
+
                 <FormGroup>
                   <Label>Amount ($):</Label>
                   <Input

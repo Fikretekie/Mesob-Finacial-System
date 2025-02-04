@@ -47,6 +47,7 @@ function Dashboard() {
   const userId = localStorage.getItem("userId");
   const [loading, setLoading] = useState(true);
   const [totalCashOnHand, setTotalCashOnHand] = useState(0);
+  const [totalrevenue, settotalRevenue] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalPayable, setTotalPayable] = useState(0);
   const [monthlySales, setMonthlySales] = useState([]);
@@ -81,11 +82,16 @@ function Dashboard() {
   };
 
   const revenueChartData = {
-    labels: monthlySales.map((item) => item.month),
+    labels: monthlySales.map((item) => {
+      console.log(item.month);
+      item.month;
+    }),
     datasets: [
       {
         label: "Revenue",
-        data: monthlySales.map((item) => item.revenue),
+        data: monthlySales.map((item) => {
+          item.revenue;
+        }),
         fill: false,
         borderColor: "rgb(54, 162, 235)",
         tension: 0.1,
@@ -158,12 +164,13 @@ function Dashboard() {
 
       let cashOnHand = initialCashBalance;
       let expenses = outstandingDebt;
+      let revenue = 0;
       let payable = outstandingDebt;
       const monthlyData = {
         Initial: {
           month: "Initial Balance",
           cashOnHand: initialCashBalance,
-          revenue: initialCashBalance + valuableItems,
+          revenue: revenue,
           payable: outstandingDebt,
           expenses: outstandingDebt,
         },
@@ -178,7 +185,7 @@ function Dashboard() {
           monthlyData[monthYear] = {
             month: monthYear,
             cashOnHand: initialCashBalance,
-            revenue: initialCashBalance + valuableItems,
+            revenue: 0,
             payable: outstandingDebt,
             expenses: outstandingDebt,
           };
@@ -186,6 +193,7 @@ function Dashboard() {
 
         if (transaction.transactionType === "Receive") {
           cashOnHand += amount;
+          revenue += amount;
           monthlyData[monthYear].cashOnHand += amount;
           monthlyData[monthYear].revenue += amount;
         } else if (transaction.transactionType === "Pay") {
@@ -199,6 +207,7 @@ function Dashboard() {
 
       setTotalCashOnHand(cashOnHand);
       setTotalExpenses(expenses);
+      settotalRevenue(revenue);
       setTotalPayable(payable);
       setMonthlySales(Object.values(monthlyData));
       setLoading(false);
@@ -357,7 +366,7 @@ function Dashboard() {
                       <p className="card-category">Revenue</p>
                       <CardTitle tag="h3">
                         $
-                        {totalCashOnHand.toLocaleString(undefined, {
+                        {totalrevenue.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
