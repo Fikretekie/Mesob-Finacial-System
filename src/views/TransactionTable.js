@@ -61,16 +61,47 @@ const TransactionTable = ({ items = [], handleDelete }) => {
                 )}
                 {transaction.transactionType === "Payable" && (
                   <div style={{ backgroundColor: "orange" }}>
-                    ${transaction.transactionAmount}
+                    {transaction.transactionAmount}
                   </div>
+                )}
+
+                {transaction.transactionType === "Pay" && (
+                  <>
+                    {transaction.subType === "New_Item" ? (
+                      <>
+                        <div style={{ color: "white" }}>.</div>
+
+                        <div style={{ backgroundColor: "yellow" }}>
+                          ${transaction.transactionAmount}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ backgroundColor: "yellow" }}>
+                        ${transaction.transactionAmount}
+                      </div>
+                    )}
+                  </>
                 )}
               </td>
               <td className="credit">
                 {(transaction.transactionType === "Pay" ||
                   transaction.transactionType === "Payable") && (
-                  <div style={{ backgroundColor: "yellow" }}>
-                    ${transaction.transactionAmount}
-                  </div>
+                  <>
+                    {transaction.subType === "New_Item" ? (
+                      <>
+                        <div style={{ backgroundColor: "yellow" }}>
+                          ${transaction.transactionAmount}
+                        </div>
+                        <div style={{ color: "white" }}>.</div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ backgroundColor: "yellow" }}>
+                          ${transaction.transactionAmount}
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
               </td>
               <td>

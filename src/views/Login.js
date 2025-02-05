@@ -65,6 +65,8 @@ const Login = () => {
         // Clear any existing data
         localStorage.clear();
 
+        console.log("login response: ", result);
+
         // Set new user data
         localStorage.setItem("userId", result.user?.id || "");
         localStorage.setItem("user_email", result.user?.email || "");
@@ -78,6 +80,7 @@ const Login = () => {
           "valueableItems",
           result.user?.valueableItems || "0"
         );
+        localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
 
         showNotification("success", "Login successful!");
 

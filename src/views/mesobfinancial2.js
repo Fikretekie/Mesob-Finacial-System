@@ -42,6 +42,7 @@ const MesobFinancial2 = () => {
   const [isAddingTransaction, setIsAddingTransaction] = useState(false);
   const [isUpdatingTransaction, setIsUpdatingTransaction] = useState(false);
   const [manualPurpose, setManualPurpose] = useState("");
+  const [isManual, setIsManual] = useState("");
   const [revenues, setRevenues] = useState({});
   const [expenses, setExpenses] = useState({});
   const [accountsPayable, setAccountsPayable] = useState({});
@@ -55,7 +56,9 @@ const MesobFinancial2 = () => {
   const [initialBalance, setInitialBalance] = useState(0);
   const [receipt, setReceipt] = useState(null);
   const fileInputRef = useRef(null);
+  const [subType, setsubType] = useState("");
 
+  const [formErrors, setFormErrors] = useState({});
   // Add receipt handling function
   const handleReceiptUpload = async (e) => {
     const file = e.target.files[0];
@@ -82,6 +85,7 @@ const MesobFinancial2 = () => {
       const response = await axios.get(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
       );
+
       if (response.data) {
         setUsers(response.data);
       }
@@ -112,6 +116,16 @@ const MesobFinancial2 = () => {
 
   const userId = localStorage.getItem("userId");
 
+  const inventoryValue = items
+    .filter(
+      (item) => item.subType === "New_Item" && item.transactionType === "Pay"
+    )
+    .reduce((sum, item) => sum + parseFloat(item.transactionAmount), 0)
+    .toFixed(2);
+
+  const valueableItems = localStorage?.getItem("valueableItems");
+  const totalInventory = parseInt(inventoryValue) + parseInt(valueableItems);
+
   const notify = (place, message, type) => {
     notificationAlertRef.current.notificationAlert({
       place,
@@ -123,6 +137,16 @@ const MesobFinancial2 = () => {
   };
 
   const handleAddTransaction = async () => {
+    const errors = {};
+
+    if (transactionPurpose === "manual" && !manualPurpose.trim()) {
+      errors.manualPurpose = "Please enter a purpose manually";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
     if (!transactionType || !transactionAmount) {
       notify("tr", "Please fill in all fields", "warning");
       return;
@@ -139,42 +163,31 @@ const MesobFinancial2 = () => {
             : transactionType === "Payable"
             ? "Payable"
             : "Pay",
+
         transactionPurpose:
           transactionPurpose === "manual" ? manualPurpose : transactionPurpose,
         transactionAmount: parseFloat(transactionAmount),
+        subType: subType,
+        status: transactionType === "Payable" ? "Unpaid" : undefined,
       };
 
       if (transactionType === "pay" && paymentMode === "boughtItem") {
-        // Handle bought item transaction
-        const debitTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "Asset",
-          transactionPurpose: manualPurpose || "New Item",
-          transactionAmount: parseFloat(transactionAmount),
-          isAsset: true,
-          isExpense: true,
-        };
-
         const creditTransaction = {
           userId: localStorage.getItem("userId"),
           transactionType: "Pay",
-          transactionPurpose:
-            "Cash Payment for " + (manualPurpose || "New Item"),
+          subType: subType,
+          transactionPurpose: manualPurpose || "New_Item",
           transactionAmount: parseFloat(transactionAmount),
         };
 
-        const [debitResponse, creditResponse] = await Promise.all([
-          axios.post(
-            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-            debitTransaction
-          ),
+        const [creditResponse] = await Promise.all([
           axios.post(
             "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
             creditTransaction
           ),
         ]);
 
-        if (debitResponse.status === 200 && creditResponse.status === 200) {
+        if (creditResponse.status === 200) {
           notify("tr", "New item purchase recorded successfully", "success");
         }
       } else {
@@ -225,15 +238,15 @@ const MesobFinancial2 = () => {
         );
         if (response.status === 200) {
           localStorage.setItem("outstandingDebt", "0");
-          notify("tr", "Outstanding debt paid successfully", "success");
+          notify("tr", "Transaction updated to Paid successfully", "success");
           fetchTransactions();
-          fetchUnpaidTransactions();
         }
       } else {
         // Handle regular unpaid transaction
         const updatedTransaction = {
           ...transaction,
-          transactionType: "Pay",
+
+          status: "Paid",
           updatedAt: new Date().toISOString(),
         };
         const response = await fetch(
@@ -245,8 +258,25 @@ const MesobFinancial2 = () => {
           }
         );
         if (response.ok) {
-          notify("tr", "Transaction updated to Paid successfully", "success");
-          fetchTransactions();
+          const newTransaction = {
+            userId: localStorage.getItem("userId"),
+            transactionType: "Pay",
+            transactionPurpose,
+            transactionAmount: parseFloat(transaction.transactionAmount),
+            subType: "Expense",
+          };
+
+          const response = await axios.post(
+            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+            newTransaction
+          );
+
+          if (response.status === 200) {
+            notify("tr", "Transaction updated to Paid successfully", "success");
+            fetchTransactions();
+          } else {
+            notify("tr", "Transaction update failed", "danger");
+          }
         }
       }
     } catch (error) {
@@ -373,30 +403,40 @@ const MesobFinancial2 = () => {
     );
     const valuableItemsAmount =
       parseFloat(localStorage.getItem("valueableItems")) || 0;
-    return (revenueTotal + valuableItemsAmount).toFixed(2);
+    return revenueTotal.toFixed(2);
   };
+  // const calculateTotalExpenses = () => {
+  //   let totalexp = 0;
+  //   items.map((Value) => {
+  //     console.log("Value", Value);
+
+  //     if (Value.subType === "Expense") {
+  //       totalexp += parseFloat(Value.transactionAmount || 0);
+  //     }
+  //   });
+
+  //   return totalexp;
+
+  //   // const regularExpenses = Object.values(expenses).reduce((sum, expense) => {
+  //   //   console.log("expenses==>>", expenses);
+
+  //   //   if (expense.subType === "Expense" && expense.transactionType === "Pay") {
+  //   //     return sum + parseFloat(expense.transactionAmount || 0);
+  //   //   }
+  //   //   return sum;
+  //   // }, 0);
+  //   // return regularExpenses.toFixed(2);
+  // };
 
   const calculateTotalExpenses = () => {
-    const regularExpenses = Object.values(expenses).reduce(
-      (sum, amount) => sum + parseFloat(amount || 0),
-      0
-    );
-    const unpaidExpenses = Object.values(accountsPayable).reduce(
-      (sum, amount) => sum + parseFloat(amount || 0),
-      0
-    );
-    const outstandingDebtAmount =
-      parseFloat(localStorage.getItem("outstandingDebt")) || 0;
-    const assetPurchases = items
-      .filter((item) => item.transactionType === "Asset" && item.isExpense)
-      .reduce((sum, item) => sum + parseFloat(item.transactionAmount), 0);
+    const totalexp = Object.values(items).reduce((sum, value) => {
+      if (value.subType === "Expense" && value.transactionType === "Pay") {
+        return sum + parseFloat(value.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
 
-    return (
-      regularExpenses +
-      unpaidExpenses +
-      outstandingDebtAmount +
-      assetPurchases
-    ).toFixed(2);
+    return totalexp.toFixed(2);
   };
 
   const calculateTotalPayable = () => {
@@ -419,6 +459,7 @@ const MesobFinancial2 = () => {
       )
       .then((response) => {
         if (response.data) {
+          console.log("transactions daa: ", response.data);
           calculateTotals(response.data);
           setItems(response.data);
         }
@@ -765,7 +806,7 @@ const MesobFinancial2 = () => {
                         padding: "5px 10px",
                       }}
                     >
-                      ${calculateTotalRevenue()}
+                      ${totalCashOnHand}
                     </span>
                   </div>
 
@@ -886,43 +927,26 @@ const MesobFinancial2 = () => {
                           ${calculateTotalRevenue()}
                         </td>
                       </tr>
-
+                      <tr>
+                        <td>
+                          <strong>Expenses</strong>
+                        </td>
+                        <td></td>
+                      </tr>
+                      {Object.entries(expenses).map(([purpose, amount]) => (
+                        <tr key={`expense-${purpose}`}>
+                          <td>{purpose}</td>
+                          <td style={{ backgroundColor: "#fff" }}>
+                            ${amount.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
                       <tr>
                         <td>
                           <strong>Total Expenses</strong>
                         </td>
                         <td style={{ backgroundColor: "#ff998d" }}>
                           ${calculateTotalExpenses()}
-                        </td>
-                      </tr>
-
-                      {/* <tr>
-                        <td>
-                          <strong>Accounts Payable</strong>
-                        </td>
-                        <td></td>
-                      </tr> */}
-                      {Object.entries(accountsPayable).map(
-                        ([purpose, amount]) => (
-                          <tr key={`payable-${purpose}`}>
-                            <td>{purpose}</td>
-                            <td style={{ backgroundColor: "#fff" }}>
-                              ${amount.toFixed(2)}
-                            </td>
-                          </tr>
-                        )
-                      )}
-
-                      <tr>
-                        <td>
-                          <strong>Net Income</strong>
-                        </td>
-                        <td style={{ backgroundColor: "#ffa6ff" }}>
-                          $
-                          {(
-                            parseFloat(calculateTotalRevenue()) -
-                            parseFloat(calculateTotalExpenses())
-                          ).toFixed(2)}
                         </td>
                       </tr>
                     </tbody>
@@ -962,7 +986,7 @@ const MesobFinancial2 = () => {
                             textAlign: "right",
                           }}
                         >
-                          ${calculateTotalRevenue()}
+                          ${totalCashOnHand}
                         </td>
                         <td></td>
                       </tr>
@@ -974,15 +998,7 @@ const MesobFinancial2 = () => {
                             textAlign: "right",
                           }}
                         >
-                          $
-                          {items
-                            .filter((item) => item.transactionType === "Asset")
-                            .reduce(
-                              (sum, item) =>
-                                sum + parseFloat(item.transactionAmount),
-                              0
-                            )
-                            .toFixed(2)}
+                          ${totalInventory}
                         </td>
                         <td></td>
                       </tr>
@@ -1157,16 +1173,28 @@ const MesobFinancial2 = () => {
                 >
                   <Button
                     color="primary"
-                    onClick={() => setPaymentMode("recorded")}
+                    onClick={() => {
+                      setsubType("Recorded");
+                      setPaymentMode("recorded");
+                    }}
                   >
                     Recorded Earlier as Payable
                   </Button>
-                  <Button color="primary" onClick={() => setPaymentMode("new")}>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      setsubType("Expense");
+                      setPaymentMode("new");
+                    }}
+                  >
                     New Expense
                   </Button>
                   <Button
                     color="warning"
-                    onClick={() => setPaymentMode("boughtItem")}
+                    onClick={() => {
+                      setsubType("New_Item");
+                      setPaymentMode("boughtItem");
+                    }}
                   >
                     Bought a New Item
                   </Button>
@@ -1198,14 +1226,16 @@ const MesobFinancial2 = () => {
                     }}
                   >
                     <option value="">Select transaction</option>
-                    {unpaidTransactions.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.transactionPurpose} - ${t.transactionAmount}
-                      </option>
-                    ))}
+                    {unpaidTransactions
+                      .filter((t) => t.status !== "Paid")
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.transactionPurpose} - ${t.transactionAmount}
+                        </option>
+                      ))}
                   </Input>
                 </FormGroup>
-                <FormGroup>
+                {/* <FormGroup>
                   <Label>Receipt:</Label>
                   <div
                     style={{
@@ -1232,7 +1262,7 @@ const MesobFinancial2 = () => {
                     accept="image/*,.pdf"
                     style={{ display: "none" }}
                   />
-                </FormGroup>
+                </FormGroup> */}
                 <Button
                   color="success"
                   onClick={() =>
@@ -1255,15 +1285,15 @@ const MesobFinancial2 = () => {
                   <Label>Item Description:</Label>
                   <Input
                     type="select"
-                    value={manualPurpose}
-                    onChange={(e) => setManualPurpose(e.target.value)}
+                    value={isManual}
+                    onChange={(e) => setIsManual(e.target.value)}
                   >
                     <option value="">Select Option</option>
                     <option value="manual">Enter Manually</option>
                   </Input>
 
                   {/* Show text input when "Enter Manually" is selected */}
-                  {manualPurpose === "manual" && (
+                  {isManual == "manual" && (
                     <Input
                       type="text"
                       placeholder="Enter item description"
@@ -1282,7 +1312,7 @@ const MesobFinancial2 = () => {
                     onChange={(e) => setTransactionAmount(e.target.value)}
                   />
                 </FormGroup>
-                <FormGroup>
+                {/* <FormGroup>
                   <Label>Receipt:</Label>
                   <div
                     style={{
@@ -1309,7 +1339,7 @@ const MesobFinancial2 = () => {
                     accept="image/*,.pdf"
                     style={{ display: "none" }}
                   />
-                </FormGroup>
+                </FormGroup> */}
                 <Button
                   color="success"
                   onClick={handleAddTransaction}
@@ -1380,13 +1410,24 @@ const MesobFinancial2 = () => {
                     )}
                   </Input>
                   {transactionPurpose === "manual" && (
-                    <Input
-                      type="text"
-                      placeholder="Enter purpose manually"
-                      value={manualPurpose}
-                      onChange={(e) => setManualPurpose(e.target.value)}
-                      style={{ marginTop: "10px" }}
-                    />
+                    <FormGroup>
+                      <Input
+                        type="text"
+                        placeholder="Enter purpose manually"
+                        value={manualPurpose}
+                        onChange={(e) => {
+                          setManualPurpose(e.target.value);
+                          setFormErrors({ ...formErrors, manualPurpose: "" });
+                        }}
+                        style={{ marginTop: "10px" }}
+                        invalid={!!formErrors.manualPurpose}
+                      />
+                      {formErrors.manualPurpose && (
+                        <div className="text-danger">
+                          {formErrors.manualPurpose}
+                        </div>
+                      )}
+                    </FormGroup>
                   )}
                 </FormGroup>
                 <FormGroup>
@@ -1399,7 +1440,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
                 {transactionType === "pay" && paymentMode === "new" && (
                   <FormGroup>
-                    <Label>Receipt:</Label>
+                    {/* <Label>Receipt:</Label> */}
                     <div
                       style={{
                         display: "flex",
@@ -1407,13 +1448,13 @@ const MesobFinancial2 = () => {
                         gap: "10px",
                       }}
                     >
-                      <Button
+                      {/* <Button
                         color="info"
                         onClick={() => fileInputRef.current.click()}
                         style={{ marginBottom: "0" }}
                       >
                         {receipt ? "Change Receipt" : "Upload Receipt"}
-                      </Button>
+                      </Button> */}
                       {receipt && (
                         <span style={{ color: "green" }}>✓ {receipt.name}</span>
                       )}

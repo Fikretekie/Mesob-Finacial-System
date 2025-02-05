@@ -82,16 +82,11 @@ function Dashboard() {
   };
 
   const revenueChartData = {
-    labels: monthlySales.map((item) => {
-      console.log(item.month);
-      item.month;
-    }),
+    labels: monthlySales.map((item) => item.month),
     datasets: [
       {
         label: "Revenue",
-        data: monthlySales.map((item) => {
-          item.revenue;
-        }),
+        data: monthlySales.map((item) => item.revenue),
         fill: false,
         borderColor: "rgb(54, 162, 235)",
         tension: 0.1,
@@ -163,7 +158,7 @@ function Dashboard() {
       const transactions = response.data;
 
       let cashOnHand = initialCashBalance;
-      let expenses = outstandingDebt;
+      let expenses = 0;
       let revenue = 0;
       let payable = outstandingDebt;
       const monthlyData = {
