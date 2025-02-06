@@ -22,7 +22,7 @@ import { Nav } from "reactstrap";
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from "perfect-scrollbar";
 
-import logo from "logo.jpeg";
+const logo = "/logo.PNG";
 
 var ps;
 
@@ -55,7 +55,7 @@ function Sidebar(props) {
           </div>
         </a>
         <a href="#" className="simple-text logo-normal">
-          Mesob Store
+          Mesob Financial
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>

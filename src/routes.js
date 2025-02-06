@@ -3,6 +3,8 @@ import Users from "views/Users.js";
 import OrderDetails from "views/OrderDetails";
 import EditOrder from "views/EditOrder";
 import MesobFinancial2 from "views/mesobfinancial2";
+import Receipts from "views/Receipts";
+import UserPage from "views/UserPage";
 
 const adminRoutes = [
   {
@@ -63,6 +65,20 @@ const customerRoutes = [
     component: <OrderDetails />,
     layout: "/customer",
     invisible: true,
+  },
+  {
+    path: "/receipts",
+    name: "Receipts",
+    icon: "files_paper",
+    component: <Receipts />,
+    layout: "/customer",
+  },
+  {
+    path: "/profile",
+    name: "User Profile",
+    icon: "users_single-02",
+    component: <UserPage />,
+    layout: "/customer",
   },
 ];
 

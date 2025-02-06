@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import { Helmet } from "react-helmet";
-import logo from "logo.jpeg";
+const logo = "/logo.PNG";
 import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
