@@ -1,8 +1,8 @@
 import React from "react";
-import { BsTrashFill } from "react-icons/bs";
+import { BsTrashFill, BsReceipt } from "react-icons/bs";
 import "./TransactionTable.css";
 
-const TransactionTable = ({ items = [], handleDelete }) => {
+const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
   const filteredItems = items.filter(
     (item) => item.transactionPurpose !== "Initial Cash Balance"
   );
@@ -28,12 +28,12 @@ const TransactionTable = ({ items = [], handleDelete }) => {
       <table className="transaction-table">
         <thead>
           <tr>
-            <td>Date</td>
-            <td>Sr. Number</td>
-            <td>Transaction</td>
-            <td>Debit</td>
-            <td>Credit</td>
-            <td>Actions</td>
+            <th>Date</th>
+            <th>Sr. Number</th>
+            <th>Transaction</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -55,61 +55,70 @@ const TransactionTable = ({ items = [], handleDelete }) => {
               </td>
               <td className="debit">
                 {transaction.transactionType === "Receive" && (
-                  <div style={{ backgroundColor: "rgb(49, 234, 49)" }}>
-                    ${transaction.transactionAmount}
-                  </div>
+                  <>
+                    <div style={{ color: "white" }}>.</div>
+                    <div style={{ backgroundColor: "rgb(49, 234, 49)" }}>
+                      ${transaction.transactionAmount}
+                    </div>
+                  </>
                 )}
                 {transaction.transactionType === "Payable" && (
-                  <div style={{ backgroundColor: "orange" }}>
-                    {transaction.transactionAmount}
-                  </div>
+                  <>
+                    <div style={{ color: "white" }}>.</div>
+                    <div style={{ backgroundColor: "orange" }}>
+                      ${transaction.transactionAmount}
+                    </div>
+                  </>
                 )}
-
                 {transaction.transactionType === "Pay" && (
                   <>
-                    {transaction.subType === "New_Item" ? (
-                      <>
-                        <div style={{ color: "white" }}>.</div>
-
-                        <div style={{ backgroundColor: "yellow" }}>
-                          ${transaction.transactionAmount}
-                        </div>
-                      </>
-                    ) : (
-                      <div style={{ backgroundColor: "yellow" }}>
-                        ${transaction.transactionAmount}
-                      </div>
-                    )}
+                    <div style={{ color: "white" }}>.</div>
+                    <div style={{ backgroundColor: "yellow" }}>
+                      ${transaction.transactionAmount}
+                    </div>
                   </>
                 )}
               </td>
               <td className="credit">
+                {transaction.transactionType === "Receive" && (
+                  <>
+                    <div style={{ backgroundColor: "rgb(49, 234, 49)" }}>
+                      ${transaction.transactionAmount}
+                    </div>
+                    <div style={{ color: "white" }}>.</div>
+                  </>
+                )}
                 {(transaction.transactionType === "Pay" ||
                   transaction.transactionType === "Payable") && (
                   <>
-                    {transaction.subType === "New_Item" ? (
-                      <>
-                        <div style={{ backgroundColor: "yellow" }}>
-                          ${transaction.transactionAmount}
-                        </div>
-                        <div style={{ color: "white" }}>.</div>
-                      </>
-                    ) : (
-                      <>
-                        <div style={{ backgroundColor: "yellow" }}>
-                          ${transaction.transactionAmount}
-                        </div>
-                      </>
-                    )}
+                    <div style={{ backgroundColor: "yellow" }}>
+                      ${transaction.transactionAmount}
+                    </div>
+                    <div style={{ color: "white" }}>.</div>
                   </>
                 )}
               </td>
               <td>
-                <BsTrashFill
-                  className="delete-btn"
-                  onClick={() => handleDelete(transaction.id)}
-                  style={{ cursor: "pointer", color: "#e10d05" }}
-                />
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <BsTrashFill
+                    className="delete-btn"
+                    onClick={() => handleDelete(transaction.id)}
+                    style={{ cursor: "pointer", color: "#e10d05" }}
+                  />
+                  {transaction.transactionType === "Pay" &&
+                    (transaction.subType === "Recorded" ||
+                      transaction.subType === "Expense" ||
+                      transaction.subType === "New_Item") &&
+                    transaction.receiptUrl && (
+                      <BsReceipt
+                        className="receipt-btn"
+                        onClick={() =>
+                          handleReceiptClick(transaction.receiptUrl)
+                        }
+                        style={{ cursor: "pointer", color: "#007bff" }}
+                      />
+                    )}
+                </div>
               </td>
             </tr>
           ))}

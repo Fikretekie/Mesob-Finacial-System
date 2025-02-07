@@ -58,6 +58,9 @@ const MesobFinancial2 = () => {
   const fileInputRef = useRef(null);
   const [subType, setsubType] = useState("");
   const [fileContent, setfileContent] = useState(null);
+  const [previewModal, setPreviewModal] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
   // const componentRef = useRef(null);
 
   // print function
@@ -77,6 +80,21 @@ const MesobFinancial2 = () => {
   // });
   const [formErrors, setFormErrors] = useState({});
   // Add receipt handling function
+  const handleReceiptClick = (receiptUrl) => {
+    if (receiptUrl) {
+      handlePreview(receiptUrl);
+    } else {
+      notify("tr", "No receipt available for this transaction", "warning");
+    }
+  };
+  const handlePreview = (receiptUrl) => {
+    const modifiedUrl = receiptUrl.replace(
+      "app.mesobfinancial.com.s3.amazonaws.com",
+      "s3.amazonaws.com/app.mesobfinancial.com"
+    );
+    setSelectedReceipt({ receiptUrl: modifiedUrl });
+    setPreviewModal(true);
+  };
   const handleReceiptUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -88,6 +106,7 @@ const MesobFinancial2 = () => {
         const filecontent = event.target.result.split(",")[1]; // Remove data:image/jpeg;base64, prefix
 
         setReceipt(file);
+
         setfileContent(filecontent);
       };
 
@@ -172,65 +191,44 @@ const MesobFinancial2 = () => {
     setIsAddingTransaction(true);
     let Url = "";
 
-    // Upload receipt if exists (for both New Expense and Bought a New Item)
     if (receipt) {
       Url = await uploadReceipt();
     }
 
     try {
-      if (transactionType === "pay" && paymentMode === "boughtItem") {
-        // Handle bought item transaction with receipt
-        const newTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "Pay",
-          subType: "New_Item",
-          transactionPurpose: manualPurpose || "New_Item",
-          transactionAmount: parseFloat(transactionAmount),
-          receiptUrl: Url || "", // Add receipt URL for bought items
-        };
+      const newTransaction = {
+        userId: localStorage.getItem("userId"),
+        transactionType:
+          transactionType === "receive"
+            ? "Receive"
+            : transactionType === "Payable"
+            ? "Payable"
+            : "Pay",
+        transactionPurpose:
+          transactionPurpose === "manual" ? manualPurpose : transactionPurpose,
+        transactionAmount: parseFloat(transactionAmount),
+        subType:
+          transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New_Item"
+            : subType,
+        receiptUrl: Url || "",
+        status: transactionType === "Payable" ? "Payable" : "Paid",
+      };
 
-        const response = await axios.post(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-          newTransaction
-        );
+      const response = await axios.post(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        newTransaction
+      );
 
-        if (response.status === 200) {
-          notify("tr", "New item purchase recorded successfully", "success");
-          resetForm();
-          fetchTransactions();
-          setShowAddTransaction(false);
-        }
-      } else {
-        // Handle other transaction types
-        const newTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType:
-            transactionType === "receive"
-              ? "Receive"
-              : transactionType === "Payable"
-              ? "Payable"
-              : "Pay",
-          transactionPurpose:
-            transactionPurpose === "manual"
-              ? manualPurpose
-              : transactionPurpose,
-          transactionAmount: parseFloat(transactionAmount),
-          subType: subType,
-          receiptUrl: Url || "",
-          status: transactionType === "Payable" ? "Unpaid" : undefined,
-        };
-
-        const response = await axios.post(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-          newTransaction
-        );
-
-        if (response.status === 200) {
-          notify("tr", "Transaction added successfully", "success");
-          resetForm();
-          fetchTransactions();
-          setShowAddTransaction(false);
-        }
+      if (response.status === 200) {
+        const successMessage =
+          transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New item purchase recorded successfully"
+            : "Transaction added successfully";
+        notify("tr", successMessage, "success");
+        resetForm();
+        fetchTransactions();
+        setShowAddTransaction(false);
       }
     } catch (error) {
       console.error("Error adding transaction:", error);
@@ -292,58 +290,32 @@ const MesobFinancial2 = () => {
     }
 
     try {
-      if (transaction.id === "outstanding-debt") {
-        // Handle outstanding debt payment
-        const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
-          { outstandingDebt: 0 }
-        );
-        if (response.status === 200) {
-          localStorage.setItem("outstandingDebt", "0");
-          notify("tr", "Transaction updated to Paid successfully", "success");
-          fetchTransactions();
-        }
+      // Create a new "Paid" transaction
+      const newPaidTransaction = {
+        userId: localStorage.getItem("userId"),
+        transactionType: "Pay",
+        transactionPurpose: `Payment for ${transaction.transactionPurpose}`,
+        transactionAmount: parseFloat(transaction.transactionAmount),
+        receiptUrl: Url || "",
+        status: "Paid",
+        createdAt: new Date().toISOString(),
+      };
+
+      // Add the new "Paid" transaction
+      const response = await axios.post(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        newPaidTransaction
+      );
+
+      if (response.status === 200) {
+        notify("tr", "Payment recorded successfully", "success");
+        fetchTransactions();
       } else {
-        // Handle regular unpaid transaction
-        const updatedTransaction = {
-          ...transaction,
-          receiptUrl: "",
-          status: "Paid",
-          updatedAt: new Date().toISOString(),
-        };
-        const response = await fetch(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedTransaction),
-          }
-        );
-        if (response.ok) {
-          const newTransaction = {
-            userId: localStorage.getItem("userId"),
-            transactionType: "Pay",
-            transactionPurpose,
-            receiptUrl: Url || "",
-            transactionAmount: parseFloat(transaction.transactionAmount),
-            subType: "Expense",
-          };
-
-          const response = await axios.post(
-            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-            newTransaction
-          );
-
-          if (response.status === 200) {
-            notify("tr", "Transaction updated to Paid successfully", "success");
-            fetchTransactions();
-          } else {
-            notify("tr", "Transaction update failed", "danger");
-          }
-        }
+        notify("tr", "Failed to record payment", "danger");
       }
     } catch (error) {
-      notify("tr", "Error updating transaction", "danger");
+      console.error("Error updating transaction:", error);
+      notify("tr", "Error recording payment", "danger");
     } finally {
       setIsUpdatingTransaction(false);
       setSelectedUnpaidTransaction(null);
@@ -351,27 +323,29 @@ const MesobFinancial2 = () => {
     }
   };
 
-  const handleDeleteTransaction = async (transactionId) => {
-    setIsDeletingTransaction(true);
-    try {
-      const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transactionId}`,
-        { method: "DELETE" }
-      );
+  // const handleDeleteTransaction = async (transactionId) => {
+  //   setIsDeletingTransaction(true);
+  //   try {
+  //     const response = await axios.delete(
+  //       `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transactionId}`
+  //     );
 
-      if (response.ok) {
-        notify("tr", "Transaction deleted successfully", "success");
-        fetchTransactions();
-      } else {
-        const data = await response.json();
-        notify("tr", data.message || "Failed to delete transaction", "danger");
-      }
-    } catch (error) {
-      notify("tr", "Error deleting transaction", "danger");
-    } finally {
-      setIsDeletingTransaction(false);
-    }
-  };
+  //     if (response.status === 200) {
+  //       notify("tr", "Transaction processed successfully", "success");
+  //       fetchTransactions();
+  //     } else {
+  //       notify(
+  //         "tr",
+  //         response.data.message || "Failed to process transaction",
+  //         "danger"
+  //       );
+  //     }
+  //   } catch (error) {
+  //     notify("tr", "Error processing transaction", "danger");
+  //   } finally {
+  //     setIsDeletingTransaction(false);
+  //   }
+  // };
 
   const filterItemsByTimeRange = (items, range) => {
     if (!range || !range.from || !range.to) return items;
@@ -501,6 +475,19 @@ const MesobFinancial2 = () => {
 
     return totalexp.toFixed(2);
   };
+  const calculateTotalCash = () => {
+    const totalReceived = Object.values(items).reduce((sum, value) => {
+      if (value.transactionType === "Receive") {
+        return sum + parseFloat(value.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
+
+    const totalExpenses = parseFloat(calculateTotalExpenses());
+    const totalCash = initialBalance + totalReceived - totalExpenses;
+
+    return totalCash.toFixed(2);
+  };
 
   const calculateTotalPayable = () => {
     const unpaidTotal = Object.values(accountsPayable).reduce(
@@ -601,12 +588,19 @@ const MesobFinancial2 = () => {
           }
         })
         .catch((error) => {
-          console.error("Delete error:", error);
-          notify(
-            "tr",
-            error.response?.data?.message || "Failed to delete record",
-            "danger"
-          );
+          if (error.response && error.response.status === 404) {
+            // If the transaction is not found, it might have been a paid transaction
+            // that was already soft-deleted. In this case, we'll consider it a success.
+            notify("tr", "Record deleted successfully", "success");
+            fetchTransactions();
+          } else {
+            console.error("Delete error:", error);
+            notify(
+              "tr",
+              error.response?.data?.message || "Failed to delete record",
+              "danger"
+            );
+          }
         })
         .finally(() => {
           setLoading(false);
@@ -847,6 +841,7 @@ const MesobFinancial2 = () => {
                       selectedTimeRange={selectedTimeRange}
                       handleDelete={handleDelete}
                       handleAddExpense={handleAddExpense}
+                      handleReceiptClick={handleReceiptClick}
                     />
                   </>
                 )}
@@ -880,7 +875,7 @@ const MesobFinancial2 = () => {
                         padding: "5px 10px",
                       }}
                     >
-                      ${totalCashOnHand}
+                      ${calculateTotalCash()}
                     </span>
                   </div>
 
@@ -1078,10 +1073,11 @@ const MesobFinancial2 = () => {
                             textAlign: "right",
                           }}
                         >
-                          ${totalCashOnHand}
+                          ${calculateTotalCash()}
                         </td>
                         <td></td>
                       </tr>
+
                       <tr>
                         <td>Inventory</td>
                         <td
@@ -1573,6 +1569,39 @@ const MesobFinancial2 = () => {
                   {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
                 </Button>
               </>
+            )}
+          </ModalBody>
+        </Modal>
+        {/* Previe modal */}
+        <Modal
+          isOpen={previewModal}
+          toggle={() => setPreviewModal(false)}
+          size="lg"
+        >
+          <ModalHeader toggle={() => setPreviewModal(false)}>
+            Receipt Preview
+          </ModalHeader>
+          <ModalBody>
+            {selectedReceipt && (
+              <div className="receipt-preview">
+                <object
+                  data={selectedReceipt.receiptUrl}
+                  type="application/pdf"
+                  style={{
+                    width: "100%",
+                    height: "600px",
+                  }}
+                >
+                  <embed
+                    src={selectedReceipt.receiptUrl}
+                    type="application/pdf"
+                    style={{
+                      width: "100%",
+                      height: "600px",
+                    }}
+                  />
+                </object>
+              </div>
             )}
           </ModalBody>
         </Modal>

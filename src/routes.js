@@ -42,6 +42,13 @@ const adminRoutes = [
     component: <MesobFinancial2 />,
     layout: "/admin",
   },
+  {
+    path: "/profile",
+    name: "User Profile",
+    icon: "users_single-02",
+    component: <UserPage />,
+    layout: "/admin",
+  },
 ];
 
 const customerRoutes = [

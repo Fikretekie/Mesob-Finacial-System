@@ -167,7 +167,7 @@ function Dashboard() {
           cashOnHand: initialCashBalance,
           revenue: revenue,
           payable: outstandingDebt,
-          expenses: outstandingDebt,
+          // expenses: outstandingDebt,
         },
       };
 
