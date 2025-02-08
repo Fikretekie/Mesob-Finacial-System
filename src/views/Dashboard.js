@@ -73,7 +73,7 @@ function Dashboard() {
     datasets: [
       {
         label: "Cash on Hand",
-        data: monthlySales.map((item) => item.cashOnHand),
+        data: monthlySales.map((item) => item.cashOnHand - item.expenses),
         fill: false,
         borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
@@ -194,13 +194,13 @@ function Dashboard() {
         } else if (transaction.transactionType === "Pay") {
           expenses += amount;
           monthlyData[monthYear].expenses += amount;
-        } else if (transaction.transactionType === "NotYetPaid") {
+        } else if (transaction.transactionType === "Payable" && transaction.status === "Payable") {
           payable += amount;
           monthlyData[monthYear].payable += amount;
         }
       });
 
-      setTotalCashOnHand(cashOnHand);
+      setTotalCashOnHand(cashOnHand - expenses);
       setTotalExpenses(expenses);
       settotalRevenue(revenue);
       setTotalPayable(payable);

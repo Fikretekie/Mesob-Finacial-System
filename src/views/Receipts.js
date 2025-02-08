@@ -21,6 +21,9 @@ import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { Helmet } from "react-helmet";
 import { FaEye, FaDownload } from "react-icons/fa";
 import NotificationAlert from "react-notification-alert";
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+
 
 const Receipts = () => {
   const [receipts, setReceipts] = useState([]);
@@ -97,9 +100,8 @@ const Receipts = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `receipt-${
-        receipt.transactionPurpose
-      }-${new Date().getTime()}.pdf`;
+      link.download = `receipt-${receipt.transactionPurpose
+        }-${new Date().getTime()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -131,14 +133,48 @@ const Receipts = () => {
 
   const handleDownloadAll = async () => {
     try {
-      notify("tr", "Downloading all receipts...", "info");
-      // Implement the logic to download all receipts
-      // This is a placeholder and should be replaced with actual implementation
+      if (receipts.length === 0) {
+        notify("tr", "No receipts to download.", "warning");
+        return;
+      }
+
+      notify("tr", "Preparing receipts for download...", "info");
+
+      const zip = new JSZip();
+
+      await Promise.all(
+        receipts.map(async (receipt, index) => {
+          try {
+            const url = receipt.receiptUrl.replace(
+              "app.mesobfinancial.com.s3.amazonaws.com",
+              "s3.amazonaws.com/app.mesobfinancial.com"
+            );
+            const response = await fetch(url);
+            const blob = await response.blob();
+            zip.file(`receipt-${receipt.transactionPurpose}-${index + 1}.pdf`, blob);
+          } catch (error) {
+            console.error(`Error downloading receipt ${receipt.transactionPurpose}:`, error);
+            notify("tr", `Error downloading receipt ${receipt.transactionPurpose}`, "danger");
+          }
+        })
+      );
+
+      zip.generateAsync({ type: "blob" })
+        .then(blob => {
+          saveAs(blob, "receipts.zip");
+          notify("tr", "All receipts downloaded successfully!", "success");
+        })
+        .catch(error => {
+          console.error("Error creating zip file:", error);
+          notify("tr", "Error creating zip file", "danger");
+        });
+
     } catch (error) {
       console.error("Error downloading all receipts:", error);
       notify("tr", "Error downloading all receipts", "danger");
     }
   };
+
 
   const notify = (place, message, type) => {
     notificationAlertRef.current.notificationAlert({
