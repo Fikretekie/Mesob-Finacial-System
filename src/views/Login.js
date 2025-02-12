@@ -4,7 +4,7 @@ import "../assets/css/Login.css";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import { Helmet } from "react-helmet";
-const logo = "/logo.PNG";
+const logo = "/logo.png";
 import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
