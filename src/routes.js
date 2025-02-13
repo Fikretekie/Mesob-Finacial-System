@@ -49,6 +49,13 @@ const adminRoutes = [
     component: <UserPage />,
     layout: "/admin",
   },
+  {
+    path: "/receipts",
+    name: "Receipts",
+    icon: "files_paper",
+    component: <Receipts />,
+    layout: "/admin",
+  },
 ];
 
 const customerRoutes = [

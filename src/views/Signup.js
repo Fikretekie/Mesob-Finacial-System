@@ -304,7 +304,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.businessType ? "red" : "transparent",
+                borderColor: errors.businessType ? "red" : "#000",
               }}
             >
               <option value="">Select Business Type</option>
@@ -366,7 +366,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.cashBalance ? "red" : "transparent",
+                borderColor: errors.cashBalance ? "red" : "#000",
               }}
             />
             {errors.cashBalance && (
@@ -382,7 +382,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.outstandingDebt ? "red" : "transparent",
+                borderColor: errors.outstandingDebt ? "red" : "#000",
               }}
             />
             {errors.outstandingDebt && (
@@ -398,7 +398,7 @@ const SignupPage = () => {
               }}
               style={{
                 ...styles.input,
-                borderColor: errors.valueableItems ? "red" : "transparent",
+                borderColor: errors.valueableItems ? "red" : "#000",
               }}
             />
             {errors.valueableItems && (

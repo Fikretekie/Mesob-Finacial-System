@@ -6,6 +6,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { useSelector } from "react-redux";
 import PerfectScrollbar from "perfect-scrollbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
@@ -14,7 +15,7 @@ import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import Footer from "components/Footer/Footer.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
-
+import MesobFinancial2 from "views/mesobfinancial2";
 import routes from "routes.js";
 
 var ps;
@@ -25,8 +26,8 @@ function Admin(props) {
   const [backgroundColor, setBackgroundColor] = useState("blue");
   const [showGoToTop, setShowGoToTop] = useState(false);
   const mainPanel = useRef();
+  const selectedUser = useSelector((state) => state.selectedUser);
 
-  // Check user session on component mount
   useEffect(() => {
     const userEmail = localStorage.getItem("user_email");
     if (!userEmail) {
@@ -91,9 +92,26 @@ function Admin(props) {
       >
         <DemoNavbar {...props} />
         <Routes>
-          {routes.map((prop, key) => (
-            <Route path={prop.path} element={prop.component} key={key} exact />
-          ))}
+          {routes.map((prop, key) => {
+            if (prop.path === "/MesobFinancial2") {
+              return (
+                <Route
+                  path={prop.path}
+                  element={<MesobFinancial2 selectedUser={selectedUser} />}
+                  key={key}
+                  exact
+                />
+              );
+            }
+            return (
+              <Route
+                path={prop.path}
+                element={prop.component}
+                key={key}
+                exact
+              />
+            );
+          })}
           <Route
             path="/admin"
             element={<Navigate to="/admin/dashboard" replace />}

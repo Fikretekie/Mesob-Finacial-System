@@ -9,22 +9,27 @@ import {
 import PerfectScrollbar from "perfect-scrollbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { useSelector } from "react-redux"; // Import Redux hook
 
-// core components
+// Core components
 import DemoNavbar from "components/Navbars/DemoNavbar.js";
 import Footer from "components/Footer/Footer.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 
+// Routes
 import routes from "routes_Financial.js";
 
 var ps;
 
-function financial(props) {
+function Financial(props) {
   const location = useLocation();
   const navigate = useNavigate();
   const [backgroundColor, setBackgroundColor] = useState("blue");
   const [showGoToTop, setShowGoToTop] = useState(false);
   const mainPanel = useRef();
+
+  // Get selected user from Redux
+  const selectedUser = useSelector((state) => state.selectedUser);
 
   // Check user session on component mount
   useEffect(() => {
@@ -90,6 +95,21 @@ function financial(props) {
         style={{ height: "100vh", overflow: "auto" }}
       >
         <DemoNavbar {...props} />
+
+        {/* Display Selected User Data */}
+        {selectedUser?.id && (
+          <div
+            style={{
+              padding: "10px",
+              backgroundColor: "#f8f9fa",
+              borderBottom: "1px solid #ddd",
+              marginBottom: "10px",
+            }}
+          >
+            <h5>Selected User: {selectedUser.email}</h5>
+          </div>
+        )}
+
         <Routes>
           {routes.map((prop, key) => (
             <Route path={prop.path} element={prop.component} key={key} exact />
@@ -100,6 +120,7 @@ function financial(props) {
           />
         </Routes>
         <Footer fluid />
+
         {showGoToTop && (
           <button
             className="go-to-top"
@@ -131,4 +152,4 @@ function financial(props) {
   );
 }
 
-export default financial;
+export default Financial;

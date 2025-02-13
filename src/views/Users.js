@@ -16,6 +16,8 @@ import axios from "axios";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
+import { useDispatch } from "react-redux";
+import { setSelectedUser } from "../store/userSlice";
 
 const columns = [
   {
@@ -75,6 +77,18 @@ const columns = [
     width: "200px",
     cell: (row) => new Date(row.createdAt).toLocaleDateString(),
   },
+  {
+    name: "Select",
+    cell: (row) => (
+      <Button color="primary" size="sm" onClick={() => handleUserSelect(row)}>
+        Select
+      </Button>
+    ),
+    ignoreRowClick: true,
+    allowOverflow: true,
+    button: true,
+    width: "100px",
+  },
 ];
 
 function Users() {
@@ -83,7 +97,11 @@ function Users() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const notificationAlertRef = useRef(null);
+  const dispatch = useDispatch();
 
+  const handleUserSelect = (user) => {
+    dispatch(setSelectedUser({ id: user.id, email: user.email }));
+  };
   const notify = (place, message, type) => {
     const options = {
       place: place,

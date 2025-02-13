@@ -32,7 +32,8 @@ import formatUserId from "utils/formatUID";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { setSelectedUser } from "../store/userSlice";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -55,6 +56,23 @@ function Dashboard() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const userRole = parseInt(localStorage.getItem("role"));
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleUserSelect = (userId) => {
+    const numericUserId = Number(userId); // Convert string to number
+    console.log("Selected user ID:", numericUserId);
+    if (!numericUserId) {
+      console.error("handleUserSelect: userId is undefined or null");
+      return;
+    }
+    const selectedUser = users.find((user) => user.id === numericUserId);
+    console.log("Found user:", selectedUser);
+    if (selectedUser) {
+      dispatch(setSelectedUser(selectedUser));
+    } else {
+      console.error(`handleUserSelect: No user found with id ${numericUserId}`);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -194,7 +212,10 @@ function Dashboard() {
         } else if (transaction.transactionType === "Pay") {
           expenses += amount;
           monthlyData[monthYear].expenses += amount;
-        } else if (transaction.transactionType === "Payable" && transaction.status === "Payable") {
+        } else if (
+          transaction.transactionType === "Payable" &&
+          transaction.status === "Payable"
+        ) {
           payable += amount;
           monthlyData[monthYear].payable += amount;
         }
@@ -226,6 +247,11 @@ function Dashboard() {
       fetchFinancialData(selectedUserId);
     }
   }, [selectedUserId]);
+  useEffect(() => {
+    fetchUsers().then(() => {
+      console.log("Users fetched:", users);
+    });
+  }, []);
 
   return (
     <>
@@ -250,7 +276,11 @@ function Dashboard() {
                     <Input
                       type="select"
                       value={selectedUserId || ""}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
+                      onChange={(e) => {
+                        const selectedId = e.target.value;
+                        setSelectedUserId(selectedId);
+                        handleUserSelect(selectedId);
+                      }}
                     >
                       <option value="">Select a user</option>
                       {users.map((user) => (
