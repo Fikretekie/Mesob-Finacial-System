@@ -407,10 +407,19 @@ const MesobFinancial2 = () => {
       fetchUnpaidTransactions();
     }
   }, [showAddTransaction, transactionType]);
+
+  // useEffect(() => {
+  //   if (selectedUser?.id) {
+  //     console.log("MesobFinancial2: Fetching data for user", selectedUser);
+  //     fetchFinancialData(selectedUser.id);
+  //   }
+  // }, [selectedUser]);
+
   useEffect(() => {
     if (selectedUser?.id) {
-      console.log("MesobFinancial2: Fetching data for user", selectedUser);
-      fetchFinancialData(selectedUser.id);
+      console.log("fetching for redux user");
+      fetchTransactions(selectedUser?.id);
+      fetchUserInitialBalance(selectedUser?.id);
     }
   }, [selectedUser]);
 
@@ -784,6 +793,7 @@ const MesobFinancial2 = () => {
                         const userId = e.target.value;
                         setSelectedUserId(userId);
                         if (userId) {
+                          console.log("user id: ", userId);
                           localStorage.setItem("tempUserId", userId);
                           fetchTransactions(userId);
                           fetchUserInitialBalance(userId);
