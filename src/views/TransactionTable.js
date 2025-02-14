@@ -40,24 +40,40 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
         <tbody>
           {sortedTransactions.map((transaction, index) => (
             <tr key={transaction.id || index}>
+              {/* Date */}
               <td>{formatDate(transaction.createdAt)}</td>
+
+              {/* Serial Number */}
               <td>{sortedTransactions.length - index}</td>
+
+              {/* Transaction Purpose and Type */}
               <td>
-                <div>
-                  {transaction.transactionType === "Payable"
-                    ? "Payable [Expense]"
-                    : transaction.transactionType === "Receive"
-                    ? "Receive [Cash]"
-                    : transaction.transactionType === "Pay"
-                    ? "Pay [Cash]"
-                    : transaction.transactionType}
-                </div>
-                <div>
-                  {transaction.transactionPurpose !== ""
-                    ? transaction.transactionPurpose
-                    : transaction.subType}
-                </div>
+                {transaction.transactionType === "Receive" ? (
+                  <>
+                    {/* Transaction type first for Receive */}
+                    <div style={{ fontWeight: "bold" }}>Receive [Cash]</div>
+                    {/* Purpose below */}
+                    <div>{transaction.transactionPurpose}</div>
+                  </>
+                ) : (
+                  <>
+                    {/* Purpose first for other cases */}
+                    <div>{transaction.transactionPurpose}</div>
+                    {/* Transaction type below */}
+                    <div style={{ fontWeight: "bold" }}>
+                      {transaction.transactionType === "Pay"
+                        ? "Pay [Cash]"
+                        : transaction.transactionType === "Payable"
+                        ? "Payable [Expense]"
+                        : transaction.transactionType === "New_Item"
+                        ? "New_Item"
+                        : transaction.transactionType}
+                    </div>
+                  </>
+                )}
               </td>
+
+              {/* Debit Column */}
               <td className="debit">
                 {transaction.transactionType === "Receive" && (
                   <>
@@ -75,7 +91,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                     <div style={{ color: "white" }}>-</div>
                   </>
                 )}
-                {transaction.transactionType === "Pay" && (
+                {["Pay", "New_Item"].includes(transaction.transactionType) && (
                   <>
                     <div style={{ backgroundColor: colors.expense }}>
                       ${transaction.transactionAmount}
@@ -84,6 +100,8 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                   </>
                 )}
               </td>
+
+              {/* Credit Column */}
               <td className="credit">
                 {transaction.transactionType === "Receive" && (
                   <>
@@ -101,7 +119,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                     </div>
                   </>
                 )}
-                {transaction.transactionType === "Pay" && (
+                {["Pay", "New_Item"].includes(transaction.transactionType) && (
                   <>
                     <div style={{ color: "white" }}>.</div>
                     <div style={{ backgroundColor: colors.expense }}>
@@ -110,26 +128,25 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                   </>
                 )}
               </td>
+
+              {/* Actions */}
               <td>
                 <div style={{ display: "flex", gap: "10px" }}>
+                  {/* Delete Button */}
                   <BsTrashFill
                     className="delete-btn"
                     onClick={() => handleDelete(transaction)}
                     style={{ cursor: "pointer", color: "#e10d05" }}
                   />
-                  {transaction.transactionType === "Pay" &&
-                    (transaction.subType === "Recorded" ||
-                      transaction.subType === "Expense" ||
-                      transaction.subType === "New_Item") &&
-                    transaction.receiptUrl && (
-                      <BsReceipt
-                        className="receipt-btn"
-                        onClick={() =>
-                          handleReceiptClick(transaction.receiptUrl)
-                        }
-                        style={{ cursor: "pointer", color: "#007bff" }}
-                      />
-                    )}
+
+                  {/* Receipt Button */}
+                  {transaction.receiptUrl && (
+                    <BsReceipt
+                      className="receipt-btn"
+                      onClick={() => handleReceiptClick(transaction.receiptUrl)}
+                      style={{ cursor: "pointer", color: "#007bff" }}
+                    />
+                  )}
                 </div>
               </td>
             </tr>

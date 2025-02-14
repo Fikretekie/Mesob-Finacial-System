@@ -25,6 +25,7 @@ import TransactionTable from "./TransactionTable";
 import { AddExpenseButton } from "components/AddExpenseButton";
 import IncomeStatement from "components/IncomeStatement";
 import colors from "variables/colors";
+import CSVReports from "./CSVReports";
 import { useSelector } from "react-redux";
 // import { useReactToPrint } from "react-to-print";
 const MesobFinancial2 = () => {
@@ -65,6 +66,14 @@ const MesobFinancial2 = () => {
   const [previewModal, setPreviewModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  const navigate = useNavigate();
+
+  // CSV
+  const handleGenerateCSV = () => {
+    // Implement CSV generation logic here
+    // After generation, navigate to the CSV Reports page
+    navigate("/customer/csv");
+  };
   // redux select user
   const selectedUser = useSelector((state) => state.selectedUser);
 
@@ -147,10 +156,7 @@ const MesobFinancial2 = () => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
       if (transaction.transactionType === "Receive") {
         cashOnHand += amount;
-      } else if (
-        transaction.transactionType === "Pay" ||
-        transaction.transactionType === "Payable"
-      ) {
+      } else if (["Pay", "Payable"].includes(transaction.transactionType)) {
         expenses += amount;
       }
     });
@@ -174,15 +180,18 @@ const MesobFinancial2 = () => {
   const handleAddTransaction = async () => {
     const errors = {};
 
+    // Validate manual purpose if required
     if (transactionPurpose === "manual" && !manualPurpose.trim()) {
       errors.manualPurpose = "Please enter a purpose manually";
     }
 
+    // Check for any validation errors
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
+    // Ensure all required fields are filled
     if (!transactionType || !transactionAmount) {
       notify("tr", "Please fill in all fields", "warning");
       return;
@@ -191,11 +200,15 @@ const MesobFinancial2 = () => {
     setIsAddingTransaction(true);
     let Url = "";
 
+    // Upload receipt if provided
     if (receipt) {
       Url = await uploadReceipt();
     }
 
     try {
+      console.log("values", transactionPurpose, manualPurpose);
+
+      // Determine transaction type and subtype based on user inputs
       const newTransaction = {
         userId: localStorage.getItem("userId"),
         transactionType:
@@ -203,20 +216,32 @@ const MesobFinancial2 = () => {
             ? "Receive"
             : transactionType === "Payable"
             ? "Payable"
-            : "Pay",
-        transactionPurpose:
-          transactionPurpose === "manual" ? manualPurpose : manualPurpose,
+            : transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New_Item"
+            : transactionType === "pay" && paymentMode !== "boughtItem"
+            ? "Pay"
+            : "New_Item",
+        transactionPurpose: `${transactionPurpose}${
+          manualPurpose ? ` ${manualPurpose}` : ""
+        }`,
         transactionAmount: parseFloat(transactionAmount),
-        subType: paymentMode === "boughtItem" ? "New_Item" : subType,
+        subType:
+          paymentMode === "boughtItem"
+            ? "New_Item"
+            : paymentMode === "new"
+            ? "Expense"
+            : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
 
+      // Send the new transaction to the server
       const response = await axios.post(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
         newTransaction
       );
 
+      // Handle success response
       if (response.status === 200) {
         const successMessage =
           transactionType === "pay" && paymentMode === "boughtItem"
@@ -465,15 +490,15 @@ const MesobFinancial2 = () => {
   const calculateTotalInventory = () => {
     const valueableItems = initialvalueableItems || 0;
 
-    const revenueTotal = Object.values(revenues).reduce((sum, value) => {
-      if (value.transactionType === "Asset") {
-        return sum + parseFloat(value.transactionAmount || 0);
+    const newItemsTotal = items.reduce((sum, item) => {
+      if (item.transactionType === "New_Item" && item.subType === "New_Item") {
+        return sum + parseFloat(item.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
-    const totalRevenue = revenueTotal + valueableItems;
-    return totalRevenue.toFixed(2);
+    const totalInventory = newItemsTotal + valueableItems;
+    return totalInventory.toFixed(2);
   };
 
   const calculateTotalExpenses = () => {
@@ -766,6 +791,7 @@ const MesobFinancial2 = () => {
             ) : (
               <p>No financial data available.</p>
             )}
+            <CSVReports />
           </div>
         }
       />
@@ -830,14 +856,9 @@ const MesobFinancial2 = () => {
                 >
                   <CardTitle tag="h4">Transactions</CardTitle>
                   <div>
-                    {/* <Button
-                        color="primary"
-                        onClick={handlePrint}
-                        disabled={loading}
-                        style={{ marginRight: "10px" }}
-                      >
-                        Print
-                      </Button> */}
+                    <Button color="primary" onClick={handleGenerateCSV}>
+                      Generate CSV Report
+                    </Button>
                     {userRole !== 0 && (
                       <Button
                         color="primary"
@@ -914,7 +935,7 @@ const MesobFinancial2 = () => {
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ marginRight: "10px" }}>
+                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
                       Total Cash on hand ={" "}
                     </span>
                     <span
@@ -934,7 +955,7 @@ const MesobFinancial2 = () => {
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ marginRight: "10px" }}>
+                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
                       Total Payable (Unpaid) ={" "}
                     </span>
                     <span
@@ -947,39 +968,78 @@ const MesobFinancial2 = () => {
                     </span>
                   </div>
 
-                  {Object.entries(expenses)
-                    .filter(([purpose, amount]) => {
-                      // Filter expenses here: Only include 'Paid' transactions or exclude payable
-                      const item = items.find(
-                        (item) =>
-                          item.transactionType === "Payable" &&
-                          item.status !== "Paid"
-                      );
-                      return item; // Only include if a matching 'Paid' transaction is found
-                    })
-                    .map(([purpose, amount]) => (
-                      <div
-                        key={purpose}
-                        style={{
-                          marginLeft: "20px",
-                          marginBottom: "5px",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span style={{ marginRight: "10px" }}>
-                          {purpose} ={" "}
-                        </span>
-                        <span
+                  {/* Payable Section */}
+                  <div style={{ marginTop: "20px" }}>
+                    <span style={{ fontWeight: "bold" }}>Payable:</span>
+                    {Object.entries(expenses)
+                      .filter(([purpose, amount]) => {
+                        return items.some(
+                          (item) =>
+                            item.transactionPurpose === purpose &&
+                            item.transactionType === "Payable" &&
+                            item.status !== "Paid"
+                        );
+                      })
+                      .map(([purpose, amount]) => (
+                        <div
+                          key={purpose}
                           style={{
-                            backgroundColor: colors.payable,
-                            padding: "2px 5px",
+                            marginLeft: "20px",
+                            marginBottom: "5px",
+                            display: "flex",
+                            alignItems: "center",
                           }}
                         >
-                          ${amount.toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
+                          <span style={{ marginRight: "10px" }}>
+                            {purpose} ={" "}
+                          </span>
+                          <span
+                            style={{
+                              backgroundColor: colors.payable,
+                              padding: "2px 5px",
+                            }}
+                          >
+                            ${amount.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* Expenses Section */}
+                  <div style={{ marginTop: "20px" }}>
+                    <span style={{ fontWeight: "bold" }}>Expenses:</span>
+                    {Object.entries(expenses)
+                      .filter(([purpose, amount]) => {
+                        return items.some(
+                          (item) =>
+                            item.transactionPurpose === purpose &&
+                            item.transactionType === "Pay"
+                        );
+                      })
+                      .map(([purpose, amount]) => (
+                        <div
+                          key={purpose}
+                          style={{
+                            marginLeft: "20px",
+                            marginBottom: "5px",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <span style={{ marginRight: "10px" }}>
+                            {purpose} ={" "}
+                          </span>
+                          <span
+                            style={{
+                              backgroundColor: colors.expense,
+                              padding: "2px 5px",
+                            }}
+                          >
+                            ${amount.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
 
                   <div
                     style={{
@@ -988,7 +1048,9 @@ const MesobFinancial2 = () => {
                       alignItems: "center",
                     }}
                   >
-                    <span style={{ marginRight: "10px" }}>Revenue = </span>
+                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                      Revenue ={" "}
+                    </span>
                     <span
                       style={{
                         backgroundColor: colors.revenue,
@@ -1000,7 +1062,7 @@ const MesobFinancial2 = () => {
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center" }}>
-                    <span style={{ marginRight: "10px" }}>
+                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
                       Total Expense ={" "}
                     </span>
                     <span
@@ -1056,6 +1118,40 @@ const MesobFinancial2 = () => {
                           ${calculateTotalRevenue()}
                         </td>
                       </tr>
+
+                      <tr>
+                        <td>
+                          <strong>Payable</strong>
+                        </td>
+                        <td></td>
+                      </tr>
+                      {Object.entries(expenses)
+                        .filter(([purpose, amount]) => {
+                          const item = items.find(
+                            (item) =>
+                              item.transactionPurpose === purpose &&
+                              item.transactionType === "Payable" &&
+                              item.status !== "Paid"
+                          );
+                          return item;
+                        })
+                        .map(([purpose, amount]) => (
+                          <tr key={`payable-${purpose}`}>
+                            <td>{purpose}</td>
+                            <td style={{ backgroundColor: "#fff" }}>
+                              ${amount.toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                      <tr>
+                        <td>
+                          <strong>Total Payable</strong>
+                        </td>
+                        <td style={{ backgroundColor: colors.payable }}>
+                          ${calculateTotalPayable()}
+                        </td>
+                      </tr>
+
                       <tr>
                         <td>
                           <strong>Expenses</strong>
@@ -1064,13 +1160,12 @@ const MesobFinancial2 = () => {
                       </tr>
                       {Object.entries(expenses)
                         .filter(([purpose, amount]) => {
-                          // Filter expenses here: Only include 'Pay' transactions
                           const item = items.find(
                             (item) =>
                               item.transactionPurpose === purpose &&
                               item.transactionType === "Pay"
                           );
-                          return item; // Only include if a matching 'Pay' transaction is found
+                          return item;
                         })
                         .map(([purpose, amount]) => (
                           <tr key={`expense-${purpose}`}>

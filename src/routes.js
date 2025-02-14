@@ -5,7 +5,7 @@ import EditOrder from "views/EditOrder";
 import MesobFinancial2 from "views/mesobfinancial2";
 import Receipts from "views/Receipts";
 import UserPage from "views/UserPage";
-
+import CSVReports from "views/CSVReports";
 const adminRoutes = [
   {
     path: "/dashboard",
@@ -92,6 +92,13 @@ const customerRoutes = [
     name: "User Profile",
     icon: "users_single-02",
     component: <UserPage />,
+    layout: "/customer",
+  },
+  {
+    path: "/csv",
+    name: "CSV Reports",
+    icon: "files_single-copy-04",
+    component: <CSVReports />,
     layout: "/customer",
   },
 ];
