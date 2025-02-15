@@ -81,36 +81,37 @@ const Receipts = () => {
   };
 
   const handlePreview = (receipt) => {
-    const modifiedUrl = receipt.receiptUrl.replace(
-      "app.mesobfinancial.com.s3.amazonaws.com",
-      "s3.amazonaws.com/app.mesobfinancial.com"
-    );
-    setSelectedReceipt({ ...receipt, receiptUrl: modifiedUrl });
+    setSelectedReceipt(receipt);
     setPreviewModal(true);
   };
 
+
   const handleDownload = async (receipt) => {
     try {
-      const url = receipt.receiptUrl.replace(
-        "app.mesobfinancial.com.s3.amazonaws.com",
-        "s3.amazonaws.com/app.mesobfinancial.com"
-      );
-      const response = await fetch(url);
+      const url = receipt.receiptUrl;
+      const response = await fetch(url, {
+        mode: 'cors'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `receipt-${receipt.transactionPurpose
-        }-${new Date().getTime()}.pdf`;
+      link.download = `receipt-${receipt.transactionPurpose}-${new Date().getTime()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error("Error downloading receipt:", error);
-      notify("tr", "Error downloading receipt", "danger");
+      notify("tr", `Error downloading receipt: ${error.message}`, "danger");
     }
   };
+
 
   const handleRun = () => {
     if (fromDate && toDate) {
@@ -145,16 +146,19 @@ const Receipts = () => {
       await Promise.all(
         receipts.map(async (receipt, index) => {
           try {
-            const url = receipt.receiptUrl.replace(
-              "app.mesobfinancial.com.s3.amazonaws.com",
-              "s3.amazonaws.com/app.mesobfinancial.com"
-            );
-            const response = await fetch(url);
+            const url = receipt.receiptUrl;
+            const response = await fetch(url, {
+              mode: 'cors'
+            });
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
             const blob = await response.blob();
             zip.file(`receipt-${receipt.transactionPurpose}-${index + 1}.pdf`, blob);
           } catch (error) {
             console.error(`Error downloading receipt ${receipt.transactionPurpose}:`, error);
-            notify("tr", `Error downloading receipt ${receipt.transactionPurpose}`, "danger");
+            notify("tr", `Error downloading receipt ${receipt.transactionPurpose}: ${error.message}`, "danger");
           }
         })
       );
@@ -174,7 +178,6 @@ const Receipts = () => {
       notify("tr", "Error downloading all receipts", "danger");
     }
   };
-
 
   const notify = (place, message, type) => {
     notificationAlertRef.current.notificationAlert({

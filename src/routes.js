@@ -96,7 +96,7 @@ const customerRoutes = [
   },
   {
     path: "/csv",
-    name: "CSV Reports",
+    name: "Backup CSV",
     icon: "files_single-copy-04",
     component: <CSVReports />,
     layout: "/customer",

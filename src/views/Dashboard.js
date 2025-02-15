@@ -91,7 +91,7 @@ function Dashboard() {
     datasets: [
       {
         label: "Cash on Hand",
-        data: monthlySales.map((item) => item.cashOnHand - item.expenses),
+        data: monthlySales.map((item) => item.cashOnHand),
         fill: false,
         borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
@@ -211,6 +211,7 @@ function Dashboard() {
           monthlyData[monthYear].revenue += amount;
         } else if (transaction.transactionType === "Pay") {
           expenses += amount;
+          cashOnHand -= amount;
           monthlyData[monthYear].expenses += amount;
         } else if (
           transaction.transactionType === "Payable" &&
