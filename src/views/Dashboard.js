@@ -47,9 +47,13 @@ ChartJS.register(
 function Dashboard() {
   const userId = localStorage.getItem("userId");
   const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState();
   const [totalCashOnHand, setTotalCashOnHand] = useState(0);
   const [totalrevenue, settotalRevenue] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [initialBalance, setInitialBalance] = useState(0);
+  const [initialvalueableItems, setvalueableItems] = useState(0);
+  const [initialoutstandingDebt, setoutstandingDebt] = useState(0);
   const [totalPayable, setTotalPayable] = useState(0);
   const [monthlySales, setMonthlySales] = useState([]);
   const [users, setUsers] = useState([]);
@@ -91,7 +95,14 @@ function Dashboard() {
     datasets: [
       {
         label: "Cash on Hand",
-        data: monthlySales.map((item) => item.cashOnHand),
+        data: monthlySales.map((item, index, array) => {
+          const previousCashOnHand =
+            index === 0 ? initialBalance : array[index - 1].cashOnHand;
+          const received = item.revenue || 0;
+          const expenses = item.expenses || 0;
+          const newItem = item.newItem || 0;
+          return previousCashOnHand + received - expenses - newItem;
+        }),
         fill: false,
         borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
@@ -169,23 +180,29 @@ function Dashboard() {
       const valuableItems =
         parseFloat(userResponse.data?.user?.valueableItems) || 0;
 
+      setInitialBalance(initialCashBalance);
+      setoutstandingDebt(outstandingDebt);
+      setvalueableItems(valuableItems);
+
       // Fetch transactions
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
       );
       const transactions = response.data;
+      setItems(transactions);
 
       let cashOnHand = initialCashBalance;
       let expenses = 0;
+      let newItem = 0;
       let revenue = 0;
       let payable = outstandingDebt;
       const monthlyData = {
         Initial: {
           month: "Initial Balance",
           cashOnHand: initialCashBalance,
-          revenue: revenue,
+          revenue: 0,
           payable: outstandingDebt,
-          // expenses: outstandingDebt,
+          expenses: 0,
         },
       };
 
@@ -197,22 +214,30 @@ function Dashboard() {
         if (!monthlyData[monthYear]) {
           monthlyData[monthYear] = {
             month: monthYear,
-            cashOnHand: initialCashBalance,
+            cashOnHand: cashOnHand,
             revenue: 0,
-            payable: outstandingDebt,
-            expenses: outstandingDebt,
+            payable: payable,
+            expenses: 0,
+            newItem: 0,
           };
         }
 
         if (transaction.transactionType === "Receive") {
           cashOnHand += amount;
           revenue += amount;
-          monthlyData[monthYear].cashOnHand += amount;
           monthlyData[monthYear].revenue += amount;
         } else if (transaction.transactionType === "Pay") {
           expenses += amount;
           cashOnHand -= amount;
           monthlyData[monthYear].expenses += amount;
+        } else if (
+          transaction.transactionType === "Pay" &&
+          transaction.subType === "New_Item"
+        ) {
+          newItem += amount;
+          cashOnHand -= amount;
+          monthlyData[monthYear].expenses += amount;
+          monthlyData[monthYear].newItem += amount;
         } else if (
           transaction.transactionType === "Payable" &&
           transaction.status === "Payable"
@@ -220,18 +245,50 @@ function Dashboard() {
           payable += amount;
           monthlyData[monthYear].payable += amount;
         }
+
+        monthlyData[monthYear].cashOnHand = cashOnHand;
       });
 
-      setTotalCashOnHand(cashOnHand - expenses);
+      setTotalCashOnHand(cashOnHand);
       setTotalExpenses(expenses);
       settotalRevenue(revenue);
       setTotalPayable(payable);
-      setMonthlySales(Object.values(monthlyData));
+      setMonthlySales(
+        Object.values(monthlyData).sort(
+          (a, b) => new Date(a.month) - new Date(b.month)
+        )
+      );
       setLoading(false);
     } catch (error) {
       console.error("Error fetching financial data:", error);
       setLoading(false);
     }
+  };
+
+  const calculateTotalCash = () => {
+    const totalReceived = items?.reduce((sum, item) => {
+      return (
+        sum +
+        (item.transactionType === "Receive" ? item.transactionAmount || 0 : 0)
+      );
+    }, 0);
+
+    const New_ItemReceived = items?.reduce((sum, item) => {
+      return (
+        sum +
+        (item.transactionType === "New_Item" ? item.transactionAmount || 0 : 0)
+      );
+    }, 0);
+
+    const totalExpenses = items?.reduce((sum, item) => {
+      return (
+        sum + (item.transactionType === "Pay" ? item.transactionAmount || 0 : 0)
+      );
+    }, 0);
+
+    const totalCash =
+      initialBalance + totalReceived - totalExpenses - New_ItemReceived;
+    return totalCash.toFixed(2);
   };
 
   useEffect(() => {
@@ -312,13 +369,7 @@ function Dashboard() {
                   <Col xs="7">
                     <div className="numbers">
                       <p className="card-category">TOTAL CASH ON HAND</p>
-                      <CardTitle tag="h3">
-                        $
-                        {totalCashOnHand.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </CardTitle>
+                      <CardTitle tag="h3">${calculateTotalCash()}</CardTitle>
                     </div>
                   </Col>
                 </Row>

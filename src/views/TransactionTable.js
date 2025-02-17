@@ -66,7 +66,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                         : transaction.transactionType === "Payable"
                         ? "Payable [Expense]"
                         : transaction.transactionType === "New_Item"
-                        ? "New_Item"
+                        ? "Pay [Cash]"
                         : transaction.transactionType}
                     </div>
                   </>
@@ -85,7 +85,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                 )}
                 {transaction.transactionType === "Payable" && (
                   <>
-                    <div style={{ backgroundColor: colors.payable }}>
+                    <div style={{ backgroundColor: colors.expense }}>
                       ${transaction.transactionAmount}
                     </div>
                     <div style={{ color: "white" }}>-</div>
@@ -106,7 +106,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                 {transaction.transactionType === "Receive" && (
                   <>
                     <div style={{ color: "white" }}>.</div>
-                    <div style={{ backgroundColor: colors.cash }}>
+                    <div style={{ backgroundColor: colors.revenue }}>
                       ${transaction.transactionAmount}
                     </div>
                   </>
@@ -122,7 +122,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                 {["Pay", "New_Item"].includes(transaction.transactionType) && (
                   <>
                     <div style={{ color: "white" }}>.</div>
-                    <div style={{ backgroundColor: colors.expense }}>
+                    <div style={{ backgroundColor: colors.cash }}>
                       ${transaction.transactionAmount}
                     </div>
                   </>
