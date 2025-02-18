@@ -1,0 +1,62 @@
+/* Base styles (mobile-first) */
+.content {
+    padding: 10px;
+}
+
+.card {
+    margin-bottom: 15px;
+}
+
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.transaction-table {
+    width: 100%;
+    min-width: 100%;
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media screen and (min-width: 576px) {
+    .content {
+        padding: 15px;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media screen and (min-width: 768px) {
+    .card-title {
+        font-size: 1.2rem;
+        text-align: left;
+    }
+
+    .btn {
+        width: auto;
+    }
+
+    .search-filter-container {
+        flex-direction: row;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media screen and (min-width: 992px) {
+    .content {
+        padding: 20px;
+    }
+
+    .transaction-table {
+        min-width: 600px;
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media screen and (min-width: 1200px) {
+    /* Add any specific styles for larger screens */
+}
+
+/* Custom breakpoint for 1232px and up */
+@media screen and (min-width: 1232px) {
+    /* Add any specific styles needed for this breakpoint */
+}

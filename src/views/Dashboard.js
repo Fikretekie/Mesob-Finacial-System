@@ -61,7 +61,31 @@ function Dashboard() {
   const userRole = parseInt(localStorage.getItem("role"));
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const calculateTotalCash = () => {
+    const totalReceived = items?.reduce((sum, item) => {
+      return (
+        sum +
+        (item.transactionType === "Receive" ? item.transactionAmount || 0 : 0)
+      );
+    }, 0);
 
+    const New_ItemReceived = items?.reduce((sum, item) => {
+      return (
+        sum +
+        (item.transactionType === "New_Item" ? item.transactionAmount || 0 : 0)
+      );
+    }, 0);
+
+    const totalExpenses = items?.reduce((sum, item) => {
+      return (
+        sum + (item.transactionType === "Pay" ? item.transactionAmount || 0 : 0)
+      );
+    }, 0);
+
+    const totalCash =
+      initialBalance + totalReceived - totalExpenses - New_ItemReceived;
+    return totalCash.toFixed(2);
+  };
   const handleUserSelect = (userId) => {
     const numericUserId = Number(userId); // Convert string to number
     console.log("Selected user ID:", numericUserId);
@@ -91,18 +115,11 @@ function Dashboard() {
     }
   };
   const cashOnHandChartData = {
-    labels: monthlySales.map((item) => item.month),
+    labels: ["Total Cash on Hand"],
     datasets: [
       {
         label: "Cash on Hand",
-        data: monthlySales.map((item, index, array) => {
-          const previousCashOnHand =
-            index === 0 ? initialBalance : array[index - 1].cashOnHand;
-          const received = item.revenue || 0;
-          const expenses = item.expenses || 0;
-          const newItem = item.newItem || 0;
-          return previousCashOnHand + received - expenses - newItem;
-        }),
+        data: [parseFloat(calculateTotalCash())],
         fill: false,
         borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
@@ -196,6 +213,7 @@ function Dashboard() {
       let newItem = 0;
       let revenue = 0;
       let payable = outstandingDebt;
+
       const monthlyData = {
         Initial: {
           month: "Initial Balance",
@@ -203,6 +221,8 @@ function Dashboard() {
           revenue: 0,
           payable: outstandingDebt,
           expenses: 0,
+          newItem: 0,
+          paidPayables: 0,
         },
       };
 
@@ -219,6 +239,7 @@ function Dashboard() {
             payable: payable,
             expenses: 0,
             newItem: 0,
+            paidPayables: 0,
           };
         }
 
@@ -230,6 +251,11 @@ function Dashboard() {
           expenses += amount;
           cashOnHand -= amount;
           monthlyData[monthYear].expenses += amount;
+
+          // Check if this payment is for a payable
+          if (transaction.payableId) {
+            monthlyData[monthYear].paidPayables += amount;
+          }
         } else if (
           transaction.transactionType === "Pay" &&
           transaction.subType === "New_Item"
@@ -249,46 +275,24 @@ function Dashboard() {
         monthlyData[monthYear].cashOnHand = cashOnHand;
       });
 
-      setTotalCashOnHand(cashOnHand);
+      // Set final totals
+      setTotalCashOnHand(cashOnHand); // This will now match with the chart
       setTotalExpenses(expenses);
       settotalRevenue(revenue);
       setTotalPayable(payable);
+
+      // Prepare monthly sales data
       setMonthlySales(
         Object.values(monthlyData).sort(
           (a, b) => new Date(a.month) - new Date(b.month)
         )
       );
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching financial data:", error);
       setLoading(false);
     }
-  };
-
-  const calculateTotalCash = () => {
-    const totalReceived = items?.reduce((sum, item) => {
-      return (
-        sum +
-        (item.transactionType === "Receive" ? item.transactionAmount || 0 : 0)
-      );
-    }, 0);
-
-    const New_ItemReceived = items?.reduce((sum, item) => {
-      return (
-        sum +
-        (item.transactionType === "New_Item" ? item.transactionAmount || 0 : 0)
-      );
-    }, 0);
-
-    const totalExpenses = items?.reduce((sum, item) => {
-      return (
-        sum + (item.transactionType === "Pay" ? item.transactionAmount || 0 : 0)
-      );
-    }, 0);
-
-    const totalCash =
-      initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-    return totalCash.toFixed(2);
   };
 
   useEffect(() => {

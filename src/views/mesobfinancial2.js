@@ -15,7 +15,9 @@ import {
   ModalBody,
   FormGroup,
   Label,
+  Container,
 } from "reactstrap";
+import "./mesobfinancial2.css";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import { Helmet } from "react-helmet";
@@ -28,6 +30,7 @@ import colors from "variables/colors";
 import CSVReports from "./CSVReports";
 import { useSelector } from "react-redux";
 import { Search } from "lucide-react";
+import { FaTimesCircle } from "react-icons/fa";
 
 // import { useReactToPrint } from "react-to-print";
 const MesobFinancial2 = () => {
@@ -996,520 +999,536 @@ const MesobFinancial2 = () => {
 
       <div className="content" style={{ paddingTop: "0" }}>
         {/* Transactions Table Section - First */}
-        <Row>
-          <Col xs={12}>
-            <Card>
-              <CardHeader>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <CardTitle tag="h4">Transactions</CardTitle>
-                  <div>
-                    {userRole !== 0 && (
-                      <Button
-                        color="primary"
-                        onClick={() => setShowAddTransaction(true)}
-                      >
-                        Add Transaction
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "0 25px",
-                  }}
-                >
-                  <CardTitle tag="h4">Journal Entry</CardTitle>
-
-                  {/* Search Icon, Input Field, and Date Range Inputs */}
-                  <div className="flex items-center gap-4">
-                    {/* Search Icon and Input Field */}
-                    <div className="flex items-center gap-2">
-                      {showSearchInput ? (
-                        <div className="relative w-64">
-                          <Input
-                            type="text"
-                            placeholder="Search Journal Entries"
-                            value={searchTerm}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setSearchTerm(value);
-
-                              // Reset to all items if input is cleared
-                              if (value.trim() === "") {
-                                setSearchTerm("");
-                                setShowSearchInput(false); // Revert to icon
-                              }
-                            }}
-                            onBlur={() => {
-                              // Hide input if empty and loses focus
-                              if (searchTerm.trim() === "") {
-                                setShowSearchInput(false);
-                              }
-                            }}
-                            className="pl-10"
-                          />
-                          <Search
-                            className="absolute left-3 top-2.5 text-gray-500 cursor-pointer"
-                            size={18}
-                          />
-                        </div>
-                      ) : (
-                        <Search
-                          className="text-gray-500 cursor-pointer"
-                          size={18}
-                          onClick={() => setShowSearchInput(true)} // Show input when icon is clicked
-                        />
+        <Container fluid>
+          <Row>
+            <Col xs={12}>
+              <Card>
+                <CardHeader>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <CardTitle tag="h4">Transactions</CardTitle>
+                    <div>
+                      {userRole !== 0 && (
+                        <Button
+                          color="primary"
+                          onClick={() => setShowAddTransaction(true)}
+                        >
+                          Add Transaction
+                        </Button>
                       )}
                     </div>
-
-                    {/* Date Range Inputs */}
-                    <RunButtons
-                      onSelectRange={handleSelectRange}
-                      onClearFilters={handleClearFilters}
-                    />
                   </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
+              </Card>
 
-              <CardBody>
-                {loading ? (
-                  <div style={{ textAlign: "center", padding: "20px" }}>
-                    <Spinner color="primary" />
-                    <p>Loading...</p>
-                  </div>
-                ) : (
-                  <>
-                    {searchedDates && (
-                      <div style={{ marginBottom: "15px" }}>
-                        <strong>Searched dates:</strong> {searchedDates.from} -{" "}
-                        {searchedDates.to}
+              <Card>
+                <CardHeader>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "0 25px",
+                    }}
+                  >
+                    <CardTitle tag="h4">Journal Entry</CardTitle>
+                    <div className="flex items-center gap-4">
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <RunButtons
+                          onSelectRange={handleSelectRange}
+                          onClearFilters={handleClearFilters}
+                        />
+                        <div
+                          className="flex items-center gap-2"
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            paddingLeft: "10px",
+                          }}
+                        >
+                          {showSearchInput ? (
+                            <div
+                              className="relative w-64"
+                              style={{ display: "flex", flexDirection: "row" }}
+                            >
+                              <Input
+                                type="text"
+                                placeholder="Search Journal Entries"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setSearchTerm(value);
+                                  if (value.trim() === "") {
+                                    setSearchTerm("");
+                                    setShowSearchInput(false);
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (searchTerm.trim() === "") {
+                                    setShowSearchInput(false);
+                                  }
+                                }}
+                                className="pl-10"
+                              />
+                              <button
+                                className="absolute right-3 top-2.5 text-gray-500 cursor-pointer"
+                                onClick={() => {
+                                  setSearchTerm("");
+                                  setShowSearchInput(false);
+                                }}
+                              >
+                                <FaTimesCircle size={18} />
+                              </button>
+                            </div>
+                          ) : (
+                            <Search
+                              className="text-gray-500 cursor-pointer"
+                              size={18}
+                              onClick={() => setShowSearchInput(true)}
+                            />
+                          )}
+                        </div>
                       </div>
-                    )}
-                    {/* Render Transaction Table */}
-                    <TransactionTable
-                      items={filterItemsByTimeRange(
-                        items,
-                        selectedTimeRange,
-                        searchTerm
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardBody>
+                  {loading ? (
+                    <div style={{ textAlign: "center", padding: "20px" }}>
+                      <Spinner color="primary" />
+                      <p>Loading...</p>
+                    </div>
+                  ) : (
+                    <>
+                      {searchedDates && (
+                        <div style={{ marginBottom: "15px" }}>
+                          <strong>Searched dates:</strong> {searchedDates.from}{" "}
+                          - {searchedDates.to}
+                        </div>
                       )}
-                      selectedTimeRange={selectedTimeRange}
-                      handleDelete={handleDelete}
-                      handleAddExpense={handleAddExpense}
-                      handleReceiptClick={handleReceiptClick}
-                    />
-                  </>
-                )}
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                      <TransactionTable
+                        items={filterItemsByTimeRange(
+                          items,
+                          selectedTimeRange,
+                          searchTerm
+                        )}
+                        selectedTimeRange={selectedTimeRange}
+                        handleDelete={handleDelete}
+                        handleAddExpense={handleAddExpense}
+                        handleReceiptClick={handleReceiptClick}
+                      />
+                    </>
+                  )}
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
 
-        {/* Summary Section - Second */}
-        <Row>
-          <Col xs={12}>
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h4">Summary</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <div style={{ marginBottom: "20px" }}>
-                  <div
-                    style={{
-                      marginBottom: "10px",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
-                      Total Cash on hand ={" "}
-                    </span>
-                    <span
+          {/* Summary Section - Second */}
+          <Row>
+            <Col xs={12} md={6} lg={4}>
+              <Card>
+                <CardHeader>
+                  <CardTitle tag="h4">Summary</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <div style={{ marginBottom: "20px" }}>
+                    <div
                       style={{
-                        backgroundColor: colors.cash,
-                        padding: "5px 10px",
+                        marginBottom: "10px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
-                      ${calculateTotalCash()}
-                    </span>
-                  </div>
+                      <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                        Total Cash on hand ={" "}
+                      </span>
+                      <span
+                        style={{
+                          backgroundColor: colors.cash,
+                          padding: "5px 10px",
+                        }}
+                      >
+                        ${calculateTotalCash()}
+                      </span>
+                    </div>
 
-                  <div
-                    style={{
-                      marginBottom: "10px",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
-                      Total Payable (Unpaid) ={" "}
-                    </span>
-                    <span
+                    <div
                       style={{
-                        backgroundColor: colors.payable,
-                        padding: "5px 10px",
+                        marginBottom: "10px",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
-                      ${calculateTotalPayable()}
-                    </span>
-                  </div>
+                      <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                        Total Payable (Unpaid) ={" "}
+                      </span>
+                      <span
+                        style={{
+                          backgroundColor: colors.payable,
+                          padding: "5px 10px",
+                        }}
+                      >
+                        ${calculateTotalPayable()}
+                      </span>
+                    </div>
 
-                  {/* Payable Section */}
-                  <div>
-                    <span style={{ fontWeight: "500" }}>Payable:</span>
-                    {Object.entries(expenses)
-                      .filter(([purpose, amount]) => {
-                        return items.some(
-                          (item) =>
-                            item.transactionPurpose === purpose &&
-                            item.transactionType === "Payable" &&
-                            item.status !== "Paid"
-                        );
-                      })
-                      .map(([purpose, amount]) => (
-                        <div
-                          key={purpose}
-                          style={{
-                            marginLeft: "20px",
-                            marginBottom: "5px",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span style={{ marginRight: "10px" }}>
-                            {purpose} ={" "}
-                          </span>
-                          <span
-                            style={{
-                              backgroundColor: colors.payable,
-                              padding: "2px 5px",
-                            }}
-                          >
-                            ${amount.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      marginBottom: "10px",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
-                      Revenue ={" "}
-                    </span>
-                    <span
-                      style={{
-                        backgroundColor: colors.revenue,
-                        padding: "5px 10px",
-                      }}
-                    >
-                      ${calculateTotalRevenue()}
-                    </span>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <span style={{ marginRight: "10px", fontWeight: "bold" }}>
-                      Total Expense ={" "}
-                    </span>
-                    <span
-                      style={{
-                        backgroundColor: colors.expense,
-                        padding: "5px 10px",
-                      }}
-                    >
-                      ${calculateTotalExpenses(true)}
-                    </span>
-                  </div>
-
-                  {/* Expenses Section */}
-                  <div style={{ marginTop: "20px" }}>
-                    <span style={{ fontWeight: "500" }}>Expenses:</span>
-                    {Object.entries(expenses)
-                      .filter(([purpose, amount]) => {
-                        return items.some(
-                          (item) =>
-                            (item.transactionPurpose === purpose &&
-                              item.transactionType === "Pay") ||
-                            (item.transactionType === "Payable" &&
-                              (item.status === "Unpaid" ||
-                                item.status === "Payable"))
-                        );
-                      })
-                      .map(([purpose, amount]) => (
-                        <div
-                          key={purpose}
-                          style={{
-                            marginLeft: "20px",
-                            marginBottom: "5px",
-                            display: "flex",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span style={{ marginRight: "10px" }}>
-                            {purpose} ={" "}
-                          </span>
-                          <span
-                            style={{
-                              backgroundColor: colors.expense,
-                              padding: "2px 5px",
-                            }}
-                          >
-                            ${amount.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Financial Details Table - Third */}
-        <Row>
-          <Col xs={12}>
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h4">Income Statement</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <div className="statement-table">
-                  <table>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <strong>Revenue</strong>
-                        </td>
-                        <td></td>
-                      </tr>
-                      {Object.entries(revenues).map(([purpose, amount]) => (
-                        <tr key={`revenue-${purpose}`}>
-                          <td>{purpose}</td>
-                          <td style={{ backgroundColor: "#fff" }}>
-                            ${amount.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                      <tr>
-                        <td>
-                          <strong>Total Revenue</strong>
-                        </td>
-                        <td
-                          style={{
-                            backgroundColor: colors.revenue,
-                            fontWeight: "bold",
-                          }}
-                        >
-                          ${calculateTotalRevenue()}
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td>
-                          <strong>Expenses</strong>
-                        </td>
-                        <td></td>
-                      </tr>
+                    {/* Payable Section */}
+                    <div>
+                      <span style={{ fontWeight: "500" }}>Payable:</span>
                       {Object.entries(expenses)
                         .filter(([purpose, amount]) => {
-                          const item = items.find(
+                          return items.some(
                             (item) =>
                               item.transactionPurpose === purpose &&
-                              item.transactionType === "Pay"
+                              item.transactionType === "Payable" &&
+                              item.status !== "Paid"
                           );
-                          return item;
                         })
                         .map(([purpose, amount]) => (
-                          <tr key={`expense-${purpose}`}>
+                          <div
+                            key={purpose}
+                            style={{
+                              marginLeft: "20px",
+                              marginBottom: "5px",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span style={{ marginRight: "10px" }}>
+                              {purpose} ={" "}
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: colors.payable,
+                                padding: "2px 5px",
+                              }}
+                            >
+                              ${amount.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        marginBottom: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                        Revenue ={" "}
+                      </span>
+                      <span
+                        style={{
+                          backgroundColor: colors.revenue,
+                          padding: "5px 10px",
+                        }}
+                      >
+                        ${calculateTotalRevenue()}
+                      </span>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                        Total Expense ={" "}
+                      </span>
+                      <span
+                        style={{
+                          backgroundColor: colors.expense,
+                          padding: "5px 10px",
+                        }}
+                      >
+                        ${calculateTotalExpenses(true)}
+                      </span>
+                    </div>
+
+                    {/* Expenses Section */}
+                    <div style={{ marginTop: "20px" }}>
+                      <span style={{ fontWeight: "500" }}>Expenses:</span>
+                      {Object.entries(expenses)
+                        .filter(([purpose, amount]) => {
+                          return items.some(
+                            (item) =>
+                              (item.transactionPurpose === purpose &&
+                                item.transactionType === "Pay") ||
+                              (item.transactionType === "Payable" &&
+                                (item.status === "Unpaid" ||
+                                  item.status === "Payable"))
+                          );
+                        })
+                        .map(([purpose, amount]) => (
+                          <div
+                            key={purpose}
+                            style={{
+                              marginLeft: "20px",
+                              marginBottom: "5px",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            <span style={{ marginRight: "10px" }}>
+                              {purpose} ={" "}
+                            </span>
+                            <span
+                              style={{
+                                backgroundColor: colors.expense,
+                                padding: "2px 5px",
+                              }}
+                            >
+                              ${amount.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Financial Details Table - Third */}
+          <Row>
+            <Col xs={12}>
+              <Card>
+                <CardHeader>
+                  <CardTitle tag="h4">Income Statement</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <div className="statement-table">
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <strong>Revenue</strong>
+                          </td>
+                          <td></td>
+                        </tr>
+                        {Object.entries(revenues).map(([purpose, amount]) => (
+                          <tr key={`revenue-${purpose}`}>
                             <td>{purpose}</td>
                             <td style={{ backgroundColor: "#fff" }}>
                               ${amount.toFixed(2)}
                             </td>
                           </tr>
                         ))}
-                      <tr>
-                        <td>
-                          <strong>Total Expenses</strong>
-                        </td>
-                        <td style={{ backgroundColor: colors.expense }}>
-                          ${calculateTotalExpenses()}
-                        </td>
-                      </tr>
+                        <tr>
+                          <td>
+                            <strong>Total Revenue</strong>
+                          </td>
+                          <td
+                            style={{
+                              backgroundColor: colors.revenue,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            ${calculateTotalRevenue()}
+                          </td>
+                        </tr>
 
-                      <tr>
-                        <td>
-                          <strong>
-                            {parseFloat(calculateTotalRevenue()) -
-                              parseFloat(calculateTotalExpenses()) <
-                            0
-                              ? "Net Loss"
-                              : "Net Income"}
-                          </strong>
-                        </td>
-                        <td
-                          style={{
-                            backgroundColor: "#90EE90",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          $
-                          {(
-                            parseFloat(calculateTotalRevenue()) -
-                            parseFloat(calculateTotalExpenses())
-                          ).toFixed(2)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                        <tr>
+                          <td>
+                            <strong>Expenses</strong>
+                          </td>
+                          <td></td>
+                        </tr>
+                        {Object.entries(expenses)
+                          .filter(([purpose, amount]) => {
+                            const item = items.find(
+                              (item) =>
+                                item.transactionPurpose === purpose &&
+                                item.transactionType === "Pay"
+                            );
+                            return item;
+                          })
+                          .map(([purpose, amount]) => (
+                            <tr key={`expense-${purpose}`}>
+                              <td>{purpose}</td>
+                              <td style={{ backgroundColor: "#fff" }}>
+                                ${amount.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        <tr>
+                          <td>
+                            <strong>Total Expenses</strong>
+                          </td>
+                          <td style={{ backgroundColor: colors.expense }}>
+                            ${calculateTotalExpenses()}
+                          </td>
+                        </tr>
 
-        {/* Balance Sheet Section - Fourth */}
-        <Row>
-          <Col xs={12}>
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h4">Balance Sheet</CardTitle>
-              </CardHeader>
-              <CardBody>
-                <div className="statement-table">
-                  <table style={{ width: "100%" }}>
-                    <tbody>
-                      <tr>
-                        <td style={{ width: "40%" }}>
-                          <strong>Asset</strong>
-                        </td>
-                        <td style={{ width: "30%", textAlign: "right" }}>
-                          <strong>Amount</strong>
-                        </td>
-                        <td style={{ width: "30%", textAlign: "right" }}>
-                          <strong>Amount</strong>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>Cash</td>
-                        <td
-                          style={{
-                            backgroundColor: colors.cash,
-                            textAlign: "right",
-                          }}
-                        >
-                          ${calculateTotalCash()}
-                        </td>
-                        <td></td>
-                      </tr>
+                        <tr>
+                          <td>
+                            <strong>
+                              {parseFloat(calculateTotalRevenue()) -
+                                parseFloat(calculateTotalExpenses()) <
+                              0
+                                ? "Net Loss"
+                                : "Net Income"}
+                            </strong>
+                          </td>
+                          <td
+                            style={{
+                              backgroundColor: "#90EE90",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            $
+                            {(
+                              parseFloat(calculateTotalRevenue()) -
+                              parseFloat(calculateTotalExpenses())
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
 
-                      <tr>
-                        <td>Inventory</td>
-                        <td
-                          style={{
-                            backgroundColor: colors.cash,
-                            textAlign: "right",
-                          }}
-                        >
-                          ${calculateTotalInventory()}
-                        </td>
-                        <td></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Liability</strong>
-                        </td>
-                        <td></td>
-                        <td></td>
-                      </tr>
-                      <tr>
-                        <td>Payable </td>
-                        <td></td>
-                        <td
-                          style={{
-                            backgroundColor: colors.expense,
-                            textAlign: "right",
-                          }}
-                        >
-                          ${calculateTotalPayable()}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Equity</strong>
-                        </td>
-                        <td></td>
-                        <td></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Begining Equity</strong>
-                        </td>
-                        <td></td>
-                        <td>{initialBalance + initialvalueableItems}</td>
-                      </tr>
-                      <tr>
-                        <td>Retained earnings / Net income</td>
-                        <td></td>
-                        <td
-                          style={{
-                            backgroundColor: colors.revenue,
-                            textAlign: "right",
-                          }}
-                        >
-                          $
-                          {(
-                            parseFloat(calculateTotalRevenue()) -
-                            parseFloat(calculateTotalExpenses())
-                          ).toFixed(2)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Total</strong>
-                        </td>
-                        <td style={{ textAlign: "right" }}>
-                          $
-                          {(
-                            parseFloat(calculateTotalCash()) +
-                            parseFloat(calculateTotalInventory())
-                          ).toFixed(2)}
-                        </td>
-                        <td style={{ textAlign: "right" }}>
-                          $
-                          {(
-                            initialBalance +
-                            initialvalueableItems +
-                            parseFloat(calculateTotalRevenue()) -
-                            parseFloat(calculateTotalExpenses())
-                          ).toFixed(2)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+          {/* Balance Sheet Section - Fourth */}
+          <Row>
+            <Col xs={12}>
+              <Card>
+                <CardHeader>
+                  <CardTitle tag="h4">Balance Sheet</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <div className="statement-table">
+                    <table style={{ width: "100%" }}>
+                      <tbody>
+                        <tr>
+                          <td style={{ width: "40%" }}>
+                            <strong>Asset</strong>
+                          </td>
+                          <td style={{ width: "30%", textAlign: "right" }}>
+                            <strong>Amount</strong>
+                          </td>
+                          <td style={{ width: "30%", textAlign: "right" }}>
+                            <strong>Amount</strong>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Cash</td>
+                          <td
+                            style={{
+                              backgroundColor: colors.cash,
+                              textAlign: "right",
+                            }}
+                          >
+                            ${calculateTotalCash()}
+                          </td>
+                          <td></td>
+                        </tr>
 
+                        <tr>
+                          <td>Inventory</td>
+                          <td
+                            style={{
+                              backgroundColor: colors.cash,
+                              textAlign: "right",
+                            }}
+                          >
+                            ${calculateTotalInventory()}
+                          </td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Liability</strong>
+                          </td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td>Payable </td>
+                          <td></td>
+                          <td
+                            style={{
+                              backgroundColor: colors.expense,
+                              textAlign: "right",
+                            }}
+                          >
+                            ${calculateTotalPayable()}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Equity</strong>
+                          </td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Begining Equity</strong>
+                          </td>
+                          <td></td>
+                          <td>{initialBalance + initialvalueableItems}</td>
+                        </tr>
+                        <tr>
+                          <td>Retained earnings / Net income</td>
+                          <td></td>
+                          <td
+                            style={{
+                              backgroundColor: colors.revenue,
+                              textAlign: "right",
+                            }}
+                          >
+                            $
+                            {(
+                              parseFloat(calculateTotalRevenue()) -
+                              parseFloat(calculateTotalExpenses())
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <strong>Total</strong>
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            $
+                            {(
+                              parseFloat(calculateTotalCash()) +
+                              parseFloat(calculateTotalInventory())
+                            ).toFixed(2)}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            $
+                            {(
+                              initialBalance +
+                              initialvalueableItems +
+                              parseFloat(calculateTotalRevenue()) -
+                              parseFloat(calculateTotalExpenses())
+                            ).toFixed(2)}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
         <Modal
           isOpen={showDeleteConfirmation}
           toggle={() => setShowDeleteConfirmation(false)}

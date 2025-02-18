@@ -4687,3 +4687,44 @@ Created using IcoMoon - icomoon.io
 
 #tables .table-responsive {
   margin-bottom: 30px; }
+
+
+    @media screen and (max-width: 768px) {
+      .card-body {
+        padding: 15px 10px;
+      }
+  
+      .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+  
+      .form-group {
+        margin-bottom: 15px;
+      }
+  
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+  
+      .card-title {
+        font-size: 1.2rem;
+      }
+    }
+  
+    @media screen and (max-width: 576px) {
+      .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+  
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+  
+      .card-header .btn {
+        margin-top: 10px;
+      }
+    }
