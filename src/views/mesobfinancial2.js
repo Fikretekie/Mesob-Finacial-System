@@ -16,6 +16,7 @@ import {
   FormGroup,
   Label,
   Container,
+  ModalFooter,
 } from "reactstrap";
 import "./mesobfinancial2.css";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
@@ -75,6 +76,87 @@ const MesobFinancial2 = () => {
   const [companyName, setcompanyName] = useState();
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchInput, setShowSearchInput] = useState(false);
+  const [showInstallmentModal, setShowInstallmentModal] = useState(false);
+  const [installmentAmount, setInstallmentAmount] = useState("");
+  const [showInstallmentInput, setShowInstallmentInput] = useState(false);
+
+  // installment
+  const handlePayableSelection = (transaction) => {
+    setSelectedUnpaidTransaction(transaction);
+    setShowInstallmentModal(true);
+  };
+
+  const handleFullPayment = () => {
+    handleUpdateTransaction(selectedUnpaidTransaction);
+    setShowInstallmentModal(false);
+  };
+
+  const handleInstallmentPayment = async () => {
+    if (!selectedUnpaidTransaction || !installmentAmount) {
+      notify(
+        "tr",
+        "Please select a transaction and enter an installment amount",
+        "warning"
+      );
+      return;
+    }
+
+    const remainingAmount =
+      selectedUnpaidTransaction.remainingAmount ||
+      selectedUnpaidTransaction.transactionAmount;
+
+    if (parseFloat(installmentAmount) > remainingAmount) {
+      notify(
+        "tr",
+        `Installment amount cannot exceed the remaining amount of $${remainingAmount}`,
+        "warning"
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${selectedUnpaidTransaction.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: localStorage.getItem("userId"),
+            installmentAmount: parseFloat(installmentAmount),
+            status:
+              parseFloat(installmentAmount) === remainingAmount
+                ? "Paid"
+                : "Partially Paid",
+            transactionType: "Payable",
+            transactionPurpose: selectedUnpaidTransaction.transactionPurpose,
+            transactionAmount: selectedUnpaidTransaction.transactionAmount,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error response from backend:", errorData);
+        throw new Error(errorData.message || "Failed to update transaction");
+      }
+
+      const result = await response.json();
+      notify("tr", "Installment payment recorded successfully", "success");
+      fetchTransactions();
+      setShowInstallmentModal(false);
+      setInstallmentAmount("");
+      setSelectedUnpaidTransaction(null);
+      setShowInstallmentInput(false);
+    } catch (error) {
+      console.error("Error processing installment payment:", error);
+      notify(
+        "tr",
+        `Error processing installment payment: ${error.message}`,
+        "danger"
+      );
+    }
+  };
+
   // CSV
   const handleGenerateCSV = () => {
     // Implement CSV generation logic here
@@ -595,9 +677,23 @@ const MesobFinancial2 = () => {
       )
       .then((response) => {
         if (response.data) {
-          console.log("transactions daa: ", response.data);
-          calculateTotals(response.data);
-          setItems(response.data);
+          console.log("transactions data: ", response.data);
+          const updatedTransactions = response.data.map((transaction) => {
+            if (transaction.installmentPlan) {
+              return {
+                ...transaction,
+                status:
+                  transaction.installmentPlan.remainingAmount > 0
+                    ? "Partially Paid"
+                    : "Paid",
+                paidAmount: transaction.installmentPlan.paidAmount,
+                remainingAmount: transaction.installmentPlan.remainingAmount,
+              };
+            }
+            return transaction;
+          });
+          calculateTotals(updatedTransactions);
+          setItems(updatedTransactions);
         }
       })
       .catch((error) => {
@@ -614,23 +710,32 @@ const MesobFinancial2 = () => {
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
       )
       .then((response) => {
-        const unpaidOnly = response.data.filter(
-          (t) => t.transactionType === "Payable"
-        );
+        const unpaidOrPartiallyPaid = response.data
+          .filter(
+            (t) =>
+              t.transactionType === "Payable" &&
+              (!t.installmentPlan || t.installmentPlan.remainingAmount > 0)
+          )
+          .map((transaction) => ({
+            ...transaction,
+            remainingAmount: transaction.installmentPlan
+              ? transaction.installmentPlan.remainingAmount
+              : transaction.transactionAmount,
+          }));
 
-        // Add outstanding debt as an unpaid transaction
         const outstandingDebt = initialoutstandingDebt || 0;
         if (outstandingDebt > 0) {
-          unpaidOnly.push({
+          unpaidOrPartiallyPaid.push({
             id: "outstanding-debt",
             transactionType: "Payable",
             transactionPurpose: "Initial Outstanding Debt",
             transactionAmount: outstandingDebt,
+            remainingAmount: outstandingDebt,
             createdAt: new Date().toISOString(),
           });
         }
 
-        setUnpaidTransactions(unpaidOnly);
+        setUnpaidTransactions(unpaidOrPartiallyPaid);
       })
       .catch((error) => {
         console.error("Error fetching unpaid transactions:", error);
@@ -1634,6 +1739,7 @@ const MesobFinancial2 = () => {
                   >
                     Recorded Earlier as Payable
                   </Button>
+
                   <Button
                     color="primary"
                     onClick={() => {
@@ -1676,7 +1782,7 @@ const MesobFinancial2 = () => {
                             ? e.target.value
                             : parseInt(e.target.value))
                       );
-                      setSelectedUnpaidTransaction(selected);
+                      handlePayableSelection(selected);
                     }}
                   >
                     <option value="">Select transaction</option>
@@ -1689,6 +1795,7 @@ const MesobFinancial2 = () => {
                       ))}
                   </Input>
                 </FormGroup>
+
                 {/* Receipts form */}
                 <FormGroup>
                   <Label>Receipt:</Label>
@@ -1966,6 +2073,54 @@ const MesobFinancial2 = () => {
               </div>
             )}
           </ModalBody>
+        </Modal>
+        <Modal
+          isOpen={showInstallmentModal}
+          toggle={() => setShowInstallmentModal(false)}
+        >
+          <ModalHeader toggle={() => setShowInstallmentModal(false)}>
+            Installment Payment for{" "}
+            {selectedUnpaidTransaction?.transactionPurpose}
+          </ModalHeader>
+          <ModalBody>
+            <FormGroup>
+              <Label>Select Payment Type:</Label>
+              <div>
+                <Button color="primary" onClick={handleFullPayment}>
+                  Pay Full Amount ($
+                  {selectedUnpaidTransaction?.transactionAmount})
+                </Button>
+                <Button
+                  color="primary"
+                  onClick={() => setShowInstallmentInput(true)}
+                >
+                  Pay Installment
+                </Button>
+              </div>
+            </FormGroup>
+            {showInstallmentInput && (
+              <FormGroup>
+                <Label>Installment Amount:</Label>
+                <Input
+                  type="number"
+                  value={installmentAmount}
+                  onChange={(e) => setInstallmentAmount(e.target.value)}
+                  max={selectedUnpaidTransaction?.transactionAmount}
+                />
+              </FormGroup>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="success" onClick={handleInstallmentPayment}>
+              Pay
+            </Button>
+            <Button
+              color="secondary"
+              onClick={() => setShowInstallmentModal(false)}
+            >
+              Cancel
+            </Button>
+          </ModalFooter>
         </Modal>
       </div>
     </>
