@@ -86,7 +86,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                 {transaction.transactionType === "Payable" && (
                   <>
                     <div style={{ backgroundColor: colors.expense }}>
-                      ${transaction.transactionAmount}
+                      ${transaction.originalAmount}
                     </div>
                     <div style={{ color: "white" }}>-</div>
                   </>
@@ -115,7 +115,7 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                   <>
                     <div style={{ color: "white" }}>.</div>
                     <div style={{ backgroundColor: colors.payable }}>
-                      ${transaction.transactionAmount}
+                      ${transaction.originalAmount}
                     </div>
                   </>
                 )}

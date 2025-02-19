@@ -1,13 +1,13 @@
 import React from "react";
 import "../assets/css/BalanceSheet.css";
 
-const BalanceSheet = ({ items = [] }) => {
+const BalanceSheet = ({
+  items = [],
+  initialBalance = 0,
+  initialvalueableItems = 0,
+}) => {
   const calculateTotalCash = () => {
-    let cash = initialBalance || 0;
-
-    if (!items || !Array.isArray(items)) {
-      return "0.00";
-    }
+    let cash = initialBalance;
 
     items.forEach((transaction) => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
@@ -15,7 +15,7 @@ const BalanceSheet = ({ items = [] }) => {
         cash += amount;
       } else if (
         transaction.transactionType === "Pay" ||
-        transaction.transactionType === "Asset"
+        transaction.transactionType === "New_Item"
       ) {
         cash -= amount;
       }
@@ -24,81 +24,39 @@ const BalanceSheet = ({ items = [] }) => {
     return cash.toFixed(2);
   };
 
-  const calculateTotalRevenue = () => {
-    if (!items || !Array.isArray(items)) return "0.00";
+  const calculateTotalInventory = () => {
+    const newItemsTotal = items.reduce((sum, item) => {
+      if (item.transactionType === "New_Item" && item.subType === "New_Item") {
+        return sum + parseFloat(item.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
 
+    return (newItemsTotal + initialvalueableItems).toFixed(2);
+  };
+
+  const calculateTotalRevenue = () => {
     return items
       .filter((t) => t.transactionType === "Receive")
-      .reduce((sum, t) => sum + parseFloat(t.transactionAmount), 0)
+      .reduce((sum, t) => sum + parseFloat(t.transactionAmount || 0), 0)
       .toFixed(2);
   };
 
-  const calculateAccountsPayable = (transactions) => {
-    if (!transactions || !Array.isArray(transactions)) return "0.00";
-
-    let payableByType = {
-      Utilities: 0,
-      PPMOTS: 0,
-      Taxes: 0,
-      Wages: 0,
-    };
-
-    transactions.forEach((transaction) => {
-      const amount = parseFloat(transaction.transactionAmount) || 0;
-      if (transaction.transactionType === "NotYetPaid") {
-        const purpose = transaction.transactionPurpose;
-        if (payableByType.hasOwnProperty(purpose)) {
-          payableByType[purpose] += amount;
-        }
-      }
-    });
-
-    const total = Object.values(payableByType).reduce(
-      (sum, val) => sum + val,
-      0
-    );
-    return {
-      total: total.toFixed(2),
-      byType: payableByType,
-    };
+  const calculateTotalExpenses = () => {
+    return items
+      .filter(
+        (t) => t.transactionType === "Pay" || t.transactionType === "Payable"
+      )
+      .reduce((sum, t) => sum + parseFloat(t.transactionAmount || 0), 0)
+      .toFixed(2);
   };
 
-  const calculateTotalExpenses = (transactions) => {
-    if (!transactions || !Array.isArray(transactions)) return "0.00";
-
-    let paidExpenses = 0;
-    let unpaidExpenses = 0;
-
-    transactions.forEach((transaction) => {
-      const amount = parseFloat(transaction.transactionAmount) || 0;
-      if (transaction.transactionType === "Pay") {
-        paidExpenses += amount;
-      } else if (transaction.transactionType === "NotYetPaid") {
-        unpaidExpenses += amount;
-      }
-    });
-
-    return (paidExpenses + unpaidExpenses).toFixed(2);
+  const calculateTotalPayable = () => {
+    return items
+      .filter((t) => t.transactionType === "Payable" && t.status !== "Paid")
+      .reduce((sum, t) => sum + parseFloat(t.transactionAmount || 0), 0)
+      .toFixed(2);
   };
-
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    return (
-      <div className="balance-sheet-container">
-        <h1>Balance Sheet</h1>
-        <table className="balance-sheet-table">
-          <tbody>
-            <tr>
-              <td colSpan="3">No data available for Balance Sheet</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  const totalCash = calculateTotalCash(items);
-  const { total: accountsPayable } = calculateAccountsPayable(items);
-  const totalExpenses = calculateTotalExpenses(items);
 
   return (
     <div className="balance-sheet-container">
@@ -119,7 +77,14 @@ const BalanceSheet = ({ items = [] }) => {
           <tr>
             <td>Cash</td>
             <td style={{ backgroundColor: "#fffd9d", textAlign: "right" }}>
-              ${calculateTotalRevenue()}
+              ${calculateTotalCash()}
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Inventory</td>
+            <td style={{ backgroundColor: "#fffd9d", textAlign: "right" }}>
+              ${calculateTotalInventory()}
             </td>
             <td></td>
           </tr>
@@ -131,10 +96,10 @@ const BalanceSheet = ({ items = [] }) => {
             <td></td>
           </tr>
           <tr>
-            <td>Payable to seller</td>
+            <td>Payable </td>
             <td></td>
             <td style={{ backgroundColor: "#ff998d", textAlign: "right" }}>
-              ${calculateTotalExpenses()}
+              ${calculateTotalPayable()}
             </td>
           </tr>
           <tr>
@@ -143,6 +108,13 @@ const BalanceSheet = ({ items = [] }) => {
             </td>
             <td></td>
             <td></td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Beginning Equity</strong>
+            </td>
+            <td></td>
+            <td>${initialBalance + initialvalueableItems}</td>
           </tr>
           <tr>
             <td>Retained earnings / Net income</td>
@@ -159,13 +131,20 @@ const BalanceSheet = ({ items = [] }) => {
             <td>
               <strong>Total</strong>
             </td>
-            <td style={{ textAlign: "right" }}>${calculateTotalRevenue()}</td>
             <td style={{ textAlign: "right" }}>
               $
               {(
-                parseFloat(calculateTotalExpenses()) +
-                (parseFloat(calculateTotalRevenue()) -
-                  parseFloat(calculateTotalExpenses()))
+                parseFloat(calculateTotalCash()) +
+                parseFloat(calculateTotalInventory())
+              ).toFixed(2)}
+            </td>
+            <td style={{ textAlign: "right" }}>
+              $
+              {(
+                initialBalance +
+                initialvalueableItems +
+                parseFloat(calculateTotalRevenue()) -
+                parseFloat(calculateTotalExpenses())
               ).toFixed(2)}
             </td>
           </tr>

@@ -79,7 +79,8 @@ const MesobFinancial2 = () => {
   const [showInstallmentModal, setShowInstallmentModal] = useState(false);
   const [installmentAmount, setInstallmentAmount] = useState("");
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
-
+  const [paymentOption, setPaymentOption] = useState(null);
+  const [remainingAmount, setRemainingAmount] = useState();
   // installment
   const handlePayableSelection = (transaction) => {
     setSelectedUnpaidTransaction(transaction);
@@ -142,7 +143,33 @@ const MesobFinancial2 = () => {
 
       const result = await response.json();
       notify("tr", "Installment payment recorded successfully", "success");
-      fetchTransactions();
+
+      // Create a new transaction for the installment payment
+      const newPaymentResponse = await fetch(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: localStorage.getItem("userId"),
+            transactionType: "Pay",
+            transactionPurpose: `Installment for ${selectedUnpaidTransaction.transactionPurpose}`,
+            transactionAmount: parseFloat(installmentAmount),
+            status: "Paid",
+            payableId: selectedUnpaidTransaction.id,
+          }),
+        }
+      );
+
+      if (!newPaymentResponse.ok) {
+        const errorData = await newPaymentResponse.json();
+        console.error("Error creating new payment transaction:", errorData);
+        throw new Error(
+          errorData.message || "Failed to create new payment transaction"
+        );
+      }
+
+      await fetchTransactions();
       setShowInstallmentModal(false);
       setInstallmentAmount("");
       setSelectedUnpaidTransaction(null);
@@ -296,7 +323,6 @@ const MesobFinancial2 = () => {
 
     try {
       console.log("values", transactionPurpose, manualPurpose);
-
       // Determine transaction type and subtype based on user inputs
       const newTransaction = {
         userId: localStorage.getItem("userId"),
@@ -314,6 +340,7 @@ const MesobFinancial2 = () => {
           manualPurpose ? ` ${manualPurpose}` : ""
         }`,
         transactionAmount: parseFloat(transactionAmount),
+        originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
@@ -357,6 +384,7 @@ const MesobFinancial2 = () => {
     setEditingTransaction(null);
     setReceipt(null);
     setPaymentMode(null);
+    setRemainingAmount("");
     setSelectedUnpaidTransaction(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = ""; // Clear the file input
@@ -395,19 +423,57 @@ const MesobFinancial2 = () => {
   };
 
   const handleUpdateTransaction = async (transaction) => {
+    console.log(
+      ">>>",
+      transaction,
+      transactionAmount,
+      "--------===",
+      remainingAmount
+    );
+
+    const paidAmount =
+      paymentOption === "full"
+        ? parseFloat(transaction.transactionAmount)
+        : parseFloat(remainingAmount);
+
+    console.log("jnbjh", paidAmount);
+
+    if (paidAmount > remainingAmount && paymentOption !== "full") {
+      notify(
+        "tr",
+        `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
+        "warning"
+      );
+      return;
+    }
+
     setIsUpdatingTransaction(true);
     let Url = "";
     if (receipt) {
       Url = await uploadReceipt();
     }
-    console.log("transaction", transaction);
+
     try {
       const updatedTransaction = {
         ...transaction,
-        receiptUrl: transaction.receiptUrl,
-        status: "Paid",
+        receiptUrl: Url || transaction.receiptUrl,
+        status:
+          paymentOption === "full"
+            ? "Paid"
+            : paymentOption === "partial" &&
+              remainingAmount === transaction.transactionAmount
+            ? "Paid"
+            : "Partially Paid",
         updatedAt: new Date().toISOString(),
+        paidAmount: (transaction.paidAmount || 0) + paidAmount,
+        transactionAmount:
+          parseFloat(transaction.transactionAmount) -
+          parseFloat(remainingAmount), // Update the transaction amount to the new remaining amount
+        remainingAmount: paidAmount,
       };
+
+      console.log("updated amount", updatedTransaction);
+
       const response = await fetch(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
         {
@@ -416,37 +482,44 @@ const MesobFinancial2 = () => {
           body: JSON.stringify(updatedTransaction),
         }
       );
+      console.log("whats this", response);
+
       if (response.status === 200) {
         const newPaidTransaction = {
           userId: localStorage.getItem("userId"),
           transactionType: "Pay",
-          transactionPurpose: `Payment for ${transaction.transactionPurpose}`,
-          transactionAmount: parseFloat(transaction.transactionAmount),
+          transactionPurpose: `Partial Payment for ${transaction.transactionPurpose}`,
+          transactionAmount: paidAmount, // Use the paid amount for the new transaction
           receiptUrl: Url || "",
           payableId: transaction.id,
           createdAt: new Date().toISOString(),
         };
+
         const response2 = await axios.post(
           "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
           newPaidTransaction
         );
-        console.log("response2", response2);
+
         if (response2.status === 200) {
           notify("tr", "Payment recorded successfully", "success");
+
           fetchTransactions();
         } else {
-          notify("tr", "Failed to add the pay", "danger");
+          throw new Error("Failed to add the payment record");
         }
       } else {
-        notify("tr", "Failed to record payment", "danger");
+        throw new Error("Failed to update the transaction");
       }
     } catch (error) {
       console.error("Error updating transaction:", error);
-      notify("tr", "Error recording payment", "danger");
+      notify("tr", `Error recording payment: ${error.message}`, "danger");
     } finally {
       setIsUpdatingTransaction(false);
       setSelectedUnpaidTransaction(null);
+      setPaymentOption(null);
       setShowAddTransaction(false);
+      setTransactionAmount("");
+      setRemainingAmount("");
     }
   };
 
@@ -531,13 +604,6 @@ const MesobFinancial2 = () => {
     }
   }, [showAddTransaction, transactionType]);
 
-  // useEffect(() => {
-  //   if (selectedUser?.id) {
-  //     console.log("MesobFinancial2: Fetching data for user", selectedUser);
-  //     fetchFinancialData(selectedUser.id);
-  //   }
-  // }, [selectedUser]);
-
   useEffect(() => {
     if (selectedUser?.id) {
       console.log("fetching for redux user");
@@ -615,7 +681,7 @@ const MesobFinancial2 = () => {
       }
       return sum;
     }, 0);
-    console.log("unpaidexp=>", unpaidexp);
+    // console.log("unpaidexp=>", unpaidexp);
     if (condition !== true) {
       return totalexp.toFixed(2);
     } else {
@@ -1765,6 +1831,37 @@ const MesobFinancial2 = () => {
             {/* Show dropdown for recorded payment mode under Pay Cash */}
             {transactionType === "pay" && paymentMode === "recorded" && (
               <>
+                {/* <FormGroup>
+                  <Label>Select Unpaid Transaction:</Label>
+                  <Input
+                    type="select"
+                    value={
+                      selectedUnpaidTransaction
+                        ? selectedUnpaidTransaction.id
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const selected = unpaidTransactions.find(
+                        (t) =>
+                          t.id ===
+                          (e.target.value === "outstanding-debt"
+                            ? e.target.value
+                            : parseInt(e.target.value))
+                      );
+                      // handlePayableSelection(selected);
+                    }}
+                  >
+                    <option value="">Select transaction</option>
+                    {unpaidTransactions
+                      .filter((t) => t.status !== "Paid")
+                      .map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.transactionPurpose} - ${t.transactionAmount}
+                        </option>
+                      ))}
+                  </Input>
+
+                </FormGroup> */}
                 <FormGroup>
                   <Label>Select Unpaid Transaction:</Label>
                   <Input
@@ -1782,7 +1879,8 @@ const MesobFinancial2 = () => {
                             ? e.target.value
                             : parseInt(e.target.value))
                       );
-                      handlePayableSelection(selected);
+                      setSelectedUnpaidTransaction(selected);
+                      setPaymentOption(null);
                     }}
                   >
                     <option value="">Select transaction</option>
@@ -1790,12 +1888,54 @@ const MesobFinancial2 = () => {
                       .filter((t) => t.status !== "Paid")
                       .map((t) => (
                         <option key={t.id} value={t.id}>
-                          {t.transactionPurpose} - ${t.transactionAmount}
+                          {t.transactionPurpose} - $
+                          {t.remainingAmount.toFixed(2)}
                         </option>
                       ))}
                   </Input>
                 </FormGroup>
 
+                {selectedUnpaidTransaction && (
+                  <FormGroup tag="fieldset">
+                    <legend>Payment Option:</legend>
+                    <FormGroup check>
+                      <Label check>
+                        <Input
+                          type="radio"
+                          name="paymentOption"
+                          value="full"
+                          checked={paymentOption === "full"}
+                          onChange={() => setPaymentOption("full")}
+                        />{" "}
+                        Full Payment
+                      </Label>
+                    </FormGroup>
+                    <FormGroup check>
+                      <Label check>
+                        <Input
+                          type="radio"
+                          name="paymentOption"
+                          value="partial"
+                          checked={paymentOption === "partial"}
+                          onChange={() => setPaymentOption("partial")}
+                        />{" "}
+                        Partial Payment
+                      </Label>
+                    </FormGroup>
+                  </FormGroup>
+                )}
+
+                {selectedUnpaidTransaction && paymentOption === "partial" && (
+                  <FormGroup>
+                    <Label>Partial Payment Amount:</Label>
+                    <Input
+                      type="number"
+                      value={remainingAmount}
+                      onChange={(e) => setRemainingAmount(e.target.value)}
+                      max={selectedUnpaidTransaction.transactionAmount}
+                    />
+                  </FormGroup>
+                )}
                 {/* Receipts form */}
                 <FormGroup>
                   <Label>Receipt:</Label>
