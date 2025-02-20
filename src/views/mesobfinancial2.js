@@ -1177,7 +1177,7 @@ const MesobFinancial2 = () => {
         size="sm"
         content={
           <div>
-            <h3 style={{ color: "white", marginLeft: "10px" }}>
+            <h3 style={{ color: "white", marginLeft: "45px" }}>
               {companyName}
             </h3>
 
@@ -1375,7 +1375,7 @@ const MesobFinancial2 = () => {
 
           {/* Summary Section - Second */}
           <Row>
-            <Col xs={12} md={6} lg={4}>
+            <Col xs={12}>
               <Card>
                 <CardHeader>
                   <CardTitle tag="h4">Summary</CardTitle>
@@ -1424,7 +1424,7 @@ const MesobFinancial2 = () => {
 
                     {/* Payable Section */}
                     <div>
-                      <span style={{ fontWeight: "500" }}>Payable:</span>
+                      <span style={{ fontWeight: "bold" }}>Payable:</span>
                       {Object.entries(expenses)
                         .filter(([purpose, amount]) => {
                           return items.some(
@@ -1496,7 +1496,7 @@ const MesobFinancial2 = () => {
 
                     {/* Expenses Section */}
                     <div style={{ marginTop: "20px" }}>
-                      <span style={{ fontWeight: "500" }}>Expenses:</span>
+                      <span style={{ fontWeight: "bold" }}>Expenses:</span>
                       {Object.entries(expenses)
                         .filter(([purpose, amount]) => {
                           return items.some(
