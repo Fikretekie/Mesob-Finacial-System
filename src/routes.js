@@ -6,6 +6,9 @@ import MesobFinancial2 from "views/mesobfinancial2";
 import Receipts from "views/Receipts";
 import UserPage from "views/UserPage";
 import CSVReports from "views/CSVReports";
+
+
+
 const adminRoutes = [
   {
     path: "/dashboard",
