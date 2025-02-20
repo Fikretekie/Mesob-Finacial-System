@@ -79,11 +79,18 @@ const Receipts = () => {
     }
   };
 
-  const handlePreview = async (receipt) => {
-    console.log("recerpt=>>", receipt);
+  // const handlePreview = async (receipt) => {
+  //   console.log("recerpt=>>", receipt);
 
-    await setSelectedReceipt(receipt);
-    setPreviewModal(true);
+  //    setSelectedReceipt(receipt);
+  //   setPreviewModal(true);
+  // };
+
+  const handlePreview = async (receipt) => {
+    console.log("Receipt URL:", receipt.receiptUrl); // Debugging: Check the URL
+    setSelectedReceipt(receipt); // Update state
+
+    setPreviewModal(true); // Open modal
   };
 
   const handleDownload = async (receipt) => {
@@ -101,9 +108,8 @@ const Receipts = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `receipt-${
-        receipt.transactionPurpose
-      }-${new Date().getTime()}.pdf`;
+      link.download = `receipt-${receipt.transactionPurpose
+        }-${new Date().getTime()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
