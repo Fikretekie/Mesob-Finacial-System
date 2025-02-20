@@ -80,7 +80,7 @@ const MesobFinancial2 = () => {
   const [installmentAmount, setInstallmentAmount] = useState("");
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
   const [paymentOption, setPaymentOption] = useState(null);
-  const [remainingAmount, setRemainingAmount] = useState();
+  const [remainingAmount, setRemainingAmount] = useState(0);
   // installment
   const handlePayableSelection = (transaction) => {
     setSelectedUnpaidTransaction(transaction);
@@ -384,7 +384,7 @@ const MesobFinancial2 = () => {
     setEditingTransaction(null);
     setReceipt(null);
     setPaymentMode(null);
-    setRemainingAmount("");
+    setRemainingAmount(0);
     setSelectedUnpaidTransaction(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = ""; // Clear the file input
@@ -423,103 +423,133 @@ const MesobFinancial2 = () => {
   };
 
   const handleUpdateTransaction = async (transaction) => {
-    console.log(
-      ">>>",
-      transaction,
-      transactionAmount,
-      "--------===",
-      remainingAmount
-    );
-
-    const paidAmount =
-      paymentOption === "full"
-        ? parseFloat(transaction.transactionAmount)
-        : parseFloat(remainingAmount);
-
-    console.log("jnbjh", paidAmount);
-
-    if (paidAmount > remainingAmount && paymentOption !== "full") {
-      notify(
-        "tr",
-        `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
-        "warning"
-      );
-      return;
-    }
-
-    setIsUpdatingTransaction(true);
+    console.log("?????????", transaction.id);
     let Url = "";
     if (receipt) {
       Url = await uploadReceipt();
     }
+    const paidAmount =
+      paymentOption === "full"
+        ? parseFloat(transaction.transactionAmount)
+        : parseFloat(remainingAmount);
+    if (transaction.id !== "outstanding-debt") {
+      console.log("jnbjh", paidAmount);
 
-    try {
-      const updatedTransaction = {
-        ...transaction,
-        receiptUrl: Url || transaction.receiptUrl,
-        status:
-          paymentOption === "full"
-            ? "Paid"
-            : paymentOption === "partial" &&
-              remainingAmount === transaction.transactionAmount
-            ? "Paid"
-            : "Partially Paid",
-        updatedAt: new Date().toISOString(),
-        paidAmount: (transaction.paidAmount || 0) + paidAmount,
-        transactionAmount:
-          parseFloat(transaction.transactionAmount) -
-          parseFloat(remainingAmount), // Update the transaction amount to the new remaining amount
-        remainingAmount: paidAmount,
-      };
+      if (paidAmount > remainingAmount && paymentOption !== "full") {
+        notify(
+          "tr",
+          `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
+          "warning"
+        );
+        return;
+      }
 
-      console.log("updated amount", updatedTransaction);
+      setIsUpdatingTransaction(true);
 
-      const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedTransaction),
-        }
-      );
-      console.log("whats this", response);
-
-      if (response.status === 200) {
-        const newPaidTransaction = {
-          userId: localStorage.getItem("userId"),
-          transactionType: "Pay",
-          transactionPurpose: `Partial Payment for ${transaction.transactionPurpose}`,
-          transactionAmount: paidAmount, // Use the paid amount for the new transaction
-          receiptUrl: Url || "",
-          payableId: transaction.id,
-          createdAt: new Date().toISOString(),
+      try {
+        const updatedTransaction = {
+          ...transaction,
+          receiptUrl: Url || transaction.receiptUrl,
+          status:
+            paymentOption === "full"
+              ? "Paid"
+              : paymentOption === "partial" &&
+                remainingAmount === transaction.transactionAmount
+              ? "Paid"
+              : "Partially Paid",
+          updatedAt: new Date().toISOString(),
+          paidAmount: (transaction.paidAmount || 0) + paidAmount,
+          transactionAmount:
+            parseFloat(transaction.transactionAmount) -
+            parseFloat(remainingAmount), // Update the transaction amount to the new remaining amount
+          remainingAmount: paidAmount,
         };
 
-        const response2 = await axios.post(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-          newPaidTransaction
+        console.log("updated amount", updatedTransaction);
+
+        const response = await fetch(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedTransaction),
+          }
         );
 
-        if (response2.status === 200) {
-          notify("tr", "Payment recorded successfully", "success");
+        if (response.status === 200) {
+          const newPaidTransaction = {
+            userId: localStorage.getItem("userId"),
+            transactionType: "Pay",
+            transactionPurpose: `Partial Payment for ${transaction.transactionPurpose}`,
+            transactionAmount: paidAmount, // Use the paid amount for the new transaction
+            receiptUrl: Url || "",
+            payableId: transaction.id,
+            createdAt: new Date().toISOString(),
+          };
 
-          fetchTransactions();
+          const response2 = await axios.post(
+            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+            newPaidTransaction
+          );
+
+          if (response2.status === 200) {
+            notify("tr", "Payment recorded successfully", "success");
+
+            fetchTransactions();
+          } else {
+            throw new Error("Failed to add the payment record");
+          }
         } else {
-          throw new Error("Failed to add the payment record");
+          throw new Error("Failed to update the transaction");
         }
-      } else {
-        throw new Error("Failed to update the transaction");
+      } catch (error) {
+        console.error("Error updating transaction:", error);
+        notify("tr", `Error recording payment: ${error.message}`, "danger");
+      } finally {
+        setIsUpdatingTransaction(false);
+        setSelectedUnpaidTransaction(null);
+        setPaymentOption(null);
+        setShowAddTransaction(false);
+        setTransactionAmount("");
+        setRemainingAmount(0);
       }
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-      notify("tr", `Error recording payment: ${error.message}`, "danger");
-    } finally {
-      setIsUpdatingTransaction(false);
-      setSelectedUnpaidTransaction(null);
-      setPaymentOption(null);
-      setShowAddTransaction(false);
-      setTransactionAmount("");
-      setRemainingAmount("");
+    } else {
+      const id = localStorage.getItem("userId");
+      console.log(">>>>>>>>>>", transaction);
+
+      console.log("Sending update request for ID:", id);
+      const response = await axios.put(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
+        {
+          outstandingDebt:
+            paymentOption === "full"
+              ? parseFloat(transaction.transactionAmount) -
+                parseFloat(transaction.transactionAmount)
+              : parseFloat(transaction.transactionAmount) -
+                parseFloat(remainingAmount),
+        }
+      );
+      console.log("res=>>>", response.status);
+      const newPaidTransaction = {
+        userId: localStorage.getItem("userId"),
+        transactionType: "Pay",
+        transactionPurpose: `Partial Payment for ${transaction.transactionPurpose}`,
+        transactionAmount: paidAmount, // Use the paid amount for the new transaction
+        receiptUrl: Url || "",
+        payableId: transaction.id,
+        createdAt: new Date().toISOString(),
+      };
+
+      const response2 = await axios.post(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        newPaidTransaction
+      );
+
+      if (response2.status === 200) {
+        notify("tr", "Payment recorded successfully", "success");
+
+        fetchTransactions();
+      }
     }
   };
 
