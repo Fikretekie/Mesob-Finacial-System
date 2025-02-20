@@ -12,9 +12,43 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.transaction-table {
+.transaction-table,
+.statement-table table {
     width: 100%;
     min-width: 100%;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.summary-card .card-body>div {
+    margin-bottom: 15px;
+}
+
+.search-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.date-range-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.date-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.date-input {
+    flex: 1;
+    min-width: 150px;
 }
 
 /* Small devices (landscape phones, 576px and up) */
@@ -22,21 +56,45 @@
     .content {
         padding: 15px;
     }
+
+    .button-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .search-filter-container {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
 /* Medium devices (tablets, 768px and up) */
 @media screen and (min-width: 768px) {
     .card-title {
         font-size: 1.2rem;
-        text-align: left;
     }
 
     .btn {
         width: auto;
     }
 
-    .search-filter-container {
+    .transaction-table,
+    .statement-table table {
+        min-width: 600px;
+    }
+
+    .date-range-container {
         flex-direction: row;
+        align-items: flex-end;
+    }
+
+    .date-inputs {
+        flex: 2;
+    }
+
+    .button-group {
+        flex: 1;
     }
 }
 
@@ -46,17 +104,182 @@
         padding: 20px;
     }
 
-    .transaction-table {
-        min-width: 600px;
+    .summary-card .card-body {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .summary-card .card-body>div {
+        width: 48%;
+    }
+
+    .transaction-table,
+    .statement-table table {
+        min-width: 800px;
     }
 }
 
 /* Extra large devices (large desktops, 1200px and up) */
 @media screen and (min-width: 1200px) {
-    /* Add any specific styles for larger screens */
+
+    .transaction-table,
+    .statement-table table {
+        min-width: 1000px;
+    }
 }
 
-/* Custom breakpoint for 1232px and up */
-@media screen and (min-width: 1232px) {
-    /* Add any specific styles needed for this breakpoint */
+.navbar-toggle {
+    display: none;
+    position: absolute;
+    top: 15px;
+    /* Adjust for better alignment */
+    left: 15px;
+    z-index: 1000;
+}
+
+.navbar-toggler {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+}
+
+.navbar-toggler-bar {
+    display: block;
+    width: 25px;
+    /* Increased for better visibility */
+    height: 3px;
+    background-color: #333;
+    margin: 4px 0;
+    transition: 0.3s;
+}
+
+@media screen and (max-width: 991px) {
+    .navbar-toggle {
+        display: block;
+    }
+}
+.journal-entry-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    align-items: center;
+    /* Center elements vertically */
+    text-align: center;
+    /* Center text */
+}
+
+@media screen and (min-width: 768px) {
+    .journal-entry-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}
+
+.search-filter-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+@media screen and (min-width: 576px) {
+    .search-filter-container {
+        flex-direction: row;
+        justify-content: space-between;
+        width: auto;
+    }
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media screen and (min-width: 576px) {
+    .button-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+/* General styles for dropdown */
+.modal-body select {
+    width: 100%;
+    /* Ensure full width inside modal */
+    font-size: 16px;
+    max-width: 100%;
+    /* Prevent exceeding container width */
+    box-sizing: border-box;
+    /* Include padding in width */
+}
+
+/* Responsive styles for mobile screens */
+@media screen and (max-width: 768px) {
+    .modal-body {
+        padding: 15px;
+        /* Add padding to prevent content from touching edges */
+        overflow-x: hidden;
+        /* Prevent horizontal overflow */
+        position: relative;
+        /* Ensure dropdown stays within modal boundaries */
+    }
+
+    .modal-body select {
+        font-size: 14px;
+        /* Adjust font size for readability */
+        padding: 10px;
+        /* Increase padding for touch-friendly UI */
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        /* Remove default iOS styling */
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        max-width: calc(100% - 30px);
+        /* Ensure dropdown stays within modal padding */
+        overflow-y: auto;
+        /* Allow vertical scrolling if necessary */
+        z-index: 1050;
+        /* Ensure it appears on top of other content */
+    }
+
+    .modal-body .dropdown-content {
+        position: absolute;
+        /* Align dropdown options correctly */
+        left: 0;
+        /* Align to the left edge of the parent container */
+        right: 0;
+        /* Align to the right edge of the parent container */
+        max-width: calc(100% - 30px);
+        /* Prevent overflow from modal boundaries */
+        z-index: 1050;
+        /* Ensure it stays above other elements */
+        background-color: #fff;
+        /* Dropdown background color */
+        border-radius: 4px;
+        /* Rounded corners for better UI */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        /* Subtle shadow for visibility */
+        overflow-y: auto;
+        /* Enable scrolling if content exceeds height */
+        max-height: 200px;
+        /* Limit height for better usability on mobile */
+    }
+
+    .modal-body .dropdown-content option {
+        padding: 10px;
+        /* Increase touch-friendly area for options */
+        text-align: left;
+        display: block;
+        white-space: nowrap;
+        /* Prevent text wrapping inside options */
+    }
 }

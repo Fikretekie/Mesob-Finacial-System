@@ -109,13 +109,14 @@ function DemoNavbar(props) {
               type="button"
               ref={sidebarToggle}
               className="navbar-toggler"
-              onClick={() => openSidebar()}
+              onClick={openSidebar}
             >
               <span className="navbar-toggler-bar bar1" />
               <span className="navbar-toggler-bar bar2" />
               <span className="navbar-toggler-bar bar3" />
             </button>
           </div>
+
           <NavbarBrand href="/">{getBrand()}</NavbarBrand>
         </div>
         <NavbarToggler onClick={toggle}>

@@ -477,11 +477,14 @@ const MesobFinancial2 = () => {
         );
 
         if (response.status === 200) {
+          const isFullPayment = paymentOption === "full";
           const newPaidTransaction = {
             userId: localStorage.getItem("userId"),
             transactionType: "Pay",
-            transactionPurpose: `Partial Payment for ${transaction.transactionPurpose}`,
-            transactionAmount: paidAmount, // Use the paid amount for the new transaction
+            transactionPurpose: isFullPayment
+              ? `Full Payment for ${transaction.transactionPurpose}`
+              : `Partial Payment for ${transaction.transactionPurpose}`,
+            transactionAmount: paidAmount,
             receiptUrl: Url || "",
             payableId: transaction.id,
             createdAt: new Date().toISOString(),
@@ -855,7 +858,17 @@ const MesobFinancial2 = () => {
   const handleDelete = async (transaction) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       setLoading(true);
-      if (transaction?.payableId) {
+      if (transaction?.payableId === "outstanding-debt") {
+        let userId = localStorage.getItem("userId");
+        const response = await axios.put(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+          {
+            outstandingDebt: parseFloat(transaction.transactionAmount),
+          }
+        );
+        console.log("res=>>>", response.status);
+        console.log("response=>>>>>>>", response);
+      } else {
         const payableItem = items.find(
           (item) => item.id === transaction.payableId
         );
@@ -1087,8 +1100,18 @@ const MesobFinancial2 = () => {
     };
 
     return (
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <FormGroup style={{ marginRight: "10px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          flexWrap: "wrap", // Wraps content on small screens
+          gap: "10px",
+        }}
+      >
+        <FormGroup
+          style={{ flex: "1 1 auto", minWidth: "150px", maxWidth: "250px" }}
+        >
           <Label for="fromDate">From</Label>
           <Input
             type="date"
@@ -1097,7 +1120,9 @@ const MesobFinancial2 = () => {
             onChange={(e) => setFromDate(e.target.value)}
           />
         </FormGroup>
-        <FormGroup style={{ marginRight: "10px" }}>
+        <FormGroup
+          style={{ flex: "1 1 auto", minWidth: "150px", maxWidth: "250px" }}
+        >
           <Label for="toDate">To</Label>
           <Input
             type="date"
@@ -1106,27 +1131,35 @@ const MesobFinancial2 = () => {
             onChange={(e) => setToDate(e.target.value)}
           />
         </FormGroup>
-        <Button
-          color="primary"
-          onClick={handleRun}
-          style={{ marginRight: "10px", height: "38px" }}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap", // Allows buttons to wrap on small screens
+            gap: "10px",
+          }}
         >
-          Run
-        </Button>
-        <Button
-          color="secondary"
-          onClick={handleClear}
-          style={{ marginRight: "10px", height: "38px" }}
-        >
-          Clear Filters
-        </Button>
-        <Button
-          color="danger"
-          onClick={handleDeleteAllRecords}
-          style={{ height: "38px" }}
-        >
-          Close
-        </Button>
+          <Button
+            color="primary"
+            onClick={handleRun}
+            style={{ height: "38px" }}
+          >
+            Run
+          </Button>
+          <Button
+            color="secondary"
+            onClick={handleClear}
+            style={{ height: "38px" }}
+          >
+            Clear Filters
+          </Button>
+          <Button
+            color="danger"
+            onClick={handleDeleteAllRecords}
+            style={{ height: "38px" }}
+          >
+            Close
+          </Button>
+        </div>
       </div>
     );
   };
@@ -1320,17 +1353,19 @@ const MesobFinancial2 = () => {
                           - {searchedDates.to}
                         </div>
                       )}
-                      <TransactionTable
-                        items={filterItemsByTimeRange(
-                          items,
-                          selectedTimeRange,
-                          searchTerm
-                        )}
-                        selectedTimeRange={selectedTimeRange}
-                        handleDelete={handleDelete}
-                        handleAddExpense={handleAddExpense}
-                        handleReceiptClick={handleReceiptClick}
-                      />
+                      <div className="table-container">
+                        <TransactionTable
+                          items={filterItemsByTimeRange(
+                            items,
+                            selectedTimeRange,
+                            searchTerm
+                          )}
+                          selectedTimeRange={selectedTimeRange}
+                          handleDelete={handleDelete}
+                          handleAddExpense={handleAddExpense}
+                          handleReceiptClick={handleReceiptClick}
+                        />
+                      </div>
                     </>
                   )}
                 </CardBody>
@@ -2089,6 +2124,7 @@ const MesobFinancial2 = () => {
               <>
                 <FormGroup>
                   <Label>Purpose:</Label>
+
                   <Input
                     type="select"
                     value={transactionPurpose}
