@@ -10,16 +10,27 @@ import {
 } from "reactstrap";
 import { FaDownload, FaTrash } from "react-icons/fa";
 import * as XLSX from "xlsx";
+import axios from "axios";
 
 const CSVReports = () => {
   const [csvData, setCsvData] = useState(null);
-  const [file, setFile] = useState(null);
+
+
 
   useEffect(() => {
-    const storedCsvData = localStorage.getItem("csvData");
-    if (storedCsvData) {
-      setCsvData(JSON.parse(storedCsvData));
-    }
+    const fetchUserData = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const response = await axios.get(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        );
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   return (
