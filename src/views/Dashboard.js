@@ -265,8 +265,9 @@ function Dashboard() {
           monthlyData[monthYear].expenses += amount;
           monthlyData[monthYear].newItem += amount;
         } else if (
-          transaction.transactionType === "Payable" &&
-          transaction.status === "Payable"
+          (transaction.transactionType === "Payable" &&
+            transaction.status === "Payable") ||
+          transaction.status === "Partially Paid"
         ) {
           payable += amount;
           monthlyData[monthYear].payable += amount;

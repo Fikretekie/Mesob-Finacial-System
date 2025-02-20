@@ -21,9 +21,8 @@ import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { Helmet } from "react-helmet";
 import { FaEye, FaDownload } from "react-icons/fa";
 import NotificationAlert from "react-notification-alert";
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
-
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 const Receipts = () => {
   const [receipts, setReceipts] = useState([]);
@@ -80,17 +79,18 @@ const Receipts = () => {
     }
   };
 
-  const handlePreview = (receipt) => {
-    setSelectedReceipt(receipt);
+  const handlePreview = async (receipt) => {
+    console.log("recerpt=>>", receipt);
+
+    await setSelectedReceipt(receipt);
     setPreviewModal(true);
   };
-
 
   const handleDownload = async (receipt) => {
     try {
       const url = receipt.receiptUrl;
       const response = await fetch(url, {
-        mode: 'cors'
+        mode: "cors",
       });
 
       if (!response.ok) {
@@ -99,9 +99,11 @@ const Receipts = () => {
 
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `receipt-${receipt.transactionPurpose}-${new Date().getTime()}.pdf`;
+      link.download = `receipt-${
+        receipt.transactionPurpose
+      }-${new Date().getTime()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -111,7 +113,6 @@ const Receipts = () => {
       notify("tr", `Error downloading receipt: ${error.message}`, "danger");
     }
   };
-
 
   const handleRun = () => {
     if (fromDate && toDate) {
@@ -148,31 +149,41 @@ const Receipts = () => {
           try {
             const url = receipt.receiptUrl;
             const response = await fetch(url, {
-              mode: 'cors'
+              mode: "cors",
             });
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
             const blob = await response.blob();
-            zip.file(`receipt-${receipt.transactionPurpose}-${index + 1}.pdf`, blob);
+            zip.file(
+              `receipt-${receipt.transactionPurpose}-${index + 1}.pdf`,
+              blob
+            );
           } catch (error) {
-            console.error(`Error downloading receipt ${receipt.transactionPurpose}:`, error);
-            notify("tr", `Error downloading receipt ${receipt.transactionPurpose}: ${error.message}`, "danger");
+            console.error(
+              `Error downloading receipt ${receipt.transactionPurpose}:`,
+              error
+            );
+            notify(
+              "tr",
+              `Error downloading receipt ${receipt.transactionPurpose}: ${error.message}`,
+              "danger"
+            );
           }
         })
       );
 
-      zip.generateAsync({ type: "blob" })
-        .then(blob => {
+      zip
+        .generateAsync({ type: "blob" })
+        .then((blob) => {
           saveAs(blob, "receipts.zip");
           notify("tr", "All receipts downloaded successfully!", "success");
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error creating zip file:", error);
           notify("tr", "Error creating zip file", "danger");
         });
-
     } catch (error) {
       console.error("Error downloading all receipts:", error);
       notify("tr", "Error downloading all receipts", "danger");

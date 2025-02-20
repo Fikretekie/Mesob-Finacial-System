@@ -14,8 +14,7 @@ import axios from "axios";
 
 const CSVReports = () => {
   const [csvData, setCsvData] = useState(null);
-
-
+  const [backupUrls, setBackupUrls] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -24,7 +23,9 @@ const CSVReports = () => {
         const response = await axios.get(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
         );
-        console.log(response.data);
+        if (response.data.user && response.data.user.lastBackupUrls) {
+          setBackupUrls(response.data.user.lastBackupUrls);
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -33,6 +34,42 @@ const CSVReports = () => {
     fetchUserData();
   }, []);
 
+  const handleDownload = async (url) => {
+    try {
+      // Replace virtual-hosted style URL with path-style URL
+      const updatedUrl = url.replace(
+        /https:\/\/(.+?)\.s3\.amazonaws\.com\//,
+        "https://s3.amazonaws.com/$1/"
+      );
+
+      const response = await axios.get(updatedUrl, { responseType: "blob" });
+      const blob = new Blob([response.data], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = updatedUrl.split("/").pop();
+      link.click();
+    } catch (error) {
+      console.error("Error downloading CSV:", error);
+    }
+  };
+
+  // const handleDelete = async (url) => {
+  //   if (window.confirm("Are you sure you want to delete this backup?")) {
+  //     try {
+  //       const userId = localStorage.getItem("userId");
+  //       await axios.delete(
+  //         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup`,
+  //         {
+  //           data: { userId, url },
+  //         }
+  //       );
+  //       setBackupUrls(backupUrls.filter((u) => u !== url));
+  //     } catch (error) {
+  //       console.error("Error deleting backup:", error);
+  //     }
+  //   }
+  // };
+
   return (
     <div className="content">
       <Card>
@@ -40,7 +77,7 @@ const CSVReports = () => {
           <div
             style={{
               display: "flex",
-              marginTop: '30px',
+              marginTop: "30px",
               justifyContent: "space-between",
               alignItems: "center",
             }}
@@ -49,45 +86,36 @@ const CSVReports = () => {
           </div>
         </CardHeader>
         <CardBody>
-          {csvData ? (
+          {backupUrls.length > 0 ? (
             <Table responsive>
               <thead>
                 <tr>
-                  {typeof csvData === "string"
-                    ? csvData
-                      .split("\n")[0]
-                      .split(",")
-                      .map((header, index) => <th key={index}>{header}</th>)
-                    : csvData.length > 0
-                      ? Object.keys(csvData[0]).map((key) => (
-                        <th key={key}>{key}</th>
-                      ))
-                      : null}
+                  <th>Backup File</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {typeof csvData === "string"
-                  ? csvData
-                    .split("\n")
-                    .slice(1)
-                    .map((row, index) => (
-                      <tr key={index}>
-                        {row.split(",").map((cell, i) => (
-                          <td key={i}>{cell}</td>
-                        ))}
-                      </tr>
-                    ))
-                  : csvData.map((row, index) => (
-                    <tr key={index}>
-                      {Object.values(row).map((value, i) => (
-                        <td key={i}>{value}</td>
-                      ))}
-                    </tr>
-                  ))}
+                {backupUrls.map((url, index) => (
+                  <tr key={index}>
+                    <td>{url.split("/").pop()}</td>
+                    <td>
+                      <Button
+                        style={{ marginRight: "10px" }}
+                        color="primary"
+                        onClick={() => handleDownload(url)}
+                      >
+                        <FaDownload /> Download
+                      </Button>
+                      {/* <Button color="danger" onClick={() => handleDelete(url)}>
+                        <FaTrash /> Delete
+                      </Button> */}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </Table>
           ) : (
-            <p>No CSV data uploaded yet.</p>
+            <p>No backup CSV files available.</p>
           )}
         </CardBody>
       </Card>
