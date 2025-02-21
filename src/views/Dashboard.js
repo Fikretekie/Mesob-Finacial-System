@@ -61,6 +61,8 @@ function Dashboard() {
   const userRole = parseInt(localStorage.getItem("role"));
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [companyName, setCompanyName] = useState("");
+
   const calculateTotalCash = () => {
     const totalReceived = items?.reduce((sum, item) => {
       return (
@@ -295,6 +297,21 @@ function Dashboard() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchCompanyName = async () => {
+      try {
+        const targetUserId = selectedUserId || localStorage.getItem("userId");
+        const userResponse = await axios.get(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+        );
+        setCompanyName(userResponse.data?.user?.companyName || "");
+      } catch (error) {
+        console.error("Error fetching company name:", error);
+      }
+    };
+
+    fetchCompanyName();
+  }, [selectedUserId]);
 
   useEffect(() => {
     if (userRole === 0) {
@@ -321,7 +338,24 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - Mesob Finance</title>
       </Helmet>
-      <PanelHeader size="sm" />
+      <PanelHeader
+        size="sm"
+        content={
+          <div>
+            <h3
+              style={{
+                color: "white",
+                justifyContent: "center",
+                alignItems: "center",
+                display: "flex",
+              }}
+            >
+              {companyName}
+            </h3>
+          </div>
+        }
+      />
+
       {userRole === 0 && (
         <div
           className="content"

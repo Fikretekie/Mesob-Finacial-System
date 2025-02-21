@@ -15,7 +15,7 @@ import Login from "../src/views/Login";
 import MesobFinanceLogin from "views/MesobFinanceLogin";
 import SignupPage from "./views/Signup";
 import CustomerLayout from "layouts/Customer";
-
+import ForgotPassword from "views/ForgotPassword";
 // Create Redux store
 const store = configureStore({
   reducer: {
@@ -31,6 +31,7 @@ root.render(
       <Routes>
         {/* Route for the Login page */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/mesonfinancelogin" element={<MesobFinanceLogin />} />
         <Route path="/signup" element={<SignupPage />} />
 

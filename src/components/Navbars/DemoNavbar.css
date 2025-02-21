@@ -1,0 +1,35 @@
+.profile-dropdown {
+  position: relative;
+}
+
+.dropdown-toggle-custom {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-menu-custom {
+  position: absolute;
+  right: 0;
+  left: auto;
+  top: 100%;
+  min-width: 100%;
+}
+
+@media (max-width: 991px) {
+  .profile-dropdown {
+    position: static !important;
+  }
+
+  .dropdown-menu-custom {
+    position: absolute;
+    right: 15px !important;
+    left: auto !important;
+    top: auto !important;
+    bottom: 100% !important;
+    transform: none !important;
+  }
+
+  .dropdown-toggle-custom {
+    justify-content: flex-end;
+  }
+}

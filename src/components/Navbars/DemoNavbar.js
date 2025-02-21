@@ -108,51 +108,75 @@ function DemoNavbar(props) {
             <button
               type="button"
               ref={sidebarToggle}
-              className="navbar-toggler"
+              className={`navbar-toggler ${isOpen ? "open" : ""}`}
               onClick={openSidebar}
+              style={{
+                border: "none",
+                background: "transparent",
+                padding: "10px",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: "5px",
+              }}
             >
-              <span className="navbar-toggler-bar bar1" />
-              <span className="navbar-toggler-bar bar2" />
-              <span className="navbar-toggler-bar bar3" />
+              <span
+                className="navbar-toggler-bar bar1"
+                style={{
+                  display: "block",
+                  width: "30px",
+                  height: "4px",
+                  backgroundColor: "white",
+                  margin: "6px 0",
+                  transition: "0.3s ease-in-out",
+                  transform: isOpen ? "translateY(8px) rotate(45deg)" : "none", // Adjusted for alignment
+                }}
+              />
+              <span
+                className="navbar-toggler-bar bar2"
+                style={{
+                  display: isOpen ? "none" : "block", // Hide the middle line when open
+                  width: "30px",
+                  height: "4px",
+                  backgroundColor: "white",
+                  margin: "6px 0",
+                  transition: "0.3s ease-in-out",
+                }}
+              />
+              <span
+                className="navbar-toggler-bar bar3"
+                style={{
+                  display: "block",
+                  width: "30px",
+                  height: "4px",
+                  backgroundColor: "white",
+                  margin: "6px 0",
+                  transition: "0.3s ease-in-out",
+                  transform: isOpen
+                    ? "translateY(-8px) rotate(-45deg)"
+                    : "none", // Adjusted for alignment
+                }}
+              />
             </button>
           </div>
 
           <NavbarBrand href="/">{getBrand()}</NavbarBrand>
         </div>
-        <NavbarToggler onClick={toggle}>
-          <span className="navbar-toggler-bar navbar-kebab" />
-          <span className="navbar-toggler-bar navbar-kebab" />
-          <span className="navbar-toggler-bar navbar-kebab" />
-        </NavbarToggler>
-        <Collapse isOpen={isOpen} navbar className="justify-content-end">
-          <form>
-            <InputGroup className="no-border">
-              <Input placeholder="Search..." />
-              <InputGroupAddon addonType="append">
-                <InputGroupText>
-                  <i className="now-ui-icons ui-1_zoom-bold" />
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-          </form>
-          <Nav navbar>
-            <Dropdown
-              nav
-              isOpen={accountDropdownOpen}
-              toggle={(e) => accountDropdownToggle(e)}
-            >
-              <DropdownToggle caret nav>
-                <i className="now-ui-icons users_single-02" />
-                <p>
-                  <span className="d-lg-none d-md-block">Account</span>
-                </p>
-              </DropdownToggle>
-              <DropdownMenu right>
-                <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </Nav>
-        </Collapse>
+        <Nav navbar>
+          <Dropdown
+            nav
+            isOpen={accountDropdownOpen}
+            toggle={accountDropdownToggle}
+          >
+            <DropdownToggle caret nav>
+              <i className="now-ui-icons users_single-02" />
+            </DropdownToggle>
+            <DropdownMenu right>
+              <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </Nav>
       </Container>
     </Navbar>
   );

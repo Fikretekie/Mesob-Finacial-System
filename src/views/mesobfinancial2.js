@@ -1183,7 +1183,15 @@ const MesobFinancial2 = () => {
         size="sm"
         content={
           <div>
-            <h3 style={{ color: "white", marginLeft: "45px" }}>
+            <h3
+              style={{
+                color: "white",
+                // marginLeft: "45px",
+                justifyContent: "center",
+                alignItems: "center",
+                display: "flex",
+              }}
+            >
               {companyName}
             </h3>
 

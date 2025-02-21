@@ -48,96 +48,103 @@
     background-color: #f8f9fa;
   } */
  /* TransactionTable.css */
- .table-container {
-   overflow-x: auto;
-   margin: 20px 0;
-   padding: 10px;
-   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
- }
+ /* General styles for the table container */
+ /* General styles for the table container */
+.table-container {
+  overflow-x: auto;
+  margin: 20px 0;
+  padding: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
- .transaction-table {
-   width: 100%;
-   border-collapse: collapse;
-   font-family: Arial, sans-serif;
-   min-width: 800px;
- }
+/* Table styling */
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+}
 
- .transaction-table th,
- .transaction-table td {
-   padding: 12px;
-   text-align: left;
-   border-bottom: 1px solid #ddd;
- }
+.transaction-table th,
+.transaction-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  /* Ensures text stays in one line */
+}
 
- .transaction-table th {
-   background-color: #f8f9fa;
-   font-weight: bold;
- }
+.transaction-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
 
- .transaction-table tr:hover {
-   background-color: #f5f5f5;
- }
+.transaction-table tr:hover {
+  background-color: #f5f5f5;
+}
 
- .expense-row {
-   background-color: #fff8f8;
- }
+/* Debit & Credit styles */
+.debit {
+  color: black;
+  background-color: #f0f8e7;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
 
- .debit,
- .credit {
-   font-family: monospace;
- }
+.credit {
+  color: black;
+  background-color: #f0f8e7;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
 
- .delete-btn {
-   cursor: pointer;
-   color: #e10d05;
- }
+/* Action Buttons */
+.delete-btn {
+  cursor: pointer;
+  color: #e10d05;
+}
 
- .delete-btn:hover {
-   color: #ff0000 !important;
-   transform: scale(1.1);
-   transition: all 0.2s ease;
- }
+.delete-btn:hover {
+  color: #ff0000 !important;
+  transform: scale(1.1);
+  transition: all 0.2s ease;
+}
 
- @media screen and (max-width: 768px) {
-   .transaction-table {
-     min-width: unset;
-   }
+/* ✅ Ensuring Table Rows Stay in Row Format on Mobile */
+@media screen and (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+  }
 
-   .transaction-table thead {
-     display: none;
-   }
+  .transaction-table {
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    /* Keeps text in line */
+    overflow-x: auto;
+    /* Allows horizontal scrolling */
+  }
 
-   .transaction-table,
-   .transaction-table tbody,
-   .transaction-table tr,
-   .transaction-table td {
-     display: block;
-     width: 100%;
-   }
+  .transaction-table thead {
+    display: table-header-group;
+  }
 
-   .transaction-table tr {
-     margin-bottom: 15px;
-     border: 1px solid #ddd;
-   }
+  .transaction-table tbody {
+    display: table-row-group;
+  }
 
-   .transaction-table td {
-     text-align: right;
-     padding-left: 50%;
-     position: relative;
-   }
+  .transaction-table tr {
+    display: table-row;
+  }
 
-   .transaction-table td::before {
-     content: attr(data-label);
-     position: absolute;
-     left: 6px;
-     width: 45%;
-     padding-right: 10px;
-     white-space: nowrap;
-     text-align: left;
-     font-weight: bold;
-   }
+  .transaction-table td {
+    display: table-cell;
+    padding: 10px;
+  }
 
-   .transaction-table td:last-child {
-     border-bottom: 0;
-   }
- }
+  /* Ensuring a Scrollable Table */
+  .table-container {
+    overflow-x: scroll;
+  }
+}
