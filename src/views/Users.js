@@ -19,78 +19,6 @@ import "react-notification-alert/dist/animate.css";
 import { useDispatch } from "react-redux";
 import { setSelectedUser } from "../store/userSlice";
 
-const columns = [
-  {
-    name: "User ID",
-    selector: (row) => row.id,
-    sortable: true,
-    width: "150px",
-  },
-  {
-    name: "Email",
-    selector: (row) => row.email,
-    sortable: true,
-    width: "300px",
-  },
-  {
-    name: "Name",
-    selector: (row) => row.name || "-",
-    sortable: true,
-    width: "200px",
-  },
-  {
-    name: "Phone",
-    selector: (row) => row.phone || "-",
-    sortable: true,
-    width: "200px",
-  },
-  {
-    name: "Company Name",
-    selector: (row) => row.companyName || "-",
-    sortable: true,
-    width: "200px",
-  },
-  {
-    name: "Business Type",
-    selector: (row) => row.businessType || "-",
-    sortable: true,
-    width: "200px",
-  },
-  {
-    name: "Cash Balance",
-    selector: (row) => row.cashBalance || 0,
-    sortable: true,
-    width: "150px",
-    cell: (row) => `$${row.cashBalance || "0"}`,
-  },
-  {
-    name: "Role",
-    selector: (row) => row.role || "-",
-    sortable: true,
-    width: "150px",
-    cell: (row) => (row.role === 2 ? "User" : "Admin"),
-  },
-  {
-    name: "Created At",
-    selector: (row) => row.createdAt,
-    sortable: true,
-    width: "200px",
-    cell: (row) => new Date(row.createdAt).toLocaleDateString(),
-  },
-  {
-    name: "Select",
-    cell: (row) => (
-      <Button color="primary" size="sm" onClick={() => handleUserSelect(row)}>
-        Select
-      </Button>
-    ),
-    ignoreRowClick: true,
-    allowOverflow: true,
-    button: true,
-    width: "100px",
-  },
-];
-
 function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +30,78 @@ function Users() {
   const handleUserSelect = (user) => {
     dispatch(setSelectedUser({ id: user.id, email: user.email }));
   };
+
+  const columns = [
+    {
+      name: "User ID",
+      selector: (row) => row.id,
+      sortable: true,
+      width: "150px",
+    },
+    {
+      name: "Email",
+      selector: (row) => row.email,
+      sortable: true,
+      width: "300px",
+    },
+    {
+      name: "Name",
+      selector: (row) => row.name || "-",
+      sortable: true,
+      width: "200px",
+    },
+    {
+      name: "Phone",
+      selector: (row) => row.phone || "-",
+      sortable: true,
+      width: "200px",
+    },
+    {
+      name: "Company Name",
+      selector: (row) => row.companyName || "-",
+      sortable: true,
+      width: "200px",
+    },
+    {
+      name: "Business Type",
+      selector: (row) => row.businessType || "-",
+      sortable: true,
+      width: "200px",
+    },
+    {
+      name: "Cash Balance",
+      selector: (row) => row.cashBalance || 0,
+      sortable: true,
+      width: "150px",
+      cell: (row) => `$${row.cashBalance || "0"}`,
+    },
+    {
+      name: "Role",
+      selector: (row) => row.role || "-",
+      sortable: true,
+      width: "150px",
+      cell: (row) => (row.role === 2 ? "User" : "Admin"),
+    },
+    {
+      name: "Created At",
+      selector: (row) => row.createdAt,
+      sortable: true,
+      width: "200px",
+      cell: (row) => new Date(row.createdAt).toLocaleDateString(),
+    },
+    {
+      name: "Select",
+      cell: (row) => (
+        <Button color="primary" size="sm" onClick={() => handleUserSelect(row)}>
+          Select
+        </Button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      width: "100px",
+    },
+  ];
   const notify = (place, message, type) => {
     const options = {
       place: place,

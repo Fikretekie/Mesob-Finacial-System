@@ -10,6 +10,7 @@ const initialState = JSON.parse(localStorage.getItem("selectedUser")) || {
   companyName: null,
   role: null,
   createdAt: null,
+  receipts: [],
 };
 
 const userSlice = createSlice({
@@ -33,6 +34,7 @@ const userSlice = createSlice({
         companyName,
         role,
         createdAt,
+        receipts,
       } = action.payload;
 
       // Validate essential fields
@@ -58,6 +60,7 @@ const userSlice = createSlice({
         companyName,
         role,
         createdAt,
+        receipts: receipts || [],
       };
 
       localStorage.setItem("selectedUser", JSON.stringify(newState));
@@ -76,6 +79,7 @@ const userSlice = createSlice({
         companyName: null,
         role: null,
         createdAt: null,
+        receipts: [],
       };
     },
   },

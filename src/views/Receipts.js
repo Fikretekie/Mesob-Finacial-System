@@ -24,7 +24,7 @@ import NotificationAlert from "react-notification-alert";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
-const Receipts = () => {
+const Receipts = ({ selectedUser }) => {
   const [receipts, setReceipts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState("all");
@@ -38,13 +38,19 @@ const Receipts = () => {
   const notificationAlertRef = useRef(null);
 
   useEffect(() => {
+    if (selectedUser?.id) {
+      fetchReceipts();
+    }
+  }, [selectedUser, startDate, endDate, selectedType]);
+
+  useEffect(() => {
     fetchReceipts();
   }, [startDate, endDate, selectedType]);
 
   const fetchReceipts = async () => {
     setLoading(true);
     try {
-      const userId = localStorage.getItem("userId");
+      const userId = selectedUser?.id || localStorage.getItem("userId");
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
       );
@@ -108,8 +114,9 @@ const Receipts = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `receipt-${receipt.transactionPurpose
-        }-${new Date().getTime()}.pdf`;
+      link.download = `receipt-${
+        receipt.transactionPurpose
+      }-${new Date().getTime()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

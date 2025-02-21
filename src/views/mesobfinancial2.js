@@ -81,6 +81,8 @@ const MesobFinancial2 = () => {
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
+  const selectedUser = useSelector((state) => state.selectedUser);
+  // const dispatch = useDispatch();
   // installment
   const handlePayableSelection = (transaction) => {
     setSelectedUnpaidTransaction(transaction);
@@ -191,7 +193,6 @@ const MesobFinancial2 = () => {
     navigate("/customer/csv");
   };
   // redux select user
-  const selectedUser = useSelector((state) => state.selectedUser);
 
   const [financialData, setFinancialData] = useState(null);
 

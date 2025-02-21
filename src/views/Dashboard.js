@@ -32,7 +32,8 @@ import formatUserId from "utils/formatUID";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+
 import { setSelectedUser } from "../store/userSlice";
 ChartJS.register(
   CategoryScale,
@@ -62,6 +63,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [companyName, setCompanyName] = useState("");
+  const selectedUser = useSelector((state) => state.selectedUser);
 
   const calculateTotalCash = () => {
     const totalReceived = items?.reduce((sum, item) => {

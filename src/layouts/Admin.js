@@ -17,6 +17,7 @@ import Footer from "components/Footer/Footer.js";
 import Sidebar from "components/Sidebar/Sidebar.js";
 import MesobFinancial2 from "views/mesobfinancial2";
 import routes from "routes.js";
+import Receipts from "views/Receipts";
 
 var ps;
 
@@ -98,6 +99,16 @@ function Admin(props) {
                 <Route
                   path={prop.path}
                   element={<MesobFinancial2 selectedUser={selectedUser} />}
+                  key={key}
+                  exact
+                />
+              );
+            }
+            if (prop.path === "/receipts") {
+              return (
+                <Route
+                  path={prop.path}
+                  element={<Receipts selectedUser={selectedUser} />}
                   key={key}
                   exact
                 />
