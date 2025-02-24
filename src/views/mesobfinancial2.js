@@ -331,22 +331,23 @@ const MesobFinancial2 = () => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "Payable"
-              ? "Payable"
-              : transactionType === "pay" && paymentMode === "boughtItem"
-                ? "New_Item"
-                : transactionType === "pay" && paymentMode !== "boughtItem"
-                  ? "Pay"
-                  : "New_Item",
-        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
-          }`,
+            ? "Payable"
+            : transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New_Item"
+            : transactionType === "pay" && paymentMode !== "boughtItem"
+            ? "Pay"
+            : "New_Item",
+        transactionPurpose: `${transactionPurpose}${
+          manualPurpose ? ` ${manualPurpose}` : ""
+        }`,
         transactionAmount: parseFloat(transactionAmount),
         originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
             : paymentMode === "new"
-              ? "Expense"
-              : subType,
+            ? "Expense"
+            : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
@@ -423,7 +424,7 @@ const MesobFinancial2 = () => {
   };
 
   const handleUpdateTransaction = async (transaction) => {
-    console.log("?????????", transaction.id);
+    console.log("Transaction ID:", transaction.id);
     let Url = "";
     if (receipt) {
       Url = await uploadReceipt();
@@ -432,40 +433,35 @@ const MesobFinancial2 = () => {
       paymentOption === "full"
         ? parseFloat(transaction.transactionAmount)
         : parseFloat(remainingAmount);
-    if (transaction.id !== "outstanding-debt") {
-      console.log("jnbjh", paidAmount);
 
-      if (paidAmount > remainingAmount && paymentOption !== "full") {
-        notify(
-          "tr",
-          `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
-          "warning"
-        );
-        return;
-      }
+    setIsUpdatingTransaction(true);
+    try {
+      if (transaction.id !== "outstanding-debt") {
+        if (paidAmount > remainingAmount && paymentOption !== "full") {
+          notify(
+            "tr",
+            `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
+            "warning"
+          );
+          return;
+        }
 
-      setIsUpdatingTransaction(true);
-
-      try {
         const updatedTransaction = {
           ...transaction,
           receiptUrl: Url || transaction.receiptUrl,
           status:
-            paymentOption === "full"
+            paymentOption === "full" ||
+            (paymentOption === "partial" &&
+              remainingAmount === transaction.transactionAmount)
               ? "Paid"
-              : paymentOption === "partial" &&
-                remainingAmount === transaction.transactionAmount
-                ? "Paid"
-                : "Partially Paid",
+              : "Partially Paid",
           updatedAt: new Date().toISOString(),
           paidAmount: (transaction.paidAmount || 0) + paidAmount,
           transactionAmount:
             parseFloat(transaction.transactionAmount) -
-            parseFloat(remainingAmount), // Update the transaction amount to the new remaining amount
+            parseFloat(remainingAmount),
           remainingAmount: paidAmount,
         };
-
-        console.log("updated amount", updatedTransaction);
 
         const response = await fetch(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
@@ -476,69 +472,39 @@ const MesobFinancial2 = () => {
           }
         );
 
-        if (response.status === 200) {
-          const isFullPayment = paymentOption === "full";
-          const newPaidTransaction = {
-            userId: localStorage.getItem("userId"),
-            transactionType: "Pay",
-            transactionPurpose: isFullPayment
-              ? `Full Payment for ${transaction.transactionPurpose}`
-              : `Partial Payment for ${transaction.transactionPurpose}`,
-            transactionAmount: paidAmount,
-            receiptUrl: Url || "",
-            payableId: transaction.id,
-            createdAt: new Date().toISOString(),
-          };
-
-          const response2 = await axios.post(
-            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-            newPaidTransaction
-          );
-
-          if (response2.status === 200) {
-            notify("tr", "Payment recorded successfully", "success");
-
-            fetchTransactions();
-            window.location.reload();
-          } else {
-            throw new Error("Failed to add the payment record");
-          }
-        } else {
+        if (response.status !== 200) {
           throw new Error("Failed to update the transaction");
         }
-      } catch (error) {
-        console.error("Error updating transaction:", error);
-        notify("tr", `Error recording payment: ${error.message}`, "danger");
-      } finally {
-        setIsUpdatingTransaction(false);
-        setSelectedUnpaidTransaction(null);
-        setPaymentOption(null);
-        setShowAddTransaction(false);
-        setTransactionAmount("");
-        setRemainingAmount(0);
-      }
-    } else {
-      const id = localStorage.getItem("userId");
-      console.log(">>>>>>>>>>", transaction);
+      } else {
+        setIsUpdatingTransaction(true);
+        const id = localStorage.getItem("userId");
+        const response = await axios.put(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
+          {
+            outstandingDebt:
+              paymentOption === "full"
+                ? parseFloat(transaction.transactionAmount) -
+                  parseFloat(transaction.transactionAmount)
+                : parseFloat(transaction.transactionAmount) -
+                  parseFloat(remainingAmount),
+          }
+        );
 
-      console.log("Sending update request for ID:", id);
-      const response = await axios.put(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
-        {
-          outstandingDebt:
-            paymentOption === "full"
-              ? parseFloat(transaction.transactionAmount) -
-              parseFloat(transaction.transactionAmount)
-              : parseFloat(transaction.transactionAmount) -
-              parseFloat(remainingAmount),
+        if (response.status !== 200) {
+          throw new Error("Failed to update outstanding debt");
         }
-      );
-      console.log("res=>>>", response.status);
+      }
+
       const newPaidTransaction = {
         userId: localStorage.getItem("userId"),
         transactionType: "Pay",
-        transactionPurpose: `Partial Payment for ${transaction.transactionPurpose}`,
-        transactionAmount: paidAmount, // Use the paid amount for the new transaction
+        transactionPurpose:
+          transaction.id === "outstanding-debt"
+            ? "Payment for Outstanding Debt"
+            : paymentOption === "full"
+            ? `Full Payment for ${transaction.transactionPurpose}`
+            : `Partial Payment for ${transaction.transactionPurpose}`,
+        transactionAmount: paidAmount,
         receiptUrl: Url || "",
         payableId: transaction.id,
         createdAt: new Date().toISOString(),
@@ -551,9 +517,21 @@ const MesobFinancial2 = () => {
 
       if (response2.status === 200) {
         notify("tr", "Payment recorded successfully", "success");
-
         fetchTransactions();
+        fetchUserInitialBalance();
+      } else {
+        throw new Error("Failed to add the payment record");
       }
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      notify("tr", `Error recording payment: ${error.message}`, "danger");
+    } finally {
+      setIsUpdatingTransaction(false);
+      setSelectedUnpaidTransaction(null);
+      setPaymentOption(null);
+      setShowAddTransaction(false);
+      setTransactionAmount("");
+      setRemainingAmount(0);
     }
   };
 
@@ -885,7 +863,9 @@ const MesobFinancial2 = () => {
           updatedTransaction = {
             ...payableItem, // Include all existing properties of the item
             status: "Payable",
-            transactionAmount: parseFloat(payableItem.transactionAmount) + parseFloat(transaction.transactionAmount),
+            transactionAmount:
+              parseFloat(payableItem.transactionAmount) +
+              parseFloat(transaction.transactionAmount),
             updatedAt: new Date().toISOString(),
           };
         }
@@ -1657,7 +1637,7 @@ const MesobFinancial2 = () => {
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
-                                0
+                              0
                                 ? "Net Loss"
                                 : "Net Income"}
                             </strong>
@@ -1758,10 +1738,17 @@ const MesobFinancial2 = () => {
                         </tr>
                         <tr>
                           <td>
-                            <strong>Begining Equity</strong>
+                            <strong>Beginning Equity</strong>
                           </td>
                           <td></td>
-                          <td>{initialBalance + initialvalueableItems}</td>
+                          <td style={{ textAlign: "right" }}>
+                            $
+                            {(
+                              initialBalance +
+                              initialvalueableItems -
+                              initialoutstandingDebt
+                            ).toFixed(2)}
+                          </td>
                         </tr>
                         <tr>
                           <td>Retained earnings / Net income</td>
@@ -2166,130 +2153,130 @@ const MesobFinancial2 = () => {
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "Payable") && (
-                <>
-                  <FormGroup>
-                    <Label>Purpose:</Label>
+              <>
+                <FormGroup>
+                  <Label>Purpose:</Label>
 
-                    <Input
-                      type="select"
-                      value={transactionPurpose}
-                      onChange={(e) => setTransactionPurpose(e.target.value)}
-                    >
-                      <option value="">Select purpose</option>
-                      {transactionType === "receive" && (
-                        <>
-                          <option value="Freight Income">Freight Income</option>
-                          <option value="Lease Income">Lease Income</option>
-                          <option value="Fuel Surcharge Revenue">
-                            Fuel Surcharge Revenue
-                          </option>
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "pay" && paymentMode === "new" && (
-                        <>
-                          <option value="Fuel Expense">Fuel Expense</option>
-                          <option value="Truck Repairs and Maintenance">
-                            Truck Repairs and Maintenance
-                          </option>
-                          <option value="Driver Salaries/Wages">
-                            Driver Salaries/Wages
-                          </option>
-                          <option value="Insurance Premiums">
-                            Insurance Premiums
-                          </option>
-                          <option value="Toll Charges">Toll Charges</option>
-                          <option value="Loan Payment">Loan Payment</option>
-                          <option value="Accounts Payable">
-                            Accounts Payable
-                          </option>
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "Payable" && (
-                        <>
-                          <option value="PPMOTS">
-                            Provider Payments (Expense) / Money Owed to Suppliers
-                            (Expense)
-                          </option>
-                          <option value="FC">Freight Costs (Expense)</option>
-                          <option value="Wages">Wages (Expense)</option>
-                          <option value="Utilities">Utilities (Expense)</option>
-                          <option value="Taxes">Taxes (Expense)</option>
-                          <option value="Rent">Rent (Expense)</option>
-                          <option value="Insurance">Insurance (Expense)</option>
-                          <option value="Other">Other (Expense)</option>
-                        </>
-                      )}
-                    </Input>
-                    {transactionPurpose === "manual" && (
-                      <FormGroup>
-                        <Input
-                          type="text"
-                          placeholder="Enter purpose manually"
-                          value={manualPurpose}
-                          onChange={(e) => {
-                            setManualPurpose(e.target.value);
-                            setFormErrors({ ...formErrors, manualPurpose: "" });
-                          }}
-                          style={{ marginTop: "10px" }}
-                          invalid={!!formErrors.manualPurpose}
-                        />
-                        {formErrors.manualPurpose && (
-                          <div className="text-danger">
-                            {formErrors.manualPurpose}
-                          </div>
-                        )}
-                      </FormGroup>
+                  <Input
+                    type="select"
+                    value={transactionPurpose}
+                    onChange={(e) => setTransactionPurpose(e.target.value)}
+                  >
+                    <option value="">Select purpose</option>
+                    {transactionType === "receive" && (
+                      <>
+                        <option value="Freight Income">Freight Income</option>
+                        <option value="Lease Income">Lease Income</option>
+                        <option value="Fuel Surcharge Revenue">
+                          Fuel Surcharge Revenue
+                        </option>
+                        <option value="manual">Enter Manually</option>
+                      </>
                     )}
-                  </FormGroup>
-                  <FormGroup>
-                    <Label>Amount ($):</Label>
-                    <Input
-                      type="number"
-                      value={transactionAmount}
-                      onChange={(e) => setTransactionAmount(e.target.value)}
-                    />
-                  </FormGroup>
-                  {transactionType === "pay" && paymentMode === "new" && (
+                    {transactionType === "pay" && paymentMode === "new" && (
+                      <>
+                        <option value="Fuel Expense">Fuel Expense</option>
+                        <option value="Truck Repairs and Maintenance">
+                          Truck Repairs and Maintenance
+                        </option>
+                        <option value="Driver Salaries/Wages">
+                          Driver Salaries/Wages
+                        </option>
+                        <option value="Insurance Premiums">
+                          Insurance Premiums
+                        </option>
+                        <option value="Toll Charges">Toll Charges</option>
+                        <option value="Loan Payment">Loan Payment</option>
+                        <option value="Accounts Payable">
+                          Accounts Payable
+                        </option>
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "Payable" && (
+                      <>
+                        <option value="PPMOTS">
+                          Provider Payments (Expense) / Money Owed to Suppliers
+                          (Expense)
+                        </option>
+                        <option value="FC">Freight Costs (Expense)</option>
+                        <option value="Wages">Wages (Expense)</option>
+                        <option value="Utilities">Utilities (Expense)</option>
+                        <option value="Taxes">Taxes (Expense)</option>
+                        <option value="Rent">Rent (Expense)</option>
+                        <option value="Insurance">Insurance (Expense)</option>
+                        <option value="Other">Other (Expense)</option>
+                      </>
+                    )}
+                  </Input>
+                  {transactionPurpose === "manual" && (
                     <FormGroup>
-                      <Label>Receipt:</Label>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        <Button
-                          color="info"
-                          onClick={() => fileInputRef.current.click()}
-                          style={{ marginBottom: "0" }}
-                        >
-                          {receipt ? "Change Receipt" : "Upload Receipt"}
-                        </Button>
-                        {receipt && (
-                          <span style={{ color: "green" }}>✓ {receipt.name}</span>
-                        )}
-                      </div>
                       <Input
-                        type="file"
-                        innerRef={fileInputRef}
-                        onChange={handleReceiptUpload}
-                        accept="image/*,.pdf"
-                        style={{ display: "none" }}
+                        type="text"
+                        placeholder="Enter purpose manually"
+                        value={manualPurpose}
+                        onChange={(e) => {
+                          setManualPurpose(e.target.value);
+                          setFormErrors({ ...formErrors, manualPurpose: "" });
+                        }}
+                        style={{ marginTop: "10px" }}
+                        invalid={!!formErrors.manualPurpose}
                       />
+                      {formErrors.manualPurpose && (
+                        <div className="text-danger">
+                          {formErrors.manualPurpose}
+                        </div>
+                      )}
                     </FormGroup>
                   )}
-                  <Button
-                    color="success"
-                    onClick={handleAddTransaction}
-                    disabled={isAddingTransaction}
-                  >
-                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                  </Button>
-                </>
-              )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Amount ($):</Label>
+                  <Input
+                    type="number"
+                    value={transactionAmount}
+                    onChange={(e) => setTransactionAmount(e.target.value)}
+                  />
+                </FormGroup>
+                {transactionType === "pay" && paymentMode === "new" && (
+                  <FormGroup>
+                    <Label>Receipt:</Label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <Button
+                        color="info"
+                        onClick={() => fileInputRef.current.click()}
+                        style={{ marginBottom: "0" }}
+                      >
+                        {receipt ? "Change Receipt" : "Upload Receipt"}
+                      </Button>
+                      {receipt && (
+                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      innerRef={fileInputRef}
+                      onChange={handleReceiptUpload}
+                      accept="image/*,.pdf"
+                      style={{ display: "none" }}
+                    />
+                  </FormGroup>
+                )}
+                <Button
+                  color="success"
+                  onClick={handleAddTransaction}
+                  disabled={isAddingTransaction}
+                >
+                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                </Button>
+              </>
+            )}
           </ModalBody>
         </Modal>
         {/* Previe modal */}
