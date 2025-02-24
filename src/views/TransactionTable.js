@@ -58,13 +58,18 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                 ) : (
                   <>
                     {/* Purpose first for other cases */}
-                    <div>{transaction.transactionPurpose}</div>
+                    <div>
+                      {transaction.transactionPurpose}
+                      {transaction.transactionType === "Payable"
+                        ? " [Expense]"
+                        : ""}
+                    </div>
                     {/* Transaction type below */}
                     <div style={{ fontWeight: "bold" }}>
                       {transaction.transactionType === "Pay"
                         ? "Pay [Cash]"
                         : transaction.transactionType === "Payable"
-                        ? "Payable [Expense]"
+                        ? "Payable "
                         : transaction.transactionType === "New_Item"
                         ? "Pay [Cash]"
                         : transaction.transactionType}

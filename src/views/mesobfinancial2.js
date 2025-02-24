@@ -699,28 +699,29 @@ const MesobFinancial2 = () => {
     return totalInventory.toFixed(2);
   };
 
-  const calculateTotalExpenses = (condition) => {
-    const totalexp = Object.values(items).reduce((sum, value) => {
-      if (value.transactionType === "Pay") {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-    const unpaidexp = Object.values(items).reduce((sum, value) => {
-      if (
-        value.transactionType === "Payable" &&
-        (value.status === "Unpaid" || value.status === "Payable")
-      ) {
-        return sum + parseFloat(value.transactionAmount || 0);
-      }
-      return sum;
-    }, 0);
-    // console.log("unpaidexp=>", unpaidexp);
-    if (condition !== true) {
-      return totalexp.toFixed(2);
-    } else {
-      return (totalexp + unpaidexp).toFixed(2);
-    }
+  const calculateTotalExpenses = () => {
+    return Object.values(items)
+      .reduce((sum, value) => {
+        if (value.transactionType === "Pay" && value.status === "Paid") {
+          return sum + parseFloat(value.transactionAmount || 0);
+        }
+        return sum;
+      }, 0)
+      .toFixed(2);
+  };
+
+  const calculateTotalPayables = () => {
+    return Object.values(items)
+      .reduce((sum, value) => {
+        if (
+          value.transactionType === "Payable" &&
+          (value.status === "Unpaid" || value.status === "Payable")
+        ) {
+          return sum + parseFloat(value.transactionAmount || 0);
+        }
+        return sum;
+      }, 0)
+      .toFixed(2);
   };
 
   const calculateTotalCash = () => {
@@ -876,10 +877,15 @@ const MesobFinancial2 = () => {
         let updatedTransaction;
         if (payableItem) {
           console.log("payableItem=>>>>--->>>", payableItem);
-
+          console.log(
+            ">>>>>>>>>>",
+            transactionPurpose,
+            transaction.transactionAmount
+          );
           updatedTransaction = {
             ...payableItem, // Include all existing properties of the item
             status: "Payable",
+
             updatedAt: new Date().toISOString(),
           };
         }
@@ -1187,7 +1193,6 @@ const MesobFinancial2 = () => {
             <h3
               style={{
                 color: "white",
-                // marginLeft: "45px",
                 justifyContent: "center",
                 alignItems: "center",
                 display: "flex",
@@ -1518,34 +1523,57 @@ const MesobFinancial2 = () => {
                             (item) =>
                               (item.transactionPurpose === purpose &&
                                 item.transactionType === "Pay") ||
-                              (item.transactionType === "Payable" &&
-                                (item.status === "Unpaid" ||
-                                  item.status === "Payable"))
+                              (item.transactionPurpose === purpose &&
+                                item.transactionType === "Payable")
                           );
                         })
-                        .map(([purpose, amount]) => (
-                          <div
-                            key={purpose}
-                            style={{
-                              marginLeft: "20px",
-                              marginBottom: "5px",
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            <span style={{ marginRight: "10px" }}>
-                              {purpose} ={" "}
-                            </span>
-                            <span
+                        .map(([purpose, amount]) => {
+                          const totalAmount = items.reduce((sum, item) => {
+                            if (
+                              item.transactionPurpose === purpose &&
+                              (item.transactionType === "Pay" ||
+                                item.transactionType === "Payable")
+                            ) {
+                              return (
+                                sum + parseFloat(item.transactionAmount || 0)
+                              );
+                            }
+                            return sum;
+                          }, 0);
+
+                          const isPaid = items.some(
+                            (item) =>
+                              item.transactionPurpose === purpose &&
+                              item.transactionType === "Payable" &&
+                              item.status === "Paid"
+                          );
+
+                          return (
+                            <div
+                              key={purpose}
                               style={{
-                                backgroundColor: colors.expense,
-                                padding: "2px 5px",
+                                marginLeft: "20px",
+                                marginBottom: "5px",
+                                display: "flex",
+                                alignItems: "center",
                               }}
                             >
-                              ${amount.toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
+                              <span style={{ marginRight: "10px" }}>
+                                {purpose} ={" "}
+                              </span>
+                              <span
+                                style={{
+                                  backgroundColor: isPaid
+                                    ? colors.payable
+                                    : colors.expense,
+                                  padding: "2px 5px",
+                                }}
+                              >
+                                ${totalAmount.toFixed(2)}
+                              </span>
+                            </div>
+                          );
+                        })}
                     </div>
                   </div>
                 </CardBody>
@@ -1694,7 +1722,7 @@ const MesobFinancial2 = () => {
                           <td>Inventory</td>
                           <td
                             style={{
-                              backgroundColor: colors.cash,
+                              backgroundColor: colors.expense,
                               textAlign: "right",
                             }}
                           >
