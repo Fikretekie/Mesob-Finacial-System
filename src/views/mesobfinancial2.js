@@ -838,86 +838,80 @@ const MesobFinancial2 = () => {
   const handleDelete = async (transaction) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       setLoading(true);
-      if (transaction?.payableId === "outstanding-debt") {
-        let userId = localStorage.getItem("userId");
-        const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
-          {
-            outstandingDebt: parseFloat(transaction.transactionAmount),
-          }
-        );
-        console.log("res=>>>", response.status);
-        console.log("response=>>>>>>>", response);
-      } else {
-        const payableItem = items.find(
-          (item) => item.id === transaction.payableId
-        );
-        let updatedTransaction;
-        if (payableItem) {
-          console.log("payableItem=>>>>--->>>", payableItem);
-          console.log(
-            ">>>>>>>>>>",
-            transactionPurpose,
-            transaction.transactionAmount
+      try {
+        if (transaction?.payableId === "outstanding-debt") {
+          let userId = localStorage.getItem("userId");
+          const userResponse = await axios.get(
+            `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
           );
-          updatedTransaction = {
-            ...payableItem, // Include all existing properties of the item
-            status: "Payable",
-            transactionAmount:
-              parseFloat(payableItem.transactionAmount) +
-              parseFloat(transaction.transactionAmount),
-            updatedAt: new Date().toISOString(),
-          };
+          const currentOutstandingDebt =
+            userResponse.data.user.outstandingDebt || 0;
+
+          const updatedOutstandingDebt =
+            parseFloat(currentOutstandingDebt) +
+            parseFloat(transaction.transactionAmount);
+
+          const response = await axios.put(
+            `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+            {
+              outstandingDebt: updatedOutstandingDebt,
+            }
+          );
+          console.log("Updated outstanding debt response:", response);
+        } else {
+          const payableItem = items.find(
+            (item) => item.id === transaction.payableId
+          );
+          if (payableItem) {
+            const updatedTransaction = {
+              ...payableItem,
+              status: "Payable",
+              transactionAmount:
+                parseFloat(payableItem.transactionAmount) +
+                parseFloat(transaction.transactionAmount),
+              updatedAt: new Date().toISOString(),
+            };
+
+            const response = await fetch(
+              `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+                transaction.payableId
+              )}`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedTransaction),
+              }
+            );
+            console.log("Updated payable transaction response:", response);
+          }
         }
 
-        const response = await fetch(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
-            transaction.payableId
-          )}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedTransaction),
-          }
-        );
-        console.log("response=>>>>>>>", response);
-      }
-
-      axios
-        .delete(
+        const deleteResponse = await axios.delete(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
           {
             headers: {
               "Content-Type": "application/json",
             },
           }
-        )
-        .then((response) => {
-          if (response.status === 200) {
-            notify("tr", "Record deleted successfully", "success");
-            fetchTransactions();
-          } else {
-            notify("tr", "Failed to delete record", "danger");
-          }
-        })
-        .catch((error) => {
-          if (error.response && error.response.status === 404) {
-            // If the transaction is not found, it might have been a paid transaction
-            // that was already soft-deleted. In this case, we'll consider it a success.
-            notify("tr", "Record deleted successfully", "success");
-            fetchTransactions();
-          } else {
-            console.error("Delete error:", error);
-            notify(
-              "tr",
-              error.response?.data?.message || "Failed to delete record",
-              "danger"
-            );
-          }
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        );
+
+        if (deleteResponse.status === 200) {
+          notify("tr", "Record deleted successfully", "success");
+          fetchTransactions();
+          fetchUserInitialBalance();
+        } else {
+          notify("tr", "Failed to delete record", "danger");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        notify(
+          "tr",
+          error.response?.data?.message || "Failed to delete record",
+          "danger"
+        );
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

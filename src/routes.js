@@ -6,8 +6,8 @@ import MesobFinancial2 from "views/mesobfinancial2";
 import Receipts from "views/Receipts";
 import UserPage from "views/UserPage";
 import CSVReports from "views/CSVReports";
-
-
+import AdminSubscriptions from "views/Payment/AdminSubscriptions";
+import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 
 const adminRoutes = [
   {
@@ -59,6 +59,13 @@ const adminRoutes = [
     component: <Receipts />,
     layout: "/admin",
   },
+  {
+    path: "/subscriptions",
+    name: "Subscriptions",
+    icon: "business_money-coins",
+    component: <AdminSubscriptions />,
+    layout: "/admin",
+  },
 ];
 
 const customerRoutes = [
@@ -102,6 +109,13 @@ const customerRoutes = [
     name: "Backup CSV",
     icon: "files_single-copy-04",
     component: <CSVReports />,
+    layout: "/customer",
+  },
+  {
+    path: "/subscription",
+    name: "Subscribe",
+    icon: "business_money-coins",
+    component: <SubscriptionPlans />,
     layout: "/customer",
   },
 ];
