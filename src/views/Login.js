@@ -19,15 +19,9 @@ const Login = () => {
   const notificationAlertRef = useRef(null);
 
   useEffect(() => {
-    const userRole = localStorage.getItem("role");
     const userEmail = localStorage.getItem("user_email");
-
-    if (userEmail && userRole) {
-      if (userRole === "2") {
-        navigate("/customer/dashboard");
-      } else {
-        navigate("/admin/dashboard");
-      }
+    if (userEmail) {
+      navigate("/admin/dashboard");
     }
   }, [navigate]);
 
