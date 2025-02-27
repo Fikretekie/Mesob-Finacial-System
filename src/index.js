@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
-
+import { Amplify } from "aws-amplify";
 import userReducer from "./store/userSlice";
 
 import "bootstrap/dist/css/bootstrap.css";
@@ -36,6 +36,23 @@ const SubscriptionWithParams = () => {
   const priceId = location.state?.priceId || "";
   return <SubscriptionPage priceId={priceId} />;
 };
+Amplify.configure({
+  Auth: {
+    Cognito: {
+      userPoolId: "us-east-1_laMPlcB1N",
+      userPoolClientId: "ulrla7en4ocu2gfbh9i536fnk",
+      loginWith: {
+        oauth: {
+          domain: "us-east-1lamplcb1n.auth.us-east-1.amazoncognito.com",
+          scopes: ["email", "profile", "openid"],
+          redirectSignIn: ["http://localhost:3000/"],
+          redirectSignOut: ["http://localhost:3000/"],
+          responseType: "code",
+        },
+      },
+    },
+  },
+});
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
