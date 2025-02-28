@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn } from "aws-amplify/auth";
+import getUserInfo from "utils/Getuser";
 
 const logo = "/logo.png";
 
@@ -22,8 +23,10 @@ const Login = () => {
 
   useEffect(() => {
     const userEmail = localStorage.getItem("user_email");
+    const role = localStorage.getItem("role");
     if (userEmail) {
-      navigate("/admin/dashboard");
+      const path = role === "2" ? "/customer/dashboard" : "/admin/dashboard";
+      navigate(path);
     }
   }, [navigate]);
 
@@ -49,15 +52,17 @@ const Login = () => {
     }
 
     try {
-      const { isSignedIn, userId } = await signIn({
+      let res = await signIn({
         username: email,
-        password,
+        password: password,
       });
-
-      if (isSignedIn && userId) {
+      console.log(">>>>", res);
+      if (res.isSignedIn === true) {
+        let user = await getUserInfo();
+        console.log(".........", user.userId);
         console.log("Sign-in successful");
         const response = await fetch(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
           {
             method: "GET",
             headers: {
@@ -68,35 +73,31 @@ const Login = () => {
         );
 
         const result = await response.json();
+        console.log(">>>>>>>>>>>..", result);
+        localStorage.clear();
+        localStorage.setItem("userId", user.userId);
+        localStorage.setItem("user_email", result.user?.email || "");
+        localStorage.setItem("user_name", result.user?.name || "");
+        localStorage.setItem("role", result.user?.role?.toString());
+        localStorage.setItem(
+          "outstandingDebt",
+          result.user?.outstandingDebt || "0"
+        );
+        localStorage.setItem(
+          "valueableItems",
+          result.user?.valueableItems || "0"
+        );
+        localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
 
-        if (response.ok && result.message?.toLowerCase().includes("success")) {
-          localStorage.clear();
-          localStorage.setItem("userId", userId);
-          localStorage.setItem("user_email", result.user?.email || "");
-          localStorage.setItem("user_name", result.user?.name || "");
-          localStorage.setItem("role", result.user?.role?.toString());
-          localStorage.setItem(
-            "outstandingDebt",
-            result.user?.outstandingDebt || "0"
-          );
-          localStorage.setItem(
-            "valueableItems",
-            result.user?.valueableItems || "0"
-          );
-          localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
+        showNotification("success", "Login successful!");
 
-          showNotification("success", "Login successful!");
+        const userRole = parseInt(result.user?.role);
+        const path =
+          userRole === 2 ? "/customer/dashboard" : "/admin/dashboard";
 
-          const userRole = parseInt(result.user?.role);
-          const path =
-            userRole === 2 ? "/customer/dashboard" : "/admin/dashboard";
-
-          setTimeout(() => {
-            navigate(path, { replace: true });
-          }, 100);
-        } else {
-          showNotification("danger", result.message || "Invalid credentials");
-        }
+        setTimeout(() => {
+          navigate(path, { replace: true });
+        }, 100);
       } else {
         showNotification("danger", "Sign-in failed");
       }

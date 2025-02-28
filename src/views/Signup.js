@@ -88,6 +88,8 @@ const SignupPage = () => {
         },
       });
       console.log("Sign-up successful", res);
+      // Redirect to confirmation page
+      navigate("/confirm", { state: { email: email, phone_number: phone } });
       const data = {
         username: email,
         name,
@@ -215,6 +217,10 @@ const SignupPage = () => {
       showNotification("danger", "An unexpected error occurred");
     }
   };
+  const handlePhoneChange = (value) => {
+    const formattedPhone = "+" + value.replace(/[^\d]/g, "");
+    setPhone(formattedPhone);
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -276,10 +282,7 @@ const SignupPage = () => {
             <PhoneInput
               country={"pk"}
               value={phone}
-              onChange={(value) => {
-                setPhone(value);
-                setErrors((prev) => ({ ...prev, phone: "" }));
-              }}
+              onChange={handlePhoneChange}
               inputStyle={{
                 ...styles.input,
                 width: "100%",

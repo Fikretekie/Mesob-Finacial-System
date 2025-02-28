@@ -92,31 +92,55 @@ const Receipts = ({ selectedUser }) => {
   //   setPreviewModal(true);
   // };
 
-  const handlePreview = async (receipt) => {
-    console.log("Receipt URL:", receipt.receiptUrl); // Debugging: Check the URL
-    setSelectedReceipt(receipt); // Update state
+  // const handlePreview = async (receipt) => {
+  //   console.log("Receipt URL:", receipt.receiptUrl); // Debugging: Check the URL
+  //   setSelectedReceipt(receipt); // Update state
 
-    setPreviewModal(true); // Open modal
+  //   setPreviewModal(true); // Open modal
+  // };
+  const handlePreview = (receipt) => {
+    const modifiedUrl = receipt.receiptUrl.replace(
+      "app.mesobfinancial.com.s3.amazonaws.com",
+      "s3.amazonaws.com/app.mesobfinancial.com"
+    );
+    setSelectedReceipt({ receiptUrl: modifiedUrl });
+    setPreviewModal(true);
   };
 
   const handleDownload = async (receipt) => {
     try {
-      const url = receipt.receiptUrl;
-      const response = await fetch(url, {
-        mode: "cors",
-      });
+      if (!receipt || !receipt.receiptUrl) {
+        throw new Error("Invalid receipt or missing URL");
+      }
 
-      if (!response.ok) {
+      const url = receipt.receiptUrl.replace(
+        "app.mesobfinancial.com.s3.amazonaws.com",
+        "s3.amazonaws.com/app.mesobfinancial.com"
+      );
+
+      const response = await fetch(url);
+      if (!response.ok)
         throw new Error(`HTTP error! Status: ${response.status}`);
+
+      const contentType = response.headers.get("content-type");
+      let fileExtension;
+      if (contentType.startsWith("image/")) {
+        fileExtension = contentType.split("/")[1];
+      } else if (contentType === "application/pdf") {
+        fileExtension = "pdf";
+      } else {
+        fileExtension = "bin";
       }
 
       const blob = await response.blob();
+      const fileName = `receipt-${
+        receipt.transactionPurpose || "unknown"
+      }-${Date.now()}.${fileExtension}`;
+
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = `receipt-${
-        receipt.transactionPurpose
-      }-${new Date().getTime()}.pdf`;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

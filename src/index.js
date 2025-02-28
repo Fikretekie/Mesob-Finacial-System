@@ -25,6 +25,7 @@ import CustomerLayout from "layouts/Customer";
 import ForgotPassword from "views/ForgotPassword";
 import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import SubscriptionPage from "views/Payment/Subscription";
+import Confirm from "views/Confirm";
 // Create Redux store
 const store = configureStore({
   reducer: {
@@ -64,7 +65,8 @@ root.render(
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/mesonfinancelogin" element={<MesobFinanceLogin />} />
         <Route path="/signup" element={<SignupPage />} />
-
+        {/* New Confirm route */}
+        <Route path="/confirm" element={<Confirm />} />
         {/* Admin routes */}
         <Route path="/financial/*" element={<FinancialLayout />} />
 

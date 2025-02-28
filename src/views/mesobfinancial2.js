@@ -32,6 +32,7 @@ import CSVReports from "./CSVReports";
 import { useSelector } from "react-redux";
 import { Search } from "lucide-react";
 import { FaTimesCircle } from "react-icons/fa";
+import getUserInfo from "utils/Getuser";
 
 // import { useReactToPrint } from "react-to-print";
 const MesobFinancial2 = () => {
@@ -477,9 +478,12 @@ const MesobFinancial2 = () => {
         }
       } else {
         setIsUpdatingTransaction(true);
-        const id = localStorage.getItem("userId");
+        const res = await getUserInfo();
+        let userid = localStorage.getItem("userId");
+        console.log("", userid);
+
         const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
           {
             outstandingDebt:
               paymentOption === "full"
@@ -835,72 +839,104 @@ const MesobFinancial2 = () => {
     console.log("New expense:", expense);
   };
 
+  // const handleDelete = async (transaction) => {
+  //   if (window.confirm("Are you sure you want to delete this record?")) {
+  //     setLoading(true);
+  //     try {
+  //       if (transaction?.payableId === "outstanding-debt") {
+  //         let userId = localStorage.getItem("userId");
+  //         const userResponse = await axios.get(
+  //           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+  //         );
+  //         const currentOutstandingDebt =
+  //           userResponse.data.user.outstandingDebt || 0;
+
+  //         const updatedOutstandingDebt =
+  //           parseFloat(currentOutstandingDebt) +
+  //           parseFloat(transaction.transactionAmount);
+
+  //         await axios.put(
+  //           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+  //           { outstandingDebt: updatedOutstandingDebt }
+  //         );
+  //       } else if (transaction.payableId) {
+  //         const payableItem = items.find(
+  //           (item) => item.id === transaction.payableId
+  //         );
+  //         if (payableItem) {
+  //           const updatedTransaction = {
+  //             ...payableItem,
+  //             status: "Payable",
+  //             transactionAmount: (
+  //               parseFloat(payableItem.transactionAmount) +
+  //               parseFloat(transaction.transactionAmount)
+  //             ).toString(),
+  //             updatedAt: new Date().toISOString(),
+  //           };
+
+  //           await axios.put(
+  //             `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+  //               transaction.payableId
+  //             )}`,
+  //             updatedTransaction,
+  //             { headers: { "Content-Type": "application/json" } }
+  //           );
+  //         }
+  //       }
+
+  //       const deleteResponse = await axios.delete(
+  //         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+  //           transaction.id
+  //         )}`,
+  //         { headers: { "Content-Type": "application/json" } }
+  //       );
+
+  //       if (deleteResponse.status === 200) {
+  //         notify("tr", "Record deleted successfully", "success");
+  //         fetchTransactions();
+  //         fetchUserInitialBalance();
+  //       } else {
+  //         throw new Error("Failed to delete record");
+  //       }
+  //     } catch (error) {
+  //       console.error("Delete error:", error);
+  //       notify(
+  //         "tr",
+  //         error.response?.data?.message || "Failed to delete record",
+  //         "danger"
+  //       );
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  // };
   const handleDelete = async (transaction) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       setLoading(true);
       try {
+        // Handle outstanding debt
         if (transaction?.payableId === "outstanding-debt") {
-          let userId = localStorage.getItem("userId");
-          const userResponse = await axios.get(
-            `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
-          );
-          const currentOutstandingDebt =
-            userResponse.data.user.outstandingDebt || 0;
-
-          const updatedOutstandingDebt =
-            parseFloat(currentOutstandingDebt) +
-            parseFloat(transaction.transactionAmount);
-
-          const response = await axios.put(
-            `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
-            {
-              outstandingDebt: updatedOutstandingDebt,
-            }
-          );
-          console.log("Updated outstanding debt response:", response);
-        } else {
-          const payableItem = items.find(
-            (item) => item.id === transaction.payableId
-          );
-          if (payableItem) {
-            const updatedTransaction = {
-              ...payableItem,
-              status: "Payable",
-              transactionAmount:
-                parseFloat(payableItem.transactionAmount) +
-                parseFloat(transaction.transactionAmount),
-              updatedAt: new Date().toISOString(),
-            };
-
-            const response = await fetch(
-              `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
-                transaction.payableId
-              )}`,
-              {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedTransaction),
-              }
-            );
-            console.log("Updated payable transaction response:", response);
-          }
+          await handleOutstandingDebtDeletion(transaction);
+        }
+        // Handle payable transactions
+        else if (transaction.payableId) {
+          await handlePayableDeletion(transaction);
         }
 
+        // Delete the transaction
         const deleteResponse = await axios.delete(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+            transaction.id
+          )}`,
+          { headers: { "Content-Type": "application/json" } }
         );
 
         if (deleteResponse.status === 200) {
           notify("tr", "Record deleted successfully", "success");
-          fetchTransactions();
-          fetchUserInitialBalance();
+          await fetchTransactions();
+          await fetchUserInitialBalance();
         } else {
-          notify("tr", "Failed to delete record", "danger");
+          throw new Error("Failed to delete record");
         }
       } catch (error) {
         console.error("Delete error:", error);
@@ -912,6 +948,46 @@ const MesobFinancial2 = () => {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleOutstandingDebtDeletion = async (transaction) => {
+    let userId = localStorage.getItem("userId");
+    const userResponse = await axios.get(
+      `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+    );
+    const currentOutstandingDebt = userResponse.data.user.outstandingDebt || 0;
+
+    const updatedOutstandingDebt =
+      parseFloat(currentOutstandingDebt) +
+      parseFloat(transaction.transactionAmount);
+
+    await axios.put(
+      `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+      { outstandingDebt: updatedOutstandingDebt }
+    );
+  };
+
+  const handlePayableDeletion = async (transaction) => {
+    const payableItem = items.find((item) => item.id === transaction.payableId);
+    if (payableItem) {
+      const updatedTransaction = {
+        ...payableItem,
+        status: "Payable",
+        transactionAmount: (
+          parseFloat(payableItem.transactionAmount) +
+          parseFloat(transaction.transactionAmount)
+        ).toString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await axios.put(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+          transaction.payableId
+        )}`,
+        updatedTransaction,
+        { headers: { "Content-Type": "application/json" } }
+      );
     }
   };
 
@@ -2199,30 +2275,31 @@ const MesobFinancial2 = () => {
                         <option value="Taxes">Taxes (Expense)</option>
                         <option value="Rent">Rent (Expense)</option>
                         <option value="Insurance">Insurance (Expense)</option>
-                        <option value="Other">Other (Expense)</option>
+                        <option value="manual">Enter Manually</option>
                       </>
                     )}
                   </Input>
-                  {transactionPurpose === "manual" && (
-                    <FormGroup>
-                      <Input
-                        type="text"
-                        placeholder="Enter purpose manually"
-                        value={manualPurpose}
-                        onChange={(e) => {
-                          setManualPurpose(e.target.value);
-                          setFormErrors({ ...formErrors, manualPurpose: "" });
-                        }}
-                        style={{ marginTop: "10px" }}
-                        invalid={!!formErrors.manualPurpose}
-                      />
-                      {formErrors.manualPurpose && (
-                        <div className="text-danger">
-                          {formErrors.manualPurpose}
-                        </div>
-                      )}
-                    </FormGroup>
-                  )}
+                  {transactionType === "Payable" &&
+                    transactionPurpose === "manual" && (
+                      <FormGroup>
+                        <Input
+                          type="text"
+                          placeholder="Enter purpose manually"
+                          value={manualPurpose}
+                          onChange={(e) => {
+                            setManualPurpose(e.target.value);
+                            setFormErrors({ ...formErrors, manualPurpose: "" });
+                          }}
+                          style={{ marginTop: "10px" }}
+                          invalid={!!formErrors.manualPurpose}
+                        />
+                        {formErrors.manualPurpose && (
+                          <div className="text-danger">
+                            {formErrors.manualPurpose}
+                          </div>
+                        )}
+                      </FormGroup>
+                    )}
                 </FormGroup>
                 <FormGroup>
                   <Label>Amount ($):</Label>

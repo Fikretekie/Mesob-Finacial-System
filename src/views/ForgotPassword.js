@@ -4,13 +4,16 @@ import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import { Spinner } from "reactstrap";
 import { Helmet } from "react-helmet";
+import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
 
 const logo = "/logo.png";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmationCode, setConfirmationCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
   const navigate = useNavigate();
   const notificationAlertRef = useRef(null);
 
@@ -25,20 +28,40 @@ const ForgotPassword = () => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSendCode = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // API call logic here
-      // Use both email and newPassword in your reset logic
-      // ...
+      await resetPassword({ username: email });
+      setCodeSent(true);
+      showNotification("success", "Verification code sent to your email!");
+    } catch (error) {
+      console.error("Error sending verification code:", error);
+      showNotification(
+        "danger",
+        "Failed to send verification code. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await confirmResetPassword({
+        username: email,
+        confirmationCode,
+        newPassword,
+      });
       showNotification("success", "Password has been reset successfully!");
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
       console.error("Error during password reset:", error);
-      showNotification("danger", "An error occurred. Please try again later.");
+      showNotification("danger", "Failed to reset password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -82,9 +105,11 @@ const ForgotPassword = () => {
             Reset Password
           </h2>
           <p style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-            Enter your email and new password
+            {codeSent
+              ? "Enter the verification code and new password"
+              : "Enter your email to receive a verification code"}
           </p>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={codeSent ? handleResetPassword : handleSendCode}>
             <div style={{ marginBottom: "1rem" }}>
               <label
                 style={{
@@ -101,6 +126,7 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={codeSent}
                 style={{
                   width: "100%",
                   padding: "0.5rem",
@@ -109,30 +135,58 @@ const ForgotPassword = () => {
                 }}
               />
             </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  color: "#555555",
-                  fontWeight: "bold",
-                }}
-              >
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
-                }}
-              />
-            </div>
+            {codeSent && (
+              <>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      color: "#555555",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    value={confirmationCode}
+                    onChange={(e) => setConfirmationCode(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: "0.5rem",
+                      color: "#555555",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                    }}
+                  />
+                </div>
+              </>
+            )}
             <button
               type="submit"
               disabled={loading}
@@ -149,10 +203,13 @@ const ForgotPassword = () => {
             >
               {loading ? (
                 <>
-                  <Spinner color="light" size="sm" /> Resetting...
+                  <Spinner color="light" size="sm" />{" "}
+                  {codeSent ? "Resetting..." : "Sending..."}
                 </>
-              ) : (
+              ) : codeSent ? (
                 "Reset Password"
+              ) : (
+                "Send Verification Code"
               )}
             </button>
           </form>
