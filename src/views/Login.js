@@ -8,7 +8,7 @@ import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { signIn } from "aws-amplify/auth";
+import { signIn, signInWithRedirect } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 
 const logo = "/logo.png";
@@ -20,6 +20,15 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const notificationAlertRef = useRef(null);
+
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithRedirect({ provider: 'Google' });
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+    }
+  };
 
   useEffect(() => {
     const userEmail = localStorage.getItem("user_email");
@@ -165,6 +174,13 @@ const Login = () => {
               )}
             </button>
           </form>
+          <div className="separator">
+            <span>OR</span>
+          </div>
+
+          {/* <button onClick={handleGoogleSignIn} className="google-login-btn">
+            Sign in with Google
+          </button> */}
           <p>
             Don't have an account yet? <Link to="/signup">Sign up</Link>
           </p>

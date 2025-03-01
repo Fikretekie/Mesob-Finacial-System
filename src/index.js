@@ -49,6 +49,7 @@ Amplify.configure({
           redirectSignIn: ["http://localhost:3000/"],
           redirectSignOut: ["http://localhost:3000/"],
           responseType: "code",
+          clientId: '263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com',
         },
       },
     },

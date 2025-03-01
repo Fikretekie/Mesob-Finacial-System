@@ -280,7 +280,7 @@ const SignupPage = () => {
             {errors.email && <p style={styles.error}>{errors.email}</p>}
 
             <PhoneInput
-              country={"pk"}
+              country={"us"}
               value={phone}
               onChange={handlePhoneChange}
               inputStyle={{
@@ -298,7 +298,7 @@ const SignupPage = () => {
               buttonStyle={{
                 backgroundColor: "transparent",
                 border: "none",
-                padding: "0 10px",
+                padding: "0 5px",
               }}
             />
 
@@ -573,7 +573,7 @@ const styles = {
   eyeIcon: {
     position: "absolute",
     right: "10px",
-    top: "50%",
+    top: "40%",
     transform: "translateY(-50%)",
     background: "none",
     border: "none",

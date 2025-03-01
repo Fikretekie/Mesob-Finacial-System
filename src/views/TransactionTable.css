@@ -47,9 +47,9 @@
   tr:hover {
     background-color: #f8f9fa;
   } */
- /* TransactionTable.css */
- /* General styles for the table container */
- /* General styles for the table container */
+/* TransactionTable.css */
+/* General styles for the table container */
+/* General styles for the table container */
 .table-container {
   overflow-x: auto;
   margin: 20px 0;
@@ -85,14 +85,12 @@
 /* Debit & Credit styles */
 .debit {
   color: black;
-  background-color: #f0f8e7;
   padding: 5px 10px;
   border-radius: 5px;
 }
 
 .credit {
   color: black;
-  background-color: #f0f8e7;
   padding: 5px 10px;
   border-radius: 5px;
 }

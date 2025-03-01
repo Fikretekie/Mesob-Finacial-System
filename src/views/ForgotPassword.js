@@ -5,6 +5,7 @@ import "react-notification-alert/dist/animate.css";
 import { Spinner } from "reactstrap";
 import { Helmet } from "react-helmet";
 import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 
 const logo = "/logo.png";
 
@@ -16,6 +17,8 @@ const ForgotPassword = () => {
   const [codeSent, setCodeSent] = useState(false);
   const navigate = useNavigate();
   const notificationAlertRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(false); // New state for password visibility
+
 
   const showNotification = (type, message) => {
     const options = {
@@ -45,6 +48,10 @@ const ForgotPassword = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleResetPassword = async (e) => {
@@ -172,7 +179,7 @@ const ForgotPassword = () => {
                   >
                     New Password
                   </label>
-                  <input
+                  {/* <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -183,7 +190,37 @@ const ForgotPassword = () => {
                       border: "1px solid #ccc",
                       borderRadius: "4px",
                     }}
-                  />
+                  /> */}
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        padding: "0.5rem",
+                        paddingRight: "2.5rem", // Make space for the eye icon
+                        border: "1px solid #ccc",
+                        borderRadius: "4px",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={togglePasswordVisibility}
+                      style={{
+                        position: "absolute",
+                        right: "0.5rem",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                 </div>
               </>
             )}
