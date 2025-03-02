@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { signUp } from "aws-amplify/auth";
+
 const SignupPage = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -15,6 +16,7 @@ const SignupPage = () => {
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [businessType, setBusinessType] = useState("");
+  const [otherBusinessType, setOtherBusinessType] = useState(""); // new state
   const [cashBalance, setCashBalance] = useState("");
   const [outstandingDebt, setOutstandingDebt] = useState("");
   const [valueableItems, setValueableItems] = useState("");
@@ -43,6 +45,32 @@ const SignupPage = () => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
+  // Password validation function
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password); // Define special characters
+
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one uppercase letter.";
+    }
+    if (!hasLowerCase) {
+      return "Password must contain at least one lowercase letter.";
+    }
+    if (!hasNumber) {
+      return "Password must contain at least one number.";
+    }
+    if (!hasSpecialChar) {
+      return "Password must contain at least one special character.";
+    }
+    return ""; // No error
+  };
+
   const validateStep1 = () => {
     const newErrors = {};
     if (!name) newErrors.name = "Name is required.";
@@ -52,6 +80,12 @@ const SignupPage = () => {
       newErrors.email = "Please enter a valid email address.";
     if (!phone) newErrors.phone = "Phone number is required.";
     if (!password) newErrors.password = "Password is required.";
+    else {
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        newErrors.password = passwordError;
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -59,6 +93,9 @@ const SignupPage = () => {
   const validateStep2 = () => {
     const newErrors = {};
     if (!businessType) newErrors.businessType = "Business type is required.";
+    if (businessType === "Other_manuel_entry" && !otherBusinessType) {
+      newErrors.otherBusinessType = "Please specify your business type.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -97,7 +134,10 @@ const SignupPage = () => {
         companyName,
         email,
         phone_number: phone,
-        businessType,
+        businessType:
+          businessType === "Other_manuel_entry"
+            ? otherBusinessType
+            : businessType, // Use otherBusinessType if "Other" is selected
         cashBalance,
         outstandingDebt,
         valueableItems,
@@ -221,7 +261,6 @@ const SignupPage = () => {
     const formattedPhone = "+" + value.replace(/[^\d]/g, "");
     setPhone(formattedPhone);
   };
-
   const renderStepContent = () => {
     switch (step) {
       case 1:
@@ -229,7 +268,7 @@ const SignupPage = () => {
           <div>
             <h2>Create Your Account</h2>
             <p style={styles.subtext}>
-              Already have an account?{" "}
+              Already have an account?
               <Link to="/login" style={styles.link}>
                 Login
               </Link>
@@ -358,11 +397,33 @@ const SignupPage = () => {
             >
               <option value="">Select Business Type</option>
               <option value="Trucking">Trucking</option>
+              <option value="Rideshare">Rideshare</option>
               <option value="Groceries">Groceries</option>
-              <option value="Service">Service</option>
+              <option value="Cafes_and_restuarnt ">Cafes and restuarnt </option>
+              <option value="Other_manuel_entry">Other manuel entry</option>
             </select>
             {errors.businessType && (
               <p style={styles.error}>{errors.businessType}</p>
+            )}
+            {businessType === "Other_manuel_entry" && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Specify your business type"
+                  value={otherBusinessType}
+                  onChange={(e) => {
+                    setOtherBusinessType(e.target.value);
+                    setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
+                  }}
+                  style={{
+                    ...styles.input,
+                    borderColor: errors.otherBusinessType ? "red" : "#000",
+                  }}
+                />
+                {errors.otherBusinessType && (
+                  <p style={styles.error}>{errors.otherBusinessType}</p>
+                )}
+              </>
             )}
             <button
               onClick={handleNextStep}
@@ -387,7 +448,7 @@ const SignupPage = () => {
               owed to you, any debt you owe, and any valuable items (like
               inventory) you own. This helps us build an accurate financial
               picture of your business (recommended). <br></br>
-              If you want to start from zero,{" "}
+              If you want to start from zero,
               <a
                 onClick={(e) => {
                   e.preventDefault();
@@ -453,7 +514,6 @@ const SignupPage = () => {
             {errors.valueableItems && (
               <p style={styles.error}>{errors.valueableItems}</p>
             )}
-
             {/* Terms and Conditions Checkbox */}
             <label style={styles.termsLabel}>
               <input
@@ -462,7 +522,7 @@ const SignupPage = () => {
                 onChange={(e) => setTermsChecked(e.target.checked)}
                 style={{ marginRight: "5px" }}
               />
-              I agree to the{" "}
+              I agree to the
               <a
                 href="https://mesobfinancial.com/terms-of-use"
                 target="_blank"

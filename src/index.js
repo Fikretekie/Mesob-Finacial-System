@@ -37,6 +37,9 @@ const SubscriptionWithParams = () => {
   const priceId = location.state?.priceId || "";
   return <SubscriptionPage priceId={priceId} />;
 };
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const redirectUri = isLocal ? 'http://localhost:3000/' : 'https://app.mesobfinancial.com/';
+
 Amplify.configure({
   Auth: {
     Cognito: {
@@ -45,9 +48,9 @@ Amplify.configure({
       loginWith: {
         oauth: {
           domain: "us-east-1lamplcb1n.auth.us-east-1.amazoncognito.com",
-          scopes: ["email", "profile", "openid"],
-          redirectSignIn: ["http://localhost:3000/"],
-          redirectSignOut: ["http://localhost:3000/"],
+          scopes: ['openid', "email", "profile"],
+          redirectSignIn: [redirectUri],
+          redirectSignOut: [redirectUri],
           responseType: "code",
           clientId: '263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com',
         },

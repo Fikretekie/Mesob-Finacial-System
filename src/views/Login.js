@@ -21,10 +21,10 @@ const Login = () => {
   const navigate = useNavigate();
   const notificationAlertRef = useRef(null);
 
-
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithRedirect({ provider: 'Google' });
+      let res = await signInWithRedirect({ provider: 'Google' });
+      console.log('Sign-in with Google successful:', res);
     } catch (error) {
       console.error('Error signing in with Google:', error);
     }
