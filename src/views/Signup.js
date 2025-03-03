@@ -110,6 +110,84 @@ const SignupPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // const handleSignup = async (e) => {
+  //   if (!validateStep3()) return;
+  //   e.preventDefault();
+  //   try {
+  //     let res = await signUp({
+  //       username: email,
+  //       password: password,
+  //       options: {
+  //         userAttributes: {
+  //           email: email,
+  //           phone_number: phone,
+  //         },
+  //       },
+  //     });
+  //     console.log("Sign-up successful", res);
+  //     // Redirect to confirmation page
+  //     navigate("/confirm", { state: { email: email, phone_number: phone } });
+  //     const data = {
+  //       username: email,
+  //       name,
+  //       id: res.userId,
+  //       companyName,
+  //       email,
+  //       phone_number: phone,
+  //       businessType:
+  //         businessType === "Other_manuel_entry"
+  //           ? otherBusinessType
+  //           : businessType, // Use otherBusinessType if "Other" is selected
+  //       cashBalance,
+  //       outstandingDebt,
+  //       valueableItems,
+  //       role: 2, // Set default role as customer
+  //       startFromZero: false,
+  //     };
+
+  //     try {
+  //       const response = await fetch(
+  //         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify(data),
+  //         }
+  //       );
+
+  //       const result = await response.json();
+
+  //       if (response.status === 409) {
+  //         showNotification("warning", result.message);
+  //       } else if (response.ok) {
+  //         localStorage.setItem("userId", result.user?.id || "");
+  //         localStorage.setItem("user_email", result.user?.email || "");
+  //         localStorage.setItem("user_name", result.user?.name || "");
+  //         localStorage.setItem("role", "2"); // Set customer role
+
+  //         showNotification("success", "Signup successful!");
+  //         setTimeout(() => {
+  //           navigate("/customer/dashboard");
+  //         }, 100);
+  //       } else {
+  //         showNotification("danger", result.message || "Signup failed");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error details:", error);
+  //       showNotification(
+  //         "danger",
+  //         "An unexpected error occurred. Please try again later."
+  //       );
+  //     }
+
+  //     // Handle successful sign-up
+  //   } catch (error) {
+  //     console.error("Error signing up:", error);
+  //     return;
+  //   }
+  // };
   const handleSignup = async (e) => {
     if (!validateStep3()) return;
     e.preventDefault();
@@ -125,67 +203,81 @@ const SignupPage = () => {
         },
       });
       console.log("Sign-up successful", res);
-      // Redirect to confirmation page
-      navigate("/confirm", { state: { email: email, phone_number: phone } });
+
+      const creationDate = new Date().toISOString();
+      const trialEndDate = new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+      ).toISOString(); // 30 days from now
+
       const data = {
         username: email,
         name,
-        id: res.userId,
         companyName,
         email,
         phone_number: phone,
         businessType:
           businessType === "Other_manuel_entry"
             ? otherBusinessType
-            : businessType, // Use otherBusinessType if "Other" is selected
+            : businessType,
         cashBalance,
         outstandingDebt,
         valueableItems,
         role: 2, // Set default role as customer
         startFromZero: false,
+        creationDate,
+        trialEndDate,
+        subscription: false,
       };
 
       try {
-        const response = await fetch(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          }
+        const response = await axios.put(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${res.userId}`,
+          data
         );
 
-        const result = await response.json();
-
-        if (response.status === 409) {
-          showNotification("warning", result.message);
-        } else if (response.ok) {
-          localStorage.setItem("userId", result.user?.id || "");
-          localStorage.setItem("user_email", result.user?.email || "");
-          localStorage.setItem("user_name", result.user?.name || "");
+        if (response.status === 200) {
+          localStorage.setItem("userId", res.userId || "");
+          localStorage.setItem("user_email", email || "");
+          localStorage.setItem("user_name", name || "");
           localStorage.setItem("role", "2"); // Set customer role
+
+          // Schedule emails
+          await fetch(
+            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/scheduleEmails",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userId: res.userId,
+                firstEmailDate: new Date(
+                  Date.now() + 20 * 24 * 60 * 60 * 1000
+                ).toISOString(),
+                secondEmailDate: trialEndDate,
+              }),
+            }
+          );
 
           showNotification("success", "Signup successful!");
           setTimeout(() => {
-            navigate("/customer/dashboard");
+            navigate("/confirm", {
+              state: { email: email, phone_number: phone },
+            });
           }, 100);
         } else {
-          showNotification("danger", result.message || "Signup failed");
+          showNotification("danger", "Failed to update user profile");
         }
       } catch (error) {
-        console.error("Error details:", error);
+        console.error("Error updating user profile:", error);
         showNotification(
           "danger",
-          "An unexpected error occurred. Please try again later."
+          "An unexpected error occurred while updating profile. Please try again later."
         );
       }
-
-      // Handle successful sign-up
     } catch (error) {
       console.error("Error signing up:", error);
-      return;
+      showNotification("danger", "Error signing up. Please try again.");
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import { Button, Input, Card } from "reactstrap";
+import axios from "axios";
 
 const CheckoutForm = ({ priceId }) => {
   const stripe = useStripe();
@@ -35,24 +36,50 @@ const CheckoutForm = ({ priceId }) => {
       return;
     }
 
-    const res = await fetch(
-      "https://your-api-gateway-url/create-subscription",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          paymentMethodId: paymentMethod.id,
-          priceId,
-        }),
-      }
-    );
+    try {
+      // Create subscription
+      const createSubscriptionResponse = await axios.post(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/updateUserSubscription",
+        {
+          userId: localStorage.getItem("userId"),
+          subscriptionDetails: {
+            paymentMethodId: paymentMethod.id,
+            priceId,
+            ...formData,
+          },
+        }
+      );
 
-    const data = await res.json();
-    if (data.error) {
-      setMessage(data.error);
-    } else {
-      setMessage("Subscription successful!");
+      if (
+        createSubscriptionResponse.data.message ===
+        "Subscription created successfully"
+      ) {
+        // Update user's subscription status
+        const updateSubscriptionResponse = await axios.post(
+          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/updateUserSubscription",
+          {
+            userId: localStorage.getItem("userId"),
+            subscription: true,
+          }
+        );
+
+        if (
+          updateSubscriptionResponse.data.message ===
+          "Subscription updated successfully"
+        ) {
+          setMessage("Subscription successful!");
+        } else {
+          setMessage("Subscription created but user status update failed.");
+        }
+      } else {
+        setMessage(
+          createSubscriptionResponse.data.error ||
+            "Subscription creation failed."
+        );
+      }
+    } catch (error) {
+      setMessage("An error occurred. Please try again.");
+      console.error("Subscription error:", error);
     }
 
     setLoading(false);
