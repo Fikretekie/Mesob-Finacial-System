@@ -69,7 +69,6 @@ const Login = () => {
       if (res.isSignedIn === true) {
         let user = await getUserInfo();
         console.log(".........", user.userId);
-        console.log("Sign-in successful");
         const response = await fetch(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
           {

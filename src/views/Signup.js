@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { signUp } from "aws-amplify/auth";
+import axios from "axios";
 
 const SignupPage = () => {
   const [step, setStep] = useState(1);
@@ -93,7 +94,7 @@ const SignupPage = () => {
   const validateStep2 = () => {
     const newErrors = {};
     if (!businessType) newErrors.businessType = "Business type is required.";
-    if (businessType === "Other_manuel_entry" && !otherBusinessType) {
+    if (businessType === "Other" && !otherBusinessType) {
       newErrors.otherBusinessType = "Please specify your business type.";
     }
     setErrors(newErrors);
@@ -216,7 +217,7 @@ const SignupPage = () => {
         email,
         phone_number: phone,
         businessType:
-          businessType === "Other_manuel_entry"
+          businessType === "Other"
             ? otherBusinessType
             : businessType,
         cashBalance,
@@ -224,9 +225,9 @@ const SignupPage = () => {
         valueableItems,
         role: 2, // Set default role as customer
         startFromZero: false,
-        creationDate,
-        trialEndDate,
-        subscription: false,
+        // creationDate,
+        // trialEndDate,
+        // subscription: false,
       };
 
       try {
@@ -242,22 +243,22 @@ const SignupPage = () => {
           localStorage.setItem("role", "2"); // Set customer role
 
           // Schedule emails
-          await fetch(
-            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/scheduleEmails",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                userId: res.userId,
-                firstEmailDate: new Date(
-                  Date.now() + 20 * 24 * 60 * 60 * 1000
-                ).toISOString(),
-                secondEmailDate: trialEndDate,
-              }),
-            }
-          );
+          // await fetch(
+          //   "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/scheduleEmails",
+          //   {
+          //     method: "POST",
+          //     headers: {
+          //       "Content-Type": "application/json",
+          //     },
+          //     body: JSON.stringify({
+          //       userId: res.userId,
+          //       // firstEmailDate: new Date(
+          //       //   Date.now() + 20 * 24 * 60 * 60 * 1000
+          //       // ).toISOString(),
+          //       // secondEmailDate: trialEndDate,
+          //     }),
+          //   }
+          // );
 
           showNotification("success", "Signup successful!");
           setTimeout(() => {
@@ -492,12 +493,12 @@ const SignupPage = () => {
               <option value="Rideshare">Rideshare</option>
               <option value="Groceries">Groceries</option>
               <option value="Cafes_and_restuarnt ">Cafes and restuarnt </option>
-              <option value="Other_manuel_entry">Other manuel entry</option>
+              <option value="Other">Other manuel entry</option>
             </select>
             {errors.businessType && (
               <p style={styles.error}>{errors.businessType}</p>
             )}
-            {businessType === "Other_manuel_entry" && (
+            {businessType === "Other" && (
               <>
                 <input
                   type="text"
