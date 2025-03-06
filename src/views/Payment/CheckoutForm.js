@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import { Button, Input, Card } from "reactstrap";
 import axios from "axios";
-
+import NotificationAlert from "react-notification-alert";
+import "react-notification-alert/dist/animate.css";
 const CheckoutForm = ({ priceId }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const notificationAlertRef = useRef(null);
   const [formData, setFormData] = useState({
+    userId: localStorage.getItem("userId"),
+    createdAt: "",
     email: "",
     name: "",
-    country: "",
-    address: "",
+    phone: "030862337456",
+    priceId: "price_1QzDgvAhBlpHU9kBDjgqbKIK",
+    description: "New customer from Mesob Financials",
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,65 +23,52 @@ const CheckoutForm = ({ priceId }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  const showNotification = (type, message) => {
+    const options = {
+      place: "tr",
+      message: (
+        <div>
+          <div>{message}</div>
+        </div>
+      ),
+      type: type,
+      icon: "now-ui-icons ui-1_bell-53",
+      autoDismiss: 7,
+    };
+    notificationAlertRef.current.notificationAlert(options);
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!stripe || !elements) return;
+    // if (!stripe || !elements) return;
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: "card",
-      card: elements.getElement(CardElement),
-    });
+    // const { error, paymentMethod } = await stripe.createPaymentMethod({
+    //   type: "card",
+    //   card: elements.getElement(CardElement),
+    // });
 
-    if (error) {
-      setMessage(error.message);
-      setLoading(false);
-      return;
-    }
+    // if (error) {
+    //   showNotification("danger", error.message);
+    //   setLoading(false);
+    //   return;
+    // }
 
     try {
       // Create subscription
       const createSubscriptionResponse = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/updateUserSubscription",
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
         {
-          userId: localStorage.getItem("userId"),
-          subscriptionDetails: {
-            paymentMethodId: paymentMethod.id,
-            priceId,
-            ...formData,
-          },
+          userId: formData.userId,
+          createdAt: formData.createdAt,
+          description: formData.description,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          priceId: formData.priceId,
         }
       );
-
-      if (
-        createSubscriptionResponse.data.message ===
-        "Subscription created successfully"
-      ) {
-        // Update user's subscription status
-        const updateSubscriptionResponse = await axios.post(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/updateUserSubscription",
-          {
-            userId: localStorage.getItem("userId"),
-            subscription: true,
-          }
-        );
-
-        if (
-          updateSubscriptionResponse.data.message ===
-          "Subscription updated successfully"
-        ) {
-          setMessage("Subscription successful!");
-        } else {
-          setMessage("Subscription created but user status update failed.");
-        }
-      } else {
-        setMessage(
-          createSubscriptionResponse.data.error ||
-            "Subscription creation failed."
-        );
-      }
+      console.log(">>>>>>", createSubscriptionResponse);
     } catch (error) {
       setMessage("An error occurred. Please try again.");
       console.error("Subscription error:", error);
@@ -84,7 +76,17 @@ const CheckoutForm = ({ priceId }) => {
 
     setLoading(false);
   };
-
+  const fetchSubscriptions = async () => {
+    try {
+      const response = await axios.get(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription"
+      );
+      console.log(">>>", response);
+      // setSubscriptions(response.data); // Update state with fetched data
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+    }
+  };
   return (
     <Card className="max-w-md mx-auto p-6 shadow-lg rounded-xl">
       <h2 className="text-2xl font-bold mb-4">Payment Information</h2>
@@ -131,8 +133,10 @@ const CheckoutForm = ({ priceId }) => {
         >
           {loading ? "Processing..." : "Subscribe"}
         </Button>
+        <button onClick={fetchSubscriptions}>Get</button>
         {message && <p className="text-red-500 text-sm">{message}</p>}
       </form>
+      <NotificationAlert ref={notificationAlertRef} zIndex={9999} />
     </Card>
   );
 };

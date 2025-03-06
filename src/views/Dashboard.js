@@ -13,7 +13,8 @@ import {
   Popover,
   PopoverBody,
 } from "reactstrap";
-import { Line } from "react-chartjs-2";
+// import { Line } from "react-chartjs-2";
+import ReactApexChart from "react-apexcharts";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -33,7 +34,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { setSelectedUser } from "../store/userSlice";
 ChartJS.register(
   CategoryScale,
@@ -64,6 +65,13 @@ function Dashboard() {
   const dispatch = useDispatch();
   const [companyName, setCompanyName] = useState("");
   const selectedUser = useSelector((state) => state.selectedUser);
+
+  const handleAddTransactionClick = () => {
+    // Use navigate to go to the MesobFinancial2 page
+    navigate("/customer/financial-report", {
+      state: { openTransactionModal: true },
+    });
+  };
 
   const calculateTotalCash = () => {
     const totalReceived = items?.reduce((sum, item) => {
@@ -118,72 +126,79 @@ function Dashboard() {
       console.error("Error fetching users:", error);
     }
   };
-  const cashOnHandChartData = {
-    labels: ["Total Cash on Hand"],
-    datasets: [
-      {
-        label: "Cash on Hand",
-        data: [parseFloat(calculateTotalCash())],
-        fill: false,
-        borderColor: "rgb(75, 192, 192)",
-        tension: 0.1,
+  const getChartOptions = (title, data, labels) => {
+    return {
+      chart: {
+        type: "line",
+        toolbar: { show: false },
+        zoom: { enabled: false },
       },
-    ],
+      title: {
+        text: title,
+        align: "center",
+        style: {
+          fontSize: "16px",
+        },
+      },
+      series: [
+        {
+          name: title,
+          data: data,
+        },
+      ],
+      xaxis: {
+        categories: labels,
+      },
+      yaxis: {
+        title: {
+          text: "Amount",
+        },
+        //force nice rounding
+        tickAmount: 10,
+        min: 0,
+        max: Math.max(...data) + Math.max(...data) * 0.1, // Adjust the scaling factor as needed
+      },
+      stroke: {
+        curve: "straight", // Use "straight" for a direct line between points
+        width: 2, // Adjust the line thickness as needed
+      },
+      colors: ["#007BFF"], // Use a blue color, adjust as needed
+      markers: {
+        size: 5, // Adjust the size of the data point markers
+        colors: ["#007BFF"], // Make the markers the same color as the line
+      },
+      grid: {
+        show: true, // Ensure the grid is visible
+        borderColor: "#e7e7e7",
+        row: {
+          colors: ["#f3f3f3", "transparent"], // alternate grid colors
+          opacity: 0.5,
+        },
+      },
+    };
   };
 
-  const revenueChartData = {
-    labels: monthlySales.map((item) => item.month),
-    datasets: [
-      {
-        label: "Revenue",
-        data: monthlySales.map((item) => item.revenue),
-        fill: false,
-        borderColor: "rgb(54, 162, 235)",
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const payableChartData = {
-    labels: monthlySales.map((item) => item.month),
-    datasets: [
-      {
-        label: "Payable",
-        data: monthlySales.map((item) => item.payable),
-        fill: false,
-        borderColor: "rgb(255, 159, 64)",
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const expensesChartData = {
-    labels: monthlySales.map((item) => item.month),
-    datasets: [
-      {
-        label: "Expenses",
-        data: monthlySales.map((item) => item.expenses),
-        fill: false,
-        borderColor: "rgb(255, 99, 132)",
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
+  // Generate chart data
+  const revenueChartData = getChartOptions(
+    "Revenue",
+    monthlySales.map((item) => item.revenue),
+    monthlySales.map((item) => item.month)
+  );
+  const payableChartData = getChartOptions(
+    "Total Payable",
+    monthlySales.map((item) => item.payable),
+    monthlySales.map((item) => item.month)
+  );
+  const expensesChartData = getChartOptions(
+    "Total Expenses",
+    monthlySales.map((item) => item.expenses),
+    monthlySales.map((item) => item.month)
+  );
+  const cashOnHandChartData = getChartOptions(
+    "Total Cash on Hand",
+    monthlySales.map((item) => item.cashOnHand),
+    monthlySales.map((item) => item.month)
+  );
 
   const fetchFinancialData = async (uid = null) => {
     try {
@@ -338,8 +353,9 @@ function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard - Mesob Finance</title>
+        <title>Dashboard - Mesob Finance </title>
       </Helmet>
+
       <PanelHeader
         size="sm"
         content={
@@ -357,6 +373,19 @@ function Dashboard() {
           </div>
         }
       />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          gap: "10px",
+        }}
+      >
+        <Button color="primary" onClick={handleAddTransactionClick}>
+          <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
+          Add Transaction
+        </Button>
+      </div>
 
       {userRole === 0 && (
         <div
@@ -397,7 +426,7 @@ function Dashboard() {
       )}
 
       <div className="content">
-        <Row>
+        <Row style={{ marginTop: "28px" }}>
           <Col lg="3" md="6" xs="12">
             <Card className="card-stats">
               <CardBody>
@@ -503,7 +532,12 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2">TOTAL CASH ON HAND Chart</p>
                 <h4 className="text-center mb-3"></h4>
-                <Line data={cashOnHandChartData} />
+                <ReactApexChart
+                  options={cashOnHandChartData}
+                  series={cashOnHandChartData.series}
+                  type="line"
+                  height={300}
+                />
               </CardBody>
             </Card>
           </Col>
@@ -512,7 +546,12 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2">REVENUE Chart</p>
                 <h4 className="text-center mb-3"></h4>
-                <Line data={revenueChartData} />
+                <ReactApexChart
+                  options={revenueChartData}
+                  series={revenueChartData.series}
+                  type="line"
+                  height={300}
+                />
               </CardBody>
             </Card>
           </Col>
@@ -522,7 +561,12 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2">TOTAL PAYABLE Chart</p>
                 <h4 className="text-center mb-3"></h4>
-                <Line data={payableChartData} />
+                <ReactApexChart
+                  options={payableChartData}
+                  series={payableChartData.series}
+                  type="line"
+                  height={300}
+                />
               </CardBody>
             </Card>
           </Col>
@@ -531,7 +575,12 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2">TOTAL EXPENSES Chart</p>
                 <h4 className="text-center mb-3"></h4>
-                <Line data={expensesChartData} />
+                <ReactApexChart
+                  options={expensesChartData}
+                  series={expensesChartData.series}
+                  type="line"
+                  height={300}
+                />
               </CardBody>
             </Card>
           </Col>

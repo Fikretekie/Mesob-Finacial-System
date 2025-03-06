@@ -23,10 +23,10 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      let res = await signInWithRedirect({ provider: 'Google' });
-      console.log('Sign-in with Google successful:', res);
+      let res = await signInWithRedirect({ provider: "Google" });
+      console.log("Sign-in with Google successful:", res);
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error("Error signing in with Google:", error);
     }
   };
 
@@ -50,12 +50,78 @@ const Login = () => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   if (!email.trim()) {
+  //     console.error("Error: Email is empty!");
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     let res = await signIn({
+  //       username: email,
+  //       password: password,
+  //     });
+  //     console.log(">>>>", res);
+  //     if (res.isSignedIn === true) {
+  //       let user = await getUserInfo();
+  //       console.log(".........", user.userId);
+  //       const response = await fetch(
+  //         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             Accept: "application/json",
+  //           },
+  //         }
+  //       );
+
+  //       const result = await response.json();
+  //       console.log(">>>>>>>>>>>..", result);
+  //       localStorage.clear();
+  //       localStorage.setItem("userId", user.userId);
+  //       localStorage.setItem("user_email", result.user?.email || "");
+  //       localStorage.setItem("user_name", result.user?.name || "");
+  //       localStorage.setItem("role", result.user?.role?.toString());
+  //       localStorage.setItem(
+  //         "outstandingDebt",
+  //         result.user?.outstandingDebt || "0"
+  //       );
+  //       localStorage.setItem(
+  //         "valueableItems",
+  //         result.user?.valueableItems || "0"
+  //       );
+  //       localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
+
+  //       showNotification("success", "Login successful!");
+
+  //       const userRole = parseInt(result.user?.role);
+  //       const path =
+  //         userRole === 2 ? "/customer/dashboard" : "/admin/dashboard";
+
+  //       setTimeout(() => {
+  //         navigate(path, { replace: true });
+  //       }, 100);
+  //     } else {
+  //       showNotification("danger", "Sign-in failed");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error signing in:", error);
+  //     showNotification("danger", "An error occurred. Please try again later.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     if (!email.trim()) {
-      console.error("Error: Email is empty!");
+      showNotification("danger", "Error: Email is empty!");
       setLoading(false);
       return;
     }
@@ -105,9 +171,12 @@ const Login = () => {
 
         setTimeout(() => {
           navigate(path, { replace: true });
-        }, 100);
+        }, 2000);
       } else {
-        showNotification("danger", "Sign-in failed");
+        showNotification(
+          "danger",
+          "Sign-in failed. Please check your credentials."
+        );
       }
     } catch (error) {
       console.error("Error signing in:", error);
