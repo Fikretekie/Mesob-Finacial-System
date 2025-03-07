@@ -40,21 +40,15 @@ const CheckoutForm = ({ priceId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    // if (!stripe || !elements) return;
-
-    // const { error, paymentMethod } = await stripe.createPaymentMethod({
-    //   type: "card",
-    //   card: elements.getElement(CardElement),
-    // });
-
-    // if (error) {
-    //   showNotification("danger", error.message);
-    //   setLoading(false);
-    //   return;
-    // }
-
+    const subscriptionPlans = {
+      price_basic_monthly: "Basic Plan (Monthly)",
+      price_basic_yearly: "Basic Plan (Yearly)",
+      price_pro_monthly: "Professional Plan (Monthly)",
+      price_pro_yearly: "Professional Plan (Yearly)",
+    };
     try {
+      const selectedPlan =
+        subscriptionPlans[formData.priceId] || "Unknown Plan";
       // Create subscription
       const createSubscriptionResponse = await axios.post(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
@@ -66,6 +60,8 @@ const CheckoutForm = ({ priceId }) => {
           email: formData.email,
           phone: formData.phone,
           priceId: formData.priceId,
+          subscriptionPlan: selectedPlan,
+          address: formData.address,
         }
       );
       console.log(">>>>>>", createSubscriptionResponse);
@@ -76,17 +72,7 @@ const CheckoutForm = ({ priceId }) => {
 
     setLoading(false);
   };
-  const fetchSubscriptions = async () => {
-    try {
-      const response = await axios.get(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription"
-      );
-      console.log(">>>", response);
-      // setSubscriptions(response.data); // Update state with fetched data
-    } catch (error) {
-      console.error("Error fetching subscriptions:", error);
-    }
-  };
+
   return (
     <Card className="max-w-md mx-auto p-6 shadow-lg rounded-xl">
       <h2 className="text-2xl font-bold mb-4">Payment Information</h2>
@@ -133,7 +119,7 @@ const CheckoutForm = ({ priceId }) => {
         >
           {loading ? "Processing..." : "Subscribe"}
         </Button>
-        <button onClick={fetchSubscriptions}>Get</button>
+
         {message && <p className="text-red-500 text-sm">{message}</p>}
       </form>
       <NotificationAlert ref={notificationAlertRef} zIndex={9999} />

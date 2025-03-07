@@ -26,44 +26,28 @@ const AdminSubscriptions = () => {
       const response = await axios.get(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription"
       );
-      console.log(">>>", response);
-      // setSubscriptions(response.data); // Update state with fetched data
+      console.log("API Response:", response.data);
+
+      // Check if response.data is an array or contains subscriptions
+      if (Array.isArray(response.data)) {
+        setSubscriptions(response.data);
+      } else if (
+        response.data.subscriptions &&
+        Array.isArray(response.data.subscriptions)
+      ) {
+        setSubscriptions(response.data.subscriptions); // Set nested subscriptions array
+      } else {
+        throw new Error("Unexpected API response format");
+      }
+
+      setError(null); // Clear any previous errors
+      setSuccess("Subscriptions fetched successfully!");
     } catch (error) {
       console.error("Error fetching subscriptions:", error);
+      setError("Failed to fetch subscriptions. Please try again.");
+      setSuccess(null); // Clear any previous success messages
     }
   };
-  useEffect(() => {
-    fetchSubscriptions();
-  }, []);
-
-  // useEffect(() => {
-  //   // Dummy data
-  //   const dummyData = [
-  //     {
-  //       id: 1,
-  //       name: "John Doe",
-  //       userId: "user123",
-  //       paymentMethodId: "pm_1234567890",
-  //       createdAt: "2025-02-15",
-  //       address: "123 Main St, New York, USA",
-  //       subscriptionPlan: "monthly",
-  //       startDate: "2025-03-01",
-  //       expireDate: "2025-04-01",
-  //     },
-  //     {
-  //       id: 2,
-  //       name: "Jane Smith",
-  //       userId: "user456",
-  //       paymentMethodId: "pm_0987654321",
-  //       createdAt: "2025-02-20",
-  //       address: "456 Elm St, London, UK",
-  //       subscriptionPlan: "yearly",
-  //       startDate: "2025-03-01",
-  //       expireDate: "2026-03-01",
-  //     },
-  //   ];
-  //   setSubscriptions(dummyData);
-  // }, []);
 
   return (
     <>
@@ -74,6 +58,10 @@ const AdminSubscriptions = () => {
             <Card>
               <CardHeader>
                 <h5 className="title">All Subscriptions</h5>
+                {/* Add the Get button */}
+                <Button color="primary" onClick={fetchSubscriptions}>
+                  Get Subscriptions
+                </Button>
               </CardHeader>
               <CardBody>
                 {error && <Alert color="danger">{error}</Alert>}

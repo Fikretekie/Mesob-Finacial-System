@@ -355,7 +355,6 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
-
       <PanelHeader
         size="sm"
         content={
@@ -373,24 +372,26 @@ function Dashboard() {
           </div>
         }
       />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: "10px",
-        }}
-      >
-        <Button
-          style={{ marginRight: "4rem" }}
-          color="primary"
-          onClick={handleAddTransactionClick}
+      {userRole !== 0 && userRole !== 1 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: "10px",
+          }}
         >
-          <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
-          Add Transaction
-        </Button>
-      </div>
-
+          <Button
+            style={{ marginRight: "4rem" }}
+            color="primary"
+            onClick={handleAddTransactionClick}
+          >
+            <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
+            Add Transaction
+          </Button>
+        </div>
+      )}
+      ;
       {userRole === 0 && (
         <div
           className="content"
@@ -428,7 +429,6 @@ function Dashboard() {
           </Row>
         </div>
       )}
-
       <div className="content">
         <Row style={{ marginTop: "28px" }}>
           <Col lg="3" md="6" xs="12">
