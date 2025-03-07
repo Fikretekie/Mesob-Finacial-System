@@ -635,11 +635,13 @@ const MesobFinancial2 = () => {
     }
   }, [selectedUser]);
   useEffect(() => {
-    // Check if the `openTransactionModal` param is present in the location state
-    if (location.state && location.state.openTransactionModal) {
+    if (location.state?.openTransactionModal) {
       setShowAddTransaction(true);
+
+      // Clear the state after opening the modal
+      navigate(location.pathname, { replace: true });
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
   // Subscriptions
   useEffect(() => {
     const fetchUserSubscriptionData = async () => {
@@ -1621,10 +1623,10 @@ const MesobFinancial2 = () => {
                         .filter(([purpose, amount]) => {
                           return items.some(
                             (item) =>
-                              (item.transactionPurpose === purpose &&
-                                item.transactionType === "Pay") ||
-                              (item.transactionPurpose === purpose &&
-                                item.transactionType === "Payable")
+                              item.transactionPurpose === purpose &&
+                              (item.transactionType === "Pay" ||
+                                (item.transactionType === "Payable" &&
+                                  item.status !== "Paid"))
                           );
                         })
                         .map(([purpose, amount]) => {
@@ -1632,7 +1634,8 @@ const MesobFinancial2 = () => {
                             if (
                               item.transactionPurpose === purpose &&
                               (item.transactionType === "Pay" ||
-                                item.transactionType === "Payable")
+                                (item.transactionType === "Payable" &&
+                                  item.status !== "Paid"))
                             ) {
                               return (
                                 sum + parseFloat(item.transactionAmount || 0)
@@ -1728,21 +1731,39 @@ const MesobFinancial2 = () => {
                         </tr>
                         {Object.entries(expenses)
                           .filter(([purpose, amount]) => {
-                            const item = items.find(
+                            return items.some(
                               (item) =>
                                 item.transactionPurpose === purpose &&
-                                item.transactionType === "Pay"
+                                (item.transactionType === "Pay" ||
+                                  (item.transactionType === "Payable" &&
+                                    item.status !== "Paid"))
                             );
-                            return item;
                           })
-                          .map(([purpose, amount]) => (
-                            <tr key={`expense-${purpose}`}>
-                              <td>{purpose}</td>
-                              <td style={{ backgroundColor: "#fff" }}>
-                                ${amount.toFixed(2)}
-                              </td>
-                            </tr>
-                          ))}
+                          .map(([purpose, amount]) => {
+                            const totalAmount = items.reduce((sum, item) => {
+                              if (
+                                item.transactionPurpose === purpose &&
+                                (item.transactionType === "Pay" ||
+                                  (item.transactionType === "Payable" &&
+                                    item.status !== "Paid"))
+                              ) {
+                                return (
+                                  sum + parseFloat(item.transactionAmount || 0)
+                                );
+                              }
+                              return sum;
+                            }, 0);
+
+                            return (
+                              <tr key={`expense-${purpose}`}>
+                                <td>{purpose}</td>
+                                <td style={{ backgroundColor: "#fff" }}>
+                                  ${totalAmount.toFixed(2)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+
                         <tr>
                           <td>
                             <strong>Total Expenses</strong>

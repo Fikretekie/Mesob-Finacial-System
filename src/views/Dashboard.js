@@ -381,7 +381,11 @@ function Dashboard() {
           gap: "10px",
         }}
       >
-        <Button color="primary" onClick={handleAddTransactionClick}>
+        <Button
+          style={{ marginRight: "4rem" }}
+          color="primary"
+          onClick={handleAddTransactionClick}
+        >
           <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
           Add Transaction
         </Button>
