@@ -391,7 +391,6 @@ function Dashboard() {
           </Button>
         </div>
       )}
-      ;
       {userRole === 0 && (
         <div
           className="content"

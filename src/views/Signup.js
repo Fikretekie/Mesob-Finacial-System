@@ -7,6 +7,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { signUp } from "aws-amplify/auth";
 import axios from "axios";
+import { businessTypes } from "./BusinessTypes";
 
 const SignupPage = () => {
   const [step, setStep] = useState(1);
@@ -28,6 +29,52 @@ const SignupPage = () => {
   const notificationAlertRef = useRef(null);
   const navigate = useNavigate();
   const [termsChecked, setTermsChecked] = useState(false); // New state for terms checkbox
+  const [incomePurposes, setIncomePurposes] = useState([]);
+  const [expensePurposes, setExpensePurposes] = useState([]);
+  const [payablePurposes, setPayablePurposes] = useState([]);
+  const [manualIncomePurposes, setManualIncomePurposes] = useState([]);
+  const [manualExpensePurposes, setManualExpensePurposes] = useState([]);
+  const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
+  const [selectedBusinessType, setSelectedBusinessType] = useState("");
+  const getBusinessPurposes = (businessType) => {
+    // If the business type is "Other", return empty arrays for manual entry
+    if (businessType === "Other") {
+      return {
+        income: [],
+        expenses: [],
+        payables: [],
+      };
+    }
+
+    // Otherwise, return the predefined purposes for the business type
+    return (
+      businessTypes[businessType] || {
+        income: [],
+        expenses: [],
+        payables: [],
+      }
+    );
+  };
+  useEffect(() => {
+    if (selectedBusinessType) {
+      if (selectedBusinessType === "Other") {
+        // For manual entry, do not call getBusinessPurposes
+        setIncomePurposes(manualIncomePurposes);
+        setExpensePurposes(manualExpensePurposes);
+        setPayablePurposes(manualPayablePurposes);
+      } else {
+        const purposes = getBusinessPurposes(selectedBusinessType);
+        setIncomePurposes(purposes.income || []);
+        setExpensePurposes(purposes.expenses || []);
+        setPayablePurposes(purposes.payables || []);
+      }
+    }
+  }, [
+    selectedBusinessType,
+    manualIncomePurposes,
+    manualExpensePurposes,
+    manualPayablePurposes,
+  ]);
 
   useEffect(() => {
     if (isSignupSuccessful) {
@@ -93,10 +140,13 @@ const SignupPage = () => {
 
   const validateStep2 = () => {
     const newErrors = {};
-    if (!businessType) newErrors.businessType = "Business type is required.";
-    if (businessType === "Other" && !otherBusinessType) {
+    if (!selectedBusinessType) {
+      newErrors.businessType = "Business type is required.";
+    }
+    if (selectedBusinessType === "Other" && !otherBusinessType.trim()) {
       newErrors.otherBusinessType = "Please specify your business type.";
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -209,6 +259,10 @@ const SignupPage = () => {
       const trialEndDate = new Date(
         Date.now() + 30 * 24 * 60 * 60 * 1000
       ).toISOString(); // 30 days from now
+      const businessTypeValue =
+        selectedBusinessType === "Other"
+          ? otherBusinessType
+          : selectedBusinessType;
 
       const data = {
         username: email,
@@ -217,14 +271,13 @@ const SignupPage = () => {
         email,
         phone_number: phone,
         businessType:
-          businessType === "Other"
-            ? otherBusinessType
-            : businessType,
+          businessType === "Other" ? otherBusinessType : businessType,
         cashBalance,
         outstandingDebt,
         valueableItems,
         role: 2, // Set default role as customer
         startFromZero: false,
+        businessType: businessTypeValue,
         // creationDate,
         // trialEndDate,
         // subscription: false,
@@ -241,6 +294,7 @@ const SignupPage = () => {
           localStorage.setItem("user_email", email || "");
           localStorage.setItem("user_name", name || "");
           localStorage.setItem("role", "2"); // Set customer role
+          localStorage.setItem("businessType", businessTypeValue);
 
           // Schedule emails
           // await fetch(
@@ -354,6 +408,11 @@ const SignupPage = () => {
     const formattedPhone = "+" + value.replace(/[^\d]/g, "");
     setPhone(formattedPhone);
   };
+  const handleBusinessTypeChange = (type) => {
+    setSelectedBusinessType(type);
+    localStorage.setItem("businessType", type);
+  };
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
@@ -478,9 +537,9 @@ const SignupPage = () => {
           <div>
             <h2>Select Business Type</h2>
             <select
-              value={businessType}
+              value={selectedBusinessType}
               onChange={(e) => {
-                setBusinessType(e.target.value);
+                handleBusinessTypeChange(e.target.value);
                 setErrors((prev) => ({ ...prev, businessType: "" }));
               }}
               style={{
@@ -490,15 +549,20 @@ const SignupPage = () => {
             >
               <option value="">Select Business Type</option>
               <option value="Trucking">Trucking</option>
-              <option value="Rideshare">Rideshare</option>
+              <option value="RIDESHARE DRIVERS/PARTNERS">
+                RIDESHARE DRIVERS/PARTNERS
+              </option>
               <option value="Groceries">Groceries</option>
-              <option value="Cafes_and_restuarnt ">Cafes and restuarnt </option>
+              <option value="Individual/Households">
+                Individual/Households
+              </option>
+              <option value="Cafe">Cafe</option>
               <option value="Other">Other manuel entry</option>
             </select>
             {errors.businessType && (
               <p style={styles.error}>{errors.businessType}</p>
             )}
-            {businessType === "Other" && (
+            {selectedBusinessType === "Other" && (
               <>
                 <input
                   type="text"
@@ -518,6 +582,7 @@ const SignupPage = () => {
                 )}
               </>
             )}
+
             <button
               onClick={handleNextStep}
               style={{

@@ -35,6 +35,7 @@ import { useSelector } from "react-redux";
 import { Search } from "lucide-react";
 import { FaTimesCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
+import { businessTypes } from "./BusinessTypes";
 import getUserInfo from "utils/Getuser";
 import UserSubscriptionInfo from "./Payment/UserSubscriptionInfo";
 // import { useReactToPrint } from "react-to-print";
@@ -87,6 +88,53 @@ const MesobFinancial2 = () => {
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const selectedUser = useSelector((state) => state.selectedUser);
+  // business types
+  const [selectedBusinessType, setSelectedBusinessType] = useState(
+    localStorage.getItem("businessType") || ""
+  );
+  const [incomePurposes, setIncomePurposes] = useState([]);
+  const [expensePurposes, setExpensePurposes] = useState([]);
+  const [payablePurposes, setPayablePurposes] = useState([]);
+  const [manualIncomePurposes, setManualIncomePurposes] = useState([]);
+  const [manualExpensePurposes, setManualExpensePurposes] = useState([]);
+  const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
+  const [newPurpose, setNewPurpose] = useState("");
+  const [purposeType, setPurposeType] = useState("income");
+  // Add method to save new purposes
+  const handleAddPurpose = () => {
+    if (newPurpose.trim()) {
+      switch (purposeType) {
+        case "income":
+          setManualIncomePurposes([...manualIncomePurposes, newPurpose]);
+          break;
+        case "expense":
+          setManualExpensePurposes([...manualExpensePurposes, newPurpose]);
+          break;
+        case "payable":
+          setManualPayablePurposes([...manualPayablePurposes, newPurpose]);
+          break;
+      }
+      setNewPurpose("");
+    }
+  };
+  // business type
+  const getBusinessPurposes = (type) => {
+    if (type === "Other") {
+      return {
+        income: manualIncomePurposes,
+        expenses: manualExpensePurposes,
+        payables: manualPayablePurposes,
+      };
+    } else if (businessTypes[type]) {
+      return businessTypes[type];
+    } else {
+      return {
+        income: [],
+        expenses: [],
+        payables: [],
+      };
+    }
+  };
 
   // Subscription
   const [userSubscription, setUserSubscription] = useState(false);
@@ -572,6 +620,11 @@ const MesobFinancial2 = () => {
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
       );
+      if (response.data?.user?.businessType) {
+        const bizType = response.data.user.businessType || "";
+        setSelectedBusinessType(bizType);
+        localStorage.setItem("businessType", bizType);
+      }
       if (response.data?.user?.cashBalance) {
         console.log("Initial balance:", response.data.user.cashBalance);
         setInitialBalance(parseFloat(response.data.user.cashBalance));
@@ -596,6 +649,47 @@ const MesobFinancial2 = () => {
       notify("tr", "Error fetching initial balance", "danger");
     }
   };
+  useEffect(() => {
+    console.log("Selected Business Type: ????", selectedBusinessType);
+    const purposes = getBusinessPurposes(selectedBusinessType);
+    setIncomePurposes(purposes.income || []);
+    setExpensePurposes(purposes.expenses || []);
+    setPayablePurposes(purposes.payables || []);
+  }, [selectedBusinessType]);
+  // Manual purposes from localStorage
+  useEffect(() => {
+    const savedIncome = JSON.parse(
+      localStorage.getItem("manualIncome") || "[]"
+    );
+    const savedExpense = JSON.parse(
+      localStorage.getItem("manualExpense") || "[]"
+    );
+    const savedPayable = JSON.parse(
+      localStorage.getItem("manualPayable") || "[]"
+    );
+
+    setManualIncomePurposes(savedIncome);
+    setManualExpensePurposes(savedExpense);
+    setManualPayablePurposes(savedPayable);
+  }, []);
+
+  // Save manual purposes whenever they change
+  useEffect(() => {
+    if (selectedBusinessType === "Other") {
+      localStorage.setItem(
+        "manualIncome",
+        JSON.stringify(manualIncomePurposes)
+      );
+      localStorage.setItem(
+        "manualExpense",
+        JSON.stringify(manualExpensePurposes)
+      );
+      localStorage.setItem(
+        "manualPayable",
+        JSON.stringify(manualPayablePurposes)
+      );
+    }
+  }, [manualIncomePurposes, manualExpensePurposes, manualPayablePurposes]);
 
   useEffect(() => {
     if (userRole === 0) {
@@ -638,7 +732,6 @@ const MesobFinancial2 = () => {
     if (location.state?.openTransactionModal) {
       setShowAddTransaction(true);
 
-      // Clear the state after opening the modal
       navigate(location.pathname, { replace: true });
     }
   }, [location.state, navigate]);
@@ -2020,7 +2113,6 @@ const MesobFinancial2 = () => {
                 </Button>
               </div>
             </FormGroup>
-
             {/* Show action buttons for Pay Cash */}
             {transactionType === "pay" && (
               <FormGroup>
@@ -2063,8 +2155,29 @@ const MesobFinancial2 = () => {
                 </div>
               </FormGroup>
             )}
-
             {/* Show dropdown for recorded payment mode under Pay Cash */}
+            {selectedBusinessType === "Other" && (
+              <div className="manual-purpose-management">
+                <h4>Manage Custom Purposes</h4>
+                <Input
+                  type="text"
+                  value={newPurpose}
+                  onChange={(e) => setNewPurpose(e.target.value)}
+                  placeholder="Enter new purpose"
+                />
+                <Input
+                  type="select"
+                  value={purposeType}
+                  onChange={(e) => setPurposeType(e.target.value)}
+                >
+                  <option value="income">Income Purpose</option>
+                  <option value="expense">Expense Purpose</option>
+                  <option value="payable">Payable Purpose</option>
+                </Input>
+                <Button onClick={handleAddPurpose}>Add Purpose</Button>
+              </div>
+            )}
+
             {transactionType === "pay" && paymentMode === "recorded" && (
               <>
                 {/* <FormGroup>
@@ -2218,7 +2331,6 @@ const MesobFinancial2 = () => {
                 </Button>
               </>
             )}
-
             {transactionType === "pay" && paymentMode === "boughtItem" && (
               <>
                 <FormGroup>
@@ -2289,7 +2401,6 @@ const MesobFinancial2 = () => {
                 </Button>
               </>
             )}
-
             {/* Show regular form fields for other cases */}
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
@@ -2306,46 +2417,31 @@ const MesobFinancial2 = () => {
                     <option value="">Select purpose</option>
                     {transactionType === "receive" && (
                       <>
-                        <option value="Freight Income">Freight Income</option>
-                        <option value="Lease Income">Lease Income</option>
-                        <option value="Fuel Surcharge Revenue">
-                          Fuel Surcharge Revenue
-                        </option>
+                        {incomePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
                         <option value="manual">Enter Manually</option>
                       </>
                     )}
                     {transactionType === "pay" && paymentMode === "new" && (
                       <>
-                        <option value="Fuel Expense">Fuel Expense</option>
-                        <option value="Truck Repairs and Maintenance">
-                          Truck Repairs and Maintenance
-                        </option>
-                        <option value="Driver Salaries/Wages">
-                          Driver Salaries/Wages
-                        </option>
-                        <option value="Insurance Premiums">
-                          Insurance Premiums
-                        </option>
-                        <option value="Toll Charges">Toll Charges</option>
-                        <option value="Loan Payment">Loan Payment</option>
-                        <option value="Accounts Payable">
-                          Accounts Payable
-                        </option>
+                        {expensePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
                         <option value="manual">Enter Manually</option>
                       </>
                     )}
                     {transactionType === "Payable" && (
                       <>
-                        <option value="PPMOTS">
-                          Provider Payments (Expense) / Money Owed to Suppliers
-                          (Expense)
-                        </option>
-                        <option value="FC">Freight Costs (Expense)</option>
-                        <option value="Wages">Wages (Expense)</option>
-                        <option value="Utilities">Utilities (Expense)</option>
-                        <option value="Taxes">Taxes (Expense)</option>
-                        <option value="Rent">Rent (Expense)</option>
-                        <option value="Insurance">Insurance (Expense)</option>
+                        {payablePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
                         <option value="manual">Enter Manually</option>
                       </>
                     )}
