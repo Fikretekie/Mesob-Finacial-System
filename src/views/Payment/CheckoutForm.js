@@ -37,18 +37,68 @@ const CheckoutForm = ({ priceId }) => {
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   try {
+  //     const subscriptionPlans = {
+  //       price_basic_monthly: "Basic Plan (Monthly)",
+  //       price_basic_yearly: "Basic Plan (Yearly)",
+  //       price_pro_monthly: "Professional Plan (Monthly)",
+  //       price_pro_yearly: "Professional Plan (Yearly)",
+  //     };
+
+  //     const selectedPlan =
+  //       subscriptionPlans[formData.priceId] || "Unknown Plan";
+
+  //     // Create subscription
+  //     const createSubscriptionResponse = await axios.post(
+  //       "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
+  //       {
+  //         userId: formData.userId,
+  //         createdAt: formData.createdAt,
+  //         description: formData.description,
+  //         name: formData.name,
+  //         email: formData.email,
+  //         phone: formData.phone,
+  //         priceId: formData.priceId, // Ensure this is correctly passed
+  //         subscriptionPlan: selectedPlan,
+  //         address: formData.address,
+  //       }
+  //     );
+
+  //     if (createSubscriptionResponse.data.status === "active") {
+  //       showNotification("success", "Subscription successful!");
+  //       console.log("User is now subscribed.");
+  //     } else {
+  //       showNotification("danger", "Subscription failed. Please try again.");
+  //       console.log("Subscription failed.");
+  //     }
+
+  //     console.log(">>>>>>", createSubscriptionResponse);
+  //   } catch (error) {
+  //     setMessage("An error occurred. Please try again.");
+  //     console.error("Subscription error:", error);
+  //   }
+
+  //   setLoading(false);
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const subscriptionPlans = {
-      price_basic_monthly: "Basic Plan (Monthly)",
-      price_basic_yearly: "Basic Plan (Yearly)",
-      price_pro_monthly: "Professional Plan (Monthly)",
-      price_pro_yearly: "Professional Plan (Yearly)",
-    };
+
     try {
+      const subscriptionPlans = {
+        price_basic_monthly: "Basic Plan (Monthly)",
+        price_basic_yearly: "Basic Plan (Yearly)",
+        price_pro_monthly: "Professional Plan (Monthly)",
+        price_pro_yearly: "Professional Plan (Yearly)",
+      };
+
       const selectedPlan =
         subscriptionPlans[formData.priceId] || "Unknown Plan";
+
       // Create subscription
       const createSubscriptionResponse = await axios.post(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
@@ -64,6 +114,39 @@ const CheckoutForm = ({ priceId }) => {
           address: formData.address,
         }
       );
+
+      if (
+        createSubscriptionResponse.data.subscriptionId &&
+        createSubscriptionResponse.data.clientSecret
+      ) {
+        // Handle payment intent with clientSecret
+        const { paymentIntent } = await stripe.confirmCardPayment(
+          createSubscriptionResponse.data.clientSecret,
+          {
+            payment_method: {
+              card: elements.getElement(CardElement),
+              billing_details: {
+                name: formData.name,
+                email: formData.email,
+              },
+            },
+          }
+        );
+
+        if (paymentIntent.status === "succeeded") {
+          showNotification("success", "Subscription successful!");
+          console.log("User is now subscribed.");
+        } else {
+          showNotification("danger", "Subscription failed. Please try again.");
+          console.log("Subscription failed.");
+        }
+      } else {
+        showNotification(
+          "danger",
+          "Failed to create subscription. Please try again."
+        );
+      }
+
       console.log(">>>>>>", createSubscriptionResponse);
     } catch (error) {
       setMessage("An error occurred. Please try again.");
