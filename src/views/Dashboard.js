@@ -65,6 +65,8 @@ function Dashboard() {
   const dispatch = useDispatch();
   const [companyName, setCompanyName] = useState("");
   const selectedUser = useSelector((state) => state.selectedUser);
+  const [userSubscription, setUserSubscription] = useState(false);
+  const [scheduleCount, setScheduleCount] = useState(0);
 
   const handleAddTransactionClick = () => {
     // Use navigate to go to the MesobFinancial2 page
@@ -349,6 +351,17 @@ function Dashboard() {
       console.log("Users fetched:", users);
     });
   }, []);
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const userId = localStorage.getItem("userId");
+      const response = await axios.get(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+      );
+      setUserSubscription(response.data.user.subscription);
+      setScheduleCount(response.data.user.scheduleCount || 1);
+    };
+    fetchSubscription();
+  }, []);
 
   return (
     <>
@@ -385,6 +398,7 @@ function Dashboard() {
             style={{ marginRight: "4rem" }}
             color="primary"
             onClick={handleAddTransactionClick}
+            disabled={!userSubscription && scheduleCount >= 4}
           >
             <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
             Add Transaction

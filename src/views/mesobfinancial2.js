@@ -88,6 +88,7 @@ const MesobFinancial2 = () => {
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const selectedUser = useSelector((state) => state.selectedUser);
+
   // business types
   const [selectedBusinessType, setSelectedBusinessType] = useState(
     localStorage.getItem("businessType") || ""
@@ -139,6 +140,7 @@ const MesobFinancial2 = () => {
   // Subscription
   const [userSubscription, setUserSubscription] = useState(false);
   const [trialEndDate, setTrialEndDate] = useState(null);
+  const [scheduleCount, setScheduleCount] = useState(1);
   // const dispatch = useDispatch();
   // installment
   const handlePayableSelection = (transaction) => {
@@ -649,6 +651,7 @@ const MesobFinancial2 = () => {
       notify("tr", "Error fetching initial balance", "danger");
     }
   };
+
   useEffect(() => {
     console.log("Selected Business Type: ????", selectedBusinessType);
     const purposes = getBusinessPurposes(selectedBusinessType);
@@ -748,6 +751,7 @@ const MesobFinancial2 = () => {
           const userData = response.data.user;
           setUserSubscription(userData?.subscription || false);
           setTrialEndDate(new Date(userData?.trialEndDate));
+          setScheduleCount(userData?.scheduleCount || 1);
         }
       } catch (error) {
         console.error("Error fetching user subscription data:", error);
@@ -758,7 +762,7 @@ const MesobFinancial2 = () => {
   }, []);
 
   const isTrialActive = () => {
-    return new Date() < trialEndDate;
+    return new Date() < trialEndDate && scheduleCount < 4;
   };
   //
   const calculateFinancials = (transactions) => {
@@ -1337,6 +1341,9 @@ const MesobFinancial2 = () => {
           <Button
             color="primary"
             onClick={handleRun}
+            disabled={
+              !userSubscription && (!isTrialActive() || scheduleCount >= 4)
+            }
             style={{ height: "38px" }}
           >
             Run
@@ -1344,6 +1351,9 @@ const MesobFinancial2 = () => {
           <Button
             color="secondary"
             onClick={handleClear}
+            disabled={
+              !userSubscription && (!isTrialActive() || scheduleCount >= 4)
+            }
             style={{ height: "38px" }}
           >
             Clear Filters
@@ -1351,6 +1361,9 @@ const MesobFinancial2 = () => {
           <Button
             color="danger"
             onClick={handleDeleteAllRecords}
+            disabled={
+              !userSubscription && (!isTrialActive() || scheduleCount >= 4)
+            }
             style={{ height: "38px" }}
           >
             Close
@@ -1460,7 +1473,7 @@ const MesobFinancial2 = () => {
                         <Button
                           color="primary"
                           onClick={() => setShowAddTransaction(true)}
-                          // disabled={!userSubscription && !isTrialActive()}
+                          disabled={!userSubscription && !isTrialActive()}
                         >
                           <FontAwesomeIcon
                             icon={faPlus}
@@ -1469,7 +1482,11 @@ const MesobFinancial2 = () => {
                           Add Transaction
                         </Button>
                       )}
-                      {/* <UserSubscriptionInfo /> */}
+                      <UserSubscriptionInfo
+                        userSubscription={userSubscription}
+                        trialEndDate={trialEndDate}
+                        scheduleCount={scheduleCount}
+                      />
                     </div>
                   </div>
                 </CardHeader>
@@ -1575,10 +1592,13 @@ const MesobFinancial2 = () => {
                             selectedTimeRange,
                             searchTerm
                           )}
+                          disabled={!userSubscription && scheduleCount >= 4}
                           selectedTimeRange={selectedTimeRange}
                           handleDelete={handleDelete}
                           handleAddExpense={handleAddExpense}
                           handleReceiptClick={handleReceiptClick}
+                          scheduleCount={scheduleCount}
+                          userSubscription={userSubscription}
                         />
                       </div>
                     </>

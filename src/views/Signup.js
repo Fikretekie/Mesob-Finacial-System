@@ -278,9 +278,12 @@ const SignupPage = () => {
         role: 2, // Set default role as customer
         startFromZero: false,
         businessType: businessTypeValue,
-        // creationDate,
-        // trialEndDate,
-        // subscription: false,
+        creationDate,
+        trialEndDate,
+
+        subscription: false,
+        scheduleCount: 1,
+        createdAt: creationDate,
       };
 
       try {
@@ -295,24 +298,6 @@ const SignupPage = () => {
           localStorage.setItem("user_name", name || "");
           localStorage.setItem("role", "2"); // Set customer role
           localStorage.setItem("businessType", businessTypeValue);
-
-          // Schedule emails
-          // await fetch(
-          //   "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/scheduleEmails",
-          //   {
-          //     method: "POST",
-          //     headers: {
-          //       "Content-Type": "application/json",
-          //     },
-          //     body: JSON.stringify({
-          //       userId: res.userId,
-          //       // firstEmailDate: new Date(
-          //       //   Date.now() + 20 * 24 * 60 * 60 * 1000
-          //       // ).toISOString(),
-          //       // secondEmailDate: trialEndDate,
-          //     }),
-          //   }
-          // );
 
           showNotification("success", "Signup successful!");
           setTimeout(() => {

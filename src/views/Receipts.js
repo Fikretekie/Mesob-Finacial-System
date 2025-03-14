@@ -36,6 +36,7 @@ const Receipts = ({ selectedUser }) => {
   const [toDate, setToDate] = useState("");
   const [searchedDates, setSearchedDates] = useState(null);
   const notificationAlertRef = useRef(null);
+  const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
     if (selectedUser?.id) {
@@ -46,6 +47,18 @@ const Receipts = ({ selectedUser }) => {
   useEffect(() => {
     fetchReceipts();
   }, [startDate, endDate, selectedType]);
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const userId = localStorage.getItem("userId");
+      const res = await axios.get(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+      );
+      setDisabled(
+        !res.data.user.subscription && res.data.user.scheduleCount >= 4
+      );
+    };
+    checkSubscription();
+  }, []);
 
   const fetchReceipts = async () => {
     setLoading(true);
@@ -300,6 +313,7 @@ const Receipts = ({ selectedUser }) => {
                     <Button
                       color="info"
                       onClick={handleDownloadAll}
+                      disabled={disabled}
                       style={{ marginBottom: 0, height: "38px" }}
                     >
                       Download All
@@ -348,17 +362,26 @@ const Receipts = ({ selectedUser }) => {
                             <td>{receipt.subType || "-"}</td>
                             <td>
                               <FaEye
-                                onClick={() => handlePreview(receipt)}
+                                onClick={
+                                  !disabled
+                                    ? () => handlePreview(receipt)
+                                    : undefined
+                                }
                                 style={{
-                                  cursor: "pointer",
+                                  cursor: disabled ? "not-allowed" : "pointer",
                                   marginRight: "1rem",
                                 }}
                                 title="Preview"
                               />
                               <FaDownload
-                                onClick={() => handleDownload(receipt)}
-                                style={{ cursor: "pointer" }}
-                                title="Download"
+                                onClick={
+                                  !disabled
+                                    ? () => handleDownload(receipt)
+                                    : undefined
+                                }
+                                style={{
+                                  cursor: disabled ? "not-allowed" : "pointer",
+                                }}
                               />
                             </td>
                           </tr>

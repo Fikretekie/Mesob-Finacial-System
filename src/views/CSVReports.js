@@ -15,6 +15,7 @@ import axios from "axios";
 const CSVReports = () => {
   const [csvData, setCsvData] = useState(null);
   const [backupUrls, setBackupUrls] = useState([]);
+  const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,6 +33,18 @@ const CSVReports = () => {
     };
 
     fetchUserData();
+  }, []);
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const userId = localStorage.getItem("userId");
+      const res = await axios.get(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+      );
+      setDisabled(
+        !res.data.user.subscription && res.data.user.scheduleCount >= 4
+      );
+    };
+    checkSubscription();
   }, []);
 
   const handleDownload = async (url) => {
@@ -103,6 +116,7 @@ const CSVReports = () => {
                         style={{ marginRight: "10px" }}
                         color="primary"
                         onClick={() => handleDownload(url)}
+                        disabled={disabled}
                       >
                         <FaDownload /> Download
                       </Button>

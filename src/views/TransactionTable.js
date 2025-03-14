@@ -1,13 +1,24 @@
 import React from "react";
+import { useState } from "react";
 import { BsTrashFill, BsReceipt } from "react-icons/bs";
 import "./TransactionTable.css";
 import colors from "variables/colors";
 
-const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
+const TransactionTable = ({
+  items = [],
+  handleDelete,
+  handleReceiptClick,
+  disabled,
+  scheduleCount,
+  userSubscription,
+}) => {
+  const isFeatureEnabled = () => {
+    return userSubscription || scheduleCount < 4;
+  };
   const filteredItems = items.filter(
     (item) => item.transactionPurpose !== "Initial Cash Balance"
   );
-
+  const [trialEndDate, setTrialEndDate] = useState(null);
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -23,7 +34,9 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
   const sortedTransactions = [...filteredItems].sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
-
+  const isTrialActive = () => {
+    return new Date() < trialEndDate && scheduleCount < 4;
+  };
   return (
     <div className="table-container">
       <table className="transaction-table">
@@ -140,16 +153,29 @@ const TransactionTable = ({ items = [], handleDelete, handleReceiptClick }) => {
                   {/* Delete Button */}
                   <BsTrashFill
                     className="delete-btn"
-                    onClick={() => handleDelete(transaction)}
-                    style={{ cursor: "pointer", color: "#e10d05" }}
+                    onClick={() =>
+                      isFeatureEnabled() && handleDelete(transaction)
+                    }
+                    style={{
+                      cursor: isFeatureEnabled() ? "pointer" : "not-allowed",
+                      color: isFeatureEnabled() ? "#e10d05" : "#ccc",
+                      opacity: isFeatureEnabled() ? 1 : 0.5,
+                    }}
                   />
 
                   {/* Receipt Button */}
                   {transaction.receiptUrl && (
                     <BsReceipt
                       className="receipt-btn"
-                      onClick={() => handleReceiptClick(transaction.receiptUrl)}
-                      style={{ cursor: "pointer", color: "#007bff" }}
+                      onClick={() =>
+                        isFeatureEnabled() &&
+                        handleReceiptClick(transaction.receiptUrl)
+                      }
+                      style={{
+                        cursor: isFeatureEnabled() ? "pointer" : "not-allowed",
+                        color: isFeatureEnabled() ? "#007bff" : "#ccc",
+                        opacity: isFeatureEnabled() ? 1 : 0.5,
+                      }}
                     />
                   )}
                 </div>

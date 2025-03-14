@@ -150,7 +150,7 @@ const SubscriptionPlans = () => {
                           <ul className="list-unstyled">
                             {plan.features.map((feature, i) => (
                               <li key={i} className="mb-2">
-                                ✅ {feature}
+                                âœ… {feature}
                               </li>
                             ))}
                           </ul>

@@ -32,6 +32,7 @@ function UserPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [editDisabled, setEditDisabled] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -49,6 +50,18 @@ function UserPage() {
     };
 
     fetchUserData();
+  }, []);
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const userId = localStorage.getItem("userId");
+      const res = await axios.get(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+      );
+      setEditDisabled(
+        !res.data.user.subscription && res.data.user.scheduleCount >= 4
+      );
+    };
+    fetchSubscription();
   }, []);
 
   const handleInputChange = (e) => {
@@ -224,6 +237,7 @@ function UserPage() {
                             <Button
                               color="primary"
                               onClick={() => setIsEditing(true)}
+                              disabled={editDisabled}
                             >
                               Edit Profile
                             </Button>

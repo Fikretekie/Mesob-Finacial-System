@@ -1,40 +1,20 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 import { Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 
-const UserSubscriptionInfo = () => {
-  const [userSubscription, setUserSubscription] = useState(false);
-  const [trialEndDate, setTrialEndDate] = useState(null);
+const UserSubscriptionInfo = ({
+  userSubscription,
+  trialEndDate,
+  scheduleCount,
+}) => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
-      );
-
-      if (response.data?.user) {
-        const userData = response.data.user;
-        setUserSubscription(userData.subscription || false);
-        setTrialEndDate(new Date(userData.trialEndDate));
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
   const isTrialActive = () => {
-    return new Date() < trialEndDate;
+    return new Date() < trialEndDate && scheduleCount < 4;
   };
 
   const renderSubscribeButton = () => {
-    if (!userSubscription && !isTrialActive()) {
+    if (!userSubscription && (!isTrialActive() || scheduleCount >= 4)) {
       return (
         <Button onClick={() => navigate("/subscription")}>Subscribe</Button>
       );
@@ -43,7 +23,7 @@ const UserSubscriptionInfo = () => {
   };
 
   const renderTrialTimer = () => {
-    if (isTrialActive()) {
+    if (isTrialActive() && scheduleCount < 4) {
       return (
         <div>
           Trial ends in:{" "}
