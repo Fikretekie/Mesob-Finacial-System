@@ -26,6 +26,7 @@ import ForgotPassword from "views/ForgotPassword";
 import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import SubscriptionPage from "views/Payment/Subscription";
 import Confirm from "views/Confirm";
+import OAuthListener from "components/OAuthListener";
 // Create Redux store
 const store = configureStore({
   reducer: {
@@ -37,8 +38,12 @@ const SubscriptionWithParams = () => {
   const priceId = location.state?.priceId || "";
   return <SubscriptionPage priceId={priceId} />;
 };
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const redirectUri = isLocal ? 'http://localhost:3000/' : 'https://app.mesobfinancial.com/';
+const isLocal =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const redirectUri = isLocal
+  ? "http://localhost:3000/"
+  : "https://app.mesobfinancial.com/";
 
 Amplify.configure({
   Auth: {
@@ -47,12 +52,14 @@ Amplify.configure({
       userPoolClientId: "ulrla7en4ocu2gfbh9i536fnk",
       loginWith: {
         oauth: {
+          region: "us-east-1",
           domain: "us-east-1lamplcb1n.auth.us-east-1.amazoncognito.com",
-          scopes: ['openid', "email", "profile"],
+          scopes: ["openid", "email", "profile"],
           redirectSignIn: [redirectUri],
           redirectSignOut: [redirectUri],
           responseType: "code",
-          clientId: '263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com',
+          clientId:
+            "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com",
         },
       },
     },
@@ -66,6 +73,7 @@ root.render(
       <Routes>
         {/* Route for the Login page */}
         <Route path="/login" element={<Login />} />
+        <Route path="/oauth-redirect" element={<OAuthListener />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/mesonfinancelogin" element={<MesobFinanceLogin />} />
         <Route path="/signup" element={<SignupPage />} />

@@ -8,7 +8,8 @@ import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { signIn, signInWithRedirect } from "aws-amplify/auth";
+import { signIn, getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
 import getUserInfo from "utils/Getuser";
 
 const logo = "/logo.png";
@@ -21,22 +22,25 @@ const Login = () => {
   const navigate = useNavigate();
   const notificationAlertRef = useRef(null);
 
-  const handleGoogleSignIn = async () => {
-    try {
-      let res = await signInWithRedirect({ provider: "Google" });
-      console.log("Sign-in with Google successful:", res);
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
-    }
-  };
-
   useEffect(() => {
-    const userEmail = localStorage.getItem("user_email");
-    const role = localStorage.getItem("role");
-    if (userEmail) {
-      const path = role === "2" ? "/customer/dashboard" : "/admin/dashboard";
-      navigate(path);
-    }
+    const listener = Hub.listen("auth", async ({ payload }) => {
+      switch (payload.event) {
+        case "signInWithRedirect":
+          try {
+            const user = await getCurrentUser();
+            const role = localStorage.getItem("role");
+            navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
+          } catch (error) {
+            console.error("Post-signin error:", error);
+          }
+          break;
+        case "signInWithRedirect_failure":
+          showNotification("danger", "Google sign-in failed");
+          break;
+      }
+    });
+
+    return () => listener();
   }, [navigate]);
 
   const showNotification = (type, message) => {
@@ -50,72 +54,15 @@ const Login = () => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithRedirect({ provider: "Google" });
+    } catch (error) {
+      console.error("Error during Google sign-in:", error);
+      showNotification("danger", "Google sign-in failed.");
+    }
+  };
 
-  //   if (!email.trim()) {
-  //     console.error("Error: Email is empty!");
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     let res = await signIn({
-  //       username: email,
-  //       password: password,
-  //     });
-  //     console.log(">>>>", res);
-  //     if (res.isSignedIn === true) {
-  //       let user = await getUserInfo();
-  //       console.log(".........", user.userId);
-  //       const response = await fetch(
-  //         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
-  //         {
-  //           method: "GET",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Accept: "application/json",
-  //           },
-  //         }
-  //       );
-
-  //       const result = await response.json();
-  //       console.log(">>>>>>>>>>>..", result);
-  //       localStorage.clear();
-  //       localStorage.setItem("userId", user.userId);
-  //       localStorage.setItem("user_email", result.user?.email || "");
-  //       localStorage.setItem("user_name", result.user?.name || "");
-  //       localStorage.setItem("role", result.user?.role?.toString());
-  //       localStorage.setItem(
-  //         "outstandingDebt",
-  //         result.user?.outstandingDebt || "0"
-  //       );
-  //       localStorage.setItem(
-  //         "valueableItems",
-  //         result.user?.valueableItems || "0"
-  //       );
-  //       localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
-
-  //       showNotification("success", "Login successful!");
-
-  //       const userRole = parseInt(result.user?.role);
-  //       const path =
-  //         userRole === 2 ? "/customer/dashboard" : "/admin/dashboard";
-
-  //       setTimeout(() => {
-  //         navigate(path, { replace: true });
-  //       }, 100);
-  //     } else {
-  //       showNotification("danger", "Sign-in failed");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error signing in:", error);
-  //     showNotification("danger", "An error occurred. Please try again later.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -127,14 +74,9 @@ const Login = () => {
     }
 
     try {
-      let res = await signIn({
-        username: email,
-        password: password,
-      });
-      console.log(">>>>", res);
-      if (res.isSignedIn === true) {
+      let res = await signIn({ username: email, password });
+      if (res.isSignedIn) {
         let user = await getUserInfo();
-        console.log(".........", user.userId);
         const response = await fetch(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
           {
@@ -147,7 +89,6 @@ const Login = () => {
         );
 
         const result = await response.json();
-        console.log(">>>>>>>>>>>..", result);
         localStorage.clear();
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("user_email", result.user?.email || "");
@@ -164,14 +105,10 @@ const Login = () => {
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
 
         showNotification("success", "Login successful!");
-
-        const userRole = parseInt(result.user?.role);
         const path =
-          userRole === 2 ? "/customer/dashboard" : "/admin/dashboard";
+          result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
 
-        setTimeout(() => {
-          navigate(path, { replace: true });
-        }, 2000);
+        setTimeout(() => navigate(path, { replace: true }), 2000);
       } else {
         showNotification(
           "danger",
@@ -220,7 +157,7 @@ const Login = () => {
                 <button
                   type="button"
                   className="toggle-password"
-                  onClick={() => setShowPassword((prevState) => !prevState)}
+                  onClick={() => setShowPassword(!showPassword)}
                 >
                   <FontAwesomeIcon
                     icon={showPassword ? faEyeSlash : faEye}
@@ -245,10 +182,9 @@ const Login = () => {
           <div className="separator">
             <span>OR</span>
           </div>
-
-          {/* <button onClick={handleGoogleSignIn} className="google-login-btn">
+          <button onClick={handleGoogleSignIn} className="google-login-btn">
             Sign in with Google
-          </button> */}
+          </button>
           <p>
             Don't have an account yet? <Link to="/signup">Sign up</Link>
           </p>
