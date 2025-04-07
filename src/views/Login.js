@@ -23,6 +23,19 @@ const Login = () => {
   const notificationAlertRef = useRef(null);
 
   useEffect(() => {
+    // Check if the user is authenticated
+    const isAuthenticated = !!localStorage.getItem("authToken"); // Example: Check for token in localStorage
+
+    if (isAuthenticated) {
+      const role = localStorage.getItem("role");
+
+      // Navigate to the customer dashboard if authenticated
+      navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
+
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     const listener = Hub.listen("auth", async ({ payload }) => {
       switch (payload.event) {
         case "signInWithRedirect":

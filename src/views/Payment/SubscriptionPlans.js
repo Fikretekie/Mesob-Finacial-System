@@ -83,7 +83,7 @@ const SubscriptionPlans = () => {
   };
   const plans = [
     {
-      name: "Basic Plan",
+      name: "Pricing Plan",
       features: [
         "✅ View Transaction History",
         "✅ See Financial Reports (Basic Summary)",
@@ -92,26 +92,64 @@ const SubscriptionPlans = () => {
         "✅ User Profile Management",
         "✅ Download & View Receipts",
       ],
-      price: { monthly: "$30/month", yearly: "$300/year" },
-      priceId: { monthly: "price_basic_monthly", yearly: "price_basic_yearly" },
+      price: { monthly: "$50/month", yearly: "$600/year" },
+      priceId: { monthly: "price_1RAXwQAhBlpHU9kBZkhZbUqs", yearly: "price_basic_yearly" },
     },
-    {
-      name: "Professional Plan",
-      features: [
-        "✅ All Features in Basic Plan PLUS:",
-        "🚀 Add & Modify Transactions",
-        "📊 Advanced Financial Reports (Detailed breakdown)",
-        "📈 Dashboard with Interactive Charts",
-        "📂 Backup & Export CSV Files",
-        "📑 Generate & Download Financial Statements",
-      ],
-      price: { monthly: "$60/month", yearly: "$600/year" },
-      priceId: { monthly: "price_pro_monthly", yearly: "price_pro_yearly" },
-    },
+
   ];
 
-  const handleSubscribe = (priceId) => {
-    navigate("/subscribe", { state: { priceId: priceId } });
+  const createSchedule = async () => {
+    try {
+      const params = {
+        email: email,
+        subject: "test",
+        message: "testing email for schedule ",
+        user_id: '14288408-9011-70a3-eeec-8d7cb1b9dca4',
+        schedule_type: 1, // Default type
+        schedule_count: 1,
+      };
+      const response = await axios.post(
+        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
+        params
+      );
+      console.log("Response Data:", response.data);
+    }
+    catch (error) {
+      console.log("Error:", error);
+    }
+
+  }
+
+  const handleSubscribe = async (priceId) => {
+    const baseUrl = window.location.origin;
+    console.log(baseUrl, "Subscribing to plan with price ID:", priceId);
+
+    const queryParams = new URLSearchParams({
+      priceId,
+      redirectUrl: baseUrl,
+    }).toString();
+
+    try {
+      const response = await fetch(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/Session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId,
+          redirectUrl: baseUrl,
+          userId: getUserId(),
+          priceId: priceId,
+        }),
+      }
+      );
+      const session = await response.json();
+      console.log("Session response:", session.session.url);
+      window.location.href = session.session.url;
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
@@ -127,8 +165,16 @@ const SubscriptionPlans = () => {
               <CardHeader>
                 <CardTitle tag="h4">Subscription Plans</CardTitle>
               </CardHeader>
+              {/* <Button
+                color="primary"
+                onClick={() =>
+                  createSchedule()
+                }
+              >
+                Subscribe
+              </Button> */}
               <CardBody>
-                <div className="text-center mb-4">
+                {/* <div className="text-center mb-4">
                   <Button
                     color={billingCycle === "monthly" ? "primary" : "secondary"}
                     onClick={() => setBillingCycle("monthly")}
@@ -142,10 +188,10 @@ const SubscriptionPlans = () => {
                   >
                     Yearly Billing
                   </Button>
-                </div>
+                </div> */}
                 <Row>
                   {plans.map((plan, index) => (
-                    <Col md={6} key={index}>
+                    <Col md={12} key={index}>
                       <Card className="text-center">
                         <CardHeader>
                           <h3>{plan.name}</h3>

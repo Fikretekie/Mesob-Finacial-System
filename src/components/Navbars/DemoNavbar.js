@@ -1,4 +1,5 @@
 import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Collapse,
@@ -19,15 +20,28 @@ import {
 } from "reactstrap";
 
 import { adminRoutes, customerRoutes } from "routes.js";
+import { setCurrency } from "store/currencySlice";
 
 function DemoNavbar(props) {
   const location = useLocation();
+  const dispatch = useDispatch();
+
   const [isOpen, setIsOpen] = React.useState(false);
   const [dropdownOpen, setDropdownOpen] = React.useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = React.useState(false);
   const [color, setColor] = React.useState("transparent");
   const sidebarToggle = React.useRef();
   const navigate = useNavigate();
+  const currency = useSelector((state) => state.currency.value);
+
+  // List of available currencies
+  const currencies = ["USD", "EUR", "GBP", "INR", "JPY"];
+
+  // Handle currency change
+  const handleCurrencyChange = (event) => {
+    const selectedCurrency = event.target.value;
+    dispatch(setCurrency(selectedCurrency)); // Dispatch the action to update the currency
+  };
 
   const toggle = () => {
     if (isOpen) {
@@ -99,7 +113,7 @@ function DemoNavbar(props) {
         location.pathname.indexOf("full-screen-maps") !== -1
           ? "navbar-absolute fixed-top"
           : "navbar-absolute fixed-top " +
-            (color === "transparent" ? "navbar-transparent " : "")
+          (color === "transparent" ? "navbar-transparent " : "")
       }
     >
       <Container fluid>
@@ -164,11 +178,14 @@ function DemoNavbar(props) {
           <NavbarBrand href="/">{getBrand()}</NavbarBrand>
         </div>
         <Nav navbar>
+
           <Dropdown
             nav
             isOpen={accountDropdownOpen}
             toggle={accountDropdownToggle}
           >
+
+
             <DropdownToggle caret nav>
               <i className="now-ui-icons users_single-02" />
             </DropdownToggle>

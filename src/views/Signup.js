@@ -36,6 +36,7 @@ const SignupPage = () => {
   const [manualExpensePurposes, setManualExpensePurposes] = useState([]);
   const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
   const [selectedBusinessType, setSelectedBusinessType] = useState("");
+
   const getBusinessPurposes = (businessType) => {
     // If the business type is "Other", return empty arrays for manual entry
     if (businessType === "Other") {
@@ -93,7 +94,6 @@ const SignupPage = () => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
-  // Password validation function
   const validatePassword = (password) => {
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -163,33 +163,27 @@ const SignupPage = () => {
   const createSchedule = async () => {
     try {
       let user_id = localStorage.getItem("userId");
-
       if (!user_id) {
         console.error("User ID not found in localStorage.");
         return;
       }
-
       // Retrieve the last schedule count from localStorage (or default to 1)
       let lastScheduleCount =
         parseInt(localStorage.getItem("schedule_count")) || 1;
       let newScheduleCount = lastScheduleCount + 1;
-
       const params = {
-        email: "asifhere121@gmail.com",
+        email: email,
         subject: "test",
-        message: "testing email for schedule",
+        message: "testing email for schedule ",
         user_id: user_id,
         schedule_type: 1, // Default type
         schedule_count: newScheduleCount,
       };
-
       const response = await axios.post(
         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
         params
       );
-
       console.log("Response Data:", response.data);
-
       // Update schedule count in localStorage
       localStorage.setItem("schedule_count", newScheduleCount);
     } catch (error) {
@@ -277,6 +271,7 @@ const SignupPage = () => {
   //     return;
   //   }
   // };
+
   const handleSignup = async (e) => {
     if (!validateStep3()) return;
     e.preventDefault();
@@ -336,7 +331,40 @@ const SignupPage = () => {
           localStorage.setItem("user_name", name || "");
           localStorage.setItem("role", "2"); // Set customer role
           localStorage.setItem("businessType", businessTypeValue);
-          createSchedule();
+
+          let emailddata = {
+            email: email,
+            subject: "Welcome to Mesob Financial – You're All Set!",
+            message: `<p>🎉 <strong>Thank you for subscribing to Mesob Financial!</strong> We're thrilled to have you on board.</p>
+
+                  <p>With your subscription, you can now easily record and track your income and expenses. Our intuitive charts will help you analyze your financial data at a glance, giving you a clearer view of your financial health.</p>
+
+                  <p>Your free trial period of 30 days is coming to an end! To continue accessing Mesob Financial's powerful tools for tracking and managing your finances, please subscribe before your access expires.</p>
+
+                  <h3>🔍 What You Can Expect:</h3>
+                  <ul>
+                    <li>✅ Effortless tracking of your income and expenses</li>
+                    <li>✅ Detailed financial analysis displayed in easy-to-read charts</li>
+                    <li>✅ A user-friendly experience to help you stay on top of your finances</li>
+                  </ul>
+
+                  <p>If you have any questions or need assistance, don't hesitate to contact us at <a href="mailto:mesob@mesobstore.com">mesob@mesobstore.com</a>. We're here to help!</p>
+
+                  <p>Welcome aboard, and we look forward to helping you manage your finances more effectively.</p>
+
+                  <p>Best regards,</p>
+                  <p><strong>The Mesob Financial Team</strong></p>
+                  `,
+
+          }
+
+          const response = await axios.post(
+            `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
+            emailddata
+          );
+          console.log("Email sent successfully:", response.data);
+
+          await createSchedule();
           showNotification("success", "Signup successful!");
           setTimeout(() => {
             navigate("/confirm", {
@@ -427,10 +455,12 @@ const SignupPage = () => {
       showNotification("danger", "An unexpected error occurred");
     }
   };
+
   const handlePhoneChange = (value) => {
     const formattedPhone = "+" + value.replace(/[^\d]/g, "");
     setPhone(formattedPhone);
   };
+
   const handleBusinessTypeChange = (type) => {
     setSelectedBusinessType(type);
     localStorage.setItem("businessType", type);
