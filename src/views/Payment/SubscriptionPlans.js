@@ -92,10 +92,12 @@ const SubscriptionPlans = () => {
         "✅ User Profile Management",
         "✅ Download & View Receipts",
       ],
-      price: { monthly: "$50/month", yearly: "$600/year" },
-      priceId: { monthly: "price_1RAXwQAhBlpHU9kBZkhZbUqs", yearly: "price_basic_yearly" },
+      price: { monthly: "$29.99/month", yearly: "$600/year" },
+      priceId: {
+        monthly: "price_1RAXwQAhBlpHU9kBZkhZbUqs",
+        yearly: "price_basic_yearly",
+      },
     },
-
   ];
 
   const createSchedule = async () => {
@@ -104,7 +106,7 @@ const SubscriptionPlans = () => {
         email: email,
         subject: "test",
         message: "testing email for schedule ",
-        user_id: '14288408-9011-70a3-eeec-8d7cb1b9dca4',
+        user_id: "14288408-9011-70a3-eeec-8d7cb1b9dca4",
         schedule_type: 1, // Default type
         schedule_count: 1,
       };
@@ -113,12 +115,10 @@ const SubscriptionPlans = () => {
         params
       );
       console.log("Response Data:", response.data);
-    }
-    catch (error) {
+    } catch (error) {
       console.log("Error:", error);
     }
-
-  }
+  };
 
   const handleSubscribe = async (priceId) => {
     const baseUrl = window.location.origin;
@@ -131,18 +131,19 @@ const SubscriptionPlans = () => {
 
     try {
       const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/Session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          priceId,
-          redirectUrl: baseUrl,
-          userId: getUserId(),
-          priceId: priceId,
-        }),
-      }
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/Session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            priceId,
+            redirectUrl: baseUrl,
+            userId: getUserId(),
+            priceId: priceId,
+          }),
+        }
       );
       const session = await response.json();
       console.log("Session response:", session.session.url);

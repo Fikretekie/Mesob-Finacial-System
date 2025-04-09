@@ -32,7 +32,6 @@ function DemoNavbar(props) {
   const [color, setColor] = React.useState("transparent");
   const sidebarToggle = React.useRef();
   const navigate = useNavigate();
-  const currency = useSelector((state) => state.currency.value);
 
   // List of available currencies
   const currencies = ["USD", "EUR", "GBP", "INR", "JPY"];
@@ -113,7 +112,7 @@ function DemoNavbar(props) {
         location.pathname.indexOf("full-screen-maps") !== -1
           ? "navbar-absolute fixed-top"
           : "navbar-absolute fixed-top " +
-          (color === "transparent" ? "navbar-transparent " : "")
+            (color === "transparent" ? "navbar-transparent " : "")
       }
     >
       <Container fluid>
@@ -178,14 +177,11 @@ function DemoNavbar(props) {
           <NavbarBrand href="/">{getBrand()}</NavbarBrand>
         </div>
         <Nav navbar>
-
           <Dropdown
             nav
             isOpen={accountDropdownOpen}
             toggle={accountDropdownToggle}
           >
-
-
             <DropdownToggle caret nav>
               <i className="now-ui-icons users_single-02" />
             </DropdownToggle>
