@@ -29,7 +29,7 @@ import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import SubscriptionPage from "views/Payment/Subscription";
 import Confirm from "views/Confirm";
 import OAuthListener from "components/OAuthListener";
-
+import TermsOfUse from "views/Terms";
 // Create Redux store
 const store = configureStore({
   reducer: {
@@ -94,6 +94,7 @@ root.render(
         {/* Subscription Routes */}
         <Route path="/subscription" element={<SubscriptionPlans />} />
         <Route path="/subscribe" element={<SubscriptionWithParams />} />
+        <Route path="/terms-of-use" element={<TermsOfUse />} />
         {/* Redirect any unknown routes to /login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

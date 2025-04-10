@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { useNavigate } from "react-router-dom";
 import { Button, Input, Card } from "reactstrap";
 import axios from "axios";
 import NotificationAlert from "react-notification-alert";
@@ -112,6 +113,7 @@ const CheckoutForm = ({ priceId }) => {
 
     setLoading(false);
   };
+  const navigate = useNavigate();
 
   return (
     <div>

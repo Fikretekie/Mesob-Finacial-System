@@ -8,7 +8,7 @@ import "react-phone-input-2/lib/style.css";
 import { signUp } from "aws-amplify/auth";
 import axios from "axios";
 import { businessTypes } from "./BusinessTypes";
-
+import TermsOfUse from "./Terms";
 const SignupPage = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -355,8 +355,7 @@ const SignupPage = () => {
                   <p>Best regards,</p>
                   <p><strong>The Mesob Financial Team</strong></p>
                   `,
-
-          }
+          };
 
           const response = await axios.post(
             `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
@@ -734,14 +733,14 @@ const SignupPage = () => {
                 style={{ marginRight: "5px" }}
               />
               I agree to the
-              <a
-                href="https://mesobfinancial.com/terms-of-use"
+              <Link
+                to="/terms-of-use"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={styles.termsLink}
               >
                 Terms of Use
-              </a>
+              </Link>
             </label>
 
             <button

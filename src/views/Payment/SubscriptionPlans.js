@@ -121,13 +121,18 @@ const SubscriptionPlans = () => {
   };
 
   const handleSubscribe = async (priceId) => {
-    const baseUrl = window.location.origin;
-    console.log(baseUrl, "Subscribing to plan with price ID:", priceId);
+    const email = localStorage.getItem("user_email");
+    console.log("Email from localStorage:", email);
+    console.log("userid>>>>", localStorage.getItem("userId"));
+    const userId = localStorage.getItem("userId");
 
-    const queryParams = new URLSearchParams({
-      priceId,
-      redirectUrl: baseUrl,
-    }).toString();
+    if (!email || !userId) {
+      console.error("Email or User ID is missing!");
+      return;
+    }
+
+    const baseUrl = window.location.origin + "/customer/dashboard";
+    console.log("Base URL:", baseUrl);
 
     try {
       const response = await fetch(
@@ -140,8 +145,8 @@ const SubscriptionPlans = () => {
           body: JSON.stringify({
             priceId,
             redirectUrl: baseUrl,
-            userId: getUserId(),
-            priceId: priceId,
+            userId,
+            email,
           }),
         }
       );
