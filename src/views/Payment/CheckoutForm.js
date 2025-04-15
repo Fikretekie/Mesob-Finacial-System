@@ -1,5 +1,10 @@
 import React, { useState, useRef } from "react";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import {
+  useStripe,
+  useElements,
+  CardElement,
+  PaymentRequestButtonElement,
+} from "@stripe/react-stripe-js";
 import { useNavigate } from "react-router-dom";
 import { Button, Input, Card } from "reactstrap";
 import axios from "axios";
@@ -10,7 +15,8 @@ const CheckoutForm = ({ priceId }) => {
   const stripe = useStripe();
   const elements = useElements();
   const notificationAlertRef = useRef(null);
-
+  const [paymentRequest, setPaymentRequest] = useState(null);
+  const [canPay, setCanPay] = useState(false);
   const [formData, setFormData] = useState({
     userId: localStorage.getItem("userId"),
     createdAt: "",
@@ -114,6 +120,85 @@ const CheckoutForm = ({ priceId }) => {
     setLoading(false);
   };
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!stripe || !priceId) {
+      console.log("Stripe or PriceId is not ready yet.");
+      return;
+    }
+
+    const fetchPriceDetails = async () => {
+      try {
+        console.log("Fetching price details for priceId:", priceId);
+        const response = await axios.get(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/price/${priceId}`
+        );
+
+        const { amount, currency } = response.data;
+        console.log("Fetched amount:", amount, "currency:", currency);
+
+        const pr = stripe.paymentRequest({
+          country: "US",
+          currency: currency || "usd",
+          total: {
+            label: "Total",
+            amount: amount || 2999, // cents
+          },
+          requestPayerName: true,
+          requestPayerEmail: true,
+        });
+
+        pr.on("paymentmethod", async (ev) => {
+          console.log("Received paymentmethod event");
+          try {
+            const response = await axios.post(
+              "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
+              {
+                userId: formData.userId,
+                email: ev.payerEmail,
+                name: ev.payerName,
+                priceId: priceId,
+                subscriptionPlan: "Apple/Google Pay Plan",
+              }
+            );
+
+            const { clientSecret } = response.data;
+            console.log("Client secret received:", clientSecret);
+
+            const { error } = await stripe.confirmPayment({
+              clientSecret,
+              paymentMethod: ev.paymentMethod.id,
+            });
+
+            if (error) {
+              ev.complete("fail");
+              console.error("Payment failed:", error);
+              showNotification("danger", "Payment failed.");
+            } else {
+              ev.complete("success");
+              setIsSubscribed(true);
+              showNotification("success", "Payment succeeded!");
+            }
+          } catch (err) {
+            ev.complete("fail");
+            console.error("Subscription creation failed:", err);
+            showNotification("danger", "Error creating subscription.");
+          }
+        });
+
+        // Check if Apple/Google Pay is supported
+        pr.canMakePayment().then((result) => {
+          console.log("canMakePayment() result:", result);
+          setCanPay(!!result);
+        });
+
+        setPaymentRequest(pr);
+      } catch (err) {
+        console.error("Error fetching price:", err);
+      }
+    };
+
+    fetchPriceDetails();
+  }, [stripe, priceId]);
 
   return (
     <div>
@@ -122,6 +207,16 @@ const CheckoutForm = ({ priceId }) => {
       {!isSubscribed ? (
         <Card className="max-w-md mx-auto p-6 shadow-lg rounded-xl">
           <h2 className="text-2xl font-bold mb-4">Payment Information</h2>
+          {/* Apple Pay / Google Pay Button */}
+          {canPay && paymentRequest && (
+            <div className="mb-4">
+              <PaymentRequestButtonElement
+                options={{ paymentRequest }}
+                className="w-full"
+              />
+              <div className="text-center my-2">Or</div>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               name="email"

@@ -13,47 +13,60 @@ import {
   Button,
   Spinner,
   Alert,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "reactstrap";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 const SubscriptionPlans = () => {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState("monthly");
-  const [subscription, setSubscription] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [cancelloading, setCancelLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPriceId, setSelectedPriceId] = useState(null);
+
   // Get stored user ID from localStorage
   const getUserId = () => {
-    const userData = JSON.parse(localStorage.getItem("user"));
-    return userData?.subscriptionId || null; // Ensure null if no user exists
+    return localStorage.getItem("userId") || null;
   };
 
-  const fetchSubscription = async () => {
+  const fetchUser = async () => {
     try {
       setLoading(true);
       setError("");
 
       const userId = getUserId();
       if (!userId) {
-        throw new Error("User ID not found. Please subscribe first.");
+        setUserData(null);
+        return;
       }
 
-      console.log("Fetching subscription for ID:", userId);
+      console.log("Fetching user data for ID:", userId);
 
-      // Fetch Subscription from API
+      // Fetch User data from API
       const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/${userId}`
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
-
-      console.log("Subscription response:", response);
-      setSubscription(response.data.subscription);
+      const userData = response.data.Item ? response.data.Item : response.data;
+      console.log("User response:", userData);
+      setUserData(userData);
     } catch (err) {
-      console.error("Error fetching subscription:", err);
-      setError(err.response?.data?.message || "Failed to fetch subscription.");
+      console.error("Error fetching user data:", err);
+      if (err.response?.status === 404) {
+        setUserData(null);
+      } else {
+        setError(err.response?.data?.message || "Failed to fetch user data.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
   const cancelSubscription = async () => {
     try {
       setCancelLoading(true);
@@ -66,13 +79,18 @@ const SubscriptionPlans = () => {
 
       console.log("Cancelling subscription for ID:", userId);
 
-      // Call DELETE API
-      const response = await axios.delete(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/${userId}`
+      // Update user data to cancel subscription by setting isPaid and subscription to false
+      const response = await axios.put(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+        {
+          ...userData,
+          isPaid: false,
+          subscription: false,
+        }
       );
 
       console.log("Cancel subscription response:", response);
-      setSubscription(null); // Clear subscription after cancellation
+      setUserData({ ...userData, isPaid: false, subscription: false });
       alert("Subscription cancelled successfully.");
     } catch (err) {
       console.error("Error cancelling subscription:", err);
@@ -81,6 +99,7 @@ const SubscriptionPlans = () => {
       setCancelLoading(false);
     }
   };
+
   const plans = [
     {
       name: "Pricing Plan",
@@ -103,11 +122,11 @@ const SubscriptionPlans = () => {
   const createSchedule = async () => {
     try {
       const params = {
-        email: email,
+        email: localStorage.getItem("user_email"),
         subject: "test",
         message: "testing email for schedule ",
         user_id: "14288408-9011-70a3-eeec-8d7cb1b9dca4",
-        schedule_type: 1, // Default type
+        schedule_type: 1,
         schedule_count: 1,
       };
       const response = await axios.post(
@@ -122,8 +141,6 @@ const SubscriptionPlans = () => {
 
   const handleSubscribe = async (priceId) => {
     const email = localStorage.getItem("user_email");
-    console.log("Email from localStorage:", email);
-    console.log("userid>>>>", localStorage.getItem("userId"));
     const userId = localStorage.getItem("userId");
 
     if (!email || !userId) {
@@ -132,7 +149,6 @@ const SubscriptionPlans = () => {
     }
 
     const baseUrl = window.location.origin + "/customer/dashboard";
-    console.log("Base URL:", baseUrl);
 
     try {
       const response = await fetch(
@@ -151,12 +167,66 @@ const SubscriptionPlans = () => {
         }
       );
       const session = await response.json();
-      console.log("Session response:", session.session.url);
       window.location.href = session.session.url;
     } catch (error) {
       console.error("Error:", error);
     }
   };
+
+  const getPaypalClientId = () => {
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    return isLocalhost
+      ? "AUI_SWyj_kfkuONQ_fe6KD-70qHAp2vRom3nAivzP2KaajvHst_nthZNw4d5hTCVndUctofi2_6Nl8bu"
+      : "AVpz-RlQ2NQtOH27s9jabSWT8Sx2NmUns-NfbxeYUVx1pAMe2w4mQCHBAq-xNkpOqcXlo0kVHw-bBpoB";
+  };
+
+  const handlePaypalSubscription = async (priceId) => {
+    try {
+      const email = localStorage.getItem("user_email");
+      const userId = localStorage.getItem("userId");
+
+      const response = await axios.post(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/PaypalSubscription`,
+        {
+          priceId,
+          userId,
+          email,
+          billingCycle,
+        }
+      );
+
+      if (response.data.success) {
+        await axios.put(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+          {
+            ...userData,
+            isPaid: true,
+            subscription: true,
+          }
+        );
+        alert("Subscription created successfully with PayPal!");
+        fetchUser();
+      }
+    } catch (error) {
+      console.error("PayPal subscription error:", error);
+      setError("Failed to create PayPal subscription");
+    }
+  };
+
+  useEffect(() => {
+    const userId = getUserId();
+    if (userId) {
+      fetchUser();
+    }
+  }, []);
+
+  // Ensure isSubscribed is a boolean, default to false if userData is null
+  const isSubscribed = userData.user
+    ? userData.user.isPaid === true && userData.user.subscription === true
+    : false;
+  console.log("userData:", userData?.user.subscription);
 
   return (
     <>
@@ -171,30 +241,7 @@ const SubscriptionPlans = () => {
               <CardHeader>
                 <CardTitle tag="h4">Subscription Plans</CardTitle>
               </CardHeader>
-              {/* <Button
-                color="primary"
-                onClick={() =>
-                  createSchedule()
-                }
-              >
-                Subscribe
-              </Button> */}
               <CardBody>
-                {/* <div className="text-center mb-4">
-                  <Button
-                    color={billingCycle === "monthly" ? "primary" : "secondary"}
-                    onClick={() => setBillingCycle("monthly")}
-                    className="mr-2"
-                  >
-                    Monthly Billing
-                  </Button>
-                  <Button
-                    color={billingCycle === "yearly" ? "primary" : "secondary"}
-                    onClick={() => setBillingCycle("yearly")}
-                  >
-                    Yearly Billing
-                  </Button>
-                </div> */}
                 <Row>
                   {plans.map((plan, index) => (
                     <Col md={12} key={index}>
@@ -213,35 +260,47 @@ const SubscriptionPlans = () => {
                           <p className="h4 text-primary mb-4">
                             {plan.price[billingCycle]}
                           </p>
-                          <Button
-                            color="primary"
-                            onClick={() =>
-                              handleSubscribe(plan.priceId[billingCycle])
-                            }
-                          >
-                            Subscribe
-                          </Button>
-                          {/* <Button
-                            color="info"
-                            onClick={fetchSubscription}
-                            className="ml-2"
-                          >
-                            Get one subscription
-                          </Button> */}
-                          {/* <Button
-                            color="info"
-                            onClick={cancelSubscription}
-                            className="ml-2"
-                          >
-                            Cancel subscription
-                          </Button> */}
+                          {loading ? (
+                            <div className="text-center">
+                              <Spinner color="primary" />
+                              <p>Loading...</p>
+                            </div>
+                          ) : isSubscribed ? (
+                            <>
+                              <Alert color="success" className="mb-4">
+                                You are already subscribed to this plan.
+                              </Alert>
+                              <Button
+                                color="danger"
+                                onClick={cancelSubscription}
+                                disabled={cancelloading}
+                              >
+                                {cancelloading ? (
+                                  <>
+                                    <Spinner size="sm" /> Cancelling...
+                                  </>
+                                ) : (
+                                  "Unsubscribe"
+                                )}
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              color="primary"
+                              onClick={() => {
+                                setSelectedPriceId(plan.priceId[billingCycle]);
+                                setIsModalOpen(true);
+                              }}
+                            >
+                              Subscribe
+                            </Button>
+                          )}
                         </CardBody>
                       </Card>
                     </Col>
                   ))}
                 </Row>
 
-                {/* Show loading spinner while fetching */}
                 {loading && (
                   <div className="text-center mt-3">
                     <Spinner color="primary" />
@@ -249,38 +308,115 @@ const SubscriptionPlans = () => {
                   </div>
                 )}
 
-                {/* Show error message if fetching fails */}
                 {error && (
                   <Alert color="danger" className="mt-3">
                     {error}
                   </Alert>
                 )}
 
-                {/* Show Subscription Details if available */}
-                {subscription && (
+                {/* {isSubscribed && !loading && (
                   <div className="mt-4">
                     <h5>Subscription Details</h5>
                     <p>
-                      <strong>ID:</strong> {subscription.id}
+                      <strong>Name:</strong> {userData.name || "N/A"}
                     </p>
                     <p>
-                      <strong>Plan:</strong> {subscription.subscriptionPlan}
+                      <strong>Phone:</strong> {userData.phone_number || "N/A"}
                     </p>
                     <p>
-                      <strong>Status:</strong> {subscription.status}
+                      <strong>Email:</strong> {userData.email || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Company:</strong> {userData.companyName || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Status:</strong>{" "}
+                      {userData.isPaid && userData.subscription
+                        ? "Active"
+                        : "Inactive"}
                     </p>
                     <p>
                       <strong>Expires:</strong>{" "}
-                      {new Date(subscription.expireDate).toDateString()}
+                      {userData.trialEndDate
+                        ? new Date(userData.trialEndDate).toDateString()
+                        : "N/A"}
+                    </p>
+                    <p>
+                      <strong>Plan:</strong>{" "}
+                      {billingCycle === "monthly"
+                        ? "Monthly Plan"
+                        : "Yearly Plan"}
                     </p>
                   </div>
-                )}
+                )} */}
               </CardBody>
             </Card>
           </Col>
         </Row>
       </div>
+      <Modal isOpen={isModalOpen} toggle={() => setIsModalOpen(false)}>
+        <ModalHeader toggle={() => setIsModalOpen(false)}>
+          Choose Payment Method
+        </ModalHeader>
+        <ModalBody>
+          <Row>
+            <Col md={6} className="mb-3">
+              <Button
+                color="primary"
+                block
+                onClick={() => {
+                  handleSubscribe(selectedPriceId);
+                  setIsModalOpen(false);
+                }}
+              >
+                Pay with Stripe
+              </Button>
+            </Col>
+            <Col md={6}>
+              <PayPalScriptProvider
+                options={{
+                  "client-id": getPaypalClientId(),
+                  currency: "USD",
+                  intent: "subscription",
+                  vault: true,
+                }}
+              >
+                <PayPalButtons
+                  style={{
+                    layout: "vertical",
+                    color: "blue",
+                    shape: "rect",
+                    label: "subscribe",
+                  }}
+                  createSubscription={(data, actions) => {
+                    return actions.subscription.create({
+                      plan_id:
+                        selectedPriceId === "price_1RAXwQAhBlpHU9kBZkhZbUqs"
+                          ? "P-3RX40926YD7153733MKY4ZYI"
+                          : "YEARLY_PLAN_ID",
+                    });
+                  }}
+                  onApprove={async (data, actions) => {
+                    await handlePaypalSubscription(selectedPriceId);
+                    setIsModalOpen(false);
+                  }}
+                  onError={(err) => {
+                    console.error("PayPal error:", err);
+                    setError("Payment failed. Please try again.");
+                  }}
+                />
+              </PayPalScriptProvider>
+            </Col>
+          </Row>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 };
+
 export default SubscriptionPlans;
