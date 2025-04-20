@@ -5,7 +5,7 @@ import "react-notification-alert/dist/animate.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { signUp } from "aws-amplify/auth";
+import { deleteUser, signUp } from "aws-amplify/auth";
 import axios from "axios";
 import { businessTypes } from "./BusinessTypes";
 import TermsOfUse from "./Terms";
@@ -193,86 +193,8 @@ const SignupPage = () => {
       );
     }
   };
-  // const handleSignup = async (e) => {
-  //   if (!validateStep3()) return;
-  //   e.preventDefault();
-  //   try {
-  //     let res = await signUp({
-  //       username: email,
-  //       password: password,
-  //       options: {
-  //         userAttributes: {
-  //           email: email,
-  //           phone_number: phone,
-  //         },
-  //       },
-  //     });
-  //     console.log("Sign-up successful", res);
-  //     // Redirect to confirmation page
-  //     navigate("/confirm", { state: { email: email, phone_number: phone } });
-  //     const data = {
-  //       username: email,
-  //       name,
-  //       id: res.userId,
-  //       companyName,
-  //       email,
-  //       phone_number: phone,
-  //       businessType:
-  //         businessType === "Other_manuel_entry"
-  //           ? otherBusinessType
-  //           : businessType, // Use otherBusinessType if "Other" is selected
-  //       cashBalance,
-  //       outstandingDebt,
-  //       valueableItems,
-  //       role: 2, // Set default role as customer
-  //       startFromZero: false,
-  //     };
 
-  //     try {
-  //       const response = await fetch(
-  //         "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //           body: JSON.stringify(data),
-  //         }
-  //       );
-
-  //       const result = await response.json();
-
-  //       if (response.status === 409) {
-  //         showNotification("warning", result.message);
-  //       } else if (response.ok) {
-  //         localStorage.setItem("userId", result.user?.id || "");
-  //         localStorage.setItem("user_email", result.user?.email || "");
-  //         localStorage.setItem("user_name", result.user?.name || "");
-  //         localStorage.setItem("role", "2"); // Set customer role
-
-  //         showNotification("success", "Signup successful!");
-  //         setTimeout(() => {
-  //           navigate("/customer/dashboard");
-  //         }, 100);
-  //       } else {
-  //         showNotification("danger", result.message || "Signup failed");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error details:", error);
-  //       showNotification(
-  //         "danger",
-  //         "An unexpected error occurred. Please try again later."
-  //       );
-  //     }
-
-  //     // Handle successful sign-up
-  //   } catch (error) {
-  //     console.error("Error signing up:", error);
-  //     return;
-  //   }
-  // };
-
-  const handleSignup = async (e) => {
+  const handleSignup = async (e, type) => {
     if (!validateStep3()) return;
     e.preventDefault();
 
@@ -306,9 +228,9 @@ const SignupPage = () => {
         email,
         phone_number: phone,
         businessType: businessTypeValue,
-        cashBalance,
-        outstandingDebt,
-        valueableItems,
+        cashBalance: type === 0 ? '0' : cashBalance,
+        outstandingDebt: type === 0 ? '0' : outstandingDebt,
+        valueableItems: type === 0 ? '0' : valueableItems,
         role: 2,
         startFromZero: false,
         creationDate,
@@ -326,6 +248,8 @@ const SignupPage = () => {
           data
         );
 
+        console.log('response-=->> ', response);
+
         if (response.status === 200) {
           // Local storage setup
           localStorage.setItem("userId", res.userId);
@@ -341,12 +265,14 @@ const SignupPage = () => {
             message: `...`, // shortened for brevity
           };
 
-          await axios.post(
+          let res1 = await axios.post(
             `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
             emailData
           );
+          console.log('res=>>>>', res1);
 
-          await createSchedule();
+          let scheduleRes = await createSchedule();
+          console.log('scheduleRes=>>>>', scheduleRes);
           showNotification("success", "Signup successful!");
 
           setTimeout(() => {
@@ -385,17 +311,19 @@ const SignupPage = () => {
       if (cognitoError.name === "UsernameExistsException") {
         showNotification(
           "danger",
-          "User already exists. Please login instead."
+          "User already exists. Please SignUp instead."
         );
       }
     }
   };
 
   const checkEmailExists = async (email) => {
+    console.log(email);
     try {
       // Replace with your actual endpoint
+
       const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${email}`,
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/SignUp?email=${email}`,
         {
           method: "GET",
           headers: {
@@ -414,42 +342,33 @@ const SignupPage = () => {
     }
   };
 
-  // const handleNextStep = async () => {
 
-
-  //   let exist = await checkEmailExists(email);
-  //   if (exist === true) {
-
-  //   } else {
-  //     if (step === 1 && validateStep1()) setStep(2);
-  //     else if (step === 2 && validateStep2()) setStep(3);
-  //   }
-
-  // };
-
-
-  const handleNextStep = async () => {
-    if (step === 1) {
-      // Validate fields first
-      if (!validateStep1()) return;
-
-      // Check if email exists
-      let exist = await checkEmailExists(email);
-      if (exist === true) {
-        setErrors((prev) => ({
-          ...prev,
-          email: "This email is already registered. Please use another.",
-        }));
-        showNotification("warning", "This email is already registered. Please use another.");
-        return; // Do not proceed to next step
-      } else {
-        setStep(2);
-      }
-    } else if (step === 2 && validateStep2()) {
-      setStep(3);
-    }
+  const handleNextStep = () => {
+    if (step === 1 && validateStep1()) setStep(2);
+    else if (step === 2 && validateStep2()) setStep(3);
   };
+  // const handleNextStep = async () => {
+  //   if (step === 1) {
+  //     // Validate fields first
+  //     if (!validateStep1()) return;
 
+  //     // Check if email exists
+  //     // let exist = await checkEmailExists(email);
+  //     console.log('exists ', exist);
+  //     if (exist === true) {
+  //       setErrors((prev) => ({
+  //         ...prev,
+  //         email: "This email is already registered. Please use another.",
+  //       }));
+  //       showNotification("warning", "This email is already registered. Please use another.");
+  //       return; // Do not proceed to next step
+  //     } else {
+  //       setStep(2);
+  //     }
+  //   } else if (step === 2 && validateStep2()) {
+  //     setStep(3);
+  //   }
+  // };
 
   const handleStartFromZero = async () => {
     if (!name || !companyName || !email || !phone) {
@@ -722,7 +641,7 @@ const SignupPage = () => {
               <a
                 onClick={(e) => {
                   e.preventDefault();
-                  handleStartFromZero();
+                  handleSignup(e, 0);
                 }}
                 href="#"
               >
@@ -730,12 +649,7 @@ const SignupPage = () => {
               </a>
               :
             </p>
-            {/* <button
-              onClick={handleStartFromZero}
-              style={{ ...styles.button, backgroundColor: "#3b82f6" }}
-            >
-              Click Here
-            </button> */}
+
             <input
               type="text"
               placeholder="Cash Balance (e.g., $10,000)"
@@ -804,7 +718,7 @@ const SignupPage = () => {
             </label>
 
             <button
-              onClick={handleSignup}
+              onClick={(e) => handleSignup(e, 1)}
               style={{
                 ...styles.button,
                 backgroundColor: isHovered ? "blue" : "#3b82f6",
