@@ -388,10 +388,6 @@ const SignupPage = () => {
           "User already exists. Please login instead."
         );
       }
-    } catch (error) {
-      console.error("Error signing up:", error);
-      showNotification("danger", "Error signing up. Please try again." + error);
-
     }
   };
 
