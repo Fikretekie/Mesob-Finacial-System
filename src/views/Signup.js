@@ -382,14 +382,70 @@ const SignupPage = () => {
       }
     } catch (error) {
       console.error("Error signing up:", error);
-      showNotification("danger", "Error signing up. Please try again.");
+      showNotification("danger", "Error signing up. Please try again." + error);
+
     }
   };
 
-  const handleNextStep = () => {
-    if (step === 1 && validateStep1()) setStep(2);
-    else if (step === 2 && validateStep2()) setStep(3);
+  const checkEmailExists = async (email) => {
+    try {
+      // Replace with your actual endpoint
+      const response = await fetch(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${email}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log('respoms ss', response);
+      // Assume API returns { exists: true/false }
+      return response.exists;
+    } catch (error) {
+      // Handle API/network errors
+      console.log('errors is ', error);
+      return false; // Fail-safe: treat as not existing
+    }
   };
+
+  // const handleNextStep = async () => {
+
+
+  //   let exist = await checkEmailExists(email);
+  //   if (exist === true) {
+
+  //   } else {
+  //     if (step === 1 && validateStep1()) setStep(2);
+  //     else if (step === 2 && validateStep2()) setStep(3);
+  //   }
+
+  // };
+
+
+  const handleNextStep = async () => {
+    if (step === 1) {
+      // Validate fields first
+      if (!validateStep1()) return;
+
+      // Check if email exists
+      let exist = await checkEmailExists(email);
+      if (exist === true) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "This email is already registered. Please use another.",
+        }));
+        showNotification("warning", "This email is already registered. Please use another.");
+        return; // Do not proceed to next step
+      } else {
+        setStep(2);
+      }
+    } else if (step === 2 && validateStep2()) {
+      setStep(3);
+    }
+  };
+
 
   const handleStartFromZero = async () => {
     if (!name || !companyName || !email || !phone) {
