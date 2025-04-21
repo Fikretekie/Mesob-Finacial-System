@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Button,
@@ -33,6 +34,7 @@ function UserPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [editDisabled, setEditDisabled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -51,6 +53,7 @@ function UserPage() {
 
     fetchUserData();
   }, []);
+
   useEffect(() => {
     const fetchSubscription = async () => {
       const userId = localStorage.getItem("userId");
@@ -99,6 +102,25 @@ function UserPage() {
       }
     } else {
       setIsEditing(true);
+    }
+  };
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const userId = localStorage.getItem("userId");
+      await axios.delete(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+      );
+      localStorage.clear(); // Clear user data
+      alert("Account deleted successfully.");
+      navigate("/login"); // Redirect to login or homepage
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setError("Failed to delete account. Please try again.");
     }
   };
 
@@ -240,6 +262,15 @@ function UserPage() {
                               disabled={editDisabled}
                             >
                               Edit Profile
+                            </Button>
+                          </Col>
+                        </Row>
+                      )}
+                      {isCustomer && (
+                        <Row className="mt-3">
+                          <Col md="12">
+                            <Button color="danger" onClick={handleDelete}>
+                              Delete Account
                             </Button>
                           </Col>
                         </Row>

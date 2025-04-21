@@ -8,6 +8,7 @@ import "react-phone-input-2/lib/style.css";
 import { deleteUser, signUp } from "aws-amplify/auth";
 import axios from "axios";
 import { businessTypes } from "./BusinessTypes";
+import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
 const SignupPage = () => {
   const [step, setStep] = useState(1);
@@ -36,6 +37,7 @@ const SignupPage = () => {
   const [manualExpensePurposes, setManualExpensePurposes] = useState([]);
   const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
   const [selectedBusinessType, setSelectedBusinessType] = useState("");
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   const getBusinessPurposes = (businessType) => {
     // If the business type is "Other", return empty arrays for manual entry
@@ -146,7 +148,12 @@ const SignupPage = () => {
     if (selectedBusinessType === "Other" && !otherBusinessType.trim()) {
       newErrors.otherBusinessType = "Please specify your business type.";
     }
-
+    if (!selectedCurrency) {
+      newErrors.currency = "Currency is required.";
+    }
+    {
+      errors.currency && <p style={styles.error}>{errors.currency}</p>;
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -195,7 +202,8 @@ const SignupPage = () => {
   };
 
   const handleSignup = async (e, type) => {
-    if (!validateStep3()) return;
+    if (type !== 0 && !validateStep3()) return;
+
     e.preventDefault();
 
     try {
@@ -228,17 +236,18 @@ const SignupPage = () => {
         email,
         phone_number: phone,
         businessType: businessTypeValue,
-        cashBalance: type === 0 ? '0' : cashBalance,
-        outstandingDebt: type === 0 ? '0' : outstandingDebt,
-        valueableItems: type === 0 ? '0' : valueableItems,
+        cashBalance: type === 0 ? "0" : cashBalance,
+        outstandingDebt: type === 0 ? "0" : outstandingDebt,
+        valueableItems: type === 0 ? "0" : valueableItems,
         role: 2,
-        startFromZero: false,
+        startFromZero: type === 0,
         creationDate,
         trialEndDate,
         isPaid: false,
         subscription: false,
         scheduleCount: 1,
         createdAt: creationDate,
+        currency: selectedCurrency,
       };
 
       try {
@@ -248,7 +257,7 @@ const SignupPage = () => {
           data
         );
 
-        console.log('response-=->> ', response);
+        console.log("response-=->> ", response);
 
         if (response.status === 200) {
           // Local storage setup
@@ -269,10 +278,10 @@ const SignupPage = () => {
             `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
             emailData
           );
-          console.log('res=>>>>', res1);
+          console.log("res=>>>>", res1);
 
           let scheduleRes = await createSchedule();
-          console.log('scheduleRes=>>>>', scheduleRes);
+          console.log("scheduleRes=>>>>", scheduleRes);
           showNotification("success", "Signup successful!");
 
           setTimeout(() => {
@@ -296,11 +305,11 @@ const SignupPage = () => {
         }
 
         // Delete Cognito user if database update failed
-        try {
-          await deleteUser();
-        } catch (deleteError) {
-          console.error("Error cleaning up user:", deleteError);
-        }
+        // try {
+        //   await deleteUser();
+        // } catch (deleteError) {
+        //   console.error("Error cleaning up user:", deleteError);
+        // }
 
         return;
       }
@@ -332,16 +341,15 @@ const SignupPage = () => {
         }
       );
 
-      console.log('respoms ss', response);
+      console.log("respoms ss", response);
       // Assume API returns { exists: true/false }
       return response.exists;
     } catch (error) {
       // Handle API/network errors
-      console.log('errors is ', error);
+      console.log("errors is ", error);
       return false; // Fail-safe: treat as not existing
     }
   };
-
 
   const handleNextStep = () => {
     if (step === 1 && validateStep1()) setStep(2);
@@ -370,69 +378,69 @@ const SignupPage = () => {
   //   }
   // };
 
-  const handleStartFromZero = async () => {
-    if (!name || !companyName || !email || !phone) {
-      showNotification("warning", "Please fill in all required fields first");
-      return;
-    }
+  // const handleStartFromZero = async () => {
+  //   if (!name || !companyName || !email || !phone) {
+  //     showNotification("warning", "Please fill in all required fields first");
+  //     return;
+  //   }
 
-    const data = {
-      name,
-      companyName,
-      email,
-      phone,
-      password: "PCmalik99",
-      businessType: "Trucking",
-      cashBalance: "0",
-      outstandingDebt: "0",
-      valueableItems: "0",
-      role: 2,
-      startFromZero: true,
-    };
+  //   const data = {
+  //     name,
+  //     companyName,
+  //     email,
+  //     phone,
+  //     password: "PCmalik99",
+  //     businessType: "Trucking",
+  //     cashBalance: "0",
+  //     outstandingDebt: "0",
+  //     valueableItems: "0",
+  //     role: 2,
+  //     startFromZero: true,
+  //   };
 
-    try {
-      // Clear any existing data first
-      localStorage.clear();
+  //   try {
+  //     // Clear any existing data first
+  //     localStorage.clear();
 
-      const response = await fetch(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+  //     const response = await fetch(
+  //       "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(data),
+  //       }
+  //     );
 
-      const result = await response.json();
-      if (response.ok) {
-        localStorage.setItem("userId", result.user?.id || "");
-        localStorage.setItem("user_email", result.user?.email || "");
-        localStorage.setItem("user_name", result.user?.name || "");
-        localStorage.setItem("role", "2");
-        localStorage.setItem("outstandingDebt", "0");
-        localStorage.setItem("valueableItems", "0");
-        localStorage.setItem("cashBalance", "0");
+  //     const result = await response.json();
+  //     if (response.ok) {
+  //       localStorage.setItem("userId", result.user?.id || "");
+  //       localStorage.setItem("user_email", result.user?.email || "");
+  //       localStorage.setItem("user_name", result.user?.name || "");
+  //       localStorage.setItem("role", "2");
+  //       localStorage.setItem("outstandingDebt", "0");
+  //       localStorage.setItem("valueableItems", "0");
+  //       localStorage.setItem("cashBalance", "0");
 
-        showNotification(
-          "success",
-          "Account created successfully. Starting from zero!"
-        );
+  //       showNotification(
+  //         "success",
+  //         "Account created successfully. Starting from zero!"
+  //       );
 
-        // Use window.location for full page refresh
-        window.location.href = "/customer/dashboard";
-      } else {
-        showNotification(
-          "danger",
-          result.message || "Failed to create account"
-        );
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      showNotification("danger", "An unexpected error occurred");
-    }
-  };
+  //       // Use window.location for full page refresh
+  //       window.location.href = "/customer/dashboard";
+  //     } else {
+  //       showNotification(
+  //         "danger",
+  //         result.message || "Failed to create account"
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //     showNotification("danger", "An unexpected error occurred");
+  //   }
+  // };
 
   const handlePhoneChange = (value) => {
     const formattedPhone = "+" + value.replace(/[^\d]/g, "");
@@ -613,6 +621,17 @@ const SignupPage = () => {
                 )}
               </>
             )}
+            <select
+              value={selectedCurrency}
+              onChange={(e) => setSelectedCurrency(e.target.value)}
+              style={styles.input}
+            >
+              {Object.entries(currencies).map(([code, { symbol, name }]) => (
+                <option key={code} value={code}>
+                  {symbol} {code} - {name}
+                </option>
+              ))}
+            </select>
 
             <button
               onClick={handleNextStep}
