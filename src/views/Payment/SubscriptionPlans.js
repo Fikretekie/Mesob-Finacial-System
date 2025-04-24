@@ -29,7 +29,7 @@ const SubscriptionPlans = () => {
   const [cancelloading, setCancelLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPriceId, setSelectedPriceId] = useState(null);
-  const [showModal, setshowModal] = useState(false)
+  const [showModal, setshowModal] = useState(false);
 
   // Get stored user ID from localStorage
   const getUserId = () => {
@@ -42,7 +42,7 @@ const SubscriptionPlans = () => {
       setError("");
 
       const userId = getUserId();
-      console.log('userid, ', userId);
+      console.log("userid, ", userId);
       if (!userId) {
         setUserData(null);
         return;
@@ -71,31 +71,82 @@ const SubscriptionPlans = () => {
 
   const cancelSubscription = async () => {
     try {
-      setCancelLoading(true);
-      setError("");
-
-      const userId = getUserId();
-      if (!userId) {
-        throw new Error("User ID not found. Cannot cancel subscription.");
-      }
-
-      console.log("Cancelling subscription for ID:", userId);
-
-      // Update user data to cancel subscription by setting isPaid and subscription to false
-      const response = await axios.put(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
-        {
-          ...userData,
-          isPaid: false,
-          subscription: false,
-        }
+      const userId = localStorage.getItem("userId");
+      const response = await axios.get(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
 
-      console.log("Cancel subscription response:", response);
-      setUserData({ ...userData, isPaid: false, subscription: false });
-      alert("Subscription cancelled successfully.");
+      let userData = response.data.user.subscriptionId;
+      try {
+        setCancelLoading(true);
+        setError("");
+        if (!userData) {
+          throw new Error(
+            "Subscription ID not found. Cannot cancel subscription."
+          );
+        }
+        console.log("Cancelling subscription for ID:", userData);
+        // const cancelResponse = await axios.delete(
+        //   `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/${userData}`,
+        //   { redirectUrl: window.location.origin, id: userData }
+        // );
+
+        const response = await fetch(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription/${userData}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              redirectUrl: window.location.origin,
+              id: userData,
+            }),
+          }
+        );
+
+        console.log("Cancel response:", response);
+        alert("Subscription cancelled successfully.");
+      } catch (err) {
+        console.error(err);
+        setError(
+          err.response?.data?.message || "Failed to cancel subscription."
+        );
+      } finally {
+        setCancelLoading(false);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setError("Failed to fetch user data. Please try again later.");
+    }
+  };
+
+  const updateCancelSubscription = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        setError("User ID not found.");
+        return;
+      }
+
+      setCancelLoading(true);
+      setError("");
+      const updateFields = {
+        isPaid: false,
+        subscription: false,
+      };
+      await axios.put(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+        updateFields
+      );
+      fetchUser();
+
+      alert("Subscription cancelled and status updated.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to cancel subscription.");
+      console.error("Error updating subscription status:", err);
+      setError(
+        err.response?.data?.message || "Failed to update subscription status."
+      );
     } finally {
       setCancelLoading(false);
     }
@@ -231,8 +282,8 @@ const SubscriptionPlans = () => {
   };
 
   const handleCloseModal = async () => {
-    setshowModal(false)
-  }
+    setshowModal(false);
+  };
 
   useEffect(() => {
     const userId = getUserId();
@@ -291,7 +342,7 @@ const SubscriptionPlans = () => {
                               </Alert>
                               <Button
                                 color="danger"
-                                onClick={cancelSubscription}
+                                onClick={updateCancelSubscription}
                                 disabled={cancelloading}
                               >
                                 {cancelloading ? (
@@ -375,11 +426,14 @@ const SubscriptionPlans = () => {
 
         {/* Subscription Modal */}
         <Modal isOpen={showModal} toggle={handleCloseModal}>
-          <ModalHeader toggle={handleCloseModal}>Choose Payment Method</ModalHeader>
+          <ModalHeader toggle={handleCloseModal}>
+            Choose Payment Method
+          </ModalHeader>
           <ModalBody>
             <PayPalScriptProvider
               options={{
-                "client-id": "AWHC_KiGbQpiR_Id96ZR5ddNdBa2Z8eX9xOo8TUAl1DAtsPTCU-w8c6cGU803D23hPfLzOut89xgBOpB",
+                "client-id":
+                  "AWHC_KiGbQpiR_Id96ZR5ddNdBa2Z8eX9xOo8TUAl1DAtsPTCU-w8c6cGU803D23hPfLzOut89xgBOpB",
                 vault: true,
                 intent: "subscription",
               }}
