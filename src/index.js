@@ -77,7 +77,7 @@ Amplify.configure({
             },
             {
               provider: "SignInWithApple",
-              clientId: "com.mesob.financial"
+              clientId: "com.mesobfinancial.signin"
             }
           ]
         }
