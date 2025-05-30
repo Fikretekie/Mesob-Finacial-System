@@ -64,20 +64,26 @@ Amplify.configure({
           domain: "us-east-1lamplcb1n.auth.us-east-1.amazoncognito.com",
           scopes: ["openid", "email", "profile"],
           redirectSignIn: [
-            "http://localhost:3000",
-            "https://app.mesobfinancial.com"
+            "https://app.mesobfinancial.com/oauth-redirect"
           ],
           redirectSignOut: [
-            "http://localhost:3000",
             "https://app.mesobfinancial.com"
           ],
           responseType: "code",
-          clientId:
-            "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com",
-        },
-      },
-    },
-  },
+          providers: [
+            {
+              provider: "Google",
+              clientId: "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com"
+            },
+            {
+              provider: "SignInWithApple",
+              clientId: "com.mesob.financial"
+            }
+          ]
+        }
+      }
+    }
+  }
 });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

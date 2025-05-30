@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { getCurrentUser } from "aws-amplify/auth";
-import { Amplify } from "aws-amplify";
+import { Hub } from "aws-amplify/utils";
 import getUserInfo from "../utils/Getuser";
 
 const OAuthListener = () => {
@@ -12,11 +12,15 @@ const OAuthListener = () => {
     const handleOAuthFlow = async () => {
       try {
         console.log("🔵 OAuthListener started...");
+        console.log("🔵 Full URL:", window.location.href); // Log full URL
 
         const error = searchParams.get("error");
+        const errorDescription = searchParams.get("error_description"); // Capture error details
         if (error) {
           console.error("🔴 OAuth error detected:", error);
-          throw new Error(error);
+          console.error("🔴 Error description:", errorDescription);
+          console.error("🔴 Full query string:", window.location.search);
+          throw new Error(`${error}: ${errorDescription || 'No description'}`);
         }
 
         console.log(
@@ -30,7 +34,6 @@ const OAuthListener = () => {
             console.log("✅ User signed in event detected, fetching user...");
 
             try {
-              // Add retry logic for authentication propagation
               const retryGetUser = async (attempt = 1) => {
                 try {
                   console.log(`🔄 Attempt ${attempt} to fetch current user...`);
@@ -55,7 +58,6 @@ const OAuthListener = () => {
               const userInfo = await getUserInfo();
               console.log("✅ User info retrieved:", userInfo);
 
-              // Store user data
               localStorage.setItem("userId", userInfo.userId);
               localStorage.setItem("user_email", userInfo.email || "");
               localStorage.setItem("user_name", userInfo.name || "");
@@ -77,7 +79,6 @@ const OAuthListener = () => {
           }
         });
 
-        // Extended timeout for mobile/slow connections
         const timeout = setTimeout(() => {
           console.warn(
             "⚠️ OAuth sign-in timeout reached, redirecting to login..."

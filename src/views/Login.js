@@ -75,7 +75,14 @@ const Login = () => {
       showNotification("danger", "Google sign-in failed.");
     }
   };
-
+  const handleAppleSignIn = async () => {
+    try {
+      await signInWithRedirect({ provider: "SignInWithApple" });
+    } catch (error) {
+      console.error("Error during Apple sign-in:", error);
+      showNotification("danger", "Apple sign-in failed.");
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -197,6 +204,9 @@ const Login = () => {
           </div>
           <button onClick={handleGoogleSignIn} className="google-login-btn">
             Sign in with Google
+          </button>
+          <button onClick={handleAppleSignIn} className="apple-login-btn">
+            Sign in with Apple
           </button>
           <p>
             Don't have an account yet? <Link to="/signup">Sign up</Link>
