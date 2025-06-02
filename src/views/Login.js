@@ -137,7 +137,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Error signing in:", error);
-      showNotification("danger", "An error occurred. Please try again later.");
+      showNotification("danger", "An error occurred. Please try again later.", error);
     } finally {
       setLoading(false);
     }
