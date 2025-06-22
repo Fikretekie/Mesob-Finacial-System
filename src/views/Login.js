@@ -35,12 +35,47 @@ const Login = () => {
     }
   }, [navigate]);
 
+  // useEffect(() => {
+  //   const listener = Hub.listen("auth", async ({ payload }) => {
+  //     switch (payload.event) {
+  //       case "signInWithRedirect":
+  //         try {
+  //           const user = await getCurrentUser();
+  //           const role = localStorage.getItem("role");
+  //           navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
+  //         } catch (error) {
+  //           console.error("Post-signin error:", error);
+  //         }
+  //         break;
+  //       case "signInWithRedirect_failure":
+  //         showNotification("danger", "Google sign-in failed");
+  //         break;
+  //     }
+  //   });
+
+  //   return () => listener();
+  // }, [navigate]);
+
+
+  // In your Login component
   useEffect(() => {
     const listener = Hub.listen("auth", async ({ payload }) => {
       switch (payload.event) {
         case "signInWithRedirect":
           try {
             const user = await getCurrentUser();
+            // Check if user exists in your database
+            const userInfo = await getUserInfo();
+
+            if (!userInfo || !userInfo.userId) {
+              // New social sign-up - redirect to profile completion
+              localStorage.setItem("socialSignup", "true");
+              localStorage.setItem("socialEmail", user.signInDetails?.loginId || "");
+              navigate("/complete-profile");
+              return;
+            }
+
+            // Existing user - proceed as normal
             const role = localStorage.getItem("role");
             navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
           } catch (error) {
@@ -55,7 +90,6 @@ const Login = () => {
 
     return () => listener();
   }, [navigate]);
-
   const showNotification = (type, message) => {
     const options = {
       place: "tr",

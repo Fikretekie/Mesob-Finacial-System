@@ -30,6 +30,7 @@ import SubscriptionPage from "views/Payment/Subscription";
 import Confirm from "views/Confirm";
 import OAuthListener from "components/OAuthListener";
 import TermsOfUse from "views/Terms";
+import CompleteProfile from "views/CompleteProfile";
 // Create Redux store
 const store = configureStore({
   reducer: {
@@ -64,7 +65,8 @@ Amplify.configure({
           domain: "us-east-1lamplcb1n.auth.us-east-1.amazoncognito.com",
           scopes: ["openid", "email", "profile"],
           redirectSignIn: [
-            "https://app.mesobfinancial.com/oauth-redirect"
+            "https://app.mesobfinancial.com/oauth-redirect",
+            "http://localhost:3000/oauth-redirect",
           ],
           redirectSignOut: [
             "https://app.mesobfinancial.com"
@@ -97,6 +99,7 @@ root.render(
         <Route path="/oauth-redirect" element={<OAuthListener />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/mesonfinancelogin" element={<MesobFinanceLogin />} />
+        <Route path="//complete-profile" element={<CompleteProfile />} />
         <Route path="/signup" element={<SignupPage />} />
         {/* New Confirm route */}
         <Route path="/confirm" element={<Confirm />} />
