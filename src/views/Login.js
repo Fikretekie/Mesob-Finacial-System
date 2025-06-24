@@ -103,7 +103,9 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithRedirect({ provider: "Google" });
+      console.log('tring to sign with google');
+      let res = await signInWithRedirect({ provider: "Google" });
+      console.log('sign with google success=>>', res);
     } catch (error) {
       console.error("Error during Google sign-in:", error);
       showNotification("danger", "Google sign-in failed.");

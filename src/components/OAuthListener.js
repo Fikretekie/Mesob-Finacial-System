@@ -12,10 +12,10 @@ const OAuthListener = () => {
     const handleOAuthFlow = async () => {
       try {
         console.log("🔵 OAuthListener started...");
-        console.log("🔵 Full URL:", window.location.href); // Log full URL
+        console.log("🔵 Full URL:", window.location.href);
 
         const error = searchParams.get("error");
-        const errorDescription = searchParams.get("error_description"); // Capture error details
+        const errorDescription = searchParams.get("error_description");
         if (error) {
           console.error("🔴 OAuth error detected:", error);
           console.error("🔴 Error description:", errorDescription);
@@ -23,14 +23,14 @@ const OAuthListener = () => {
           throw new Error(`${error}: ${errorDescription || 'No description'}`);
         }
 
-        console.log(
-          "🟢 No error found in search params, listening for sign-in..."
-        );
+        console.log("🟢 No error found in search params, listening for sign-in...");
 
-        const listener = Hub.listen("auth", async ({ payload }) => {
+        // Hub.listen returns a function to stop listening
+        const stopListening = Hub.listen("auth", async ({ payload }) => {
           console.log("🟡 Auth Event Received:", payload);
 
-          if (payload.event === "signIn") {
+          // Changed from "signIn" to "signedIn"
+          if (payload.event === "signedIn") {
             console.log("✅ User signed in event detected, fetching user...");
 
             try {
@@ -74,23 +74,24 @@ const OAuthListener = () => {
               console.error("🔴 Error processing sign-in:", err);
               navigate("/login");
             } finally {
-              Hub.remove("auth", listener);
+              // Call the function returned by Hub.listen to stop listening
+              stopListening();
             }
           }
         });
 
         const timeout = setTimeout(() => {
-          console.warn(
-            "⚠️ OAuth sign-in timeout reached, redirecting to login..."
-          );
-          Hub.remove("auth", listener);
+          console.warn("⚠️ OAuth sign-in timeout reached, redirecting to login...");
+          // Call the function to stop listening
+          stopListening();
           navigate("/login");
         }, 10000);
 
         return () => {
           console.log("🛑 Cleaning up OAuth listener...");
           clearTimeout(timeout);
-          Hub.remove("auth", listener);
+          // Call the function to stop listening
+          stopListening();
         };
       } catch (error) {
         console.error("🔴 OAuth flow error:", error);

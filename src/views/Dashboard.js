@@ -28,14 +28,16 @@ import {
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import formatDate from "utils/formatDate";
+import Select from "react-select"; // Import react-select
 import { Helmet } from "react-helmet";
 import formatUserId from "utils/formatUID";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+// ✅ Correct
+import { setSelectedUserId, clearSelectedUserId } from '../store/selectedUserSlice';
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { setSelectedUser } from "../store/userSlice";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -59,14 +61,31 @@ function Dashboard() {
   const [totalPayable, setTotalPayable] = useState(0);
   const [monthlySales, setMonthlySales] = useState([]);
   const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState(null);
   const userRole = parseInt(localStorage.getItem("role"));
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const selectedUserId = useSelector((state) => state.selectedUser.userId);
+  console.log('selectedUserId =', selectedUserId);
+
+  // const [selectedUserId, setLocalSelectedUserId] = useState(selectedUserId0 || null); // ✅ renamed local state setter
+
   const [companyName, setCompanyName] = useState("");
-  const selectedUser = useSelector((state) => state.selectedUser);
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
+
+  const handleUserSelect = (selectedOption) => {
+    console.log("👤 User Selected:", selectedOption);
+    if (!selectedOption) {
+      dispatch(clearSelectedUserId());
+      fetchFinancialData(userId);
+      return;
+    }
+
+    const userId = selectedOption.value;
+    dispatch(setSelectedUserId(userId));
+    fetchFinancialData(userId);
+  };
 
   const handleAddTransactionClick = () => {
     // Use navigate to go to the MesobFinancial2 page
@@ -74,6 +93,11 @@ function Dashboard() {
       state: { openTransactionModal: true },
     });
   };
+
+  const userOptions = users.map((user) => ({
+    value: user.id,
+    label: user.email,
+  }));
 
   const getSchedule = async () => {
     try {
@@ -140,21 +164,8 @@ function Dashboard() {
       initialBalance + totalReceived - totalExpenses - New_ItemReceived;
     return totalCash.toFixed(2);
   };
-  const handleUserSelect = (userId) => {
-    const numericUserId = Number(userId); // Convert string to number
-    console.log("Selected user ID:", numericUserId);
-    if (!numericUserId) {
-      console.error("handleUserSelect: userId is undefined or null");
-      return;
-    }
-    const selectedUser = users.find((user) => user.id === numericUserId);
-    console.log("Found user:", selectedUser);
-    if (selectedUser) {
-      dispatch(setSelectedUser(selectedUser));
-    } else {
-      console.error(`handleUserSelect: No user found with id ${numericUserId}`);
-    }
-  };
+
+
 
   const fetchUsers = async () => {
     try {
@@ -168,6 +179,7 @@ function Dashboard() {
       console.error("Error fetching users:", error);
     }
   };
+
   const getChartOptions = (title, data, labels) => {
     return {
       chart: {
@@ -219,7 +231,6 @@ function Dashboard() {
       },
     };
   };
-
   // Generate chart data
   const revenueChartData = getChartOptions(
     "Revenue",
@@ -244,7 +255,12 @@ function Dashboard() {
 
   const fetchFinancialData = async (uid = null) => {
     try {
-      const targetUserId = uid || localStorage.getItem("userId");
+      let targetUserId;
+      if (selectedUserId) {
+        targetUserId = selectedUserId;
+      } else {
+        targetUserId = uid || localStorage.getItem("userId");
+      }
 
       // Fetch user initial data
       const userResponse = await axios.get(
@@ -356,6 +372,7 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     const fetchCompanyName = async () => {
       try {
@@ -383,14 +400,17 @@ function Dashboard() {
 
   useEffect(() => {
     if (selectedUserId) {
+      console.log("- selectedUserId:", selectedUserId);
       fetchFinancialData(selectedUserId);
     }
   }, [selectedUserId]);
+
   useEffect(() => {
     fetchUsers().then(() => {
       console.log("Users fetched:", users);
     });
   }, []);
+
   useEffect(() => {
     const fetchSubscription = async () => {
       const userId = localStorage.getItem("userId");
@@ -460,28 +480,43 @@ function Dashboard() {
                 <CardBody>
                   <FormGroup>
                     <Label>Select User to View:</Label>
-                    <Input
-                      type="select"
-                      value={selectedUserId || ""}
-                      onChange={(e) => {
-                        const selectedId = e.target.value;
-                        setSelectedUserId(selectedId);
-                        handleUserSelect(selectedId);
+                    <Select
+                      options={userOptions}
+                      value={userOptions.find(
+                        (option) => option.value === selectedUserId
+                      )}
+                      onChange={handleUserSelect}
+                      placeholder="Search or select a user..."
+                      isClearable
+                      isSearchable
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          minHeight: "38px",
+                          height: "38px",
+                        }),
+                        valueContainer: (provided) => ({
+                          ...provided,
+                          height: "38px",
+                          padding: "0 6px",
+                        }),
+                        input: (provided) => ({
+                          ...provided,
+                          margin: "0px",
+                        }),
+                        indicatorsContainer: (provided) => ({
+                          ...provided,
+                          height: "38px",
+                        }),
                       }}
-                    >
-                      <option value="">Select a user</option>
-                      {users.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.email}
-                        </option>
-                      ))}
-                    </Input>
+                    />
                   </FormGroup>
                 </CardBody>
               </Card>
             </Col>
           </Row>
         </div>
+
       )}
       <div className="content">
         <Row style={{ marginTop: "28px" }}>

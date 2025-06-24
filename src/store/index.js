@@ -1,12 +1,11 @@
-import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "./userSlice";
-import currencyReducer from "./currencySlice";
+import { configureStore } from '@reduxjs/toolkit';
+import currencyReducer from './currencySlice';
+import selectedUserReducer from './selectedUserSlice'; // ✅ correct import
 
 const store = configureStore({
   reducer: {
-    selectedUser: userReducer,
     currency: currencyReducer,
-
+    selectedUser: selectedUserReducer, // ✅ key must match this
   },
 });
 
