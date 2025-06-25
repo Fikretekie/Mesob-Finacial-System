@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../assets/css/Login.css";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
-import { Hub } from "aws-amplify/utils";
 import getUserInfo from "utils/Getuser";
 
 const logo = "/logo.png";
@@ -19,77 +18,27 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [socialAuth, setSocialAuth] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const notificationAlertRef = useRef(null);
 
+  // Check for error from redirect
+  const { state } = location;
+  const error =
+    state?.error || new URLSearchParams(location.search).get("error");
+  const errorMessage =
+    state?.message || new URLSearchParams(location.search).get("message");
+
   useEffect(() => {
-    // Check if the user is authenticated
-    const isAuthenticated = !!localStorage.getItem("authToken"); // Example: Check for token in localStorage
-
-    if (isAuthenticated) {
-      const role = localStorage.getItem("role");
-
-      // Navigate to the customer dashboard if authenticated
-      navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
-
+    if (error) {
+      showNotification(
+        "danger",
+        errorMessage || "Login failed. Please try again."
+      );
     }
-  }, [navigate]);
+  }, [error, errorMessage]);
 
-  // useEffect(() => {
-  //   const listener = Hub.listen("auth", async ({ payload }) => {
-  //     switch (payload.event) {
-  //       case "signInWithRedirect":
-  //         try {
-  //           const user = await getCurrentUser();
-  //           const role = localStorage.getItem("role");
-  //           navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
-  //         } catch (error) {
-  //           console.error("Post-signin error:", error);
-  //         }
-  //         break;
-  //       case "signInWithRedirect_failure":
-  //         showNotification("danger", "Google sign-in failed");
-  //         break;
-  //     }
-  //   });
-
-  //   return () => listener();
-  // }, [navigate]);
-
-
-  // In your Login component
-  useEffect(() => {
-    const listener = Hub.listen("auth", async ({ payload }) => {
-      switch (payload.event) {
-        case "signInWithRedirect":
-          try {
-            const user = await getCurrentUser();
-            // Check if user exists in your database
-            const userInfo = await getUserInfo();
-
-            if (!userInfo || !userInfo.userId) {
-              // New social sign-up - redirect to profile completion
-              localStorage.setItem("socialSignup", "true");
-              localStorage.setItem("socialEmail", user.signInDetails?.loginId || "");
-              navigate("/complete-profile");
-              return;
-            }
-
-            // Existing user - proceed as normal
-            const role = localStorage.getItem("role");
-            navigate(role === "2" ? "/customer/dashboard" : "/admin/dashboard");
-          } catch (error) {
-            console.error("Post-signin error:", error);
-          }
-          break;
-        case "signInWithRedirect_failure":
-          showNotification("danger", "Google sign-in failed");
-          break;
-      }
-    });
-
-    return () => listener();
-  }, [navigate]);
   const showNotification = (type, message) => {
     const options = {
       place: "tr",
@@ -103,36 +52,55 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     try {
-      console.log('tring to sign with google');
-      let res = await signInWithRedirect({ provider: "Google" });
-      console.log('sign with google success=>>', res);
+      setLoading(true);
+      console.log("🔵 Initiating Google sign-in with redirect...");
+      await signInWithRedirect({
+        provider: "Google",
+        customState: "google_login", // Optional: Track the origin
+      });
     } catch (error) {
-      console.error("Error during Google sign-in:", error);
-      showNotification("danger", "Google sign-in failed.");
+      console.error("🔴 Google sign-in error:", error);
+      showNotification(
+        "danger",
+        `Google sign-in failed: ${error.message || "Unknown error"}`
+      );
+      setLoading(false);
+      setSocialAuth("");
     }
   };
+
   const handleAppleSignIn = async () => {
     try {
+      setLoading(true);
+      console.log("🔵 Initiating Apple sign-in with redirect...");
       await signInWithRedirect({ provider: "SignInWithApple" });
     } catch (error) {
-      console.error("Error during Apple sign-in:", error);
-      showNotification("danger", "Apple sign-in failed.");
+      console.error("🔴 Apple sign-in error:", error);
+      showNotification(
+        "danger",
+        `Apple sign-in failed: ${error.message || "Unknown error"}`
+      );
+      setLoading(false);
+      setSocialAuth("");
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     if (!email.trim()) {
-      showNotification("danger", "Error: Email is empty!");
+      showNotification("danger", "Email is required");
       setLoading(false);
       return;
     }
 
     try {
-      let res = await signIn({ username: email, password });
+      console.log("🔵 Signing in with email:", email);
+      const res = await signIn({ username: email, password });
       if (res.isSignedIn) {
-        let user = await getUserInfo();
+        console.log("✅ Email sign-in successful");
+        const user = await getUserInfo();
         const response = await fetch(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
           {
@@ -145,11 +113,13 @@ const Login = () => {
         );
 
         const result = await response.json();
+        console.log("🔍 User data:", result);
+
         localStorage.clear();
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("user_email", result.user?.email || "");
         localStorage.setItem("user_name", result.user?.name || "");
-        localStorage.setItem("role", result.user?.role?.toString());
+        localStorage.setItem("role", result.user?.role?.toString() || "2");
         localStorage.setItem(
           "outstandingDebt",
           result.user?.outstandingDebt || "0"
@@ -159,21 +129,21 @@ const Login = () => {
           result.user?.valueableItems || "0"
         );
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
+        localStorage.setItem("authToken", "authenticated");
 
         showNotification("success", "Login successful!");
         const path =
           result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
-
         setTimeout(() => navigate(path, { replace: true }), 2000);
       } else {
-        showNotification(
-          "danger",
-          "Sign-in failed. Please check your credentials."
-        );
+        showNotification("danger", "Invalid credentials");
       }
     } catch (error) {
-      console.error("Error signing in:", error);
-      showNotification("danger", "An error occurred. Please try again later.", error);
+      console.error("🔴 Email sign-in error:", error);
+      showNotification(
+        "danger",
+        `Login failed: ${error.message || "Unknown error"}`
+      );
     } finally {
       setLoading(false);
     }
@@ -190,63 +160,102 @@ const Login = () => {
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
           <p>Welcome! Login to access the Mesob Store</p>
-          <form onSubmit={handleSubmit}>
-            <div className="login-input-group">
-              <label>Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="true"
-              />
-            </div>
-            <div className="login-input-group">
-              <label>Password</label>
-              <div className="password-container">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  <FontAwesomeIcon
-                    icon={showPassword ? faEyeSlash : faEye}
-                    size="lg"
-                  />
-                </button>
-              </div>
-            </div>
-            <div className="forgot-password-link">
-              <Link to="/forgot-password">Forgot Password?</Link>
-            </div>
-            <button type="submit" className="login-btn" disabled={loading}>
-              {loading ? (
+          {loading && (
+            <div
+              className="loading-message"
+              style={{ color: "#666", marginBottom: "1rem" }}
+            >
+              {socialAuth === "google" && (
                 <>
-                  <Spinner color="secondary" size="sm" /> Please wait
+                  Processing Google sign-in...{" "}
+                  <Spinner color="secondary" size="sm" />
                 </>
-              ) : (
-                "Login"
               )}
-            </button>
-          </form>
-          <div className="separator">
-            <span>OR</span>
-          </div>
-          <button onClick={handleGoogleSignIn} className="google-login-btn">
-            Sign in with Google
-          </button>
-          <button onClick={handleAppleSignIn} className="apple-login-btn">
-            Sign in with Apple
-          </button>
-          <p>
-            Don't have an account yet? <Link to="/signup">Sign up</Link>
-          </p>
+              {socialAuth === "apple" && (
+                <>
+                  Processing Apple sign-in...{" "}
+                  <Spinner color="secondary" size="sm" />
+                </>
+              )}
+              {!socialAuth && (
+                <>
+                  Processing... <Spinner color="secondary" size="sm" />
+                </>
+              )}
+            </div>
+          )}
+          {!loading && (
+            <>
+              <form onSubmit={handleSubmit}>
+                <div className="login-input-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    placeholder="Enter your email"
+                  />
+                </div>
+                <div className="login-input-group">
+                  <label>Password</label>
+                  <div className="password-container">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      className="toggle-password"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <FontAwesomeIcon
+                        icon={showPassword ? faEyeSlash : faEye}
+                        size="lg"
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div className="forgot-password-link">
+                  <Link to="/forgot-password">Forgot Password?</Link>
+                </div>
+                <button type="submit" className="login-btn" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Spinner color="secondary" size="sm" /> Please wait
+                    </>
+                  ) : (
+                    "Login"
+                  )}
+                </button>
+              </form>
+              <div className="separator">
+                <span>OR</span>
+              </div>
+              <button
+                onClick={handleGoogleSignIn}
+                className="google-login-btn"
+                disabled={loading}
+              >
+                Sign in with Google
+              </button>
+              <button
+                onClick={handleAppleSignIn}
+                className="apple-login-btn"
+                disabled={loading}
+              >
+                Sign in with Apple
+              </button>
+              <p>
+                Don't have an account yet? <Link to="/signup">Sign up</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </>

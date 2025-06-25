@@ -43,8 +43,15 @@ function UserPage() {
         const response = await axios.get(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
         );
-        setUserData({ ...response.data.user, id: userId });
-        setIsCustomer(response.data.user.role === 2);
+        const user = response.data?.user;
+        if (user) {
+          setUserData({ ...user, id: userId });
+          setIsCustomer(user.role === 2);
+        } else {
+          setUserData({ id: userId });
+          setIsCustomer(false);
+          setError("User data not found. Please contact support.");
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
         setError("Failed to fetch user data. Please try again later.");
@@ -60,8 +67,10 @@ function UserPage() {
       const res = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
+      // Use optional chaining and sensible defaults
       setEditDisabled(
-        !res.data.user.subscription && res.data.user.scheduleCount >= 4
+        !res.data?.user?.subscription &&
+          (res.data?.user?.scheduleCount ?? 0) >= 4
       );
     };
     fetchSubscription();

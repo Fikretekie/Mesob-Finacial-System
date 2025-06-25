@@ -36,7 +36,10 @@ import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 // ✅ Correct
-import { setSelectedUserId, clearSelectedUserId } from '../store/selectedUserSlice';
+import {
+  setSelectedUserId,
+  clearSelectedUserId,
+} from "../store/selectedUserSlice";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 ChartJS.register(
   CategoryScale,
@@ -61,31 +64,40 @@ function Dashboard() {
   const [totalPayable, setTotalPayable] = useState(0);
   const [monthlySales, setMonthlySales] = useState([]);
   const [users, setUsers] = useState([]);
+  const persistedUserId = localStorage.getItem("selectedUserId");
+  console.log("Persisted User ID:", persistedUserId);
+
   const userRole = parseInt(localStorage.getItem("role"));
+  const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null); // ✅ renamed local state variable
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const selectedUserId = useSelector((state) => state.selectedUser.userId);
-  console.log('selectedUserId =', selectedUserId);
-
-  // const [selectedUserId, setLocalSelectedUserId] = useState(selectedUserId0 || null); // ✅ renamed local state setter
-
   const [companyName, setCompanyName] = useState("");
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
 
   const handleUserSelect = (selectedOption) => {
-    console.log("👤 User Selected:", selectedOption);
     if (!selectedOption) {
-      dispatch(clearSelectedUserId());
-      fetchFinancialData(userId);
+      setSelectedUserId(null);
+      localStorage.removeItem("selectedUserId");
+      fetchFinancialData(null); // or fetchFinancialData(userId) for default
       return;
     }
-
     const userId = selectedOption.value;
-    dispatch(setSelectedUserId(userId));
-    fetchFinancialData(userId);
+    setSelectedUserId(userId);
+    localStorage.setItem("selectedUserId", userId);
+    fetchFinancialData(userId); // Pass userId directly!
   };
+  useEffect(() => {
+    const persistedUserId = localStorage.getItem("selectedUserId");
+    if (persistedUserId) {
+      setSelectedUserId(persistedUserId);
+      fetchFinancialData(persistedUserId);
+    }
+  }, []);
+  useEffect(() => {
+    if (selectedUserId) {
+      fetchFinancialData(selectedUserId);
+    }
+  }, [selectedUserId]);
 
   const handleAddTransactionClick = () => {
     // Use navigate to go to the MesobFinancial2 page
@@ -164,8 +176,6 @@ function Dashboard() {
       initialBalance + totalReceived - totalExpenses - New_ItemReceived;
     return totalCash.toFixed(2);
   };
-
-
 
   const fetchUsers = async () => {
     try {
@@ -254,9 +264,17 @@ function Dashboard() {
   );
 
   const fetchFinancialData = async (uid = null) => {
+    const targetUserId =
+      uid ||
+      localStorage.getItem("selectedUserId") ||
+      localStorage.getItem("userId");
+    console.log("Fetching financial data for user:", targetUserId);
+
     try {
       let targetUserId;
       if (selectedUserId) {
+        console.log("Using selectedUserId:", selectedUserId);
+
         targetUserId = selectedUserId;
       } else {
         targetUserId = uid || localStorage.getItem("userId");
@@ -399,13 +417,6 @@ function Dashboard() {
   }, [userRole]);
 
   useEffect(() => {
-    if (selectedUserId) {
-      console.log("- selectedUserId:", selectedUserId);
-      fetchFinancialData(selectedUserId);
-    }
-  }, [selectedUserId]);
-
-  useEffect(() => {
     fetchUsers().then(() => {
       console.log("Users fetched:", users);
     });
@@ -417,8 +428,14 @@ function Dashboard() {
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
-      setUserSubscription(response.data.user.subscription);
-      setScheduleCount(response.data.user.scheduleCount || 1);
+      // Only set subscription if user exists
+      if (response.data && response.data.user) {
+        setUserSubscription(response.data.user.subscription);
+        setScheduleCount(response.data.user.scheduleCount || 1);
+      } else {
+        setUserSubscription(false); // or null, or a sensible default
+        setScheduleCount(1);
+      }
     };
     fetchSubscription();
   }, []);
@@ -516,7 +533,6 @@ function Dashboard() {
             </Col>
           </Row>
         </div>
-
       )}
       <div className="content">
         <Row style={{ marginTop: "28px" }}>

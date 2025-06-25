@@ -51,7 +51,6 @@ const redirectUri = isLocal
   ? "http://localhost:3000"
   : "https://app.mesobfinancial.com";
 
-
 Amplify.configure({
   Auth: {
     Cognito: {
@@ -66,24 +65,24 @@ Amplify.configure({
             "https://app.mesobfinancial.com/oauth-redirect",
             "http://localhost:3000/oauth-redirect",
           ],
-          redirectSignOut: [
-            "https://app.mesobfinancial.com"
-          ],
+          redirectSignOut: ["https://app.mesobfinancial.com"],
           responseType: "code",
           providers: [
             {
               provider: "Google",
-              clientId: "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com"
+              scopes: ["openid", "email", "profile"],
+              clientId:
+                "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com",
             },
             {
               provider: "SignInWithApple",
-              clientId: "com.mesobfinancial.signin"
-            }
-          ]
-        }
-      }
-    }
-  }
+              clientId: "com.mesob.financial",
+            },
+          ],
+        },
+      },
+    },
+  },
 });
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -97,7 +96,7 @@ root.render(
         <Route path="/oauth-redirect" element={<OAuthListener />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/mesonfinancelogin" element={<MesobFinanceLogin />} />
-        <Route path="//complete-profile" element={<CompleteProfile />} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
         <Route path="/signup" element={<SignupPage />} />
         {/* New Confirm route */}
         <Route path="/confirm" element={<Confirm />} />

@@ -90,7 +90,7 @@ const MesobFinancial2 = () => {
   const [remainingAmount, setRemainingAmount] = useState(0);
   const dispatch = useDispatch();
   const selectedUser = useSelector((state) => state.selectedUser);
-  const [selectedUserId, setSelectedUserId] = useState(selectedUser?.id || null);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   // business types
   const [selectedBusinessType, setSelectedBusinessType] = useState(
@@ -104,7 +104,6 @@ const MesobFinancial2 = () => {
   const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
   const [newPurpose, setNewPurpose] = useState("");
   const [purposeType, setPurposeType] = useState("income");
-
 
   // Add method to save new purposes
   const handleAddPurpose = () => {
@@ -402,22 +401,23 @@ const MesobFinancial2 = () => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "Payable"
-              ? "Payable"
-              : transactionType === "pay" && paymentMode === "boughtItem"
-                ? "New_Item"
-                : transactionType === "pay" && paymentMode !== "boughtItem"
-                  ? "Pay"
-                  : "New_Item",
-        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
-          }`,
+            ? "Payable"
+            : transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New_Item"
+            : transactionType === "pay" && paymentMode !== "boughtItem"
+            ? "Pay"
+            : "New_Item",
+        transactionPurpose: `${transactionPurpose}${
+          manualPurpose ? ` ${manualPurpose}` : ""
+        }`,
         transactionAmount: parseFloat(transactionAmount),
         originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
             : paymentMode === "new"
-              ? "Expense"
-              : subType,
+            ? "Expense"
+            : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
@@ -523,8 +523,8 @@ const MesobFinancial2 = () => {
           receiptUrl: Url || transaction.receiptUrl,
           status:
             paymentOption === "full" ||
-              (paymentOption === "partial" &&
-                remainingAmount === transaction.transactionAmount)
+            (paymentOption === "partial" &&
+              remainingAmount === transaction.transactionAmount)
               ? "Paid"
               : "Partially Paid",
           updatedAt: new Date().toISOString(),
@@ -556,9 +556,9 @@ const MesobFinancial2 = () => {
             outstandingDebt:
               paymentOption === "full"
                 ? parseFloat(transaction.transactionAmount) -
-                parseFloat(transaction.transactionAmount)
+                  parseFloat(transaction.transactionAmount)
                 : parseFloat(transaction.transactionAmount) -
-                parseFloat(remainingAmount),
+                  parseFloat(remainingAmount),
           }
         );
 
@@ -574,8 +574,8 @@ const MesobFinancial2 = () => {
           transaction.id === "outstanding-debt"
             ? "Payment for Outstanding Debt"
             : paymentOption === "full"
-              ? `Full Payment for ${transaction.transactionPurpose}`
-              : `Partial Payment for ${transaction.transactionPurpose}`,
+            ? `Full Payment for ${transaction.transactionPurpose}`
+            : `Partial Payment for ${transaction.transactionPurpose}`,
         transactionAmount: paidAmount,
         receiptUrl: Url || "",
         payableId: transaction.id,
@@ -735,13 +735,6 @@ const MesobFinancial2 = () => {
     }
   }, [showAddTransaction, transactionType]);
 
-  useEffect(() => {
-    if (selectedUser?.id) {
-      console.log("fetching for redux user");
-      fetchTransactions(selectedUser?.id);
-      fetchUserInitialBalance(selectedUser?.id);
-    }
-  }, [selectedUser]);
   useEffect(() => {
     if (location.state?.openTransactionModal) {
       setShowAddTransaction(true);
@@ -1174,25 +1167,29 @@ const MesobFinancial2 = () => {
   };
 
   useEffect(() => {
+    const persistedUserId = localStorage.getItem("selectedUserId");
+    if (persistedUserId) {
+      setSelectedUserId(persistedUserId);
+      fetchFinancialData(persistedUserId); // Or your data loading function
+    }
+  }, []);
+  useEffect(() => {
     if (selectedUserId) {
-      console.log("Selected User ID:", selectedUserId);
       fetchFinancialData(selectedUserId);
     }
   }, [selectedUserId]);
-
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
       // Clear selection
       setSelectedUserId(null);
-      dispatch(clearSelectedUser());
-      localStorage.removeItem("tempUserId");
+      localStorage.removeItem("selectedUserId");
       fetchFinancialData(userId);
       return;
     }
 
     const userId = selectedOption.value;
     setSelectedUserId(userId);
-    localStorage.setItem("tempUserId", userId);
+    localStorage.setItem("selectedUserId", userId);
     const selectedUserData = users.find((user) => user.id === userId);
     if (selectedUserData) {
       dispatch(setSelectedUser(selectedUserData));
@@ -1386,9 +1383,11 @@ const MesobFinancial2 = () => {
                     <Label>Select User to View:</Label>
                     <Select
                       options={userOptions}
-                      value={userOptions.find(
-                        (option) => option.value === selectedUserId
-                      )}
+                      value={
+                        userOptions.find(
+                          (option) => option.value === selectedUserId
+                        ) || null
+                      }
                       onChange={handleUserSelect}
                       placeholder="Search or select a user..."
                       isClearable
@@ -1866,7 +1865,7 @@ const MesobFinancial2 = () => {
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
-                                0
+                              0
                                 ? "Net Loss"
                                 : "Net Income"}
                             </strong>
@@ -2400,122 +2399,122 @@ const MesobFinancial2 = () => {
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "Payable") && (
-                <>
-                  <FormGroup>
-                    <Label>Purpose:</Label>
+              <>
+                <FormGroup>
+                  <Label>Purpose:</Label>
 
-                    <Input
-                      type="select"
-                      value={transactionPurpose}
-                      onChange={(e) => setTransactionPurpose(e.target.value)}
-                    >
-                      <option value="">Select purpose</option>
-                      {transactionType === "receive" && (
-                        <>
-                          {incomePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "pay" && paymentMode === "new" && (
-                        <>
-                          {expensePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "Payable" && (
-                        <>
-                          {payablePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                    </Input>
-                    {((transactionType === "receive" &&
+                  <Input
+                    type="select"
+                    value={transactionPurpose}
+                    onChange={(e) => setTransactionPurpose(e.target.value)}
+                  >
+                    <option value="">Select purpose</option>
+                    {transactionType === "receive" && (
+                      <>
+                        {incomePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "pay" && paymentMode === "new" && (
+                      <>
+                        {expensePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "Payable" && (
+                      <>
+                        {payablePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                  </Input>
+                  {((transactionType === "receive" &&
+                    transactionPurpose === "manual") ||
+                    (transactionType === "pay" &&
+                      paymentMode === "new" &&
                       transactionPurpose === "manual") ||
-                      (transactionType === "pay" &&
-                        paymentMode === "new" &&
-                        transactionPurpose === "manual") ||
-                      (transactionType === "Payable" &&
-                        transactionPurpose === "manual")) && (
-                        <FormGroup>
-                          <Input
-                            type="text"
-                            placeholder="Enter purpose manually"
-                            value={manualPurpose}
-                            onChange={(e) => {
-                              setManualPurpose(e.target.value);
-                              setFormErrors({ ...formErrors, manualPurpose: "" });
-                            }}
-                            style={{ marginTop: "10px" }}
-                            invalid={!!formErrors.manualPurpose}
-                          />
-                          {formErrors.manualPurpose && (
-                            <div className="text-danger">
-                              {formErrors.manualPurpose}
-                            </div>
-                          )}
-                        </FormGroup>
-                      )}
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label>Amount ($):</Label>
-                    <Input
-                      type="number"
-                      value={transactionAmount}
-                      onChange={(e) => setTransactionAmount(e.target.value)}
-                    />
-                  </FormGroup>
-                  {transactionType === "pay" && paymentMode === "new" && (
+                    (transactionType === "Payable" &&
+                      transactionPurpose === "manual")) && (
                     <FormGroup>
-                      <Label>Receipt:</Label>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        <Button
-                          color="info"
-                          onClick={() => fileInputRef.current.click()}
-                          style={{ marginBottom: "0" }}
-                        >
-                          {receipt ? "Change Receipt" : "Upload Receipt"}
-                        </Button>
-                        {receipt && (
-                          <span style={{ color: "green" }}>✓ {receipt.name}</span>
-                        )}
-                      </div>
                       <Input
-                        type="file"
-                        innerRef={fileInputRef}
-                        onChange={handleReceiptUpload}
-                        accept="image/*,.pdf"
-                        style={{ display: "none" }}
+                        type="text"
+                        placeholder="Enter purpose manually"
+                        value={manualPurpose}
+                        onChange={(e) => {
+                          setManualPurpose(e.target.value);
+                          setFormErrors({ ...formErrors, manualPurpose: "" });
+                        }}
+                        style={{ marginTop: "10px" }}
+                        invalid={!!formErrors.manualPurpose}
                       />
+                      {formErrors.manualPurpose && (
+                        <div className="text-danger">
+                          {formErrors.manualPurpose}
+                        </div>
+                      )}
                     </FormGroup>
                   )}
-                  <Button
-                    color="success"
-                    onClick={handleAddTransaction}
-                    disabled={isAddingTransaction}
-                  >
-                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                  </Button>
-                </>
-              )}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Amount ($):</Label>
+                  <Input
+                    type="number"
+                    value={transactionAmount}
+                    onChange={(e) => setTransactionAmount(e.target.value)}
+                  />
+                </FormGroup>
+                {transactionType === "pay" && paymentMode === "new" && (
+                  <FormGroup>
+                    <Label>Receipt:</Label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <Button
+                        color="info"
+                        onClick={() => fileInputRef.current.click()}
+                        style={{ marginBottom: "0" }}
+                      >
+                        {receipt ? "Change Receipt" : "Upload Receipt"}
+                      </Button>
+                      {receipt && (
+                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      innerRef={fileInputRef}
+                      onChange={handleReceiptUpload}
+                      accept="image/*,.pdf"
+                      style={{ display: "none" }}
+                    />
+                  </FormGroup>
+                )}
+                <Button
+                  color="success"
+                  onClick={handleAddTransaction}
+                  disabled={isAddingTransaction}
+                >
+                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                </Button>
+              </>
+            )}
           </ModalBody>
         </Modal>
         {/* Previe modal */}

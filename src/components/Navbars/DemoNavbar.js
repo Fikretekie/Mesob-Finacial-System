@@ -21,7 +21,7 @@ import {
 
 import { adminRoutes, customerRoutes } from "routes.js";
 import { setCurrency } from "store/currencySlice";
-
+import { signOut } from "aws-amplify/auth";
 function DemoNavbar(props) {
   const location = useLocation();
   const dispatch = useDispatch();
@@ -59,9 +59,17 @@ function DemoNavbar(props) {
     setAccountDropdownOpen(!accountDropdownOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user_email");
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      localStorage.clear();
+
+      await signOut();
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigate("/login");
+    }
   };
   const allRoutes = [...adminRoutes, ...customerRoutes];
   const getBrand = () => {

@@ -1,12 +1,37 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getCurrentUser } from "aws-amplify/auth";
+import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
-import getUserInfo from "../utils/Getuser";
 
 const OAuthListener = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // Fetch user info from Cognito's /oauth2/userInfo endpoint
+  const fetchUserInfoFromOAuth = async () => {
+    try {
+      const session = await fetchAuthSession();
+      const accessToken = session.tokens?.accessToken?.toString();
+      if (!accessToken) throw new Error("No access token available");
+
+      const response = await fetch(
+        "https://us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com/oauth2/userInfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      if (!response.ok)
+        throw new Error(`UserInfo request failed: ${response.status}`);
+      const userInfo = await response.json();
+      console.log("🔍 User info from /oauth2/userInfo:", userInfo);
+      return userInfo;
+    } catch (error) {
+      console.error("❌ Failed to fetch user info from OAuth endpoint:", error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     const handleOAuthFlow = async () => {
@@ -17,92 +42,206 @@ const OAuthListener = () => {
         const error = searchParams.get("error");
         const errorDescription = searchParams.get("error_description");
         if (error) {
-          console.error("🔴 OAuth error detected:", error);
-          console.error("🔴 Error description:", errorDescription);
-          console.error("🔴 Full query string:", window.location.search);
-          throw new Error(`${error}: ${errorDescription || 'No description'}`);
+          console.error("🔴 OAuth error:", error, errorDescription);
+          navigate("/login", {
+            state: {
+              error: "oauth_failed",
+              message: errorDescription || "OAuth error",
+            },
+            replace: true,
+          });
+          return;
         }
 
-        console.log("🟢 No error found in search params, listening for sign-in...");
+        console.log("🟢 Listening for sign-in...");
 
-        // Hub.listen returns a function to stop listening
         const stopListening = Hub.listen("auth", async ({ payload }) => {
-          console.log("🟡 Auth Event Received:", payload);
+          console.log("🟡 Auth Event:", payload);
 
-          // Changed from "signIn" to "signedIn"
           if (payload.event === "signedIn") {
-            console.log("✅ User signed in event detected, fetching user...");
+            console.log("✅ Signed in, fetching user...");
 
             try {
-              const retryGetUser = async (attempt = 1) => {
+              // Get current user
+              const user = await getCurrentUser();
+              let provider = "Google";
+
+              if (user.username && user.username.startsWith("apple_")) {
+                provider = "Apple";
+              } else if (user.username && user.username.startsWith("google_")) {
+                provider = "Google";
+              }
+              console.log("✅ User:", user);
+
+              let email = null;
+              let userName = null;
+
+              // Try from signInDetails
+              if (
+                user.signInDetails?.loginId &&
+                user.signInDetails.loginId.includes("@")
+              ) {
+                email = user.signInDetails.loginId;
+                console.log("📧 Email from signInDetails:", email);
+              }
+
+              // Fallback: get from /oauth2/userInfo
+              if (!email) {
+                console.log(
+                  "🔍 Fetching user info from OAuth userInfo endpoint..."
+                );
                 try {
-                  console.log(`🔄 Attempt ${attempt} to fetch current user...`);
-                  const user = await getCurrentUser();
-                  console.log("✅ Successfully retrieved user:", user);
-                  return user;
-                } catch (error) {
-                  console.error(`⚠️ Attempt ${attempt} failed:`, error);
-                  if (attempt <= 3) {
-                    await new Promise((resolve) =>
-                      setTimeout(resolve, 500 * attempt)
-                    );
-                    return retryGetUser(attempt + 1);
-                  }
-                  throw error;
+                  const userInfo = await fetchUserInfoFromOAuth();
+                  email = userInfo.email;
+                  userName = userInfo.name || userInfo.given_name || "";
+                  console.log("📧 Email from OAuth userInfo:", email);
+                  console.log("👤 Name from OAuth userInfo:", userName);
+                } catch (userInfoError) {
+                  console.error(
+                    "❌ Could not fetch from OAuth userInfo:",
+                    userInfoError
+                  );
+                  navigate("/signup?provider=Google&needsEmail=true", {
+                    replace: true,
+                  });
+                  return;
                 }
-              };
+              }
 
-              const user = await retryGetUser();
+              if (!email) {
+                console.error("❌ No email retrieved from any method");
+                navigate("/signup?provider=Google&needsEmail=true", {
+                  replace: true,
+                });
+                return;
+              }
 
-              console.log("🔍 Fetching user info from backend...");
-              const userInfo = await getUserInfo();
-              console.log("✅ User info retrieved:", userInfo);
+              console.log("📧 Final email:", email);
 
-              localStorage.setItem("userId", userInfo.userId);
-              localStorage.setItem("user_email", userInfo.email || "");
-              localStorage.setItem("user_name", userInfo.name || "");
-              localStorage.setItem("role", userInfo.role?.toString() || "2");
+              // Check if user exists in DynamoDB
+              console.log("🔍 Checking user in DynamoDB...");
+              try {
+                const checkResponse = await fetch(
+                  `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup?email=${encodeURIComponent(
+                    email
+                  )}`,
+                  {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                  }
+                );
 
-              console.log("✅ User data stored in localStorage.");
+                console.log("🔍 API Response Status:", checkResponse.status);
 
-              navigate(
-                userInfo.role === "2"
-                  ? "/customer/dashboard"
-                  : "/admin/dashboard"
-              );
+                if (!checkResponse.ok) {
+                  throw new Error(`API error: ${checkResponse.status}`);
+                }
+
+                const checkResult = await checkResponse.json();
+                console.log("🔎 API Result:", checkResult);
+
+                if (!checkResult.exists) {
+                  // User does not exist, redirect to signup
+                  console.log("🆕 New user, redirecting to signup...");
+                  localStorage.setItem("socialSignup", "true");
+                  localStorage.setItem("socialEmail", email);
+                  localStorage.setItem("socialProvider", provider);
+
+                  const finalName = userName || "";
+
+                  navigate(
+                    `/signup?provider=${provider}&email=${encodeURIComponent(
+                      email
+                    )}&userId=${user.userId}&name=${encodeURIComponent(
+                      finalName
+                    )}`,
+                    { replace: true }
+                  );
+                  return;
+                } else {
+                  console.log("✅ User exists, proceeding with sign-in...");
+                  const userData = checkResult.user;
+                  console.log("🔎 API Result:", checkResult);
+                  localStorage.clear();
+                  localStorage.setItem("userId", userData.id);
+                  localStorage.setItem("user_email", userData.email || email);
+                  localStorage.setItem("user_name", userData.name || "");
+                  localStorage.setItem(
+                    "role",
+                    userData.role?.toString() || "2"
+                  );
+                  localStorage.setItem(
+                    "outstandingDebt",
+                    userData.outstandingDebt || "0"
+                  );
+                  localStorage.setItem(
+                    "valueableItems",
+                    userData.valueableItems || "0"
+                  );
+                  localStorage.setItem(
+                    "cashBalance",
+                    userData.cashBalance || "0"
+                  );
+                  localStorage.setItem("authToken", "authenticated");
+
+                  console.log("✅ Existing user, navigating to dashboard...");
+                  const dashboardPath =
+                    userData.role === 2
+                      ? "/customer/dashboard"
+                      : "/admin/dashboard";
+                  navigate(dashboardPath, { replace: true });
+                }
+              } catch (apiError) {
+                console.error("🔴 API Error:", apiError);
+                navigate("/login", {
+                  state: {
+                    error: "api_failed",
+                    message: "Could not verify user account",
+                  },
+                  replace: true,
+                });
+              }
             } catch (err) {
-              console.error("🔴 Error processing sign-in:", err);
-              navigate("/login");
+              console.error("🔴 Sign-in processing error:", err);
+              navigate("/login", {
+                state: {
+                  error: "auth_failed",
+                  message: err.message || "Authentication failed",
+                },
+                replace: true,
+              });
             } finally {
-              // Call the function returned by Hub.listen to stop listening
               stopListening();
             }
           }
         });
-
-        const timeout = setTimeout(() => {
-          console.warn("⚠️ OAuth sign-in timeout reached, redirecting to login...");
-          // Call the function to stop listening
-          stopListening();
-          navigate("/login");
-        }, 10000);
-
-        return () => {
-          console.log("🛑 Cleaning up OAuth listener...");
-          clearTimeout(timeout);
-          // Call the function to stop listening
-          stopListening();
-        };
       } catch (error) {
         console.error("🔴 OAuth flow error:", error);
-        navigate("/login");
+        navigate("/login", {
+          state: {
+            error: "oauth_failed",
+            message: error.message || "OAuth flow failed",
+          },
+          replace: true,
+        });
       }
     };
 
     handleOAuthFlow();
   }, [navigate, searchParams]);
 
-  return null;
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <div>Processing sign-in...</div>
+    </div>
+  );
 };
 
 export default OAuthListener;
