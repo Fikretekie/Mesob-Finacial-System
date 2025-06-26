@@ -58,6 +58,7 @@ const Login = () => {
         provider: "Google",
         customState: "google_login", // Optional: Track the origin
       });
+      localStorage.setItem("provider", "Google");
     } catch (error) {
       console.error("🔴 Google sign-in error:", error);
       showNotification(
@@ -74,6 +75,7 @@ const Login = () => {
       setLoading(true);
       console.log("🔵 Initiating Apple sign-in with redirect...");
       await signInWithRedirect({ provider: "SignInWithApple" });
+      localStorage.setItem("provider", "Apple");
     } catch (error) {
       console.error("🔴 Apple sign-in error:", error);
       showNotification(
@@ -116,6 +118,7 @@ const Login = () => {
         console.log("🔍 User data:", result);
 
         localStorage.clear();
+        localStorage.setItem("provider", "Email");
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("user_email", result.user?.email || "");
         localStorage.setItem("user_name", result.user?.name || "");

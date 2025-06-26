@@ -41,6 +41,7 @@ const SignupPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const provider = searchParams.get("provider");
+  console.log("🔵 Provider from URL at signup :", provider);
   const socialEmail = searchParams.get("email");
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
@@ -141,7 +142,7 @@ const SignupPage = () => {
       newErrors.email = "Please enter a valid email address.";
     if (!phone) newErrors.phone = "Phone number is required.";
     // Only validate password if not Google
-    if (provider !== "Google") {
+    if (provider !== "Google" && provider !== "Apple") {
       if (!password) newErrors.password = "Password is required.";
       else {
         const passwordError = validatePassword(password);
@@ -371,11 +372,11 @@ const SignupPage = () => {
       scheduleCount: 1,
       createdAt: creationDate,
       currency: selectedCurrency,
-      provider: provider || "email", // Add provider info
+      provider: provider || "Email", // Add provider info
     };
 
     // Handle Google OAuth signup (skip Cognito signup)
-    if (provider === "Google" || "Apple") {
+    if (provider === "Google" || provider === "Apple") {
       try {
         console.log("🔵 Processing  OAuth signup...", provider);
 
@@ -487,6 +488,7 @@ const SignupPage = () => {
           },
         },
       });
+      console.log("Signup response:", res);
 
       try {
         // Database Update for email/password users

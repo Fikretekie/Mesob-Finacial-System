@@ -64,7 +64,8 @@ const OAuthListener = () => {
             try {
               // Get current user
               const user = await getCurrentUser();
-              let provider = "Google";
+
+              let provider = localStorage.getItem("provider");
 
               if (user.username && user.username.startsWith("apple_")) {
                 provider = "Apple";
@@ -101,7 +102,7 @@ const OAuthListener = () => {
                     "❌ Could not fetch from OAuth userInfo:",
                     userInfoError
                   );
-                  navigate("/signup?provider=Google&needsEmail=true", {
+                  navigate(`/signup?provider=${provider}&needsEmail=true`, {
                     replace: true,
                   });
                   return;
@@ -110,7 +111,7 @@ const OAuthListener = () => {
 
               if (!email) {
                 console.error("❌ No email retrieved from any method");
-                navigate("/signup?provider=Google&needsEmail=true", {
+                navigate(`/signup?provider=${provider}&needsEmail=true`, {
                   replace: true,
                 });
                 return;
