@@ -41,7 +41,6 @@ const SignupPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const provider = searchParams.get("provider");
-  console.log("🔵 Provider from URL at signup :", provider);
   const socialEmail = searchParams.get("email");
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
