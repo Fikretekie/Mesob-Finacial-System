@@ -419,7 +419,10 @@ const SignupPage = () => {
   • Track your income and expenses
   • Monitor your cash flow
   • Generate financial reports
-  
+  <strong>Ready to unlock all features?</strong><br>
+    <a href="https://app.mesobfinancial.com/customer/subscription" style="color: #1e90ff;">
+      Click here to view or upgrade your subscription
+    </a><br><br>
   If you have any questions, feel free to reach out to our support team.
   
   Best regards,
