@@ -7,8 +7,12 @@ import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import { Card, CardHeader, CardBody, CardTitle, Row, Col } from "reactstrap";
 
+// const stripePromise = loadStripe(
+//   "pk_test_51RixMnAhnp7DBxtxJYei2Q8DmH2HYu0j7zBxee2Uzw0LiSMpuzd3XyuNMQlU65F1j9LDkr36aP3XqFy2L4rteckG005T8NDjqZ"
+// );
+
 const stripePromise = loadStripe(
-  "pk_test_51KZzWbAhBlpHU9kBF7mHsYqqk6Ma8MGqjS9PB2pfwRcSW9npj1fv3YCqsFOESqTYvzoGIdBuZ9y3qKpTkhwpc9TO00kMQrezA4"
+  "pk_live_51RixMnAhnp7DBxtx3iUXn6WsNiDtC1MXhjYNDtU56TDRuHZCAazyLGLHvAL7fcOqsIm9tEoxY87eVllZpYb4w42700lTyd1mNz"
 );
 
 const SubscriptionPage = () => {

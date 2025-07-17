@@ -165,7 +165,7 @@ const SubscriptionPlans = () => {
       ],
       price: { monthly: "$29.99/month", yearly: "$600/year" },
       priceId: {
-        monthly: "price_1RAXwQAhBlpHU9kBZkhZbUqs",
+        monthly: "price_1RlU9fAhnp7DBxtxfIknJzW2",
         yearly: "price_basic_yearly",
       },
     },
@@ -501,7 +501,7 @@ const SubscriptionPlans = () => {
                   createSubscription={(data, actions) => {
                     return actions.subscription.create({
                       plan_id:
-                        selectedPriceId === "price_1RAXwQAhBlpHU9kBZkhZbUqs"
+                        selectedPriceId === "price_1RlU9fAhnp7DBxtxfIknJzW2"
                           ? "P-3RX40926YD7153733MKY4ZYI"
                           : "YEARLY_PLAN_ID",
                     });
