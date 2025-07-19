@@ -17,6 +17,46 @@ body {
   align-items: center;
 }
 
+.social-login-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  padding: 12px 16px;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.social-login-btn.google {
+  background-color: #ffffff;
+  color: #444;
+  border: 1px solid #ddd;
+}
+
+.social-login-btn.google:hover {
+  background-color: #f1f1f1;
+}
+
+.social-login-btn.apple {
+  background-color: #f1f1f1;
+  color: #111;
+}
+
+.social-login-btn.apple:hover {
+  background-color: #111;
+}
+
 .login-box {
   background-color: #ffffff;
   padding: 20px;

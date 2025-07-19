@@ -224,7 +224,7 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
-                <div className="forgot-password-link">
+                <div className="forgot-password-link" style={{ marginTop: 10 }}>
                   <Link to="/forgot-password">Forgot Password?</Link>
                 </div>
                 <button type="submit" className="login-btn" disabled={loading}>
@@ -237,24 +237,27 @@ const Login = () => {
                   )}
                 </button>
               </form>
-              <div className="separator">
+              <div className="separator" style={{ marginTop: 10 }}>
                 <span>OR</span>
               </div>
               <button
                 onClick={handleGoogleSignIn}
-                className="google-login-btn"
+                className="social-login-btn google"
                 disabled={loading}
               >
-                Sign in with Google
+                <img src="/googlelogo.png" alt="Google" className="social-icon" />
+                Continue with Google
               </button>
+
               <button
                 onClick={handleAppleSignIn}
-                className="apple-login-btn"
+                className="social-login-btn apple"
                 disabled={loading}
               >
-                Sign in with Apple
+                <img src="/applelogo.png" alt="Apple" className="social-icon" />
+                Continue with Apple
               </button>
-              <p>
+              <p style={{ marginTop: 10 }}>
                 Don't have an account yet? <Link to="/signup">Sign up</Link>
               </p>
             </>
