@@ -1178,6 +1178,13 @@ const MesobFinancial2 = () => {
       fetchFinancialData(selectedUserId);
     }
   }, [selectedUserId]);
+  useEffect(() => {
+    if (userRole === 0 && !selectedUserId) {
+      setLoading(false);
+      notify("tr", "Please select a user", "warning");
+    }
+  }, [userRole, selectedUserId]);
+
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
       // Clear selection

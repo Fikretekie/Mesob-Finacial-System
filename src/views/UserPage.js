@@ -43,6 +43,7 @@ function UserPage() {
         const response = await axios.get(
           `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
         );
+        console.log("api response", response);
         const user = response.data?.user;
         if (user) {
           setUserData({ ...user, id: userId });
@@ -179,7 +180,7 @@ function UserPage() {
                         <label>Phone</label>
                         <Input
                           name="phone"
-                          value={userData.phone}
+                          value={userData.phone_number}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"

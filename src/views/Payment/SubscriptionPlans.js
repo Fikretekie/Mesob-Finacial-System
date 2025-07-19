@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import axios from "axios";
@@ -30,7 +30,8 @@ const SubscriptionPlans = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPriceId, setSelectedPriceId] = useState(null);
   const [showModal, setshowModal] = useState(false);
-
+  const location = useLocation();
+  const [justSubscribed, setJustSubscribed] = useState(false);
   // Get stored user ID from localStorage
   const getUserId = () => {
     return localStorage.getItem("userId") || null;
@@ -54,9 +55,9 @@ const SubscriptionPlans = () => {
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
-      const userData = response.data.Item ? response.data.Item : response.data;
+      const rawData = response.data.Item ? response.data.Item : response.data;
       console.log("User response:", userData);
-      setUserData(userData);
+      setUserData(rawData);
     } catch (err) {
       console.error("Error fetching user data:", err);
       if (err.response?.status === 404) {
@@ -191,7 +192,7 @@ const SubscriptionPlans = () => {
     }
   };
 
-  const handleSubscribe = async (priceId) => {
+  const handleSubscribe = async () => {
     const email = localStorage.getItem("user_email");
     const userId = localStorage.getItem("userId");
 
@@ -211,17 +212,35 @@ const SubscriptionPlans = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            priceId,
+            planType: billingCycle, // ✅ "monthly" or "yearly"
             redirectUrl: baseUrl,
             userId,
             email,
           }),
         }
       );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorText}`
+        );
+      }
+
       const session = await response.json();
-      window.location.href = session.session.url;
+      console.log("API Response:", session);
+
+      const checkoutUrl = session?.url || session?.session?.url;
+
+      if (!checkoutUrl) {
+        console.error("Stripe session response invalid:", session);
+        throw new Error("Session URL is missing in the response");
+      }
+
+      window.location.href = checkoutUrl;
     } catch (error) {
       console.error("Stripe subscription error:", error);
+      setError("Failed to create subscription session. Please try again.");
     }
   };
 
@@ -291,13 +310,29 @@ const SubscriptionPlans = () => {
       fetchUser();
     }
   }, []);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("success") === "true") {
+      setJustSubscribed(true);
+      // Optionally remove query param from the URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete("success");
+      window.history.replaceState({}, document.title, newUrl.toString());
+      setTimeout(() => setJustSubscribed(false), 5000);
+    }
+  }, []);
 
+  useEffect(() => {
+    if (location.state?.justSubscribed) {
+      setJustSubscribed(true);
+      setTimeout(() => setJustSubscribed(false), 5000);
+    }
+  }, [location.state]);
   // Ensure isSubscribed is a boolean, default to false if userData is null
-  const isSubscribed = userData?.user
-    ? userData?.user?.isPaid === true && userData?.user?.subscription === true
+  const isSubscribed = userData
+    ? userData.isPaid === true && userData.subscription === true
     : false;
-  console.log("userData:", userData?.user?.subscription);
-
+  console.log("userData:", userData ? userData.subscription : "No userData");
   return (
     <>
       <Helmet>
@@ -312,6 +347,11 @@ const SubscriptionPlans = () => {
                 <CardTitle tag="h4">Subscription Plans</CardTitle>
               </CardHeader>
               <CardBody>
+                {justSubscribed && (
+                  <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">
+                    🎉 Congratulations! You’ve successfully subscribed.
+                  </div>
+                )}
                 <Row>
                   {plans.map((plan, index) => (
                     <Col md={12} key={index}>
@@ -430,7 +470,7 @@ const SubscriptionPlans = () => {
             Choose Payment Method
           </ModalHeader>
           <ModalBody>
-            <PayPalScriptProvider
+            {/* <PayPalScriptProvider
               options={{
                 "client-id":
                   "AWHC_KiGbQpiR_Id96ZR5ddNdBa2Z8eX9xOo8TUAl1DAtsPTCU-w8c6cGU803D23hPfLzOut89xgBOpB",
@@ -447,12 +487,12 @@ const SubscriptionPlans = () => {
                 }}
                 onApprove={handlePayPalApprove}
               />
-            </PayPalScriptProvider>
+            </PayPalScriptProvider> */}
             <hr />
             <Button
               color="primary"
               block
-              onClick={() => handleStripeSubscribe(selectedPriceId)}
+              onClick={() => handleSubscribe(selectedPriceId)}
             >
               Pay with Stripe
             </Button>
@@ -475,7 +515,7 @@ const SubscriptionPlans = () => {
                 color="primary"
                 block
                 onClick={() => {
-                  handleSubscribe(selectedPriceId);
+                  handleSubscribe();
                   setIsModalOpen(false);
                 }}
               >
@@ -501,7 +541,7 @@ const SubscriptionPlans = () => {
                   createSubscription={(data, actions) => {
                     return actions.subscription.create({
                       plan_id:
-                        selectedPriceId === "price_1RlU9fAhnp7DBxtxfIknJzW2"
+                        selectedPriceId === process.env.PRICE_ID
                           ? "P-3RX40926YD7153733MKY4ZYI"
                           : "YEARLY_PLAN_ID",
                     });

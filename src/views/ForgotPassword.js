@@ -19,7 +19,6 @@ const ForgotPassword = () => {
   const notificationAlertRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false); // New state for password visibility
 
-
   const showNotification = (type, message) => {
     const options = {
       place: "tr",
@@ -41,10 +40,21 @@ const ForgotPassword = () => {
       showNotification("success", "Verification code sent to your email!");
     } catch (error) {
       console.error("Error sending verification code:", error);
-      showNotification(
-        "danger",
-        "Failed to send verification code. Please try again."
-      );
+
+      // Check if the error means the email is not found or not verified
+      if (error.name === "InvalidParameterException") {
+        showNotification(
+          "danger",
+          "No account found with this email or the email is not verified."
+        );
+      } else if (error.name === "UserNotFoundException") {
+        showNotification("danger", "No user is registered with this email.");
+      } else {
+        showNotification(
+          "danger",
+          "Failed to send verification code. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }

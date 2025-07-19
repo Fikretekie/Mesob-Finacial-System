@@ -441,13 +441,13 @@ const SignupPage = () => {
           }
 
           // Create schedule for Google user
-          try {
-            await createSchedule();
-            console.log("Schedule created successfully");
-          } catch (scheduleError) {
-            console.warn("Failed to create schedule:", scheduleError);
-            // Don't block signup if schedule fails
-          }
+          // try {
+          //   await createSchedule();
+          //   console.log("Schedule created successfully");
+          // } catch (scheduleError) {
+          //   console.warn("Failed to create schedule:", scheduleError);
+          //   // Don't block signup if schedule fails
+          // }
 
           showNotification("success", provider, "signup successful!");
 
@@ -540,12 +540,12 @@ const SignupPage = () => {
             console.warn("Failed to send welcome email:", emailError);
           }
 
-          try {
-            await createSchedule();
-            console.log("Schedule created successfully");
-          } catch (scheduleError) {
-            console.warn("Failed to create schedule:", scheduleError);
-          }
+          // try {
+          //   await createSchedule();
+          //   console.log("Schedule created successfully");
+          // } catch (scheduleError) {
+          //   console.warn("Failed to create schedule:", scheduleError);
+          // }
 
           showNotification("success", "Signup successful!");
 
@@ -599,12 +599,11 @@ const SignupPage = () => {
   };
 
   const checkEmailExists = async (email) => {
-    console.log(email);
     try {
-      // Replace with your actual endpoint
-
       const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/SignUp?email=${email}`,
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup?email=${encodeURIComponent(
+          email
+        )}`,
         {
           method: "GET",
           headers: {
@@ -613,20 +612,46 @@ const SignupPage = () => {
         }
       );
 
-      console.log("respoms ss", response);
-      // Assume API returns { exists: true/false }
-      return response.exists;
+      const result = await response.json();
+      console.log("✅ Email check response:", result);
+
+      // return true/false directly
+      return result.exists === true;
     } catch (error) {
-      // Handle API/network errors
-      console.log("errors is ", error);
-      return false; // Fail-safe: treat as not existing
+      console.error("❌ Email check API error:", error);
+      return false; // fail-safe: assume not exists
     }
   };
 
-  const handleNextStep = () => {
-    if (step === 1 && validateStep1()) setStep(2);
-    else if (step === 2 && validateStep2()) setStep(3);
+  const handleNextStep = async () => {
+    if (step === 1) {
+      if (!validateStep1()) return;
+
+      try {
+        const exists = await checkEmailExists(email);
+
+        if (exists) {
+          setErrors((prev) => ({
+            ...prev,
+            email: "This email is already registered. Please login.",
+          }));
+          showNotification(
+            "warning",
+            "This email is already registered. Please use another."
+          );
+          return;
+        }
+
+        setStep(2); // Proceed to step 2
+      } catch (err) {
+        console.error("❌ Email check error:", err);
+        showNotification("danger", "An error occurred while checking email");
+      }
+    } else if (step === 2 && validateStep2()) {
+      setStep(3);
+    }
   };
+
   // const handleNextStep = async () => {
   //   if (step === 1) {
   //     // Validate fields first
@@ -876,8 +901,8 @@ const SignupPage = () => {
               <option value="Individual/Households">
                 Individual/Households
               </option>
-              <option value="Cafe">Cafe</option>
-              <option value="Other">Other manuel entry</option>
+              <option value="Cafe">Resturant/Cafe</option>
+              <option value="Other">Other Businesses</option>
             </select>
             {errors.businessType && (
               <p style={styles.error}>{errors.businessType}</p>

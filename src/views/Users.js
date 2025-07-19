@@ -52,7 +52,7 @@ function Users() {
     },
     {
       name: "Phone",
-      selector: (row) => row.phone || "-",
+      selector: (row) => row.phone_number || "-",
       sortable: true,
       width: "200px",
     },
@@ -129,6 +129,7 @@ function Users() {
 
         if (response.data) {
           setUsers(Array.isArray(response.data) ? response.data : []);
+          console.log("response data", response.data);
         }
       } catch (error) {
         console.error("Error fetching users:", error);

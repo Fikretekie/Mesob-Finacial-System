@@ -23,7 +23,7 @@ const CheckoutForm = ({ priceId }) => {
     email: "",
     name: "",
     phone: "03317766777",
-    priceId: "price_1RlU9fAhnp7DBxtxfIknJzW2",
+    priceId: process.env.PRICE_ID,
     description: "New customer from Mesob Financials",
   });
 
