@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../assets/css/Login.css";
-import NotificationAlert from "react-notification-alert";
-import "react-notification-alert/dist/animate.css";
 import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { signIn, getCurrentUser, signInWithRedirect } from "aws-amplify/auth";
+import { signIn, signInWithRedirect } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 
 const logo = "/logo.png";
@@ -21,9 +19,8 @@ const Login = () => {
   const [socialAuth, setSocialAuth] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-  const notificationAlertRef = useRef(null);
 
-  // Check for error from redirect
+  // Check for error from redirect - now just console.log if any
   const { state } = location;
   const error =
     state?.error || new URLSearchParams(location.search).get("error");
@@ -32,23 +29,9 @@ const Login = () => {
 
   useEffect(() => {
     if (error) {
-      showNotification(
-        "danger",
-        errorMessage || "Login failed. Please try again."
-      );
+      console.error("Login error:", errorMessage || "Login failed.");
     }
   }, [error, errorMessage]);
-
-  const showNotification = (type, message) => {
-    const options = {
-      place: "tr",
-      message: <div>{message}</div>,
-      type: type,
-      icon: "now-ui-icons ui-1_bell-53",
-      autoDismiss: 5,
-    };
-    notificationAlertRef.current.notificationAlert(options);
-  };
 
   const handleGoogleSignIn = async () => {
     try {
@@ -56,15 +39,11 @@ const Login = () => {
       console.log("🔵 Initiating Google sign-in with redirect...");
       await signInWithRedirect({
         provider: "Google",
-        customState: "google_login", // Optional: Track the origin
+        customState: "google_login",
       });
       localStorage.setItem("provider", "Google");
     } catch (error) {
       console.error("🔴 Google sign-in error:", error);
-      showNotification(
-        "danger",
-        `Google sign-in failed: ${error.message || "Unknown error"}`
-      );
       setLoading(false);
       setSocialAuth("");
     }
@@ -78,10 +57,6 @@ const Login = () => {
       localStorage.setItem("provider", "Apple");
     } catch (error) {
       console.error("🔴 Apple sign-in error:", error);
-      showNotification(
-        "danger",
-        `Apple sign-in failed: ${error.message || "Unknown error"}`
-      );
       setLoading(false);
       setSocialAuth("");
     }
@@ -92,7 +67,7 @@ const Login = () => {
     setLoading(true);
 
     if (!email.trim()) {
-      showNotification("danger", "Email is required");
+      console.error("Email is required");
       setLoading(false);
       return;
     }
@@ -134,19 +109,14 @@ const Login = () => {
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
         localStorage.setItem("authToken", "authenticated");
 
-        showNotification("success", "Login successful!");
         const path =
           result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
         setTimeout(() => navigate(path, { replace: true }), 2000);
       } else {
-        showNotification("danger", "Invalid credentials");
+        console.error("Invalid credentials");
       }
     } catch (error) {
       console.error("🔴 Email sign-in error:", error);
-      showNotification(
-        "danger",
-        `Login failed: ${error.message || "Unknown error"}`
-      );
     } finally {
       setLoading(false);
     }
@@ -158,7 +128,6 @@ const Login = () => {
         <title>Login - Mesob Finance</title>
       </Helmet>
       <div className="login-container">
-        <NotificationAlert ref={notificationAlertRef} />
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
@@ -245,7 +214,11 @@ const Login = () => {
                 className="social-login-btn google"
                 disabled={loading}
               >
-                <img src="/googlelogo.png" alt="Google" className="social-icon" />
+                <img
+                  src="/googlelogo.png"
+                  alt="Google"
+                  className="social-icon"
+                />
                 Continue with Google
               </button>
 

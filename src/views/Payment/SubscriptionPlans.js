@@ -494,7 +494,7 @@ const SubscriptionPlans = () => {
               block
               onClick={() => handleSubscribe(selectedPriceId)}
             >
-              Pay with Stripe
+              Pay with Card
             </Button>
           </ModalBody>
           <ModalFooter>

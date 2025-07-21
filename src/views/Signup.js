@@ -44,7 +44,7 @@ const SignupPage = () => {
   const socialEmail = searchParams.get("email");
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
-
+  const [isLoading, setIsLoading] = useState(false);
   const getBusinessPurposes = (businessType) => {
     // If the business type is "Other", return empty arrays for manual entry
     if (businessType === "Other") {
