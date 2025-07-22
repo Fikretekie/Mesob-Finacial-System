@@ -47,6 +47,7 @@ const SignupPage = () => {
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const getBusinessPurposes = (businessType) => {
     // If the business type is "Other", return empty arrays for manual entry
     if (businessType === "Other") {
@@ -220,7 +221,12 @@ const SignupPage = () => {
   };
 
   const handleSignup = async (e, type) => {
-    if (type !== 0 && !validateStep3()) return;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    if (type !== 0 && !validateStep3()) {
+      setIsSubmitting(false);
+      return;
+    }
     e.preventDefault();
     setLoading(true)
     // Prepare user data
@@ -502,6 +508,8 @@ const SignupPage = () => {
           `Signup failed: ${cognitoError.message || "Unknown error"}`
         );
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -530,9 +538,53 @@ const SignupPage = () => {
     }
   };
 
+  // const handleNextStep = async () => {
+  //   if (isLoading) return;
+  //   setIsLoading(true);
+  //   if (step === 1) {
+  //     if (!validateStep1()) return;
+
+  //     try {
+  //       const exists = await checkEmailExists(email);
+
+  //       if (exists) {
+  //         setErrors((prev) => ({
+  //           ...prev,
+  //           email: "This email is already registered. Please login.",
+  //         }));
+  //         showNotification(
+  //           "warning",
+  //           "This email is already registered. Please use another."
+  //         );
+  //         setIsLoading(false);
+  //         return;
+  //       }
+
+  //       setStep(2); // Proceed to step 2
+  //     } catch (err) {
+  //       console.error("❌ Email check error:", err);
+  //       showNotification("danger", "An error occurred while checking email");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   } else if (step === 2) {
+  //     if (!validateStep2()) {
+  //       setIsLoading(false);
+  //       return;
+  //     }
+  //     setStep(3);
+  //     setIsLoading(false);
+  //   }
+  // };
   const handleNextStep = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+
     if (step === 1) {
-      if (!validateStep1()) return;
+      if (!validateStep1()) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
         const exists = await checkEmailExists(email);
@@ -546,105 +598,32 @@ const SignupPage = () => {
             "warning",
             "This email is already registered. Please use another."
           );
+          setIsLoading(false);
           return;
         }
 
-        setStep(2); // Proceed to step 2
+        setTimeout(() => {
+          setStep(2);
+          setIsLoading(false);
+        }, 500); // ✅ Shows loading for half a second
       } catch (err) {
         console.error("❌ Email check error:", err);
         showNotification("danger", "An error occurred while checking email");
+        setIsLoading(false);
       }
-    } else if (step === 2 && validateStep2()) {
-      setStep(3);
+    } else if (step === 2) {
+      if (!validateStep2()) {
+        setIsLoading(false);
+        return;
+      }
+
+      // ✅ TEMPORARILY delay to trigger button loading
+      setTimeout(() => {
+        setStep(3);
+        setIsLoading(false);
+      }, 500); // <- Forces visibility of spinner/loading for ~½ second
     }
   };
-
-  // const handleNextStep = async () => {
-  //   if (step === 1) {
-  //     // Validate fields first
-  //     if (!validateStep1()) return;
-
-  //     // Check if email exists
-  //     // let exist = await checkEmailExists(email);
-  //     console.log('exists ', exist);
-  //     if (exist === true) {
-  //       setErrors((prev) => ({
-  //         ...prev,
-  //         email: "This email is already registered. Please use another.",
-  //       }));
-  //       showNotification("warning", "This email is already registered. Please use another.");
-  //       return; // Do not proceed to next step
-  //     } else {
-  //       setStep(2);
-  //     }
-  //   } else if (step === 2 && validateStep2()) {
-  //     setStep(3);
-  //   }
-  // };
-
-  // const handleStartFromZero = async () => {
-  //   if (!name || !companyName || !email || !phone) {
-  //     showNotification("warning", "Please fill in all required fields first");
-  //     return;
-  //   }
-
-  //   const data = {
-  //     name,
-  //     companyName,
-  //     email,
-  //     phone,
-  //     password: "PCmalik99",
-  //     businessType: "Trucking",
-  //     cashBalance: "0",
-  //     outstandingDebt: "0",
-  //     valueableItems: "0",
-  //     role: 2,
-  //     startFromZero: true,
-  //   };
-
-  //   try {
-  //     // Clear any existing data first
-  //     localStorage.clear();
-
-  //     const response = await fetch(
-  //       "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(data),
-  //       }
-  //     );
-
-  //     const result = await response.json();
-  //     if (response.ok) {
-  //       localStorage.setItem("userId", result.user?.id || "");
-  //       localStorage.setItem("user_email", result.user?.email || "");
-  //       localStorage.setItem("user_name", result.user?.name || "");
-  //       localStorage.setItem("role", "2");
-  //       localStorage.setItem("outstandingDebt", "0");
-  //       localStorage.setItem("valueableItems", "0");
-  //       localStorage.setItem("cashBalance", "0");
-
-  //       showNotification(
-  //         "success",
-  //         "Account created successfully. Starting from zero!"
-  //       );
-
-  //       // Use window.location for full page refresh
-  //       window.location.href = "/customer/dashboard";
-  //     } else {
-  //       showNotification(
-  //         "danger",
-  //         result.message || "Failed to create account"
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //     showNotification("danger", "An unexpected error occurred");
-  //   }
-  // };
 
   const handlePhoneChange = (value) => {
     const formattedPhone = "+" + value.replace(/[^\d]/g, "");
@@ -779,8 +758,9 @@ const SignupPage = () => {
               }}
               onMouseOver={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
+              disabled={isLoading}
             >
-              Next
+              {isLoading ? "Loading..." : "Next"}
             </button>
           </div>
         );
@@ -854,8 +834,9 @@ const SignupPage = () => {
               }}
               onMouseOver={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
+              disabled={isLoading}
             >
-              Next
+              {isLoading ? "Loading..." : "Next"}
             </button>
           </div>
         );
@@ -873,7 +854,7 @@ const SignupPage = () => {
               <a
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSignup(e, 0);
+                  if (!isSubmitting) handleSignup(e, 0);
                 }}
                 href="#"
               >
@@ -959,9 +940,9 @@ const SignupPage = () => {
               }}
               onMouseOver={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              disabled={!termsChecked}
+              disabled={!termsChecked || isLoading}
             >
-              Save and Finish
+              {isSubmitting ? "Saving..." : "Save and Finish"}
             </button>
           </div>
         );
