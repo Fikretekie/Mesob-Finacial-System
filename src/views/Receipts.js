@@ -17,6 +17,7 @@ import {
   Label,
   Button,
 } from "reactstrap";
+import Select from "react-select";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { Helmet } from "react-helmet";
 import { FaEye, FaDownload } from "react-icons/fa";
@@ -37,6 +38,9 @@ const Receipts = ({ selectedUser }) => {
   const [searchedDates, setSearchedDates] = useState(null);
   const notificationAlertRef = useRef(null);
   const [disabled, setDisabled] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [users, setUsers] = useState([]);
+  const userRole = parseInt(localStorage.getItem("role") || 1);
 
   useEffect(() => {
     if (selectedUser?.id) {
@@ -45,8 +49,11 @@ const Receipts = ({ selectedUser }) => {
   }, [selectedUser, startDate, endDate, selectedType]);
 
   useEffect(() => {
+    if (userRole === 0 && !selectedUserId) return; // admin must pick user
+
     fetchReceipts();
-  }, [startDate, endDate, selectedType]);
+  }, [selectedUserId, startDate, endDate, selectedType]);
+
   useEffect(() => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
@@ -59,11 +66,37 @@ const Receipts = ({ selectedUser }) => {
     };
     checkSubscription();
   }, []);
+  useEffect(() => {
+    if (userRole === 0) {
+      const fetchUsers = async () => {
+        try {
+          const response = await axios.get(
+            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+          );
+          setUsers(response.data || []);
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          notify("tr", "Error fetching users", "danger");
+        }
+      };
+      fetchUsers();
+    }
+  }, [userRole]);
 
   const fetchReceipts = async () => {
     setLoading(true);
     try {
-      const userId = selectedUser?.id || localStorage.getItem("userId");
+      const getUserId = () => {
+        if (userRole === 0) return selectedUserId;
+        return localStorage.getItem("userId");
+      };
+      const userId = getUserId();
+      if (!userId) {
+        setReceipts([]);
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
       );
@@ -258,6 +291,62 @@ const Receipts = ({ selectedUser }) => {
       <PanelHeader size="sm" />
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content">
+        {userRole === 0 && (
+          <Row style={{ margin: "0" }}>
+            <Col xs={12}>
+              <Card style={{ marginBottom: "20px" }}>
+                <CardHeader></CardHeader>
+                <CardBody style={{ paddingBottom: "15px" }}>
+                  <FormGroup style={{ marginBottom: "0" }}>
+                    <Label>Select User to View Receipts:</Label>
+                    <Select
+                      options={users.map((user) => ({
+                        value: user.id,
+                        label: user.email,
+                      }))}
+                      value={
+                        users.find((u) => u.id === selectedUserId)
+                          ? {
+                              value: selectedUserId,
+                              label: users.find((u) => u.id === selectedUserId)
+                                .email,
+                            }
+                          : null
+                      }
+                      onChange={(option) =>
+                        setSelectedUserId(option ? option.value : null)
+                      }
+                      isClearable
+                      isSearchable
+                      placeholder="Select or search user receipts"
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          minHeight: "38px",
+                          height: "38px",
+                        }),
+                        valueContainer: (provided) => ({
+                          ...provided,
+                          height: "38px",
+                          padding: "0 6px",
+                        }),
+                        input: (provided) => ({
+                          ...provided,
+                          margin: "0px",
+                        }),
+                        indicatorsContainer: (provided) => ({
+                          ...provided,
+                          height: "38px",
+                        }),
+                      }}
+                    />
+                  </FormGroup>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
         <Row>
           <Col xs={12}>
             <Card>
@@ -322,6 +411,18 @@ const Receipts = ({ selectedUser }) => {
                 </div>
               </CardHeader>
               <CardBody>
+                {userRole === 0 && !selectedUserId && (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      margin: "20px 0",
+                      color: "gray",
+                    }}
+                  >
+                    Please select a user to view receipts.
+                  </div>
+                )}
+
                 {loading ? (
                   <div style={{ textAlign: "center", padding: "20px" }}>
                     <Spinner color="primary" />
@@ -404,26 +505,40 @@ const Receipts = ({ selectedUser }) => {
           Receipt Preview
         </ModalHeader>
         <ModalBody>
-          {selectedReceipt && (
-            <div className="receipt-preview">
-              <object
-                data={selectedReceipt.receiptUrl}
-                type="application/pdf"
-                style={{
-                  width: "100%",
-                  height: "600px",
-                }}
-              >
-                <embed
-                  src={selectedReceipt.receiptUrl}
+          {selectedReceipt && selectedReceipt.receiptUrl && (
+            <>
+              {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
+                <object
+                  data={selectedReceipt.receiptUrl}
                   type="application/pdf"
+                  width="100%"
+                  height="600px"
+                >
+                  <p>
+                    Your browser does not support PDFs.{" "}
+                    <a
+                      href={selectedReceipt.receiptUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View PDF
+                    </a>
+                  </p>
+                </object>
+              ) : (
+                <img
+                  src={selectedReceipt.receiptUrl}
+                  alt="Receipt"
                   style={{
-                    width: "100%",
-                    height: "600px",
+                    maxWidth: "100%",
+                    height: "auto",
+                    display: "block",
+                    margin: "0 auto",
+                    objectFit: "contain",
                   }}
                 />
-              </object>
-            </div>
+              )}
+            </>
           )}
         </ModalBody>
       </Modal>

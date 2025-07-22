@@ -91,7 +91,8 @@ const MesobFinancial2 = () => {
   const dispatch = useDispatch();
   const selectedUser = useSelector((state) => state.selectedUser);
   const [selectedUserId, setSelectedUserId] = useState(null);
-
+  const firstLoadRef = useRef(true);
+  const hasShownNotifyRef = useRef(false);
   // business types
   const [selectedBusinessType, setSelectedBusinessType] = useState(
     localStorage.getItem("businessType") || ""
@@ -1168,41 +1169,55 @@ const MesobFinancial2 = () => {
 
   useEffect(() => {
     const persistedUserId = localStorage.getItem("selectedUserId");
-    if (persistedUserId) {
-      setSelectedUserId(persistedUserId);
-      fetchFinancialData(persistedUserId); // Or your data loading function
+    if (userRole !== 0) return;
+
+    if (selectedUserId) {
+      hasShownNotifyRef.current = false;
+      fetchUserInitialBalance(selectedUserId);
+      fetchTransactions(selectedUserId);
+      return;
     }
-  }, []);
+    if (!selectedUserId && persistedUserId) {
+      setSelectedUserId(persistedUserId);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      firstLoadRef.current = false;
+
+      if (!selectedUserId && !hasShownNotifyRef.current) {
+        setLoading(false);
+        notify("tr", "Please select a user", "warning");
+        hasShownNotifyRef.current = true;
+      }
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [userRole, selectedUserId]);
   useEffect(() => {
     if (selectedUserId) {
-      fetchFinancialData(selectedUserId);
+      hasShownNotifyRef.current = false;
     }
   }, [selectedUserId]);
-  useEffect(() => {
-    if (userRole === 0 && !selectedUserId) {
-      setLoading(false);
-      notify("tr", "Please select a user", "warning");
-    }
-  }, [userRole, selectedUserId]);
 
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
-      // Clear selection
       setSelectedUserId(null);
       localStorage.removeItem("selectedUserId");
-      fetchFinancialData(userId);
+      setItems([]);
+      setLoading(false);
       return;
     }
-
     const userId = selectedOption.value;
     setSelectedUserId(userId);
     localStorage.setItem("selectedUserId", userId);
+
     const selectedUserData = users.find((user) => user.id === userId);
     if (selectedUserData) {
       dispatch(setSelectedUser(selectedUserData));
       fetchFinancialData(userId);
     }
   };
+
   const confirmDeleteandsave = async () => {
     setLoading(true);
     const userId = localStorage.getItem("userId");
