@@ -38,6 +38,8 @@ const SignupPage = () => {
   const [manualPayablePurposes, setManualPayablePurposes] = useState([]);
   const [selectedBusinessType, setSelectedBusinessType] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  const [loading, setLoading] = useState(true); // loading state
+
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const provider = searchParams.get("provider");
@@ -87,12 +89,14 @@ const SignupPage = () => {
 
   useEffect(() => {
     if (isSignupSuccessful) {
+      setLoading(false);
       navigate("/admin/dashboard");
     }
   }, [isSignupSuccessful, navigate]);
   useEffect(() => {
     if ((provider === "Google" || provider === "Apple") && socialEmail) {
       setEmail(socialEmail);
+      setLoading(false);
       if (socialName) setName(socialName);
     }
   }, [provider, socialEmail, socialName]);
@@ -215,133 +219,10 @@ const SignupPage = () => {
     }
   };
 
-  // const handleSignup = async (e, type) => {
-  //   if (type !== 0 && !validateStep3()) return;
-
-  //   e.preventDefault();
-
-  //   try {
-  //     // Cognito Signup
-  //     const res = await signUp({
-  //       username: email,
-  //       password: password,
-  //       options: {
-  //         userAttributes: {
-  //           email: email,
-  //           phone_number: phone,
-  //         },
-  //       },
-  //     });
-
-  //     // Prepare user data
-  //     const creationDate = new Date().toISOString();
-  //     const trialEndDate = new Date(
-  //       Date.now() + 30 * 24 * 60 * 60 * 1000
-  //     ).toISOString();
-  //     const businessTypeValue =
-  //       selectedBusinessType === "Other"
-  //         ? otherBusinessType
-  //         : selectedBusinessType;
-
-  //     const data = {
-  //       username: email,
-  //       name,
-  //       companyName,
-  //       email,
-  //       phone_number: phone,
-  //       businessType: businessTypeValue,
-  //       cashBalance: type === 0 ? "0" : cashBalance,
-  //       outstandingDebt: type === 0 ? "0" : outstandingDebt,
-  //       valueableItems: type === 0 ? "0" : valueableItems,
-  //       role: 2,
-  //       startFromZero: type === 0,
-  //       creationDate,
-  //       trialEndDate,
-  //       isPaid: false,
-  //       subscription: false,
-  //       scheduleCount: 1,
-  //       createdAt: creationDate,
-  //       currency: selectedCurrency,
-  //     };
-
-  //     try {
-  //       // Database Update
-  //       const response = await axios.put(
-  //         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${res.userId}`,
-  //         data
-  //       );
-
-  //       console.log("response-=->> ", response);
-
-  //       if (response.status === 200) {
-  //         // Local storage setup
-  //         localStorage.setItem("userId", res.userId);
-  //         localStorage.setItem("user_email", email);
-  //         localStorage.setItem("user_name", name);
-  //         localStorage.setItem("role", "2");
-  //         localStorage.setItem("businessType", businessTypeValue);
-
-  //         // Send welcome email
-  //         const emailData = {
-  //           email: email,
-  //           subject: "Welcome to Mesob Financial – You're All Set!",
-  //           message: `...`, // shortened for brevity
-  //         };
-
-  //         let res1 = await axios.post(
-  //           `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
-  //           emailData
-  //         );
-  //         console.log("res=>>>>", res1);
-
-  //         let scheduleRes = await createSchedule();
-  //         console.log("scheduleRes=>>>>", scheduleRes);
-  //         showNotification("success", "Signup successful!");
-
-  //         setTimeout(() => {
-  //           navigate("/confirm", { state: { email, phone_number: phone } });
-  //         }, 100);
-  //       }
-  //     } catch (dbError) {
-  //       console.error("Database error:", dbError);
-
-  //       // Handle existing user in database
-  //       if (dbError.response?.status === 409) {
-  //         showNotification(
-  //           "danger",
-  //           "User already exists in our system. Please login."
-  //         );
-  //       } else {
-  //         showNotification(
-  //           "danger",
-  //           "Error saving user data. Please try again."
-  //         );
-  //       }
-
-  //       // Delete Cognito user if database update failed
-  //       // try {
-  //       //   await deleteUser();
-  //       // } catch (deleteError) {
-  //       //   console.error("Error cleaning up user:", deleteError);
-  //       // }
-
-  //       return;
-  //     }
-  //   } catch (cognitoError) {
-  //     console.error("Cognito error:", cognitoError);
-
-  //     // Handle existing user in Cognito
-  //     if (cognitoError.name === "UsernameExistsException") {
-  //       showNotification(
-  //         "danger",
-  //         "User already exists. Please SignUp instead."
-  //       );
-  //     }
-  //   }
-  // };
   const handleSignup = async (e, type) => {
     if (type !== 0 && !validateStep3()) return;
     e.preventDefault();
+    setLoading(true)
     // Prepare user data
     const creationDate = new Date().toISOString();
     const trialEndDate = new Date(
@@ -404,29 +285,42 @@ const SignupPage = () => {
             "valueableItems",
             type === 0 ? "0" : valueableItems
           );
+          setLoading(false);
+
           localStorage.setItem("authToken", "authenticated");
 
           // Send welcome email for Google users
           const emailData = {
             email: email,
             subject: "Welcome to Mesob Financial – You're All Set!",
-            message: `Dear ${name},
-  
-  Welcome to Mesob Financial! Your account has been successfully created and you're ready to start managing your business finances.
-  
-  Here's what you can do next:
-  • Set up your financial dashboard
-  • Track your income and expenses
-  • Monitor your cash flow
-  • Generate financial reports
-  <strong>Ready to unlock all features?</strong><br>
-    <a href="https://app.mesobfinancial.com/customer/subscription" style="color: #1e90ff;">
-      Click here to view or upgrade your subscription
-    </a><br><br>
-  If you have any questions, feel free to reach out to our support team.
-  
-  Best regards,
-  The Mesob Financial Team`,
+            message: `
+  <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px;">
+    <p>Dear <strong>${name}</strong>,</p>
+
+    <p>Welcome to <strong>Mesob Financial</strong>! Your account has been successfully created and you're ready to start managing your business finances.</p>
+
+    <p>Here's what you can do next:</p>
+    <ul style="padding-left: 20px;">
+      <li>Set up your financial dashboard</li>
+      <li>Track your income and expenses</li>
+      <li>Monitor your cash flow</li>
+      <li>Generate financial reports</li>
+    </ul>
+
+    <p><strong>Ready to unlock all features?</strong></p>
+
+    <p>
+      <a href="https://app.mesobfinancial.com/customer/subscription" style="color: #1e90ff; text-decoration: none;">
+        Click here to view or upgrade your subscription
+      </a>
+    </p>
+
+    <p>If you have any questions, feel free to reach out to our support team.</p>
+
+    <p>Best regards,<br>
+    The Mesob Financial Team</p>
+  </div>
+`
           };
 
           try {
@@ -453,18 +347,25 @@ const SignupPage = () => {
 
           // Redirect directly to dashboard (skip 2FA for Google users)
           setTimeout(() => {
+            setLoading(false);
             navigate("/customer/dashboard", { replace: true });
           }, 1000);
         }
       } catch (dbError) {
         console.error(`${provider} signup database error:`, dbError);
+        setLoading(false);
+
 
         if (dbError.response?.status === 409) {
+          setLoading(false);
+
           showNotification(
             "danger",
             "User already exists in our system. Please login."
           );
         } else {
+          setLoading(false);
+
           showNotification(
             "danger",
             "Error saving user data. Please try again."
@@ -508,88 +409,94 @@ const SignupPage = () => {
           localStorage.setItem("user_name", name);
           localStorage.setItem("role", "2");
           localStorage.setItem("businessType", businessTypeValue);
+          setLoading(false);
 
           // Send welcome email for email users
-          const emailData = {
-            email: email,
-            subject: "Welcome to Mesob Financial – You're All Set!",
-            message: `Dear ${name},
-  
-  Welcome to Mesob Financial! Your account has been successfully created and you're ready to start managing your business finances.
-  
-  Here's what you can do next:
-  • Verify your email address
-  • Set up your financial dashboard
-  • Track your income and expenses
-  • Monitor your cash flow
-  • Generate financial reports
-  
-  If you have any questions, feel free to reach out to our support team.
-  
-  Best regards,
-  The Mesob Financial Team`,
-          };
+          //         const emailData = {
+          //           email: email,
+          //           subject: "Welcome to Mesob Financial – You're All Set!",
+          //           message: `Dear ${name},
 
-          try {
-            await axios.post(
-              `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
-              emailData
-            );
-            console.log("Welcome email sent successfully");
-          } catch (emailError) {
-            console.warn("Failed to send welcome email:", emailError);
-          }
+          // Welcome to Mesob Financial! Your account has been successfully created and you're ready to start managing your business finances.
 
-          // try {
-          //   await createSchedule();
-          //   console.log("Schedule created successfully");
-          // } catch (scheduleError) {
-          //   console.warn("Failed to create schedule:", scheduleError);
-          // }
+          // Here's what you can do next:
+          // • Verify your email address
+          // • Set up your financial dashboard
+          // • Track your income and expenses
+          // • Monitor your cash flow
+          // • Generate financial reports
+
+          // If you have any questions, feel free to reach out to our support team.
+
+          // Best regards,
+          // The Mesob Financial Team`,
+          //         };
+
+          //         try {
+          //           await axios.post(
+          //             `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
+          //             emailData
+          //           );
+          //           console.log("Welcome email sent successfully");
+          //         } catch (emailError) {
+          //           console.warn("Failed to send welcome email:", emailError);
+          //         }
 
           showNotification("success", "Signup successful!");
 
           // Redirect to confirmation page for email users (2FA)
           setTimeout(() => {
-            navigate("/confirm", { state: { email, phone_number: phone } });
+            setLoading(false);
+
+            navigate("/confirm", {
+              state: {
+                email,
+                phone_number: phone,
+                name: name // <-- add name here
+              },
+            });
           }, 1000);
         }
       } catch (dbError) {
+        setLoading(false);
+
         console.error("Email signup database error:", dbError);
 
         // Handle existing user in database
         if (dbError.response?.status === 409) {
+          setLoading(false);
+
           showNotification(
             "danger",
             "User already exists in our system. Please login."
           );
         } else {
+          setLoading(false);
+
           showNotification(
             "danger",
             "Error saving user data. Please try again."
           );
         }
 
-        // Optionally delete Cognito user if database update failed
-        // Uncomment if you want to clean up
-        // try {
-        //   await deleteUser();
-        // } catch (deleteError) {
-        //   console.error("Error cleaning up user:", deleteError);
-        // }
-
         return;
       }
     } catch (cognitoError) {
+      setLoading(false);
+
       console.error("Cognito signup error:", cognitoError);
 
       // Handle existing user in Cognito
       if (cognitoError.name === "UsernameExistsException") {
+        setLoading(false);
+
         showNotification(
           "danger",
           "User already exists. Please login instead."
         );
       } else {
+        setLoading(false);
+
         showNotification(
           "danger",
           `Signup failed: ${cognitoError.message || "Unknown error"}`
