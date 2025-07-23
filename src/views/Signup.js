@@ -852,28 +852,21 @@ const SignupPage = () => {
               inventory) you own. This helps us build an accurate financial
               picture of your business (recommended).
             </p>
-            <div style={{ marginBottom: "10px", marginTop: "10px" }}>
-              <label style={{ display: "flex", alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={startFromZeroConfirmed}
-                  onChange={(e) => setStartFromZeroConfirmed(e.target.checked)}
-                  style={{ marginRight: "8px" }}
-                />
-                I want to start from zero with default values.
-              </label>
 
+            <div style={{ marginBottom: "10px", marginTop: "10px" }}>
               <a
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (!startFromZeroConfirmed) {
+
+                  if (!termsChecked) {
                     showNotification(
                       "warning",
-                      "Please check the box to confirm you want to start from zero."
+                      "Please accept the Terms of Use to proceed."
                     );
                     return;
                   }
+
                   if (!isSubmitting) handleSignup(e, 0);
                 }}
                 style={{
@@ -951,6 +944,7 @@ const SignupPage = () => {
                 rel="noopener noreferrer"
                 style={styles.termsLink}
               >
+                {" "}
                 Terms of Use
               </Link>
             </label>
