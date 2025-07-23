@@ -20,7 +20,6 @@ const Confirm = () => {
       setEmail(location.state.email);
     }
     if (location.state.name) setName(location.state.name); // <-- Add this line
-
   }, [location.state]);
 
   const showNotification = (type, message) => {
@@ -74,9 +73,8 @@ const Confirm = () => {
     <p>Best regards,<br>
     The Mesob Financial Team</p>
   </div>
-`
+`,
       };
-
 
       try {
         await axios.post(

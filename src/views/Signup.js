@@ -48,6 +48,8 @@ const SignupPage = () => {
   const socialName = searchParams.get("name");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [startFromZeroConfirmed, setStartFromZeroConfirmed] = useState(false);
+
   const getBusinessPurposes = (businessType) => {
     // If the business type is "Other", return empty arrays for manual entry
     if (businessType === "Other") {
@@ -228,7 +230,7 @@ const SignupPage = () => {
       return;
     }
     e.preventDefault();
-    setLoading(true)
+    setLoading(true);
     // Prepare user data
     const creationDate = new Date().toISOString();
     const trialEndDate = new Date(
@@ -326,7 +328,7 @@ const SignupPage = () => {
     <p>Best regards,<br>
     The Mesob Financial Team</p>
   </div>
-`
+`,
           };
 
           try {
@@ -360,7 +362,6 @@ const SignupPage = () => {
       } catch (dbError) {
         console.error(`${provider} signup database error:`, dbError);
         setLoading(false);
-
 
         if (dbError.response?.status === 409) {
           setLoading(false);
@@ -458,7 +459,7 @@ const SignupPage = () => {
               state: {
                 email,
                 phone_number: phone,
-                name: name // <-- add name here
+                name: name, // <-- add name here
               },
             });
           }, 1000);
@@ -849,19 +850,43 @@ const SignupPage = () => {
               financially today. This includes how much cash you have, any money
               owed to you, any debt you owe, and any valuable items (like
               inventory) you own. This helps us build an accurate financial
-              picture of your business (recommended). <br></br>
-              If you want to start from zero,
+              picture of your business (recommended).
+            </p>
+            <div style={{ marginBottom: "10px", marginTop: "10px" }}>
+              <label style={{ display: "flex", alignItems: "center" }}>
+                <input
+                  type="checkbox"
+                  checked={startFromZeroConfirmed}
+                  onChange={(e) => setStartFromZeroConfirmed(e.target.checked)}
+                  style={{ marginRight: "8px" }}
+                />
+                I want to start from zero with default values.
+              </label>
+
               <a
+                href="#"
                 onClick={(e) => {
                   e.preventDefault();
+                  if (!startFromZeroConfirmed) {
+                    showNotification(
+                      "warning",
+                      "Please check the box to confirm you want to start from zero."
+                    );
+                    return;
+                  }
                   if (!isSubmitting) handleSignup(e, 0);
                 }}
-                href="#"
+                style={{
+                  color: "#3b82f6",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  display: "inline-block",
+                  marginTop: "5px",
+                }}
               >
-                Click Here
+                Proceed to start from zero
               </a>
-              :
-            </p>
+            </div>
 
             <input
               type="text"
@@ -919,7 +944,7 @@ const SignupPage = () => {
                 onChange={(e) => setTermsChecked(e.target.checked)}
                 style={{ marginRight: "5px" }}
               />
-              I agree to the
+              I agree to the{" "}
               <Link
                 to="/terms-of-use"
                 target="_blank"

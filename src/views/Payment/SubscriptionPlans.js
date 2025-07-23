@@ -519,7 +519,7 @@ const SubscriptionPlans = () => {
                   setIsModalOpen(false);
                 }}
               >
-                Pay with Stripe
+                Pay with Card
               </Button>
             </Col>
             <Col md={6}>

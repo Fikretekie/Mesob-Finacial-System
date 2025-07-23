@@ -2549,29 +2549,44 @@ const MesobFinancial2 = () => {
             Receipt Preview
           </ModalHeader>
           <ModalBody>
-            {selectedReceipt && (
-              <div className="receipt-preview">
-                <object
-                  data={selectedReceipt.receiptUrl}
-                  type="application/pdf"
-                  style={{
-                    width: "100%",
-                    height: "600px",
-                  }}
-                >
-                  <embed
-                    src={selectedReceipt.receiptUrl}
+            {selectedReceipt?.receiptUrl && (
+              <>
+                {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
+                  <object
+                    data={selectedReceipt.receiptUrl}
                     type="application/pdf"
+                    width="100%"
+                    height="600px"
+                  >
+                    <p>
+                      Your browser does not support PDFs.{" "}
+                      <a
+                        href={selectedReceipt.receiptUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View PDF
+                      </a>
+                    </p>
+                  </object>
+                ) : (
+                  <img
+                    src={selectedReceipt.receiptUrl}
+                    alt="Receipt"
                     style={{
-                      width: "100%",
-                      height: "600px",
+                      maxWidth: "100%",
+                      height: "auto",
+                      display: "block",
+                      margin: "0 auto",
+                      objectFit: "contain",
                     }}
                   />
-                </object>
-              </div>
+                )}
+              </>
             )}
           </ModalBody>
         </Modal>
+
         <Modal
           isOpen={showInstallmentModal}
           toggle={() => setShowInstallmentModal(false)}

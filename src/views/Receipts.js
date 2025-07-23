@@ -42,17 +42,36 @@ const Receipts = ({ selectedUser }) => {
   const [users, setUsers] = useState([]);
   const userRole = parseInt(localStorage.getItem("role") || 1);
 
-  useEffect(() => {
-    if (selectedUser?.id) {
-      fetchReceipts();
-    }
-  }, [selectedUser, startDate, endDate, selectedType]);
+  // useEffect(() => {
+  //   if (selectedUser?.id) {
+  //     fetchReceipts();
+  //   }
+  // }, [selectedUser, startDate, endDate, selectedType]);
 
   useEffect(() => {
     if (userRole === 0 && !selectedUserId) return; // admin must pick user
 
     fetchReceipts();
   }, [selectedUserId, startDate, endDate, selectedType]);
+  useEffect(() => {
+    const persistedUserId = localStorage.getItem("selectedUserId");
+
+    if (userRole !== 0) return;
+    if (!selectedUserId && !persistedUserId) {
+      notify("tr", "Please select a user to view receipts", "warning");
+      setLoading(false);
+      return;
+    }
+
+    if (!selectedUserId && persistedUserId) {
+      setSelectedUserId(persistedUserId);
+      return;
+    }
+
+    if (selectedUserId) {
+      fetchReceipts();
+    }
+  }, [userRole, selectedUserId, startDate, endDate, selectedType]);
 
   useEffect(() => {
     const checkSubscription = async () => {
@@ -313,9 +332,15 @@ const Receipts = ({ selectedUser }) => {
                             }
                           : null
                       }
-                      onChange={(option) =>
-                        setSelectedUserId(option ? option.value : null)
-                      }
+                      onChange={(option) => {
+                        const userId = option ? option.value : null;
+                        setSelectedUserId(userId);
+                        if (userId) {
+                          localStorage.setItem("selectedUserId", userId);
+                        } else {
+                          localStorage.removeItem("selectedUserId");
+                        }
+                      }}
                       isClearable
                       isSearchable
                       placeholder="Select or search user receipts"

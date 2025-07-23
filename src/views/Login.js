@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../assets/css/Login.css";
 import { Helmet } from "react-helmet";
@@ -8,7 +8,7 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
-
+import NotificationAlert from "react-notification-alert";
 const logo = "/logo.png";
 
 const Login = () => {
@@ -19,6 +19,7 @@ const Login = () => {
   const [socialAuth, setSocialAuth] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const notificationAlertRef = useRef(null);
 
   // Check for error from redirect - now just console.log if any
   const { state } = location;
@@ -111,23 +112,33 @@ const Login = () => {
 
         const path =
           result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
-        setTimeout(() => navigate(path, { replace: true }), 2000);
+        navigate(path, { replace: true });
       } else {
         console.error("Invalid credentials");
       }
     } catch (error) {
       console.error("🔴 Email sign-in error:", error);
+      notify("danger", error.message || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
+  const notify = (type, message) => {
+    notificationAlertRef.current?.notificationAlert({
+      place: "tr",
+      message: <div>{message}</div>,
+      type, // "danger", "success", "warning", "info"
+      icon: "now-ui-icons ui-1_bell-53",
+      autoDismiss: 5,
+    });
+  };
   return (
     <>
       <Helmet>
         <title>Login - Mesob Finance</title>
       </Helmet>
       <div className="login-container">
+        <NotificationAlert ref={notificationAlertRef} />
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
