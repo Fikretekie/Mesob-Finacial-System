@@ -480,6 +480,9 @@ function Dashboard() {
             <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
             Add Transaction
           </Button>
+          {/* <Button color="secondary" onClick={getSchedule}>
+            Get Schedule
+          </Button> */}
         </div>
       )}
       {userRole === 0 && (

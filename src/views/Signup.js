@@ -411,43 +411,12 @@ const SignupPage = () => {
 
         if (response.status === 200) {
           // Local storage setup for email users
-          localStorage.setItem("userId", res.userId);
+          localStorage.setItem("userId", response.data.id);
           localStorage.setItem("user_email", email);
           localStorage.setItem("user_name", name);
           localStorage.setItem("role", "2");
           localStorage.setItem("businessType", businessTypeValue);
           setLoading(false);
-
-          // Send welcome email for email users
-          //         const emailData = {
-          //           email: email,
-          //           subject: "Welcome to Mesob Financial – You're All Set!",
-          //           message: `Dear ${name},
-
-          // Welcome to Mesob Financial! Your account has been successfully created and you're ready to start managing your business finances.
-
-          // Here's what you can do next:
-          // • Verify your email address
-          // • Set up your financial dashboard
-          // • Track your income and expenses
-          // • Monitor your cash flow
-          // • Generate financial reports
-
-          // If you have any questions, feel free to reach out to our support team.
-
-          // Best regards,
-          // The Mesob Financial Team`,
-          //         };
-
-          //         try {
-          //           await axios.post(
-          //             `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
-          //             emailData
-          //           );
-          //           console.log("Welcome email sent successfully");
-          //         } catch (emailError) {
-          //           console.warn("Failed to send welcome email:", emailError);
-          //         }
 
           showNotification("success", "Signup successful!");
 
@@ -458,8 +427,10 @@ const SignupPage = () => {
             navigate("/confirm", {
               state: {
                 email,
+                id: response.data.id,
                 phone_number: phone,
                 name: name, // <-- add name here
+                password,
               },
             });
           }, 1000);

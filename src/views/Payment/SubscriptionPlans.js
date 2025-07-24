@@ -55,8 +55,10 @@ const SubscriptionPlans = () => {
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
-      const rawData = response.data.Item ? response.data.Item : response.data;
-      console.log("User response:", userData);
+      console.log("User data response:", response.data);
+
+      const rawData = response.data.user ? response.data.user : response.data;
+      console.log("User response:", rawData);
       setUserData(rawData);
     } catch (err) {
       console.error("Error fetching user data:", err);

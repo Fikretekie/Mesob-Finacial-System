@@ -20,6 +20,7 @@ import {
 } from "reactstrap";
 import "./mesobfinancial2.css";
 import Select from "react-select";
+import heic2any from "heic2any";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
@@ -302,24 +303,44 @@ const MesobFinancial2 = () => {
   };
 
   const handleReceiptUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const filename = file.name;
-      const filetype = file.type;
+    let file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      // Check for HEIC file
+      if (
+        file.type === "image/heic" ||
+        file.name.toLowerCase().endsWith(".heic")
+      ) {
+        const convertedBlob = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+        });
+
+        // Create a new File object from the converted blob
+        file = new File([convertedBlob], `${Date.now()}-converted.jpg`, {
+          type: "image/jpeg",
+        });
+      }
 
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const filecontent = event.target.result.split(",")[1]; // Remove data:image/jpeg;base64, prefix
+        const filecontent = event.target.result.split(",")[1]; // Base64
 
         setReceipt(file);
-
         setfileContent(filecontent);
       };
 
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Continue as normal (converted or not)
+    } catch (error) {
+      console.error("Error processing file:", error);
+      notify(
+        "tr",
+        "Failed to upload receipt. Please try another file.",
+        "danger"
+      );
     }
   };
-
   //fetching users
   const fetchUsers = async () => {
     try {
@@ -634,29 +655,31 @@ const MesobFinancial2 = () => {
       const response = await axios.get(
         `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
       );
-      if (response.data?.user?.businessType) {
-        const bizType = response.data.user.businessType || "";
-        setSelectedBusinessType(bizType);
-        localStorage.setItem("businessType", bizType);
-      }
-      if (response.data?.user?.cashBalance) {
-        console.log("Initial balance:", response.data.user.cashBalance);
-        setInitialBalance(parseFloat(response.data.user.cashBalance));
-      }
-      if (response.data?.user?.valueableItems) {
-        console.log(
-          "Initial valueableItems:",
-          response.data.user.valueableItems
-        );
-        setvalueableItems(parseFloat(response.data.user.valueableItems));
-      }
-      setcompanyName(response.data.user.companyName);
-      if (response.data?.user?.outstandingDebt) {
-        console.log(
-          "Initial outstandingDebt:",
-          response.data.user.outstandingDebt
-        );
-        setoutstandingDebt(parseFloat(response.data.user.outstandingDebt));
+      if (response.data?.user) {
+        if (response.data.user.businessType) {
+          const bizType = response.data.user.businessType || "";
+          setSelectedBusinessType(bizType);
+          localStorage.setItem("businessType", bizType);
+        }
+        if (response.data.user.cashBalance) {
+          setInitialBalance(parseFloat(response.data.user.cashBalance));
+        }
+        if (response.data.user.valueableItems) {
+          setvalueableItems(parseFloat(response.data.user.valueableItems));
+        }
+        // companyName field check
+        if (typeof response.data.user.companyName === "string") {
+          setcompanyName(response.data.user.companyName);
+        } else {
+          setcompanyName(""); // fallback or leave blank if missing
+        }
+        if (response.data.user.outstandingDebt) {
+          setoutstandingDebt(parseFloat(response.data.user.outstandingDebt));
+        }
+      } else {
+        // Optionally set companyName to blank or show an error/alert
+        setcompanyName(""); // or undefined, or whatever your default should be
+        console.warn("User data not found in user object:", response.data);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);

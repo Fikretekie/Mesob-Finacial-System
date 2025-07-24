@@ -37,6 +37,7 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
+      setSocialAuth("google");
       console.log("🔵 Initiating Google sign-in with redirect...");
       await signInWithRedirect({
         provider: "Google",
@@ -53,6 +54,7 @@ const Login = () => {
   const handleAppleSignIn = async () => {
     try {
       setLoading(true);
+      setSocialAuth("apple");
       console.log("🔵 Initiating Apple sign-in with redirect...");
       await signInWithRedirect({ provider: "SignInWithApple" });
       localStorage.setItem("provider", "Apple");
@@ -225,12 +227,20 @@ const Login = () => {
                 className="social-login-btn google"
                 disabled={loading}
               >
-                <img
-                  src="/googlelogo.png"
-                  alt="Google"
-                  className="social-icon"
-                />
-                Continue with Google
+                {socialAuth === "google" && loading ? (
+                  <>
+                    <Spinner color="light" size="sm" /> Processing...
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src="/googlelogo.png"
+                      alt="Google"
+                      className="social-icon"
+                    />
+                    Continue with Google
+                  </>
+                )}
               </button>
 
               <button
@@ -238,8 +248,20 @@ const Login = () => {
                 className="social-login-btn apple"
                 disabled={loading}
               >
-                <img src="/applelogo.png" alt="Apple" className="social-icon" />
-                Continue with Apple
+                {socialAuth === "apple" && loading ? (
+                  <>
+                    <Spinner color="light" size="sm" /> Processing...
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src="/applelogo.png"
+                      alt="Apple"
+                      className="social-icon"
+                    />
+                    Continue with Apple
+                  </>
+                )}
               </button>
               <p style={{ marginTop: 10 }}>
                 Don't have an account yet? <Link to="/signup">Sign up</Link>

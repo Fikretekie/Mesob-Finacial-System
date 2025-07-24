@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { confirmSignUp, resendSignUpCode } from "aws-amplify/auth";
+import { confirmSignUp, resendSignUpCode, signIn } from "aws-amplify/auth";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import axios from "axios";
@@ -8,18 +8,19 @@ import axios from "axios";
 const Confirm = () => {
   const [code, setCode] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const notificationAlertRef = useRef(null);
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
-    // Retrieve email from location state
     if (location.state && location.state.email) {
       setEmail(location.state.email);
     }
-    if (location.state.name) setName(location.state.name); // <-- Add this line
+    if (location.state.name) setName(location.state.name);
+    if (location.state.password) setPassword(location.state.password);
   }, [location.state]);
 
   const showNotification = (type, message) => {
@@ -35,23 +36,33 @@ const Confirm = () => {
 
   const handleConfirm = async (e) => {
     e.preventDefault();
+    if (!email) {
+      showNotification(
+        "danger",
+        "Email is missing. Please try signing up again."
+      );
+      return;
+    }
+    if (!code) {
+      showNotification("warning", "Please enter the confirmation code.");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const { isSignUpComplete } = await confirmSignUp({
-        username: email,
-        confirmationCode: code,
-      });
-      console.log(">>>>>>", isSignUpComplete);
+      // Confirm user sign up with AWS Amplify
+      await confirmSignUp({ username: email, confirmationCode: code });
+
       showNotification("success", "Account confirmed successfully!");
 
+      // Prepare welcome email content
       const emailData = {
-        email: email,
+        email,
         subject: "Welcome to Mesob Financial – You're All Set!",
         message: `
   <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px;">
     <p>Dear <strong>${name}</strong>,</p>
-
     <p>Welcome to <strong>Mesob Financial</strong>! Your account has been successfully created and you're ready to start managing your business finances.</p>
-
     <p>Here's what you can do next:</p>
     <ul style="padding-left: 20px;">
       <li>Set up your financial dashboard</li>
@@ -59,33 +70,76 @@ const Confirm = () => {
       <li>Monitor your cash flow</li>
       <li>Generate financial reports</li>
     </ul>
-
     <p><strong>Ready to unlock all features?</strong></p>
-
     <p>
       <a href="https://app.mesobfinancial.com/customer/subscription" style="color: #1e90ff; text-decoration: none;">
         Click here to view or upgrade your subscription
       </a>
     </p>
-
     <p>If you have any questions, feel free to reach out to our support team.</p>
-
-    <p>Best regards,<br>
-    The Mesob Financial Team</p>
+    <p>Best regards,<br>The Mesob Financial Team</p>
   </div>
 `,
       };
 
+      // Send welcome email (handle failure gracefully)
       try {
         await axios.post(
           `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
           emailData
         );
         console.log("Welcome email sent successfully");
+        console.log("location id on confirm", location.state.id);
+
+        const response = await fetch(
+          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${location.state.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const result = await response.json();
+        console.log("🔍 User data:", result);
+
+        localStorage.clear();
+        localStorage.setItem("provider", "Email");
+        localStorage.setItem("userId", location.state.id);
+        localStorage.setItem("user_email", result.user?.email || "");
+        localStorage.setItem("user_name", result.user?.name || "");
+        localStorage.setItem("role", result.user?.role?.toString() || "2");
+        localStorage.setItem(
+          "outstandingDebt",
+          result.user?.outstandingDebt || "0"
+        );
+        localStorage.setItem(
+          "valueableItems",
+          result.user?.valueableItems || "0"
+        );
+        localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
+        localStorage.setItem("authToken", "authenticated");
+
+        const path =
+          result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
+        navigate(path, { replace: true });
       } catch (emailError) {
         console.warn("Failed to send welcome email:", emailError);
       }
-      setTimeout(() => navigate("/login"), 2000);
+
+      // Check if password is available for automatic sign-in
+      if (!password) {
+        showNotification(
+          "warning",
+          "Please login manually. Password not available for automatic sign-in."
+        );
+        setTimeout(() => navigate("/login"), 2000);
+        return; // Exit so signIn does not run without password
+      }
+
+      // Attempt to sign in the user automatically
     } catch (error) {
       console.error("Error confirming sign up", error);
       showNotification("danger", "Error confirming account. Please try again.");
@@ -102,6 +156,8 @@ const Confirm = () => {
     } catch (error) {
       console.error("Error resending code", error);
       showNotification("danger", "Failed to resend code. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -116,17 +172,21 @@ const Confirm = () => {
           value={code}
           onChange={(e) => setCode(e.target.value)}
           style={styles.input}
+          disabled={isLoading}
         />
         <button
           onClick={handleConfirm}
           style={{
             ...styles.button,
             backgroundColor: isHovered ? "blue" : "#3b82f6",
+            opacity: isLoading ? 0.6 : 1,
+            cursor: isLoading ? "not-allowed" : "pointer",
           }}
           onMouseOver={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          disabled={isLoading}
         >
-          Confirm
+          {isLoading ? "Confirming..." : "Confirm"}
         </button>
         <button onClick={handleResendCode} style={styles.resendButton}>
           Resend Code
