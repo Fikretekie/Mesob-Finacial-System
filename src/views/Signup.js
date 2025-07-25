@@ -188,39 +188,6 @@ const SignupPage = () => {
       newErrors.valueableItems = "Valuable items are required.";
     return Object.keys(newErrors).length === 0;
   };
-  const createSchedule = async () => {
-    try {
-      let user_id = localStorage.getItem("userId");
-      if (!user_id) {
-        console.error("User ID not found in localStorage.");
-        return;
-      }
-      // Retrieve the last schedule count from localStorage (or default to 1)
-      let lastScheduleCount =
-        parseInt(localStorage.getItem("schedule_count")) || 1;
-      let newScheduleCount = lastScheduleCount + 1;
-      const params = {
-        email: email,
-        subject: "test",
-        message: "testing email for schedule ",
-        user_id: user_id,
-        schedule_type: 1, // Default type
-        schedule_count: newScheduleCount,
-      };
-      const response = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
-        params
-      );
-      console.log("Response Data:", response.data);
-      // Update schedule count in localStorage
-      localStorage.setItem("schedule_count", newScheduleCount);
-    } catch (error) {
-      console.error(
-        "Error fetching schedule:",
-        error.response?.data || error.message
-      );
-    }
-  };
 
   const handleSignup = async (e, type) => {
     if (isSubmitting) return;
@@ -488,7 +455,7 @@ const SignupPage = () => {
   const checkEmailExists = async (email) => {
     try {
       const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signup?email=${encodeURIComponent(
+        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
           email
         )}`,
         {

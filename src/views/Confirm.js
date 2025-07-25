@@ -122,6 +122,34 @@ const Confirm = () => {
         localStorage.setItem("cashBalance", result.user?.cashBalance || "0");
         localStorage.setItem("authToken", "authenticated");
 
+        try {
+          const response = await fetch(
+            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createevent",
+
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                id: location.state.id,
+                email: email,
+                name: name,
+              }),
+            }
+          );
+          console.log(
+            "📅 EventBridge scheduling triggered successfully.",
+            response
+          );
+        } catch (scheduleError) {
+          console.warn(
+            "⚠️ Failed to trigger EventBridge scheduling:",
+            scheduleError
+          );
+        }
+
         const path =
           result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
         navigate(path, { replace: true });

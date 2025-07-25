@@ -174,26 +174,6 @@ const SubscriptionPlans = () => {
     },
   ];
 
-  const createSchedule = async () => {
-    try {
-      const params = {
-        email: localStorage.getItem("user_email"),
-        subject: "test",
-        message: "testing email for schedule ",
-        user_id: "14288408-9011-70a3-eeec-8d7cb1b9dca4",
-        schedule_type: 1,
-        schedule_count: 1,
-      };
-      const response = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
-        params
-      );
-      console.log("Response Data:", response.data);
-    } catch (error) {
-      console.log("Error:", error);
-    }
-  };
-
   const handleSubscribe = async () => {
     const email = localStorage.getItem("user_email");
     const userId = localStorage.getItem("userId");
