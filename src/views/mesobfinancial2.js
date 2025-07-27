@@ -423,23 +423,22 @@ const MesobFinancial2 = () => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "Payable"
-            ? "Payable"
-            : transactionType === "pay" && paymentMode === "boughtItem"
-            ? "New_Item"
-            : transactionType === "pay" && paymentMode !== "boughtItem"
-            ? "Pay"
-            : "New_Item",
-        transactionPurpose: `${transactionPurpose}${
-          manualPurpose ? ` ${manualPurpose}` : ""
-        }`,
+              ? "Payable"
+              : transactionType === "pay" && paymentMode === "boughtItem"
+                ? "New_Item"
+                : transactionType === "pay" && paymentMode !== "boughtItem"
+                  ? "Pay"
+                  : "New_Item",
+        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
+          }`,
         transactionAmount: parseFloat(transactionAmount),
         originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
             : paymentMode === "new"
-            ? "Expense"
-            : subType,
+              ? "Expense"
+              : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
@@ -545,8 +544,8 @@ const MesobFinancial2 = () => {
           receiptUrl: Url || transaction.receiptUrl,
           status:
             paymentOption === "full" ||
-            (paymentOption === "partial" &&
-              remainingAmount === transaction.transactionAmount)
+              (paymentOption === "partial" &&
+                remainingAmount === transaction.transactionAmount)
               ? "Paid"
               : "Partially Paid",
           updatedAt: new Date().toISOString(),
@@ -578,9 +577,9 @@ const MesobFinancial2 = () => {
             outstandingDebt:
               paymentOption === "full"
                 ? parseFloat(transaction.transactionAmount) -
-                  parseFloat(transaction.transactionAmount)
+                parseFloat(transaction.transactionAmount)
                 : parseFloat(transaction.transactionAmount) -
-                  parseFloat(remainingAmount),
+                parseFloat(remainingAmount),
           }
         );
 
@@ -596,8 +595,8 @@ const MesobFinancial2 = () => {
           transaction.id === "outstanding-debt"
             ? "Payment for Outstanding Debt"
             : paymentOption === "full"
-            ? `Full Payment for ${transaction.transactionPurpose}`
-            : `Partial Payment for ${transaction.transactionPurpose}`,
+              ? `Full Payment for ${transaction.transactionPurpose}`
+              : `Partial Payment for ${transaction.transactionPurpose}`,
         transactionAmount: paidAmount,
         receiptUrl: Url || "",
         payableId: transaction.id,
@@ -690,6 +689,7 @@ const MesobFinancial2 = () => {
   useEffect(() => {
     console.log("Selected Business Type: ????", selectedBusinessType);
     const purposes = getBusinessPurposes(selectedBusinessType);
+    console.log("Business Purposes:", purposes);
     setIncomePurposes(purposes.income || []);
     setExpensePurposes(purposes.expenses || []);
     setPayablePurposes(purposes.payables || []);
@@ -1910,7 +1910,7 @@ const MesobFinancial2 = () => {
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
-                              0
+                                0
                                 ? "Net Loss"
                                 : "Net Income"}
                             </strong>
@@ -2444,122 +2444,122 @@ const MesobFinancial2 = () => {
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "Payable") && (
-              <>
-                <FormGroup>
-                  <Label>Purpose:</Label>
-
-                  <Input
-                    type="select"
-                    value={transactionPurpose}
-                    onChange={(e) => setTransactionPurpose(e.target.value)}
-                  >
-                    <option value="">Select purpose</option>
-                    {transactionType === "receive" && (
-                      <>
-                        {incomePurposes.map((purpose, index) => (
-                          <option key={index} value={purpose}>
-                            {purpose}
-                          </option>
-                        ))}
-                        <option value="manual">Enter Manually</option>
-                      </>
-                    )}
-                    {transactionType === "pay" && paymentMode === "new" && (
-                      <>
-                        {expensePurposes.map((purpose, index) => (
-                          <option key={index} value={purpose}>
-                            {purpose}
-                          </option>
-                        ))}
-                        <option value="manual">Enter Manually</option>
-                      </>
-                    )}
-                    {transactionType === "Payable" && (
-                      <>
-                        {payablePurposes.map((purpose, index) => (
-                          <option key={index} value={purpose}>
-                            {purpose}
-                          </option>
-                        ))}
-                        <option value="manual">Enter Manually</option>
-                      </>
-                    )}
-                  </Input>
-                  {((transactionType === "receive" &&
-                    transactionPurpose === "manual") ||
-                    (transactionType === "pay" &&
-                      paymentMode === "new" &&
-                      transactionPurpose === "manual") ||
-                    (transactionType === "Payable" &&
-                      transactionPurpose === "manual")) && (
-                    <FormGroup>
-                      <Input
-                        type="text"
-                        placeholder="Enter purpose manually"
-                        value={manualPurpose}
-                        onChange={(e) => {
-                          setManualPurpose(e.target.value);
-                          setFormErrors({ ...formErrors, manualPurpose: "" });
-                        }}
-                        style={{ marginTop: "10px" }}
-                        invalid={!!formErrors.manualPurpose}
-                      />
-                      {formErrors.manualPurpose && (
-                        <div className="text-danger">
-                          {formErrors.manualPurpose}
-                        </div>
-                      )}
-                    </FormGroup>
-                  )}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Amount ($):</Label>
-                  <Input
-                    type="number"
-                    value={transactionAmount}
-                    onChange={(e) => setTransactionAmount(e.target.value)}
-                  />
-                </FormGroup>
-                {transactionType === "pay" && paymentMode === "new" && (
+                <>
                   <FormGroup>
-                    <Label>Receipt:</Label>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      <Button
-                        color="info"
-                        onClick={() => fileInputRef.current.click()}
-                        style={{ marginBottom: "0" }}
-                      >
-                        {receipt ? "Change Receipt" : "Upload Receipt"}
-                      </Button>
-                      {receipt && (
-                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
-                      )}
-                    </div>
+                    <Label>Purpose:</Label>
+
                     <Input
-                      type="file"
-                      innerRef={fileInputRef}
-                      onChange={handleReceiptUpload}
-                      accept="image/*,.pdf"
-                      style={{ display: "none" }}
+                      type="select"
+                      value={transactionPurpose}
+                      onChange={(e) => setTransactionPurpose(e.target.value)}
+                    >
+                      <option value="">Select purpose</option>
+                      {transactionType === "receive" && (
+                        <>
+                          {incomePurposes.map((purpose, index) => (
+                            <option key={index} value={purpose}>
+                              {purpose}
+                            </option>
+                          ))}
+                          <option value="manual">Enter Manually</option>
+                        </>
+                      )}
+                      {transactionType === "pay" && paymentMode === "new" && (
+                        <>
+                          {expensePurposes.map((purpose, index) => (
+                            <option key={index} value={purpose}>
+                              {purpose}
+                            </option>
+                          ))}
+                          <option value="manual">Enter Manually</option>
+                        </>
+                      )}
+                      {transactionType === "Payable" && (
+                        <>
+                          {payablePurposes.map((purpose, index) => (
+                            <option key={index} value={purpose}>
+                              {purpose}
+                            </option>
+                          ))}
+                          <option value="manual">Enter Manually</option>
+                        </>
+                      )}
+                    </Input>
+                    {((transactionType === "receive" &&
+                      transactionPurpose === "manual") ||
+                      (transactionType === "pay" &&
+                        paymentMode === "new" &&
+                        transactionPurpose === "manual") ||
+                      (transactionType === "Payable" &&
+                        transactionPurpose === "manual")) && (
+                        <FormGroup>
+                          <Input
+                            type="text"
+                            placeholder="Enter purpose manually"
+                            value={manualPurpose}
+                            onChange={(e) => {
+                              setManualPurpose(e.target.value);
+                              setFormErrors({ ...formErrors, manualPurpose: "" });
+                            }}
+                            style={{ marginTop: "10px" }}
+                            invalid={!!formErrors.manualPurpose}
+                          />
+                          {formErrors.manualPurpose && (
+                            <div className="text-danger">
+                              {formErrors.manualPurpose}
+                            </div>
+                          )}
+                        </FormGroup>
+                      )}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Amount ($):</Label>
+                    <Input
+                      type="number"
+                      value={transactionAmount}
+                      onChange={(e) => setTransactionAmount(e.target.value)}
                     />
                   </FormGroup>
-                )}
-                <Button
-                  color="success"
-                  onClick={handleAddTransaction}
-                  disabled={isAddingTransaction}
-                >
-                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                </Button>
-              </>
-            )}
+                  {transactionType === "pay" && paymentMode === "new" && (
+                    <FormGroup>
+                      <Label>Receipt:</Label>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <Button
+                          color="info"
+                          onClick={() => fileInputRef.current.click()}
+                          style={{ marginBottom: "0" }}
+                        >
+                          {receipt ? "Change Receipt" : "Upload Receipt"}
+                        </Button>
+                        {receipt && (
+                          <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        innerRef={fileInputRef}
+                        onChange={handleReceiptUpload}
+                        accept="image/*,.pdf"
+                        style={{ display: "none" }}
+                      />
+                    </FormGroup>
+                  )}
+                  <Button
+                    color="success"
+                    onClick={handleAddTransaction}
+                    disabled={isAddingTransaction}
+                  >
+                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                  </Button>
+                </>
+              )}
           </ModalBody>
         </Modal>
         {/* Previe modal */}
