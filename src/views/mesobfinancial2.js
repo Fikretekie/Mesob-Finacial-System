@@ -512,7 +512,7 @@ const MesobFinancial2 = () => {
       if (error.response) {
         console.error("Server Response:", error.response.data);
       }
-      notify("tr", "Failed to upload receipt", "danger");
+      notify("tr", `Failed to upload receipt ${error}`, "danger");
     }
   };
 
