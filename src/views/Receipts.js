@@ -140,7 +140,9 @@ const Receipts = ({ selectedUser }) => {
           (receipt) => receipt.transactionType === selectedType
         );
       }
-
+      receiptsData.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
       setReceipts(receiptsData);
     } catch (error) {
       console.error("Error fetching receipts:", error);

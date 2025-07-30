@@ -39,6 +39,7 @@ const Login = () => {
       setLoading(true);
       setSocialAuth("google");
       console.log("🔵 Initiating Google sign-in with redirect...");
+      await signOut();
       await signInWithRedirect({
         provider: "Google",
         customState: "google_login",
@@ -55,6 +56,8 @@ const Login = () => {
     try {
       setLoading(true);
       setSocialAuth("apple");
+      await signOut();
+
       console.log("🔵 Initiating Apple sign-in with redirect...");
       await signInWithRedirect({ provider: "SignInWithApple" });
       localStorage.setItem("provider", "Apple");
