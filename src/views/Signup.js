@@ -729,9 +729,16 @@ const SignupPage = () => {
               </option>
               <option value="Cafe">Resturant/Cafe</option>
               <option value="Cleaning Services">Cleaning Services</option>
-              <option value="⁠Beauty & Grooming">⁠Beauty & Grooming (Salons, Barbershops)</option>
-              <option value="E-commerce Sellers">E-commerce Sellers (Shopify, Amazon, Etsy)</option>
-              <option value="Construction Trades">Construction Trades (Plumbing, Electrical, Painting, etc.)</option>
+              <option value="⁠Beauty & Grooming">
+                ⁠Beauty & Grooming (Salons, Barbershops)
+              </option>
+              <option value="E-commerce Sellers">
+                E-commerce Sellers (Shopify, Amazon, Etsy)
+              </option>
+              <option value="Construction Trades">
+                Construction Trades (Plumbing, Electrical, Painting, etc.)
+              </option>
+              <option value="Content Creator">Content Creator</option>
               <option value="Other">Other Businesses</option>
             </select>
             {errors.businessType && (

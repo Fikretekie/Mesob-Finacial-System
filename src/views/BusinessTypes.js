@@ -261,6 +261,35 @@ export const businessTypes = {
       "Training Costs (Expense)",
     ],
   },
+  "Content Creator": {
+    income: [
+      "Ad revenue (YouTube, Facebook, etc.)",
+      "Sponsorship deals",
+      "Affiliate commissions",
+      "Merchandise sales",
+      "Digital product sales (e.g. presets, courses)",
+      "Client work (if applicable)",
+      "Tips or donations (e.g. Patreon, Ko-fi)",
+    ],
+    expenses: [
+      "Equipment purchases or rentals (cameras, mics, lights)",
+      "Software subscriptions (editing tools, cloud storage)",
+      "Internet and utilities",
+      "Office or studio rent",
+      "Marketing and promotion",
+      "Travel and lodging (for content shoots)",
+      "Contractors or freelancers (editors, thumbnail designers)",
+    ],
+    payables: [
+      "Outstanding invoices to vendors",
+      "Scheduled payments to freelancers or agencies",
+      "Equipment leases",
+    ],
+    receivables: [
+      "Unpaid brand deals or invoices",
+      "Late payments from platforms or affiliates",
+    ],
+  },
 
   Other: {
     income: [], // Manual entry

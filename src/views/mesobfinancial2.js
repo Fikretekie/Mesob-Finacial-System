@@ -21,6 +21,7 @@ import {
 import "./mesobfinancial2.css";
 import Select from "react-select";
 import heic2any from "heic2any";
+import imageCompression from "browser-image-compression";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
@@ -484,50 +485,65 @@ const MesobFinancial2 = () => {
     }
   };
 
-  // const uploadReceipt = async () => {
-  //   try {
-  //     const response = await axios.post(
-  //       "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Receipt",
-  //       {
-  //         fileName: receipt.name,
-  //         fileType: receipt.type,
-  //         fileContent: fileContent,
-  //         userId: localStorage.getItem("userId"),
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     if (response.data.url) {
-  //       notify("tr", "Receipt uploaded successfully", "success");
-
-  //       console.log("reciept upload  url", response.data.url);
-  //       setReceipt(null);
-  //       return response.data.url;
-  //     }
-  //   } catch (error) {
-  //     console.error("Error uploading receipt:", error);
-  //     if (error.response) {
-  //       console.error("Server Response:", error.response.data);
-  //     }
-  //     notify("tr", `Failed to upload receipt ${error}`, "danger");
-  //   }
-  // };
   const uploadReceipt = async () => {
     if (!receipt) {
       notify("tr", "No receipt selected", "warning");
       return;
     }
 
-    // Check file size before processing (5 MB = 5 * 1024 * 1024 bytes)
-    const maxFileSize = 5 * 1024 * 1024;
-    if (receipt.size > maxFileSize) {
+    const maxFileSize = 4.0 * 1024 * 1024; // ~4.0MB
+
+    console.log("Original file:", {
+      name: receipt.name,
+      type: receipt.type,
+      sizeMB: (receipt.size / (1024 * 1024)).toFixed(2) + " MB",
+    });
+
+    let fileToUpload = receipt;
+
+    // Compress images > 4.9MB
+    if (receipt.size > maxFileSize && receipt.type.startsWith("image/")) {
+      try {
+        const options = {
+          maxSizeMB: 4.0,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        };
+
+        notify("tr", "Compressing large image before upload...", "info");
+        console.log("Compressing image...");
+
+        const compressedFile = await imageCompression(receipt, options);
+
+        console.log("Compressed file:", {
+          name: compressedFile.name,
+          type: compressedFile.type,
+          sizeMB: (compressedFile.size / (1024 * 1024)).toFixed(2) + " MB",
+        });
+
+        if (compressedFile.size > maxFileSize) {
+          notify(
+            "tr",
+            "The image is still too large after compression. Please upload a smaller file.",
+            "danger"
+          );
+          return;
+        }
+
+        fileToUpload = compressedFile;
+      } catch (err) {
+        console.error("Image compression failed:", err);
+        notify(
+          "tr",
+          "Image compression failed. Please upload a smaller file.",
+          "danger"
+        );
+        return;
+      }
+    } else if (receipt.size > maxFileSize) {
       notify(
         "tr",
-        "The selected file is larger than 5 MB. Please upload a smaller receipt.",
+        "File larger than 4.9 MB and cannot be compressed.",
         "danger"
       );
       return;
@@ -542,7 +558,24 @@ const MesobFinancial2 = () => {
         reader.onerror = reject;
       });
 
-    const fileContent = await toBase64(receipt);
+    const fileContent = await toBase64(fileToUpload);
+
+    console.log(
+      "Base64 size (approx MB):",
+      ((fileContent.length * 3) / 4 / (1024 * 1024)).toFixed(2)
+    );
+
+    const payload = {
+      fileName: fileToUpload.name,
+      fileType: fileToUpload.type,
+      fileContent,
+      userId: localStorage.getItem("userId"),
+    };
+
+    console.log(
+      "Payload size (MB):",
+      (JSON.stringify(payload).length / (1024 * 1024)).toFixed(2)
+    );
 
     try {
       const response = await fetch(
@@ -550,12 +583,7 @@ const MesobFinancial2 = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fileName: receipt.name,
-            fileType: receipt.type,
-            fileContent,
-            userId: localStorage.getItem("userId"),
-          }),
+          body: JSON.stringify(payload),
         }
       );
 
