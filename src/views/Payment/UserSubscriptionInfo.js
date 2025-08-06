@@ -23,6 +23,8 @@ const UserSubscriptionInfo = ({
   };
 
   const renderTrialTimer = () => {
+    if (userSubscription) return null;
+
     if (isTrialActive() && scheduleCount < 4) {
       return (
         <div>

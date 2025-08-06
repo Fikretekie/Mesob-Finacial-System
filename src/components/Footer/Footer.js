@@ -26,8 +26,9 @@ function Footer(props) {
     <footer className={"footer" + (props.default ? " footer-default" : "")}>
       <Container fluid={props.fluid ? true : false}>
         <div className="copyright">
-          &copy; {1900 + new Date().getYear()}. Coded by{" "}
-          <a href="https://therevolutiontectnologies.com/" target="_blank">
+          &copy; {1900 + new Date().getYear()}.Copy right reserved for Mesob
+          Financial Coded by{" "}
+          <a href="https://therevolutiontectnologies.tech/" target="_blank">
             The Revolution Technologies
           </a>
           .
