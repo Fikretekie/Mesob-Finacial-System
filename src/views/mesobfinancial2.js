@@ -1601,7 +1601,7 @@ const MesobFinancial2 = () => {
                 </CardHeader>
               </Card>
 
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <div
                     style={{
@@ -1713,19 +1713,19 @@ const MesobFinancial2 = () => {
                     </>
                   )}
                 </CardBody>
-              </Card>
+              </Card> */}
             </Col>
           </Row>
 
-          {/* Summary Section - Second */}
-          <Row>
-            <Col xs={12}>
-              <Card>
+          {/* 2x2 Grid Layout for Summary, Journal Entry, Income Statement, Balance Sheet */}
+          <Row style={{ marginTop: "20px" }}>
+            <Col xs={12} md={5}>
+              <Card style={{ marginBottom: "20px", maxHeight: "400px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Summary</CardTitle>
                 </CardHeader>
-                <CardBody>
-                  <div style={{ marginBottom: "20px" }}>
+                <CardBody style={{ overflowY: "auto", overflowX: "visible" }}>
+                  <div>
                     <div
                       style={{
                         marginBottom: "10px",
@@ -1903,42 +1903,81 @@ const MesobFinancial2 = () => {
                   </div>
                 </CardBody>
               </Card>
-            </Col>
-          </Row>
 
-          {/* Financial Details Table - Third */}
-          <Row>
-            <Col xs={12}>
-              <Card>
+              {/* Income Statement - Bottom Left */}
+              <Card style={{ maxHeight: "440px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Income Statement</CardTitle>
                 </CardHeader>
-                <CardBody>
-                  <div className="statement-table">
-                    <table>
+                <CardBody
+                  style={{
+                    height: "380px",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    padding: "15px",
+                  }}
+                >
+                  <div
+                    style={{
+                      overflowX: "auto",
+                      overflowY: "visible",
+                      width: "100%",
+                    }}
+                  >
+                    <table
+                      style={{
+                        width: "100%",
+                        tableLayout: "auto",
+
+                        borderCollapse: "collapse",
+                      }}
+                    >
                       <tbody>
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Revenue</strong>
                           </td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                         </tr>
                         {Object.entries(revenues).map(([purpose, amount]) => (
                           <tr key={`revenue-${purpose}`}>
-                            <td>{purpose}</td>
-                            <td style={{ backgroundColor: "#fff" }}>
+                            <td
+                              style={{
+                                padding: "8px",
+                                border: "1px solid #ddd",
+                              }}
+                            >
+                              {purpose}
+                            </td>
+                            <td
+                              style={{
+                                backgroundColor: "#fff",
+                                padding: "8px",
+                                border: "1px solid #ddd",
+                                textAlign: "right",
+                              }}
+                            >
                               ${amount.toFixed(2)}
                             </td>
                           </tr>
                         ))}
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Total Revenue</strong>
                           </td>
                           <td
                             style={{
                               backgroundColor: colors.revenue,
                               fontWeight: "bold",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                              textAlign: "right",
                             }}
                           >
                             ${calculateTotalRevenue()}
@@ -1946,10 +1985,14 @@ const MesobFinancial2 = () => {
                         </tr>
 
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Expenses</strong>
                           </td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                         </tr>
                         {Object.entries(expenses)
                           .filter(([purpose, amount]) => {
@@ -1987,16 +2030,27 @@ const MesobFinancial2 = () => {
                           })}
 
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Total Expenses</strong>
                           </td>
-                          <td style={{ backgroundColor: colors.expense }}>
+                          <td
+                            style={{
+                              backgroundColor: colors.expense,
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                              textAlign: "right",
+                            }}
+                          >
                             ${calculateTotalExpenses()}
                           </td>
                         </tr>
 
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
@@ -2009,6 +2063,9 @@ const MesobFinancial2 = () => {
                             style={{
                               backgroundColor: "#90EE90",
                               fontWeight: "bold",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                              textAlign: "right",
                             }}
                           >
                             $
@@ -2024,87 +2081,204 @@ const MesobFinancial2 = () => {
                 </CardBody>
               </Card>
             </Col>
-          </Row>
 
-          {/* Balance Sheet Section - Fourth */}
-          <Row>
-            <Col xs={12}>
+            {/* Right Column */}
+            <Col xs={12} md={7}>
+              {/* Journal Entry - Top Right */}
+              <Card style={{ marginBottom: "20px", maxHeight: "400px" }}>
+                <CardHeader>
+                  <CardTitle tag="h4">Journal Entry</CardTitle>
+                </CardHeader>
+                <CardBody
+                  style={{
+                    maxHeight: "400px",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    padding: "15px",
+                  }}
+                >
+                  <div style={{ width: "100%" }}>
+                    <TransactionTable
+                      items={filterItemsByTimeRange(
+                        items,
+                        selectedTimeRange,
+                        searchTerm
+                      )}
+                      disabled={!userSubscription && scheduleCount >= 4}
+                      selectedTimeRange={selectedTimeRange}
+                      handleDelete={handleDelete}
+                      handleAddExpense={handleAddExpense}
+                      handleReceiptClick={handleReceiptClick}
+                      scheduleCount={scheduleCount}
+                      userSubscription={userSubscription}
+                    />
+                  </div>
+                </CardBody>
+              </Card>
+
+              {/* Balance Sheet - Bottom Right */}
               <Card>
                 <CardHeader>
                   <CardTitle tag="h4">Balance Sheet</CardTitle>
                 </CardHeader>
-                <CardBody>
-                  <div className="statement-table">
-                    <table style={{ width: "100%" }}>
+                <CardBody
+                  style={{
+                    overflowY: "auto",
+                    height: "380px",
+                    overflowX: "hidden",
+                    padding: "15px",
+                  }}
+                >
+                  <div
+                    style={{
+                      overflowX: "auto",
+                      overflowY: "visible",
+                      width: "100%",
+                    }}
+                  >
+                    <table
+                      style={{
+                        width: "100%",
+                        tableLayout: "auto",
+
+                        borderCollapse: "collapse",
+                      }}
+                    >
                       <tbody>
                         <tr>
-                          <td style={{ width: "40%" }}>
+                          <td
+                            style={{
+                              width: "40%",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
                             <strong>Asset</strong>
                           </td>
-                          <td style={{ width: "30%", textAlign: "right" }}>
+                          <td
+                            style={{
+                              width: "30%",
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
                             <strong>Amount</strong>
                           </td>
-                          <td style={{ width: "30%", textAlign: "right" }}>
+                          <td
+                            style={{
+                              width: "30%",
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
                             <strong>Amount</strong>
                           </td>
                         </tr>
                         <tr>
-                          <td>Cash</td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
+                            Cash
+                          </td>
                           <td
                             style={{
                               backgroundColor: colors.cash,
                               textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
                             }}
                           >
                             ${calculateTotalCash()}
                           </td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                         </tr>
 
                         <tr>
-                          <td>Inventory</td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
+                            Inventory
+                          </td>
                           <td
                             style={{
                               backgroundColor: colors.expense,
                               textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
                             }}
                           >
                             ${calculateTotalInventory()}
                           </td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                         </tr>
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Liability</strong>
                           </td>
-                          <td></td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                         </tr>
                         <tr>
-                          <td>Payable </td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
+                            Payable{" "}
+                          </td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                           <td
                             style={{
                               backgroundColor: colors.expense,
                               textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
                             }}
                           >
                             ${calculateTotalPayable()}
                           </td>
                         </tr>
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Equity</strong>
                           </td>
-                          <td></td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                         </tr>
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Beginning Equity</strong>
                           </td>
-                          <td></td>
-                          <td style={{ textAlign: "right" }}>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
+                          <td
+                            style={{
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
                             $
                             {(
                               initialBalance +
@@ -2114,12 +2288,20 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
                         <tr>
-                          <td>Retained earnings / Net income</td>
-                          <td></td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
+                            Retained earnings / Net income
+                          </td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          ></td>
                           <td
                             style={{
                               backgroundColor: colors.revenue,
                               textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
                             }}
                           >
                             $
@@ -2130,17 +2312,31 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
                         <tr>
-                          <td>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
                             <strong>Total</strong>
                           </td>
-                          <td style={{ textAlign: "right" }}>
+                          <td
+                            style={{
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
                             $
                             {(
                               parseFloat(calculateTotalCash()) +
                               parseFloat(calculateTotalInventory())
                             ).toFixed(2)}
                           </td>
-                          <td style={{ textAlign: "right" }}>
+                          <td
+                            style={{
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
                             $
                             {(
                               initialBalance +

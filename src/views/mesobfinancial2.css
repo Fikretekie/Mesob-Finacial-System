@@ -1,207 +1,205 @@
 /* Base styles (mobile-first) */
 .content {
-    padding: 10px;
+  padding: 10px;
 }
 
 .card {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .transaction-table,
 .statement-table table {
-    width: 100%;
-    min-width: 100%;
+  width: 100%;
+  min-width: 100%;
 }
 
 .button-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.summary-card .card-body>div {
-    margin-bottom: 15px;
+.summary-card .card-body > div {
+  margin-bottom: 15px;
 }
 
 .search-filter-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .date-range-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .date-inputs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .date-input {
-    flex: 1;
-    min-width: 150px;
+  flex: 1;
+  min-width: 150px;
+}
+.custom-modal-width {
+  width: 113%;
 }
 @media screen and (min-width: 576px) {
-    .content {
-        padding: 15px;
-    }
+  .content {
+    padding: 15px;
+  }
 
-    .button-group {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
+  .button-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 
-    .search-filter-container {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
+  .search-filter-container {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 @media screen and (min-width: 768px) {
-    .card-title {
-        font-size: 1.2rem;
-    }
+  .card-title {
+    font-size: 1.2rem;
+  }
 
-    .btn {
-        width: auto;
-    }
+  .btn {
+    width: auto;
+  }
 
-    .transaction-table,
-    .statement-table table {
-        min-width: 600px;
-    }
+  .transaction-table,
+  .statement-table table {
+    min-width: 600px;
+  }
 
-    .date-range-container {
-        flex-direction: row;
-        align-items: flex-end;
-    }
+  .date-range-container {
+    flex-direction: row;
+    align-items: flex-end;
+  }
 
-    .date-inputs {
-        flex: 2;
-    }
+  .date-inputs {
+    flex: 2;
+  }
 
-    .button-group {
-        flex: 1;
-    }
+  .button-group {
+    flex: 1;
+  }
 }
-
 
 @media screen and (min-width: 992px) {
-    .content {
-        padding: 20px;
-    }
+  .content {
+    padding: 20px;
+  }
 
-    .summary-card .card-body {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-    }
+  .summary-card .card-body {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
 
-    .summary-card .card-body>div {
-        width: 48%;
-    }
+  .summary-card .card-body > div {
+    width: 48%;
+  }
 
-    .transaction-table,
-    .statement-table table {
-        min-width: 800px;
-    }
+  .transaction-table,
+  .statement-table table {
+    min-width: 800px;
+  }
 }
 
-
 @media screen and (min-width: 1200px) {
-
-    .transaction-table,
-    .statement-table table {
-        min-width: 1000px;
-    }
+  .transaction-table,
+  .statement-table table {
+    min-width: 1000px;
+  }
 }
 
 .navbar-toggle {
-    display: none;
-    position: absolute;
-    top: 15px;
+  display: none;
+  position: absolute;
+  top: 15px;
 
-    left: 15px;
-    z-index: 1000;
+  left: 15px;
+  z-index: 1000;
 }
 
 .navbar-toggler {
-    background: none;
-    border: none;
-    padding: 5px;
-    cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
 }
 
 .navbar-toggler-bar {
-    display: block;
-    width: 25px;
+  display: block;
+  width: 25px;
 
-    height: 3px;
-    background-color: #333;
-    margin: 4px 0;
-    transition: 0.3s;
+  height: 3px;
+  background-color: #333;
+  margin: 4px 0;
+  transition: 0.3s;
 }
 
 @media screen and (max-width: 991px) {
-    .navbar-toggle {
-        display: block;
-    }
+  .navbar-toggle {
+    display: block;
+  }
 }
 .journal-entry-header {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  align-items: center;
 
-    text-align: center;
-
+  text-align: center;
 }
 
 @media screen and (min-width: 768px) {
-    .journal-entry-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
+  .journal-entry-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 .search-filter-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 
 @media screen and (min-width: 576px) {
-    .search-filter-container {
-        flex-direction: row;
-        justify-content: space-between;
-        width: auto;
-    }
+  .search-filter-container {
+    flex-direction: row;
+    justify-content: space-between;
+    width: auto;
+  }
 }
 
 .button-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 @media screen and (min-width: 576px) {
-    .button-group {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
+  .button-group {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
- 
