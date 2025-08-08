@@ -1601,7 +1601,7 @@ const MesobFinancial2 = () => {
                 </CardHeader>
               </Card>
 
-              {/* <Card>
+              <Card>
                 <CardHeader>
                   <div
                     style={{
@@ -1611,7 +1611,7 @@ const MesobFinancial2 = () => {
                       padding: "0 25px",
                     }}
                   >
-                    <CardTitle tag="h4">Journal Entry</CardTitle>
+                    <CardTitle tag="h4"></CardTitle>
                     <div className="flex items-center gap-4">
                       <div
                         style={{
@@ -1680,7 +1680,7 @@ const MesobFinancial2 = () => {
                   </div>
                 </CardHeader>
 
-                <CardBody>
+                {/* <CardBody>
                   {loading ? (
                     <div style={{ textAlign: "center", padding: "20px" }}>
                       <Spinner color="primary" />
@@ -1712,28 +1712,34 @@ const MesobFinancial2 = () => {
                       </div>
                     </>
                   )}
-                </CardBody>
-              </Card> */}
+                </CardBody> */}
+              </Card>
             </Col>
           </Row>
 
           {/* 2x2 Grid Layout for Summary, Journal Entry, Income Statement, Balance Sheet */}
           <Row style={{ marginTop: "20px" }}>
             <Col xs={12} md={5}>
-              <Card style={{ marginBottom: "20px", maxHeight: "400px" }}>
+              <Card style={{ marginBottom: "20px", height: "440px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Summary</CardTitle>
                 </CardHeader>
-                <CardBody style={{ overflowY: "auto", overflowX: "visible" }}>
+                <CardBody
+                  style={{
+                    overflowY: "auto",
+                    overflowX: "visible",
+                    height: "400px",
+                  }}
+                >
                   <div>
-                    <div
-                      style={{
-                        marginBottom: "10px",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span style={{ marginRight: "10px", fontWeight: "bold" }}>
+                    <div>
+                      <span
+                        style={{
+                          marginRight: "10px",
+                          marginBottom: "10px",
+                          fontWeight: "bold",
+                        }}
+                      >
                         Total Cash on hand ={" "}
                       </span>
                       <span
@@ -1905,7 +1911,7 @@ const MesobFinancial2 = () => {
               </Card>
 
               {/* Income Statement - Bottom Left */}
-              <Card style={{ maxHeight: "440px" }}>
+              <Card style={{ height: "440px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Income Statement</CardTitle>
                 </CardHeader>
@@ -2085,13 +2091,13 @@ const MesobFinancial2 = () => {
             {/* Right Column */}
             <Col xs={12} md={7}>
               {/* Journal Entry - Top Right */}
-              <Card style={{ marginBottom: "20px", maxHeight: "400px" }}>
+              <Card style={{ marginBottom: "20px", height: "440px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Journal Entry</CardTitle>
                 </CardHeader>
                 <CardBody
                   style={{
-                    maxHeight: "400px",
+                    height: "380px",
                     overflowY: "auto",
                     overflowX: "hidden",
                     padding: "15px",
@@ -2117,7 +2123,7 @@ const MesobFinancial2 = () => {
               </Card>
 
               {/* Balance Sheet - Bottom Right */}
-              <Card>
+              <Card style={{ height: "440px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Balance Sheet</CardTitle>
                 </CardHeader>

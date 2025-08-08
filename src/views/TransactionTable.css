@@ -1,16 +1,15 @@
 .table-container {
-  overflow-x: auto;
-  margin: 20px 0;
-  padding: 10px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Table styling */
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* Change from auto to fixed for strict column widths */
-  word-wrap: break-word;
+  table-layout: auto; /* or fixed if you want tight columns */
 }
 
 .transaction-table th,
