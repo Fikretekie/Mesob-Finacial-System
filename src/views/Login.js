@@ -6,7 +6,7 @@ import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
-import { signIn, signOut, signInWithRedirect } from "aws-amplify/auth";
+import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 const logo = "/logo.png";
@@ -80,10 +80,8 @@ const Login = () => {
 
     try {
       console.log("🔵 Signing in with email:", email);
-      localStorage.clear(); // Clear browser local storage
-
-      // If using Amplify/Auth or Cognito SDK, also sign out explicitly
       await signOut();
+
       const res = await signIn({ username: email, password });
       if (res.isSignedIn) {
         console.log("✅ Email sign-in successful");
