@@ -38,20 +38,14 @@ const AdminSubscriptions = () => {
 
   const columns = [
     {
-      name: "User ID",
-      selector: (row) => row.id,
+      name: "Name",
+      selector: (row) => row.name || "-",
       sortable: true,
-      width: "150px",
+      width: "200px",
     },
     {
       name: "Email",
       selector: (row) => row.email,
-      sortable: true,
-      width: "300px",
-    },
-    {
-      name: "Name",
-      selector: (row) => row.name || "-",
       sortable: true,
       width: "200px",
     },
@@ -59,39 +53,20 @@ const AdminSubscriptions = () => {
       name: "Phone",
       selector: (row) => row.phone_number || "-",
       sortable: true,
-      width: "200px",
+      width: "180px",
     },
     {
       name: "Company Name",
       selector: (row) => row.companyName || "-",
       sortable: true,
-      width: "200px",
+      width: "180px",
     },
-    {
-      name: "Business Type",
-      selector: (row) => row.businessType || "-",
-      sortable: true,
-      width: "200px",
-    },
-    {
-      name: "Cash Balance",
-      selector: (row) => row.cashBalance || 0,
-      sortable: true,
-      width: "150px",
-      cell: (row) => `$${row.cashBalance || "0"}`,
-    },
-    {
-      name: "Role",
-      selector: (row) => row.role || "-",
-      sortable: true,
-      width: "150px",
-      cell: (row) => (row.role === 2 ? "User" : "Admin"),
-    },
+
     {
       name: "Created At",
       selector: (row) => row.createdAt,
       sortable: true,
-      width: "200px",
+      width: "180px",
       cell: (row) =>
         row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-",
     },
@@ -176,9 +151,9 @@ const AdminSubscriptions = () => {
                     alignItems: "center",
                   }}
                 >
-                  <CardTitle tag="h4">Users</CardTitle>
+                  <CardTitle tag="h4">Subscriptions</CardTitle>
                   <Button color="secondary" className="btn-round btn-sm">
-                    Users <span className="ml-2">({users.length})</span>
+                    Subscriptions <span className="ml-2">({users.length})</span>
                   </Button>
                 </div>
               </CardHeader>
@@ -188,7 +163,7 @@ const AdminSubscriptions = () => {
                 ) : loading ? (
                   <div className="text-center">
                     <Spinner color="primary" />
-                    <p>Loading users and subscriptions...</p>
+                    <p>Loading  subscriptions...</p>
                   </div>
                 ) : (
                   <DataTable
@@ -198,96 +173,10 @@ const AdminSubscriptions = () => {
                     responsive
                     highlightOnHover
                     fixedHeader
-                    noDataComponent="No users found"
+                    noDataComponent="No Subscriptions found"
                   />
                 )}
-                <Card>
-                  <CardHeader>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <CardTitle tag="h4">All Subscriptions</CardTitle>
-                      <Button color="secondary" className="btn-round btn-sm">
-                        Subscriptions{" "}
-                        <span className="ml-2">({subscriptions.length})</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardBody>
-                    {loading ? (
-                      <div className="text-center">
-                        <Spinner color="primary" />
-                        <p>Loading subscriptions...</p>
-                      </div>
-                    ) : subscriptions.length === 0 ? (
-                      <Alert color="warning">No subscriptions found.</Alert>
-                    ) : (
-                      <DataTable
-                        columns={[
-                          {
-                            name: "Subscription ID",
-                            selector: (row) => row.id,
-                            sortable: true,
-                            width: "180px",
-                          },
-                          {
-                            name: "User ID",
-                            selector: (row) => row.userId || "-",
-                            sortable: true,
-                            width: "150px",
-                          },
-                          {
-                            name: "Plan",
-                            selector: (row) => row.subscriptionPlan || "-",
-                            width: "200px",
-                          },
-                          {
-                            name: "Start Date",
-                            selector: (row) =>
-                              row.startDate
-                                ? new Date(row.startDate).toLocaleDateString()
-                                : "-",
-                            width: "150px",
-                          },
-                          {
-                            name: "Expire Date",
-                            selector: (row) =>
-                              row.expireDate
-                                ? new Date(row.expireDate).toLocaleDateString()
-                                : "-",
-                            width: "150px",
-                          },
-                          {
-                            name: "View",
-                            cell: (row) => (
-                              <Button
-                                color="info"
-                                size="sm"
-                                onClick={() => handleSubscriptionClick(row)}
-                              >
-                                View
-                              </Button>
-                            ),
-                            ignoreRowClick: true,
-                            allowOverflow: true,
-                            button: true,
-                            width: "100px",
-                          },
-                        ]}
-                        data={subscriptions}
-                        pagination
-                        responsive
-                        highlightOnHover
-                        fixedHeader
-                        noDataComponent="No subscriptions found"
-                      />
-                    )}
-                  </CardBody>
-                </Card>
+
               </CardBody>
             </Card>
           </Col>
