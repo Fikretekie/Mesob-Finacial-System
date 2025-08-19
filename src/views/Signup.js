@@ -515,6 +515,7 @@ const SignupPage = () => {
   //     setIsLoading(false);
   //   }
   // };
+
   const handleNextStep = async () => {
     if (isLoading) return;
     setIsLoading(true);
