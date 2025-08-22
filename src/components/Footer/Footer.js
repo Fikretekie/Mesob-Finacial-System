@@ -25,9 +25,10 @@ function Footer(props) {
   return (
     <footer className={"footer" + (props.default ? " footer-default" : "")}>
       <Container fluid={props.fluid ? true : false}>
-        <div className="copyright">
-          &copy; {1900 + new Date().getYear()}.Copy right reserved for Mesob
-          Financial Coded by{" "}
+        <div className="copyright" style={{ textAlign: "center" }}>
+          &copy; {1900 + new Date().getYear()}. Copy right reserved for Mesob Financial
+          <br />
+          Coded by{" "}
           <a href="https://therevolutiontectnologies.tech/" target="_blank">
             The Revolution Technologies
           </a>

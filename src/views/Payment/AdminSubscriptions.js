@@ -13,12 +13,18 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Nav,
+  NavItem,
+  NavLink,
+  TabContent,
+  TabPane,
 } from "reactstrap";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import DataTable from "react-data-table-component";
 import "../../views/mesobfinancial2.css";
+
 const AdminSubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [users, setUsers] = useState([]);
@@ -26,6 +32,7 @@ const AdminSubscriptions = () => {
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("1");
 
   const handleSubscriptionClick = (subscription) => {
     setSelectedSubscription(subscription);
@@ -36,19 +43,11 @@ const AdminSubscriptions = () => {
     setModalOpen(!modalOpen);
   };
 
+  const toggleTab = (tab) => {
+    if (activeTab !== tab) setActiveTab(tab);
+  };
+
   const columns = [
-    {
-      name: "User ID",
-      selector: (row) => row.id,
-      sortable: true,
-      width: "150px",
-    },
-    {
-      name: "Email",
-      selector: (row) => row.email,
-      sortable: true,
-      width: "300px",
-    },
     {
       name: "Name",
       selector: (row) => row.name || "-",
@@ -56,42 +55,28 @@ const AdminSubscriptions = () => {
       width: "200px",
     },
     {
+      name: "Email",
+      selector: (row) => row.email,
+      sortable: true,
+      width: "200px",
+    },
+    {
       name: "Phone",
       selector: (row) => row.phone_number || "-",
       sortable: true,
-      width: "200px",
+      width: "180px",
     },
     {
       name: "Company Name",
       selector: (row) => row.companyName || "-",
       sortable: true,
-      width: "200px",
-    },
-    {
-      name: "Business Type",
-      selector: (row) => row.businessType || "-",
-      sortable: true,
-      width: "200px",
-    },
-    {
-      name: "Cash Balance",
-      selector: (row) => row.cashBalance || 0,
-      sortable: true,
-      width: "150px",
-      cell: (row) => `$${row.cashBalance || "0"}`,
-    },
-    {
-      name: "Role",
-      selector: (row) => row.role || "-",
-      sortable: true,
-      width: "150px",
-      cell: (row) => (row.role === 2 ? "User" : "Admin"),
+      width: "180px",
     },
     {
       name: "Created At",
       selector: (row) => row.createdAt,
       sortable: true,
-      width: "200px",
+      width: "180px",
       cell: (row) =>
         row.createdAt ? new Date(row.createdAt).toLocaleDateString() : "-",
     },
@@ -176,118 +161,73 @@ const AdminSubscriptions = () => {
                     alignItems: "center",
                   }}
                 >
-                  <CardTitle tag="h4">Users</CardTitle>
+                  <CardTitle tag="h4">Subscriptions</CardTitle>
                   <Button color="secondary" className="btn-round btn-sm">
-                    Users <span className="ml-2">({users.length})</span>
+                    Subscriptions <span className="ml-2">({users.length})</span>
                   </Button>
                 </div>
+                <Nav tabs>
+                  <NavItem>
+                    <NavLink
+                      className={activeTab === "1" ? "active" : ""}
+                      onClick={() => toggleTab("1")}
+                    >
+                      Subscribed
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={activeTab === "2" ? "active" : ""}
+                      onClick={() => toggleTab("2")}
+                    >
+                      Unsubstantiated
+                    </NavLink>
+                  </NavItem>
+                </Nav>
               </CardHeader>
               <CardBody>
-                {error ? (
-                  <Alert color="danger">{error}</Alert>
-                ) : loading ? (
-                  <div className="text-center">
-                    <Spinner color="primary" />
-                    <p>Loading users and subscriptions...</p>
-                  </div>
-                ) : (
-                  <DataTable
-                    columns={columns}
-                    data={users}
-                    pagination
-                    responsive
-                    highlightOnHover
-                    fixedHeader
-                    noDataComponent="No users found"
-                  />
-                )}
-                <Card>
-                  <CardHeader>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <CardTitle tag="h4">All Subscriptions</CardTitle>
-                      <Button color="secondary" className="btn-round btn-sm">
-                        Subscriptions{" "}
-                        <span className="ml-2">({subscriptions.length})</span>
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardBody>
-                    {loading ? (
+                <TabContent activeTab={activeTab}>
+                  <TabPane tabId="1">
+                    {error ? (
+                      <Alert color="danger">{error}</Alert>
+                    ) : loading ? (
                       <div className="text-center">
                         <Spinner color="primary" />
                         <p>Loading subscriptions...</p>
                       </div>
-                    ) : subscriptions.length === 0 ? (
-                      <Alert color="warning">No subscriptions found.</Alert>
                     ) : (
                       <DataTable
-                        columns={[
-                          {
-                            name: "Subscription ID",
-                            selector: (row) => row.id,
-                            sortable: true,
-                            width: "180px",
-                          },
-                          {
-                            name: "User ID",
-                            selector: (row) => row.userId || "-",
-                            sortable: true,
-                            width: "150px",
-                          },
-                          {
-                            name: "Plan",
-                            selector: (row) => row.subscriptionPlan || "-",
-                            width: "200px",
-                          },
-                          {
-                            name: "Start Date",
-                            selector: (row) =>
-                              row.startDate
-                                ? new Date(row.startDate).toLocaleDateString()
-                                : "-",
-                            width: "150px",
-                          },
-                          {
-                            name: "Expire Date",
-                            selector: (row) =>
-                              row.expireDate
-                                ? new Date(row.expireDate).toLocaleDateString()
-                                : "-",
-                            width: "150px",
-                          },
-                          {
-                            name: "View",
-                            cell: (row) => (
-                              <Button
-                                color="info"
-                                size="sm"
-                                onClick={() => handleSubscriptionClick(row)}
-                              >
-                                View
-                              </Button>
-                            ),
-                            ignoreRowClick: true,
-                            allowOverflow: true,
-                            button: true,
-                            width: "100px",
-                          },
-                        ]}
-                        data={subscriptions}
+                        columns={columns}
+                        data={users.filter((user) => user.subscription)}
                         pagination
                         responsive
                         highlightOnHover
                         fixedHeader
-                        noDataComponent="No subscriptions found"
+                        noDataComponent="No subscribed users found"
                       />
                     )}
-                  </CardBody>
-                </Card>
+                  </TabPane>
+                  <TabPane tabId="2">
+                    {error ? (
+                      <Alert color="danger">{error}</Alert>
+                    ) : loading ? (
+                      <div className="text-center">
+                        <Spinner color="primary" />
+                        <p>Loading subscriptions...</p>
+                      </div>
+                    ) : (
+                      <DataTable
+                        columns={columns}
+                        data={users.filter((user) => !user.subscription)}
+                        pagination
+                        responsive
+                        highlightOnHover
+                        fixedHeader
+                        noDataComponent="No unsubstantiated users found"
+                      />
+                    )}
+                  </TabPane>
+                </TabContent>
               </CardBody>
             </Card>
           </Col>
