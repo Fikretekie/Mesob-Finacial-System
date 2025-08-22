@@ -1720,7 +1720,7 @@ const MesobFinancial2 = () => {
           {/* 2x2 Grid Layout for Summary, Journal Entry, Income Statement, Balance Sheet */}
           <Row style={{ marginTop: "20px" }}>
             <Col xs={12} md={5}>
-              <Card style={{ marginBottom: "20px", height: "440px" }}>
+              <Card style={{ marginBottom: "20px", height: "480px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Summary</CardTitle>
                 </CardHeader>
@@ -1911,7 +1911,7 @@ const MesobFinancial2 = () => {
               </Card>
 
               {/* Income Statement - Bottom Left */}
-              <Card style={{ height: "440px" }}>
+              <Card style={{ height: "480px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Income Statement</CardTitle>
                 </CardHeader>
@@ -2091,7 +2091,7 @@ const MesobFinancial2 = () => {
             {/* Right Column */}
             <Col xs={12} md={7}>
               {/* Journal Entry - Top Right */}
-              <Card style={{ marginBottom: "20px", height: "440px" }}>
+              <Card style={{ marginBottom: "20px", height: "480px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Journal Entry</CardTitle>
                 </CardHeader>
@@ -2123,7 +2123,7 @@ const MesobFinancial2 = () => {
               </Card>
 
               {/* Balance Sheet - Bottom Right */}
-              <Card style={{ height: "440px" }}>
+              <Card style={{ height: "480px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Balance Sheet</CardTitle>
                 </CardHeader>
