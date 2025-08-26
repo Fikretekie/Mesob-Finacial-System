@@ -726,7 +726,10 @@ const MesobFinancial2 = () => {
     }
 
     const fromDate = new Date(range.from);
+    fromDate.setHours(0, 0, 0, 0);
+
     const toDate = new Date(range.to);
+    toDate.setHours(23, 59, 59, 999);
 
     return items.filter((item) => {
       const itemDate = new Date(item.createdAt);
@@ -883,12 +886,16 @@ const MesobFinancial2 = () => {
     return new Date() < trialEndDate && scheduleCount < 4;
   };
   //
+
   const calculateFinancials = (transactions) => {
     const newRevenues = {};
     const newExpenses = {};
     const newAccountsPayable = {};
 
-    transactions.forEach((transaction) => {
+    // Use filtered transactions instead of all transactions
+    const filteredTransactions = getFilteredItems();
+
+    filteredTransactions.forEach((transaction) => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
       if (transaction.transactionType === "Receive") {
         const purpose = transaction.transactionPurpose;
@@ -912,7 +919,8 @@ const MesobFinancial2 = () => {
   };
 
   const calculateTotalRevenue = () => {
-    const totalReceived = Object.values(items).reduce((sum, value) => {
+    const filteredItems = getFilteredItems();
+    const totalReceived = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Receive") {
         return sum + parseFloat(value.transactionAmount || 0);
       }
@@ -924,8 +932,9 @@ const MesobFinancial2 = () => {
 
   const calculateTotalInventory = () => {
     const valueableItems = initialvalueableItems || 0;
+    const filteredItems = getFilteredItems();
 
-    const newItemsTotal = items.reduce((sum, item) => {
+    const newItemsTotal = filteredItems.reduce((sum, item) => {
       if (item.transactionType === "New_Item" && item.subType === "New_Item") {
         return sum + parseFloat(item.transactionAmount || 0);
       }
@@ -937,7 +946,8 @@ const MesobFinancial2 = () => {
   };
 
   const calculateTotalExpenses = () => {
-    return Object.values(items)
+    const filteredItems = getFilteredItems();
+    return filteredItems
       .reduce((sum, value) => {
         if (value.transactionType === "Pay" && value.status === "Paid") {
           return sum + parseFloat(value.transactionAmount || 0);
@@ -962,38 +972,38 @@ const MesobFinancial2 = () => {
   };
 
   const calculateTotalCash = () => {
-    const totalReceived = Object.values(items).reduce((sum, value) => {
+    const filteredItems = getFilteredItems();
+
+    const totalReceived = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Receive") {
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
-    const New_ItemReceived = Object.values(items).reduce((sum, value) => {
+    const New_ItemReceived = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "New_Item") {
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
-    const totalExpenses = Object.values(items).reduce((sum, value) => {
+    const totalExpenses = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Pay") {
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
-    // console.log("unpaidexp=>", unpaidexp);
-
-    // const totalExpenses = parseFloat(calculateTotalExpenses());
     const totalCash =
       initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-
     return totalCash.toFixed(2);
   };
 
   const calculateTotalPayable = () => {
-    const totalReceived = Object.values(items).reduce((sum, value) => {
+    const filteredItems = getFilteredItems();
+
+    const totalReceived = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Payable" && value.status !== "Paid") {
         return sum + parseFloat(value.transactionAmount || 0);
       }
@@ -1001,10 +1011,8 @@ const MesobFinancial2 = () => {
     }, 0);
 
     const outstandingDebtAmount = initialoutstandingDebt || 0;
-
     return (totalReceived + outstandingDebtAmount).toFixed(2);
   };
-
   const fetchTransactions = (uid = null) => {
     setLoading(true);
     const targetUserId = uid || localStorage.getItem("userId");
@@ -1470,10 +1478,14 @@ const MesobFinancial2 = () => {
       </div>
     );
   };
-  const filteredItems = items.filter((item) =>
-    item.transactionPurpose.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const getFilteredItems = () => {
+    return filterItemsByTimeRange(items, selectedTimeRange, searchTerm);
+  };
+  useEffect(() => {
+    if (items && items.length > 0) {
+      calculateFinancials(items);
+    }
+  }, [items, selectedTimeRange, searchTerm]);
   return (
     <>
       <Helmet>
@@ -1679,40 +1691,6 @@ const MesobFinancial2 = () => {
                     </div>
                   </div>
                 </CardHeader>
-
-                {/* <CardBody>
-                  {loading ? (
-                    <div style={{ textAlign: "center", padding: "20px" }}>
-                      <Spinner color="primary" />
-                      <p>Loading...</p>
-                    </div>
-                  ) : (
-                    <>
-                      {searchedDates && (
-                        <div style={{ marginBottom: "15px" }}>
-                          <strong>Searched dates:</strong> {searchedDates.from}{" "}
-                          - {searchedDates.to}
-                        </div>
-                      )}
-                      <div className="table-container">
-                        <TransactionTable
-                          items={filterItemsByTimeRange(
-                            items,
-                            selectedTimeRange,
-                            searchTerm
-                          )}
-                          disabled={!userSubscription && scheduleCount >= 4}
-                          selectedTimeRange={selectedTimeRange}
-                          handleDelete={handleDelete}
-                          handleAddExpense={handleAddExpense}
-                          handleReceiptClick={handleReceiptClick}
-                          scheduleCount={scheduleCount}
-                          userSubscription={userSubscription}
-                        />
-                      </div>
-                    </>
-                  )}
-                </CardBody> */}
               </Card>
             </Col>
           </Row>
@@ -1847,9 +1825,11 @@ const MesobFinancial2 = () => {
                     {/* Expenses Section */}
                     <div style={{ marginTop: "20px" }}>
                       <span style={{ fontWeight: "bold" }}>Expenses:</span>
+
                       {Object.entries(expenses)
                         .filter(([purpose, amount]) => {
-                          return items.some(
+                          const filteredItems = getFilteredItems();
+                          return filteredItems.some(
                             (item) =>
                               item.transactionPurpose === purpose &&
                               (item.transactionType === "Pay" ||
@@ -1858,21 +1838,25 @@ const MesobFinancial2 = () => {
                           );
                         })
                         .map(([purpose, amount]) => {
-                          const totalAmount = items.reduce((sum, item) => {
-                            if (
-                              item.transactionPurpose === purpose &&
-                              (item.transactionType === "Pay" ||
-                                (item.transactionType === "Payable" &&
-                                  item.status !== "Paid"))
-                            ) {
-                              return (
-                                sum + parseFloat(item.transactionAmount || 0)
-                              );
-                            }
-                            return sum;
-                          }, 0);
+                          const filteredItems = getFilteredItems();
+                          const totalAmount = filteredItems.reduce(
+                            (sum, item) => {
+                              if (
+                                item.transactionPurpose === purpose &&
+                                (item.transactionType === "Pay" ||
+                                  (item.transactionType === "Payable" &&
+                                    item.status !== "Paid"))
+                              ) {
+                                return (
+                                  sum + parseFloat(item.transactionAmount || 0)
+                                );
+                              }
+                              return sum;
+                            },
+                            0
+                          );
 
-                          const isPaid = items.some(
+                          const isPaid = filteredItems.some(
                             (item) =>
                               item.transactionPurpose === purpose &&
                               item.transactionType === "Payable" &&
@@ -2000,9 +1984,11 @@ const MesobFinancial2 = () => {
                             style={{ padding: "8px", border: "1px solid #ddd" }}
                           ></td>
                         </tr>
+
                         {Object.entries(expenses)
                           .filter(([purpose, amount]) => {
-                            return items.some(
+                            const filteredItems = getFilteredItems();
+                            return filteredItems.some(
                               (item) =>
                                 item.transactionPurpose === purpose &&
                                 (item.transactionType === "Pay" ||
@@ -2011,19 +1997,24 @@ const MesobFinancial2 = () => {
                             );
                           })
                           .map(([purpose, amount]) => {
-                            const totalAmount = items.reduce((sum, item) => {
-                              if (
-                                item.transactionPurpose === purpose &&
-                                (item.transactionType === "Pay" ||
-                                  (item.transactionType === "Payable" &&
-                                    item.status !== "Paid"))
-                              ) {
-                                return (
-                                  sum + parseFloat(item.transactionAmount || 0)
-                                );
-                              }
-                              return sum;
-                            }, 0);
+                            const filteredItems = getFilteredItems();
+                            const totalAmount = filteredItems.reduce(
+                              (sum, item) => {
+                                if (
+                                  item.transactionPurpose === purpose &&
+                                  (item.transactionType === "Pay" ||
+                                    (item.transactionType === "Payable" &&
+                                      item.status !== "Paid"))
+                                ) {
+                                  return (
+                                    sum +
+                                    parseFloat(item.transactionAmount || 0)
+                                  );
+                                }
+                                return sum;
+                              },
+                              0
+                            );
 
                             return (
                               <tr key={`expense-${purpose}`}>

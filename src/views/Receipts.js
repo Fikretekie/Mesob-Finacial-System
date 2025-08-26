@@ -217,11 +217,17 @@ const Receipts = ({ selectedUser }) => {
       notify("tr", `Error downloading receipt: ${error.message}`, "danger");
     }
   };
-
   const handleRun = () => {
     if (fromDate && toDate) {
-      setStartDate(fromDate);
-      setEndDate(toDate);
+      // Create proper date objects with time handling
+      const startDateTime = new Date(fromDate);
+      startDateTime.setHours(0, 0, 0, 0); // Start of day
+
+      const endDateTime = new Date(toDate);
+      endDateTime.setHours(23, 59, 59, 999); // End of day
+
+      setStartDate(startDateTime.toISOString());
+      setEndDate(endDateTime.toISOString());
       setSearchedDates({ from: fromDate, to: toDate });
     } else {
       notify("tr", "Please select both From and To dates", "warning");

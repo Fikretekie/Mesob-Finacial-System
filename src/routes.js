@@ -2,12 +2,13 @@ import Dashboard from "views/Dashboard.js";
 import Users from "views/Users.js";
 import OrderDetails from "views/OrderDetails";
 import EditOrder from "views/EditOrder";
-import MesobFinancial2 from "views/mesobfinancial2";
+
 import Receipts from "views/Receipts";
 import UserPage from "views/UserPage";
 import CSVReports from "views/CSVReports";
 import AdminSubscriptions from "views/Payment/AdminSubscriptions";
 import SubscriptionPlans from "views/Payment/SubscriptionPlans";
+import MesobFinancial2 from "views/mesobfinancial2";
 
 const adminRoutes = [
   {
