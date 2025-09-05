@@ -192,7 +192,7 @@ const MesobFinancial2 = () => {
 
     try {
       const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${selectedUnpaidTransaction.id}`,
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${selectedUnpaidTransaction.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -221,7 +221,7 @@ const MesobFinancial2 = () => {
 
       // Create a new transaction for the installment payment
       const newPaymentResponse = await fetch(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -276,7 +276,7 @@ const MesobFinancial2 = () => {
         userId
       );
       const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
       );
       console.log("MesobFinancial2: Fetched data", response.data);
       setItems(response.data); // Update the state with fetched data
@@ -346,7 +346,7 @@ const MesobFinancial2 = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
       );
 
       if (response.data) {
@@ -447,7 +447,7 @@ const MesobFinancial2 = () => {
 
       // Send the new transaction to the server
       const response = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
         newTransaction
       );
 
@@ -579,7 +579,7 @@ const MesobFinancial2 = () => {
 
     try {
       const response = await fetch(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Receipt",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Receipt",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -647,7 +647,7 @@ const MesobFinancial2 = () => {
         };
 
         const response = await fetch(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -662,7 +662,7 @@ const MesobFinancial2 = () => {
         setIsUpdatingTransaction(true);
         let userid = localStorage.getItem("userId");
         const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
           {
             outstandingDebt:
               paymentOption === "full"
@@ -694,7 +694,7 @@ const MesobFinancial2 = () => {
       };
 
       const response2 = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
         newPaidTransaction
       );
 
@@ -745,7 +745,7 @@ const MesobFinancial2 = () => {
     try {
       const targetUserId = uid || localStorage.getItem("userId");
       const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
       );
       if (response.data?.user) {
         if (response.data.user.businessType) {
@@ -865,7 +865,7 @@ const MesobFinancial2 = () => {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
         );
 
         if (response.data?.user) {
@@ -1019,7 +1019,7 @@ const MesobFinancial2 = () => {
 
     axios
       .get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
       )
       .then((response) => {
         if (response.data) {
@@ -1053,7 +1053,7 @@ const MesobFinancial2 = () => {
   const fetchUnpaidTransactions = () => {
     axios
       .get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
       )
       .then((response) => {
         const unpaidOrPartiallyPaid = response.data
@@ -1117,7 +1117,7 @@ const MesobFinancial2 = () => {
 
         // Delete the transaction
         const deleteResponse = await axios.delete(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
             transaction.id
           )}`,
           { headers: { "Content-Type": "application/json" } }
@@ -1146,7 +1146,7 @@ const MesobFinancial2 = () => {
   const handleOutstandingDebtDeletion = async (transaction) => {
     let userId = localStorage.getItem("userId");
     const userResponse = await axios.get(
-      `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+      `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
     );
     const currentOutstandingDebt = userResponse.data.user.outstandingDebt || 0;
 
@@ -1155,7 +1155,7 @@ const MesobFinancial2 = () => {
       parseFloat(transaction.transactionAmount);
 
     await axios.put(
-      `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+      `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
       { outstandingDebt: updatedOutstandingDebt }
     );
   };
@@ -1174,7 +1174,7 @@ const MesobFinancial2 = () => {
       };
 
       await axios.put(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
           transaction.payableId
         )}`,
         updatedTransaction,
@@ -1193,7 +1193,7 @@ const MesobFinancial2 = () => {
 
     try {
       const response = await axios.delete(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -1258,7 +1258,7 @@ const MesobFinancial2 = () => {
       const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
 
       const response = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
         {
           bucketName: bucketName,
           key: s3Key,
@@ -1360,7 +1360,7 @@ const MesobFinancial2 = () => {
         return;
       }
       const response = await axios.delete(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
         {
           headers: {
             "Content-Type": "application/json",

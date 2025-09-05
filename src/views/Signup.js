@@ -238,7 +238,7 @@ const SignupPage = () => {
         // For Google users, we don't need Cognito signup since they're already authenticated
         // Just save to backend database
         const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${socialUserId}`,
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${socialUserId}`,
           data
         );
 
@@ -370,7 +370,7 @@ const SignupPage = () => {
       try {
         // Database Update for email/password users
         const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${res.userId}`,
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${res.userId}`,
           data
         );
 
@@ -455,7 +455,7 @@ const SignupPage = () => {
   const checkEmailExists = async (email) => {
     try {
       const response = await fetch(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
           email
         )}`,
         {

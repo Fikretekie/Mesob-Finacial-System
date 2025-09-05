@@ -62,7 +62,7 @@ const CheckoutForm = ({ priceId }) => {
 
       // Create subscription
       const createSubscriptionResponse = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
         {
           userId: formData.userId,
           createdAt: formData.createdAt,
@@ -130,7 +130,7 @@ const CheckoutForm = ({ priceId }) => {
       try {
         console.log("Fetching price details for priceId:", priceId);
         const response = await axios.get(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/price/${priceId}`
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/price/${priceId}`
         );
 
         const { amount, currency } = response.data;
@@ -151,7 +151,7 @@ const CheckoutForm = ({ priceId }) => {
           console.log("Received paymentmethod event");
           try {
             const response = await axios.post(
-              "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
+              "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
               {
                 userId: formData.userId,
                 email: ev.payerEmail,

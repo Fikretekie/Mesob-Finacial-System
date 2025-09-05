@@ -135,7 +135,7 @@ function Dashboard() {
       };
 
       const response = await axios.post(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
         params
       );
 
@@ -180,7 +180,7 @@ function Dashboard() {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
       );
       if (response.data) {
         setUsers(response.data);
@@ -282,7 +282,7 @@ function Dashboard() {
 
       // Fetch user initial data
       const userResponse = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
       );
 
       const initialCashBalance =
@@ -298,7 +298,7 @@ function Dashboard() {
 
       // Fetch transactions
       const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
       );
       const transactions = response.data;
       setItems(transactions);
@@ -396,7 +396,7 @@ function Dashboard() {
       try {
         const targetUserId = selectedUserId || localStorage.getItem("userId");
         const userResponse = await axios.get(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
         );
         setCompanyName(userResponse.data?.user?.companyName || "");
       } catch (error) {
@@ -426,7 +426,7 @@ function Dashboard() {
     const fetchSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
       // Only set subscription if user exists
       if (response.data && response.data.user) {

@@ -41,7 +41,7 @@ function UserPage() {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
         );
         console.log("api response", response);
         const user = response.data?.user;
@@ -66,7 +66,7 @@ function UserPage() {
     const fetchSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
       // Use optional chaining and sensible defaults
       setEditDisabled(
@@ -93,7 +93,7 @@ function UserPage() {
         console.log("Payload:", updateFields);
 
         const response = await axios.put(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
           updateFields
         );
 
@@ -123,7 +123,7 @@ function UserPage() {
     try {
       const userId = localStorage.getItem("userId");
       await axios.delete(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
       localStorage.clear(); // Clear user data
       alert("Account deleted successfully.");

@@ -106,7 +106,7 @@ const AdminSubscriptions = () => {
     try {
       const [usersRes, subsRes] = await Promise.all([
         axios.get(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users",
+          "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users",
           {
             headers: {
               "Content-Type": "application/json",
@@ -115,7 +115,7 @@ const AdminSubscriptions = () => {
           }
         ),
         axios.get(
-          "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription"
+          "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription"
         ),
       ]);
 

@@ -123,7 +123,7 @@ const OAuthListener = () => {
               console.log("🔍 Checking user in DynamoDB...");
               try {
                 const checkResponse = await fetch(
-                  `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
+                  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
                     email
                   )}`,
                   {

@@ -35,7 +35,7 @@ const SubscriptionPlans = () => {
 
   // Backend base URL
   const backendBaseUrl =
-    "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
+    "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
 
   // Helper to get userId from localStorage
   const getUserId = () => localStorage.getItem("userId") || null;
@@ -88,7 +88,7 @@ const SubscriptionPlans = () => {
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
-        monthly: "P-2FG21181EC779153LNCDWOVA",
+        monthly: "P-0S5615S6S423821PNC4WT3Y", // CORRECT ID, matches your PayPal dashboard
       },
     },
   ];
@@ -205,7 +205,7 @@ const SubscriptionPlans = () => {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
     return isLocalhost
-      ? "AWHC_KiGbQpiR_Id96ZR5ddNdBa2Z8eX9xOo8TUAl1DAtsPTCU-w8c6cGU803D23hPfLzOut89xgBOpB" // sandbox client id
+      ? "AcKZJrj-TJATLIZZ50lSXJPal6xrlk0rAwN2Q4nNE260Vhyq6E3lDkhAulmc09D8unlihbGz3iKYG9SW" // sandbox client id
       : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u"; // live client id
   };
 
@@ -383,52 +383,82 @@ const SubscriptionPlans = () => {
                     vault: true,
                   }}
                 >
-                  <PayPalButtons
-                    style={{
-                      layout: "vertical",
-                      color: "blue",
-                      shape: "rect",
-                      label: "subscribe",
-                    }}
-                    createSubscription={(data, actions) => {
-                      console.log("Billing Cycle:", billingCycle);
-                      console.log("Selected Price ID:", selectedPriceId);
-                      if (billingCycle !== "monthly") {
-                        console.error(
-                          "PayPal subscriptions are only available for monthly billing"
-                        );
-                        setError(
-                          "PayPal subscriptions are only available for monthly billing"
-                        );
-                        return Promise.reject(
-                          "PayPal subscriptions are only available for monthly billing"
-                        );
-                      }
-
-                      const selectedPlan = plans.find((plan) =>
-                        Object.values(plan.priceId).includes(selectedPriceId)
+                  {billingCycle === "monthly" &&
+                    (() => {
+                      const selectedPlan = plans.find((p) =>
+                        Object.values(p.priceId).includes(selectedPriceId)
                       );
                       const planId = selectedPlan?.paypalPlanId?.monthly;
 
-                      if (!planId) {
-                        console.error("Monthly PayPal Plan ID not found");
-                        setError("Monthly PayPal Plan ID missing");
-                        return Promise.reject("Monthly PayPal Plan ID missing");
-                      }
+                      return (
+                        <Col md={6}>
+                          <Button
+                            color="secondary"
+                            block
+                            onClick={async () => {
+                              try {
+                                console.log("[PayPal Subscribe]", {
+                                  planId,
+                                  billingCycle,
+                                  selectedPriceId,
+                                });
 
-                      return actions.subscription.create({ plan_id: planId });
-                    }}
-                    onApprove={async (data, actions) => {
-                      await verifyPayPalSubscription(data.subscriptionID);
-                      setIsModalOpen(false);
-                      setJustSubscribed(true);
-                      setTimeout(() => setJustSubscribed(false), 5000);
-                    }}
-                    onError={(err) => {
-                      console.error("PayPal error:", err);
-                      setError("Payment failed. Please try again.");
-                    }}
-                  />
+                                if (!planId) {
+                                  setError(
+                                    "PayPal plan not configured for this billing cycle."
+                                  );
+                                  return;
+                                }
+
+                                const userId = getUserId();
+                                const email =
+                                  localStorage.getItem("user_email");
+
+                                if (!userId || !email) {
+                                  setError("User not logged in");
+                                  return;
+                                }
+
+                                // Call your backend to create the subscription
+                                const res = await fetch(
+                                  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`,
+                                  {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      planId,
+                                      userId,
+                                      email,
+                                      redirectUrl: window.location.origin,
+                                    }),
+                                  }
+                                );
+
+                                const data = await res.json();
+                                console.log("[PayPal Backend Response]", data);
+
+                                if (data.success && data.approvalLink) {
+                                  window.location.href = data.approvalLink; // redirect to PayPal
+                                } else {
+                                  setError(
+                                    "Failed to create PayPal subscription. Try again."
+                                  );
+                                }
+                              } catch (err) {
+                                console.error("[PayPal Button Error]", err);
+                                setError(
+                                  "PayPal subscription failed. Please try again."
+                                );
+                              }
+                            }}
+                          >
+                            Pay with PayPal
+                          </Button>
+                        </Col>
+                      );
+                    })()}
                 </PayPalScriptProvider>
               </Col>
             </Row>

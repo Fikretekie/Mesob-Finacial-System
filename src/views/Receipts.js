@@ -77,7 +77,7 @@ const Receipts = ({ selectedUser }) => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
       setDisabled(
         !res.data.user.subscription && res.data.user.scheduleCount >= 4
@@ -90,7 +90,7 @@ const Receipts = ({ selectedUser }) => {
       const fetchUsers = async () => {
         try {
           const response = await axios.get(
-            "https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+            "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
           );
           setUsers(response.data || []);
         } catch (error) {
@@ -117,7 +117,7 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const response = await axios.get(
-        `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
       );
 
       let receiptsData = response.data.filter(

@@ -87,7 +87,7 @@ const Login = () => {
         console.log("✅ Email sign-in successful");
         const user = await getUserInfo();
         const response = await fetch(
-          `https://dzo3qtw4dj.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
           {
             method: "GET",
             headers: {
