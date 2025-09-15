@@ -33,7 +33,7 @@ import { Helmet } from "react-helmet";
 import formatUserId from "utils/formatUID";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 // ✅ Correct
 import {
@@ -53,6 +53,7 @@ ChartJS.register(
 
 function Dashboard() {
   const userId = localStorage.getItem("userId");
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState();
   const [totalCashOnHand, setTotalCashOnHand] = useState(0);
@@ -68,11 +69,22 @@ function Dashboard() {
   console.log("Persisted User ID:", persistedUserId);
 
   const userRole = parseInt(localStorage.getItem("role"));
+  console.log('userRole=>>>', userRole);
   const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null); // ✅ renamed local state variable
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
+
+
+  // Redirect based on user role
+  useEffect(() => {
+    if (userRole === "0" && !location.pathname.includes("/admin")) {
+      navigate("/admin/dashboard", { replace: true });
+    } else if (userRole === "2" && !location.pathname.includes("/customer")) {
+      navigate("/customer/dashboard", { replace: true });
+    }
+  }, [userRole, location.pathname, navigate]);
 
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {

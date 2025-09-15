@@ -151,7 +151,7 @@ const Confirm = () => {
         }
 
         const path =
-          result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
+          result.user?.role === 2 ? "/customer/dashboard" : result.user?.role === 0 ? "/admin/dashboard" : "/customer/dashboard";
         navigate(path, { replace: true });
       } catch (emailError) {
         console.warn("Failed to send welcome email:", emailError);
