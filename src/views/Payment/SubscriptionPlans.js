@@ -19,6 +19,8 @@ import {
   ModalFooter,
 } from "reactstrap";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { FaPaypal } from "react-icons/fa"; // Using react-icons for PayPal logo
+import { FaCreditCard } from "react-icons/fa"; // Using react-icons for card icon
 
 const SubscriptionPlans = () => {
   const navigate = useNavigate();
@@ -393,7 +395,8 @@ const SubscriptionPlans = () => {
                     setIsModalOpen(false);
                   }}
                 >
-                  Pay with Card (Stripe)
+                  <FaCreditCard size={20} /> {/* Credit card icon */} Pay with
+                  Card (Stripe)
                 </Button>
               </Col>
               <Col md={6}>
@@ -413,12 +416,80 @@ const SubscriptionPlans = () => {
                       const planId = selectedPlan?.paypalPlanId?.monthly;
 
                       return (
-                        <Col md={6}>
+                        <Col md={14}>
                           <Button
-                            color="secondary"
+                            style={{
+                              backgroundColor: "#003087", // PayPal dark blue
+                              borderColor: "#003087", // Match border to background
+                              color: "#ffffff", // White text for contrast
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: "8px", // Space between logo and text
+                              padding: "10px 10px", // Adjust padding for better appearance
+                              fontSize: "16px", // Consistent font size
+                            }}
                             block
-                            onClick={() => handlePayPalSubscription(planId)}
+                            onClick={async () => {
+                              try {
+                                console.log("[PayPal Subscribe]", {
+                                  planId,
+                                  billingCycle,
+                                  selectedPriceId,
+                                });
+
+                                if (!planId) {
+                                  setError(
+                                    "PayPal plan not configured for this billing cycle."
+                                  );
+                                  return;
+                                }
+
+                                const userId = getUserId();
+                                const email =
+                                  localStorage.getItem("user_email");
+
+                                if (!userId || !email) {
+                                  setError("User not logged in");
+                                  return;
+                                }
+
+                                // Call your backend to create the subscription
+                                const res = await fetch(
+                                  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`,
+                                  {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      planId,
+                                      userId,
+                                      email,
+                                      redirectUrl: window.location.origin,
+                                    }),
+                                  }
+                                );
+
+                                const data = await res.json();
+                                console.log("[PayPal Backend Response]", data);
+
+                                if (data.success && data.approvalLink) {
+                                  window.location.href = data.approvalLink; // Redirect to PayPal
+                                } else {
+                                  setError(
+                                    "Failed to create PayPal subscription. Try again."
+                                  );
+                                }
+                              } catch (err) {
+                                console.error("[PayPal Button Error]", err);
+                                setError(
+                                  "PayPal subscription failed. Please try again."
+                                );
+                              }
+                            }}
                           >
+                            <FaPaypal size={20} /> {/* PayPal logo icon */}
                             Pay with PayPal
                           </Button>
                         </Col>

@@ -118,7 +118,7 @@ const Login = () => {
         localStorage.setItem("authToken", "authenticated");
 
         const path =
-          result.user?.role === 2 ? "/customer/dashboard" : "/admin/dashboard";
+          result.user?.role === 2 ? "/customer/dashboard" : result.user?.role === 0 ? "/admin/dashboard" : "/customer/dashboard";
         navigate(path, { replace: true });
       } else {
         console.error("Invalid credentials");
