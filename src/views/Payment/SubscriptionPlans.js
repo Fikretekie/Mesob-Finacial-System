@@ -69,7 +69,12 @@ const SubscriptionPlans = () => {
     const userId = getUserId();
     if (userId) fetchUser();
   }, []);
-
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("paypal") === "success") {
+      fetchUser();
+    }
+  }, [location.search]);
   // Billing plans info with Stripe priceIds and PayPal plan IDs
   const plans = [
     {
@@ -88,13 +93,14 @@ const SubscriptionPlans = () => {
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
-        monthly: "P-0S5615S6S423821PNC4WT3Y", // CORRECT ID, matches your PayPal dashboard
+        monthly: "P-75006919S65969906NDAXFNA", // CORRECT ID, matches your PayPal dashboard
       },
     },
   ];
 
   const isSubscribed = userData
-    ? userData.isPaid === true && userData.subscription === true
+    ? userData.isPaid === true &&
+      (userData.subscription === true || userData.subscription === "true")
     : false;
 
   // Stripe subscription handler (your existing method)
@@ -109,6 +115,7 @@ const SubscriptionPlans = () => {
       }
 
       const baseUrl = window.location.origin + "/customer/dashboard";
+      console.log(`${backendBaseUrl}/Subscription/Session`);
 
       const response = await fetch(`${backendBaseUrl}/Subscription/Session`, {
         method: "POST",
@@ -120,6 +127,7 @@ const SubscriptionPlans = () => {
           email,
         }),
       });
+      console.log("rsponse of subsctiption session....", response);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -131,6 +139,8 @@ const SubscriptionPlans = () => {
       const session = await response.json();
 
       const checkoutUrl = session?.url || session?.session?.url;
+      console.log("checkoutUrl....", checkoutUrl);
+
       if (!checkoutUrl) throw new Error("Session URL missing");
 
       window.location.href = checkoutUrl;
@@ -149,14 +159,25 @@ const SubscriptionPlans = () => {
         setError("User not logged in");
         return;
       }
-
+      console.log(`${backendBaseUrl}/createPaypalSubscription`, {
+        planId,
+        userId,
+        email,
+        redirectUrl: `${window.location.origin}/customer/dashboard`,
+      });
+      const url = `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`;
       const { data } = await axios.post(
-        `${backendBaseUrl}/createPaypalSubscription`,
+        url,
         {
           planId,
           userId,
           email,
-          redirectUrl: window.location.origin,
+          redirectUrl: `${window.location.origin}/customer/dashboard`,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
@@ -205,7 +226,7 @@ const SubscriptionPlans = () => {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
     return isLocalhost
-      ? "AcKZJrj-TJATLIZZ50lSXJPal6xrlk0rAwN2Q4nNE260Vhyq6E3lDkhAulmc09D8unlihbGz3iKYG9SW" // sandbox client id
+      ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A" // sandbox client id
       : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u"; // live client id
   };
 
@@ -236,6 +257,7 @@ const SubscriptionPlans = () => {
         setError("Subscription ID missing.");
         return;
       }
+      console.log("backend.....", backendBaseUrl, userData);
 
       // Perform DELETE request with subscriptionId in URL, no body sent
       await axios.delete(
@@ -395,64 +417,7 @@ const SubscriptionPlans = () => {
                           <Button
                             color="secondary"
                             block
-                            onClick={async () => {
-                              try {
-                                console.log("[PayPal Subscribe]", {
-                                  planId,
-                                  billingCycle,
-                                  selectedPriceId,
-                                });
-
-                                if (!planId) {
-                                  setError(
-                                    "PayPal plan not configured for this billing cycle."
-                                  );
-                                  return;
-                                }
-
-                                const userId = getUserId();
-                                const email =
-                                  localStorage.getItem("user_email");
-
-                                if (!userId || !email) {
-                                  setError("User not logged in");
-                                  return;
-                                }
-
-                                // Call your backend to create the subscription
-                                const res = await fetch(
-                                  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`,
-                                  {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                      planId,
-                                      userId,
-                                      email,
-                                      redirectUrl: window.location.origin,
-                                    }),
-                                  }
-                                );
-
-                                const data = await res.json();
-                                console.log("[PayPal Backend Response]", data);
-
-                                if (data.success && data.approvalLink) {
-                                  window.location.href = data.approvalLink; // redirect to PayPal
-                                } else {
-                                  setError(
-                                    "Failed to create PayPal subscription. Try again."
-                                  );
-                                }
-                              } catch (err) {
-                                console.error("[PayPal Button Error]", err);
-                                setError(
-                                  "PayPal subscription failed. Please try again."
-                                );
-                              }
-                            }}
+                            onClick={() => handlePayPalSubscription(planId)}
                           >
                             Pay with PayPal
                           </Button>

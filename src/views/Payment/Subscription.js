@@ -7,10 +7,14 @@ import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import { Card, CardHeader, CardBody, CardTitle, Row, Col } from "reactstrap";
 
-const stripePromise = loadStripe(process.env.PUBLISHABLE_KEY);
+const stripePromise = loadStripe(
+  "pk_test_51RixMnAhnp7DBxtxJYei2Q8DmH2HYu0j7zBxee2Uzw0LiSMpuzd3XyuNMQlU65F1j9LDkr36aP3XqFy2L4rteckG005T8NDjqZ"
+);
+console.log("process.env.PUBLISHABLE_KEY", process.env.PUBLISHABLE_KEY);
 
 const SubscriptionPage = () => {
   const { priceId } = useParams();
+  console.log("process.env.PUBLISHABLE_KEY", process.env.PUBLISHABLE_KEY);
 
   return (
     <>

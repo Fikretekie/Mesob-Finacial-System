@@ -48,6 +48,7 @@ const CheckoutForm = ({ priceId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log("e", e);
 
     try {
       const subscriptionPlans = {
@@ -56,6 +57,9 @@ const CheckoutForm = ({ priceId }) => {
         price_pro_monthly: "Professional Plan (Monthly)",
         price_pro_yearly: "Professional Plan (Yearly)",
       };
+      console.log("subscriptionPlans", subscriptionPlans);
+
+      console.log("formDta....", formData);
 
       const selectedPlan =
         subscriptionPlans[formData.priceId] || "Unknown Plan";
@@ -75,6 +79,7 @@ const CheckoutForm = ({ priceId }) => {
           address: formData.address,
         }
       );
+      console.log("createSubscriptionResponse....", createSubscriptionResponse);
 
       if (
         createSubscriptionResponse.data.subscriptionId &&
@@ -93,6 +98,7 @@ const CheckoutForm = ({ priceId }) => {
             },
           }
         );
+        console.log("paymentIntent....", paymentIntent);
 
         if (paymentIntent.status === "succeeded") {
           showNotification(
