@@ -95,7 +95,7 @@ const SubscriptionPlans = () => {
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
-        monthly: "P-75006919S65969906NDAXFNA", // CORRECT ID, matches your PayPal dashboard
+        monthly: "P-1E453171T1240781XNDIUNGY", // CORRECT ID, matches your PayPal dashboard
       },
     },
   ];
