@@ -16,9 +16,7 @@ const stripePublishableKey = isLocalhost
 
 const stripePromise = loadStripe(stripePublishableKey);
 
-// const stripePromise = loadStripe(
-//   "pk_test_51RixMnAhnp7DBxtxJYei2Q8DmH2HYu0j7zBxee2Uzw0LiSMpuzd3XyuNMQlU65F1j9LDkr36aP3XqFy2L4rteckG005T8NDjqZ"
-// );
+console.log("Stripe Publishable Key:", stripePublishableKey);
 
 const SubscriptionPage = () => {
   const { priceId } = useParams();
