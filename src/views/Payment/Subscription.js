@@ -7,14 +7,21 @@ import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import { Card, CardHeader, CardBody, CardTitle, Row, Col } from "reactstrap";
 
-const stripePromise = loadStripe(
-  "pk_test_51RixMnAhnp7DBxtxJYei2Q8DmH2HYu0j7zBxee2Uzw0LiSMpuzd3XyuNMQlU65F1j9LDkr36aP3XqFy2L4rteckG005T8NDjqZ"
-);
-console.log("process.env.PUBLISHABLE_KEY", process.env.PUBLISHABLE_KEY);
+const isLocalhost = window.location.href.includes('localhost');
+
+// Set Stripe publishable key based on environment
+const stripePublishableKey = isLocalhost
+  ? "pk_test_51RixMnAhnp7DBxtxJYei2Q8DmH2HYu0j7zBxee2Uzw0LiSMpuzd3XyuNMQlU65F1j9LDkr36aP3XqFy2L4rteckG005T8NDjqZ" // Test key
+  : "pk_live_51RixMnAhnp7DBxtx3iUXn6WsNiDtC1MXhjYNDtU56TDRuHZCAazyLGLHvAL7fcOqsIm9tEoxY87eVllZpYb4w42700lTyd1mNz"; // Live key
+
+const stripePromise = loadStripe(stripePublishableKey);
+
+// const stripePromise = loadStripe(
+//   "pk_test_51RixMnAhnp7DBxtxJYei2Q8DmH2HYu0j7zBxee2Uzw0LiSMpuzd3XyuNMQlU65F1j9LDkr36aP3XqFy2L4rteckG005T8NDjqZ"
+// );
 
 const SubscriptionPage = () => {
   const { priceId } = useParams();
-  console.log("process.env.PUBLISHABLE_KEY", process.env.PUBLISHABLE_KEY);
 
   return (
     <>
