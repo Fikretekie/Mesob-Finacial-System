@@ -4,7 +4,7 @@
 }
 
 .card {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .table-container {
@@ -24,7 +24,7 @@
   gap: 10px;
 }
 
-.summary-card .card-body > div {
+.summary-card .card-body>div {
   margin-bottom: 15px;
 }
 
@@ -50,9 +50,11 @@
   flex: 1;
   min-width: 150px;
 }
+
 .custom-modal-width {
   width: 113%;
 }
+
 @media screen and (min-width: 576px) {
   .content {
     padding: 15px;
@@ -109,7 +111,7 @@
     justify-content: space-between;
   }
 
-  .summary-card .card-body > div {
+  .summary-card .card-body>div {
     width: 48%;
   }
 
@@ -120,6 +122,7 @@
 }
 
 @media screen and (min-width: 1200px) {
+
   .transaction-table,
   .statement-table table {
     min-width: 1000px;
@@ -157,6 +160,7 @@
     display: block;
   }
 }
+
 .journal-entry-header {
   display: flex;
   flex-direction: column;
