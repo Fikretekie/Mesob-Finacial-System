@@ -108,7 +108,7 @@ root.render(
         <Route path="/customer/*" element={<CustomerLayout />} />
         {/* Subscription Routes */}
         <Route path="/subscription" element={<SubscriptionPlans />} />
-        <Route path="/subscribe" element={<SubscriptionWithParams />} />
+        {/* <Route path="/subscribe" element={<SubscriptionWithParams />} /> */}
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         {/* Redirect any unknown routes to /login */}
         <Route path="*" element={<Navigate to="/login" replace />} />

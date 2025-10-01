@@ -67,6 +67,8 @@ const SubscriptionPlans = () => {
     }
   };
 
+
+
   useEffect(() => {
     const userId = getUserId();
     if (userId) fetchUser();
@@ -91,7 +93,7 @@ const SubscriptionPlans = () => {
       ],
       price: { monthly: "$29.99/month", yearly: "$600/year" },
       priceId: {
-        monthly: "price_1RlU9fAhnp7DBxtxfIknJzW2",
+        monthly: "price_1RlUF2Ahnp7DBxtxAWHdp8jw",
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
@@ -103,11 +105,12 @@ const SubscriptionPlans = () => {
 
   const isSubscribed = userData
     ? userData.isPaid === true &&
-      (userData.subscription === true || userData.subscription === "true")
+    (userData.subscription === true || userData.subscription === "true")
     : false;
 
   // Stripe subscription handler (your existing method)
-  const handleSubscribe = async (priceId) => {
+  const handleSubscribe = async () => {
+    console.log("Stripe subscribe clicked for priceId");
     try {
       const email = localStorage.getItem("user_email");
       const userId = getUserId();
@@ -117,8 +120,8 @@ const SubscriptionPlans = () => {
         return;
       }
 
+
       const baseUrl = window.location.origin + "/customer/dashboard";
-      console.log(`${backendBaseUrl}/Subscription/Session`);
 
       const response = await fetch(`${backendBaseUrl}/Subscription/Session`, {
         method: "POST",
@@ -132,6 +135,7 @@ const SubscriptionPlans = () => {
       });
       console.log("rsponse of subsctiption session....", response);
 
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
@@ -140,6 +144,7 @@ const SubscriptionPlans = () => {
       }
 
       const session = await response.json();
+      console.log("Stripe session response....", session);
 
       const checkoutUrl = session?.url || session?.session?.url;
       console.log("checkoutUrl....", checkoutUrl);
@@ -149,74 +154,6 @@ const SubscriptionPlans = () => {
       window.location.href = checkoutUrl;
     } catch (error) {
       setError(error.message || "Failed to create Stripe subscription session");
-    }
-  };
-
-  // PayPal Subscription: create and redirect user to approval link
-  const handlePayPalSubscription = async (planId) => {
-    try {
-      const userId = getUserId();
-      const email = localStorage.getItem("user_email");
-
-      if (!userId || !email) {
-        setError("User not logged in");
-        return;
-      }
-      console.log(`${backendBaseUrl}/createPaypalSubscription`, {
-        planId,
-        userId,
-        email,
-        redirectUrl: `${window.location.origin}/customer/dashboard`,
-      });
-      const url = `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`;
-      const { data } = await axios.post(
-        url,
-        {
-          planId,
-          userId,
-          email,
-          redirectUrl: `${window.location.origin}/customer/dashboard`,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!data.success) {
-        setError("Failed to create PayPal subscription");
-        return;
-      }
-
-      // Redirect user to PayPal approval page
-      window.location.href = data.approvalLink;
-    } catch (err) {
-      setError("Failed to initiate PayPal subscription");
-      console.error(err);
-    }
-  };
-
-  // Verify PayPal subscription after approval (called on return route or manually)
-  const verifyPayPalSubscription = async (subscriptionId) => {
-    try {
-      const userId = getUserId();
-      const { data } = await axios.post(
-        `${backendBaseUrl}/verifyPaypalSubscription`,
-        {
-          subscriptionId,
-          userId,
-        }
-      );
-
-      if (data.success) {
-        alert("PayPal subscription verified successfully!");
-        fetchUser();
-      } else {
-        setError("Subscription verification failed.");
-      }
-    } catch (err) {
-      setError("Failed to verify PayPal subscription");
     }
   };
 
@@ -251,7 +188,40 @@ const SubscriptionPlans = () => {
       setTimeout(() => setJustSubscribed(false), 5000);
     }
   }, [location.state]);
-  const updateCancelSubscription = async () => {
+  // const updateCancelSubscription = async () => {
+  //   try {
+  //     setCancelLoading(true);
+  //     setError("");
+
+  //     if (!userData || !userData.subscriptionId) {
+  //       setError("Subscription ID missing.");
+  //       return;
+  //     }
+  //     console.log("backend.....", backendBaseUrl, userData);
+
+  //     // Perform DELETE request with subscriptionId in URL, no body sent
+  //     await axios.delete(
+  //       `${backendBaseUrl}/Subscription/${userData.subscriptionId}`,
+  //       {
+  //         // If your backend requires auth token or other headers, add here, e.g.:
+  //         // headers: { Authorization: `Bearer ${token}` }
+  //       }
+  //     );
+
+  //     // Refresh user data to update UI after cancellation
+  //     await fetchUser();
+  //     window.location.reload
+  //   } catch (err) {
+  //     console.error("Unsubscribe error:", err);
+  //     setError("Failed to unsubscribe. Please try again.");
+  //   } finally {
+  //     setCancelLoading(false);
+  //   }
+  // };
+
+
+  // Stripe cancellation function
+  const cancelStripeSubscription = async () => {
     try {
       setCancelLoading(true);
       setError("");
@@ -260,26 +230,69 @@ const SubscriptionPlans = () => {
         setError("Subscription ID missing.");
         return;
       }
-      console.log("backend.....", backendBaseUrl, userData);
 
-      // Perform DELETE request with subscriptionId in URL, no body sent
       await axios.delete(
-        `${backendBaseUrl}/Subscription/${userData.subscriptionId}`,
-        {
-          // If your backend requires auth token or other headers, add here, e.g.:
-          // headers: { Authorization: `Bearer ${token}` }
-        }
+        `${backendBaseUrl}/Subscription/${userData.subscriptionId}`
       );
 
-      // Refresh user data to update UI after cancellation
       await fetchUser();
+      window.location.reload();
     } catch (err) {
-      console.error("Unsubscribe error:", err);
-      setError("Failed to unsubscribe. Please try again.");
+      console.error("Stripe unsubscribe error:", err);
+      setError("Failed to cancel Stripe subscription. Please try again.");
     } finally {
       setCancelLoading(false);
     }
   };
+
+  // PayPal cancellation function
+  const cancelPaypalSubscription = async () => {
+    try {
+      setCancelLoading(true);
+      setError("");
+
+      if (!userData || !userData.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+
+      const res = await fetch(
+        `${backendBaseUrl}/PaypalSubscription/${userData.subscriptionId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            // Include Authorization header if your API requires authentication
+            // "Authorization": `Bearer ${token}`
+          }
+        }
+      );
+      console.log('res=>>', res);
+      await fetchUser();
+      // window.location.reload();
+    } catch (err) {
+      console.error("PayPal unsubscribe error:", err);
+      setError("Failed to cancel PayPal subscription. Please try again.");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  // Main cancellation handler - detects payment type
+  const handleCancelSubscription = () => {
+    console.log("Payment Type:", userData?.paymentType);
+
+    if (userData?.paymentType === "STRIPE") {
+      console.log("Cancelling Stripe subscription...");
+      cancelStripeSubscription();
+    } else if (userData?.paymentType === "PAYPAL") {
+      console.log("Cancelling PayPal subscription...");
+      cancelPaypalSubscription();
+    } else {
+      setError("Unable to determine payment type. Please contact support.");
+    }
+  };
+
 
   return (
     <>
@@ -333,7 +346,7 @@ const SubscriptionPlans = () => {
                                 </Alert>
                                 <Button
                                   color="danger"
-                                  onClick={updateCancelSubscription}
+                                  onClick={handleCancelSubscription}
                                   disabled={cancelLoading}
                                 >
                                   {cancelLoading ? (
@@ -392,7 +405,7 @@ const SubscriptionPlans = () => {
                   color="primary"
                   block
                   onClick={() => {
-                    handleSubscribe(selectedPriceId); // Stripe payment
+                    handleSubscribe(); // Stripe payment
                     setIsModalOpen(false);
                   }}
                 >
@@ -431,7 +444,11 @@ const SubscriptionPlans = () => {
                               fontSize: "16px", // Consistent font size
                             }}
                             block
+                            disabled={loading} // Disable button while loading
                             onClick={async () => {
+                              setLoading(true); // Start loading
+                              setError(""); // Clear any previous errors
+
                               try {
                                 console.log("[PayPal Subscribe]", {
                                   planId,
@@ -447,8 +464,7 @@ const SubscriptionPlans = () => {
                                 }
 
                                 const userId = getUserId();
-                                const email =
-                                  localStorage.getItem("user_email");
+                                const email = localStorage.getItem("user_email");
 
                                 if (!userId || !email) {
                                   setError("User not logged in");
@@ -467,7 +483,7 @@ const SubscriptionPlans = () => {
                                       planId,
                                       userId,
                                       email,
-                                      redirectUrl: window.location.origin,
+                                      redirectUrl: window.location.origin + "/customer/subscription",
                                     }),
                                   }
                                 );
@@ -487,11 +503,22 @@ const SubscriptionPlans = () => {
                                 setError(
                                   "PayPal subscription failed. Please try again."
                                 );
+                              } finally {
+                                setLoading(false); // Stop loading in all cases
                               }
                             }}
                           >
-                            <FaPaypal size={20} /> {/* PayPal logo icon */}
-                            Pay with PayPal
+                            {loading ? (
+                              <>
+                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <FaPaypal size={20} /> {/* PayPal logo icon */}
+                                Pay with PayPal
+                              </>
+                            )}
                           </Button>
                         </Col>
                       );
