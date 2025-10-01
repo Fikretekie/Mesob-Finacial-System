@@ -97,8 +97,7 @@ const SubscriptionPlans = () => {
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
-        // monthly: "P-1E453171T1240781XNDIUNGY", // live
-        monthly: "P-75006919S65969906NDAXFNA", // sandobox
+        monthly: window?.location.hostname.includes("localhost") ? "P-75006919S65969906NDAXFNA" : "P-1E453171T1240781XNDIUNGY"
       },
     },
   ];
