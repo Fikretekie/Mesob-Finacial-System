@@ -4617,9 +4617,9 @@ Created using IcoMoon - icomoon.io
   right: unset !important;
 }
 
-.card .card-body {
-  padding: 15px 15px 10px 15px;
-}
+/* .card .card-body {
+  padding: 1px 1px 1px 1px;
+} */
 
 .card .card-body.table-full-width {
   padding-left: 0;

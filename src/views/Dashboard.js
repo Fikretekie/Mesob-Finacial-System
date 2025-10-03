@@ -69,13 +69,12 @@ function Dashboard() {
   console.log("Persisted User ID:", persistedUserId);
 
   const userRole = parseInt(localStorage.getItem("role"));
-  console.log('userRole=>>>', userRole);
+  console.log("userRole=>>>", userRole);
   const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null); // ✅ renamed local state variable
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
-
 
   // Redirect based on user role
   useEffect(() => {
@@ -481,6 +480,7 @@ function Dashboard() {
             alignItems: "center",
             justifyContent: "flex-end",
             gap: "10px",
+            marginBottom: "30px",
           }}
         >
           <Button
@@ -500,13 +500,15 @@ function Dashboard() {
       {userRole === 0 && (
         <div
           className="content"
-          style={{ marginBottom: "20px", minHeight: "100px" }}
+          style={{ marginBottom: "5px", minHeight: "100px", paddingInline: 15 }}
         >
           <Row>
             <Col xs={12}>
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4">Select User</CardTitle>
+                  <CardTitle style={{ marginBottom: 0 }} tag="h4">
+                    Select User
+                  </CardTitle>
                 </CardHeader>
                 <CardBody>
                   <FormGroup>
@@ -549,17 +551,17 @@ function Dashboard() {
         </div>
       )}
       <div className="content">
-        <Row style={{ marginTop: "28px" }}>
-          <Col lg="3" md="6" xs="12">
+        <Row style={{ marginBottom: "5px" }}>
+          <Col lg="3" md="6" xs="12" style={{ padding: 0 }}>
             <Card className="card-stats">
               <CardBody>
                 <Row>
-                  <Col xs="5">
+                  <Col xs="4">
                     <div className="icon-big text-center">
                       <i className="fas fa-dollar-sign text-success" />
                     </div>
                   </Col>
-                  <Col xs="7">
+                  <Col xs="8">
                     <div className="numbers">
                       <p className="card-category">TOTAL CASH ON HAND</p>
                       <CardTitle tag="h3">${calculateTotalCash()}</CardTitle>
@@ -570,7 +572,12 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12">
+          <Col
+            lg="3"
+            md="6"
+            xs="12"
+            style={{ paddingRight: "3px", paddingLeft: "3px" }}
+          >
             <Card className="card-stats">
               <CardBody>
                 <Row>
@@ -596,7 +603,7 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12">
+          <Col lg="3" md="6" xs="12" style={{ paddingInline: 3 }}>
             <Card className="card-stats">
               <CardBody>
                 <Row>
@@ -622,7 +629,7 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12">
+          <Col lg="3" md="6" xs="12" style={{ padding: 0 }}>
             <Card className="card-stats">
               <CardBody>
                 <Row>
@@ -650,7 +657,7 @@ function Dashboard() {
         </Row>
 
         <Row>
-          <Col md={6}>
+          <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
             <Card>
               <CardBody>
                 <p className="text-center mb-2">TOTAL CASH ON HAND Chart</p>
@@ -664,7 +671,7 @@ function Dashboard() {
               </CardBody>
             </Card>
           </Col>
-          <Col md={6}>
+          <Col md={6} style={{ paddingInline: 3 }}>
             <Card>
               <CardBody>
                 <p className="text-center mb-2">REVENUE Chart</p>
@@ -679,7 +686,7 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col md={6}>
+          <Col md={6} style={{ padding: 0 }}>
             <Card>
               <CardBody>
                 <p className="text-center mb-2">TOTAL PAYABLE Chart</p>
@@ -693,7 +700,7 @@ function Dashboard() {
               </CardBody>
             </Card>
           </Col>
-          <Col md={6}>
+          <Col md={6} style={{ paddingInline: 3 }}>
             <Card>
               <CardBody>
                 <p className="text-center mb-2">TOTAL EXPENSES Chart</p>

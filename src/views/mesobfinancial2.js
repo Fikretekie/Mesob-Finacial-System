@@ -424,22 +424,23 @@ const MesobFinancial2 = () => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "Payable"
-              ? "Payable"
-              : transactionType === "pay" && paymentMode === "boughtItem"
-                ? "New_Item"
-                : transactionType === "pay" && paymentMode !== "boughtItem"
-                  ? "Pay"
-                  : "New_Item",
-        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
-          }`,
+            ? "Payable"
+            : transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New_Item"
+            : transactionType === "pay" && paymentMode !== "boughtItem"
+            ? "Pay"
+            : "New_Item",
+        transactionPurpose: `${transactionPurpose}${
+          manualPurpose ? ` ${manualPurpose}` : ""
+        }`,
         transactionAmount: parseFloat(transactionAmount),
         originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
             : paymentMode === "new"
-              ? "Expense"
-              : subType,
+            ? "Expense"
+            : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
@@ -633,8 +634,8 @@ const MesobFinancial2 = () => {
           receiptUrl: Url || transaction.receiptUrl,
           status:
             paymentOption === "full" ||
-              (paymentOption === "partial" &&
-                remainingAmount === transaction.transactionAmount)
+            (paymentOption === "partial" &&
+              remainingAmount === transaction.transactionAmount)
               ? "Paid"
               : "Partially Paid",
           updatedAt: new Date().toISOString(),
@@ -666,9 +667,9 @@ const MesobFinancial2 = () => {
             outstandingDebt:
               paymentOption === "full"
                 ? parseFloat(transaction.transactionAmount) -
-                parseFloat(transaction.transactionAmount)
+                  parseFloat(transaction.transactionAmount)
                 : parseFloat(transaction.transactionAmount) -
-                parseFloat(remainingAmount),
+                  parseFloat(remainingAmount),
           }
         );
 
@@ -684,8 +685,8 @@ const MesobFinancial2 = () => {
           transaction.id === "outstanding-debt"
             ? "Payment for Outstanding Debt"
             : paymentOption === "full"
-              ? `Full Payment for ${transaction.transactionPurpose}`
-              : `Partial Payment for ${transaction.transactionPurpose}`,
+            ? `Full Payment for ${transaction.transactionPurpose}`
+            : `Partial Payment for ${transaction.transactionPurpose}`,
         transactionAmount: paidAmount,
         receiptUrl: Url || "",
         payableId: transaction.id,
@@ -1518,13 +1519,15 @@ const MesobFinancial2 = () => {
           className="content"
           style={{ marginBottom: "-30px", minHeight: "100px" }}
         >
-          <Row style={{ margin: "0" }}>
-            <Col xs={12}>
-              <Card style={{ marginBottom: "0" }}>
+          <Row style={{ margin: "0", padding: 0 }}>
+            <Col xs={12} style={{ padding: 0 }}>
+              <Card style={{ marginBottom: "5px" }}>
                 <CardHeader>
-                  <CardTitle tag="h4">Select User</CardTitle>
+                  <CardTitle style={{ marginBottom: 0 }} tag="h4">
+                    Select User
+                  </CardTitle>
                 </CardHeader>
-                <CardBody style={{ paddingBottom: "15px" }}>
+                <CardBody style={{ paddingBottom: "5px" }}>
                   <FormGroup style={{ marginBottom: "0" }}>
                     <Label>Select User to View:</Label>
                     <Select
@@ -1567,128 +1570,100 @@ const MesobFinancial2 = () => {
         </div>
       )}
 
-      <div className="content" style={{ paddingTop: "0", }}>
+      <div className="content" style={{ paddingTop: "0" }}>
         {/* Transactions Table Section - First */}
         <Container fluid>
           <Row>
-            <Col xs={12}>
+            <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
               <Card>
-                <CardHeader style={{ paddingInline: 5 }}>
+                <CardHeader
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingInline: 20,
+                  }}
+                >
+                  {/* Left Section: RunButtons + Search */}
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
                       alignItems: "center",
-
+                      gap: "15px",
                     }}
                   >
-                    <CardTitle tag="h4">Transactions</CardTitle>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      {userRole !== 0 && (
-                        <Button
-                          color="primary"
-                          onClick={() => setShowAddTransaction(true)}
-                          disabled={!userSubscription && !isTrialActive()}
-                        >
-                          <FontAwesomeIcon
-                            icon={faPlus}
-                            style={{ marginRight: "5px" }}
-                          />
-                          Add Transaction
-                        </Button>
-                      )}
-                      <UserSubscriptionInfo
-                        userSubscription={userSubscription}
-                        trialEndDate={trialEndDate}
-                        scheduleCount={scheduleCount}
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
+                    <RunButtons
+                      onSelectRange={handleSelectRange}
+                      onClearFilters={handleClearFilters}
+                    />
 
-              <Card>
-                <CardHeader>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "0 25px",
-                    }}
-                  >
-                    <CardTitle tag="h4"></CardTitle>
-                    <div className="flex items-center gap-4">
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "row",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <RunButtons
-                          onSelectRange={handleSelectRange}
-                          onClearFilters={handleClearFilters}
+                    {/* Search */}
+                    {showSearchInput ? (
+                      <div className="relative w-64">
+                        <Input
+                          type="text"
+                          placeholder="Search Journal Entries"
+                          value={searchTerm}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSearchTerm(value);
+                            if (value.trim() === "") {
+                              setSearchTerm("");
+                              setShowSearchInput(false);
+                            }
+                          }}
+                          onBlur={() => {
+                            if (searchTerm.trim() === "") {
+                              setShowSearchInput(false);
+                            }
+                          }}
+                          className="pl-10"
                         />
-                        <div
-                          className="flex items-center gap-2"
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            paddingLeft: "10px",
+                        <button
+                          className="absolute right-3 top-2.5 text-gray-500 cursor-pointer"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setShowSearchInput(false);
                           }}
                         >
-                          {showSearchInput ? (
-                            <div
-                              className="relative w-64"
-                              style={{ display: "flex", flexDirection: "row" }}
-                            >
-                              <Input
-                                type="text"
-                                placeholder="Search Journal Entries"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  setSearchTerm(value);
-                                  if (value.trim() === "") {
-                                    setSearchTerm("");
-                                    setShowSearchInput(false);
-                                  }
-                                }}
-                                onBlur={() => {
-                                  if (searchTerm.trim() === "") {
-                                    setShowSearchInput(false);
-                                  }
-                                }}
-                                className="pl-10"
-                              />
-                              <button
-                                className="absolute right-3 top-2.5 text-gray-500 cursor-pointer"
-                                onClick={() => {
-                                  setSearchTerm("");
-                                  setShowSearchInput(false);
-                                }}
-                              >
-                                <FaTimesCircle size={18} />
-                              </button>
-                            </div>
-                          ) : (
-                            <Search
-                              className="text-gray-500 cursor-pointer"
-                              size={18}
-                              onClick={() => setShowSearchInput(true)}
-                            />
-                          )}
-                        </div>
+                          <FaTimesCircle size={18} />
+                        </button>
                       </div>
-                    </div>
+                    ) : (
+                      <Search
+                        className="text-gray-500 cursor-pointer"
+                        size={18}
+                        onClick={() => setShowSearchInput(true)}
+                      />
+                    )}
+                  </div>
+
+                  {/* Right Section: Add Transaction + Subscription Info */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "15px",
+                    }}
+                  >
+                    {userRole !== 0 && (
+                      <Button
+                        color="primary"
+                        onClick={() => setShowAddTransaction(true)}
+                        disabled={!userSubscription && !isTrialActive()}
+                      >
+                        <FontAwesomeIcon
+                          icon={faPlus}
+                          style={{ marginRight: "5px" }}
+                        />
+                        Add Transaction
+                      </Button>
+                    )}
+                    <UserSubscriptionInfo
+                      userSubscription={userSubscription}
+                      trialEndDate={trialEndDate}
+                      scheduleCount={scheduleCount}
+                    />
                   </div>
                 </CardHeader>
               </Card>
@@ -1696,9 +1671,13 @@ const MesobFinancial2 = () => {
           </Row>
 
           {/* 2x2 Grid Layout for Summary, Journal Entry, Income Statement, Balance Sheet */}
-          <Row style={{ marginTop: "20px" }}>
-            <Col xs={12} md={5}>
-              <Card style={{ marginBottom: "20px", height: "480px" }}>
+          <Row style={{ marginTop: "3px" }}>
+            <Col
+              xs={12}
+              md={5}
+              style={{ paddingLeft: "1px", paddingRight: "1px" }}
+            >
+              <Card style={{ marginBottom: "5px", height: "480px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Summary</CardTitle>
                 </CardHeader>
@@ -1733,6 +1712,7 @@ const MesobFinancial2 = () => {
                     <div
                       style={{
                         marginBottom: "10px",
+                        marginTop: "10px",
                         display: "flex",
                         alignItems: "center",
                       }}
@@ -2051,7 +2031,7 @@ const MesobFinancial2 = () => {
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
-                                0
+                              0
                                 ? "Net Loss"
                                 : "Net Income"}
                             </strong>
@@ -2080,9 +2060,13 @@ const MesobFinancial2 = () => {
             </Col>
 
             {/* Right Column */}
-            <Col xs={12} md={7}>
+            <Col
+              xs={12}
+              md={7}
+              style={{ paddingLeft: "1px", paddingRight: "1px" }}
+            >
               {/* Journal Entry - Top Right */}
-              <Card style={{ marginBottom: "20px", height: "480px" }}>
+              <Card style={{ marginBottom: "5px", height: "480px" }}>
                 <CardHeader>
                   <CardTitle tag="h4">Journal Entry</CardTitle>
                 </CardHeader>
@@ -2727,122 +2711,122 @@ const MesobFinancial2 = () => {
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "Payable") && (
-                <>
-                  <FormGroup>
-                    <Label>Purpose:</Label>
+              <>
+                <FormGroup>
+                  <Label>Purpose:</Label>
 
-                    <Input
-                      type="select"
-                      value={transactionPurpose}
-                      onChange={(e) => setTransactionPurpose(e.target.value)}
-                    >
-                      <option value="">Select purpose</option>
-                      {transactionType === "receive" && (
-                        <>
-                          {incomePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "pay" && paymentMode === "new" && (
-                        <>
-                          {expensePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "Payable" && (
-                        <>
-                          {payablePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                    </Input>
-                    {((transactionType === "receive" &&
+                  <Input
+                    type="select"
+                    value={transactionPurpose}
+                    onChange={(e) => setTransactionPurpose(e.target.value)}
+                  >
+                    <option value="">Select purpose</option>
+                    {transactionType === "receive" && (
+                      <>
+                        {incomePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "pay" && paymentMode === "new" && (
+                      <>
+                        {expensePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "Payable" && (
+                      <>
+                        {payablePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                  </Input>
+                  {((transactionType === "receive" &&
+                    transactionPurpose === "manual") ||
+                    (transactionType === "pay" &&
+                      paymentMode === "new" &&
                       transactionPurpose === "manual") ||
-                      (transactionType === "pay" &&
-                        paymentMode === "new" &&
-                        transactionPurpose === "manual") ||
-                      (transactionType === "Payable" &&
-                        transactionPurpose === "manual")) && (
-                        <FormGroup>
-                          <Input
-                            type="text"
-                            placeholder="Enter purpose manually"
-                            value={manualPurpose}
-                            onChange={(e) => {
-                              setManualPurpose(e.target.value);
-                              setFormErrors({ ...formErrors, manualPurpose: "" });
-                            }}
-                            style={{ marginTop: "10px" }}
-                            invalid={!!formErrors.manualPurpose}
-                          />
-                          {formErrors.manualPurpose && (
-                            <div className="text-danger">
-                              {formErrors.manualPurpose}
-                            </div>
-                          )}
-                        </FormGroup>
-                      )}
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label>Amount ($):</Label>
-                    <Input
-                      type="number"
-                      value={transactionAmount}
-                      onChange={(e) => setTransactionAmount(e.target.value)}
-                    />
-                  </FormGroup>
-                  {transactionType === "pay" && paymentMode === "new" && (
+                    (transactionType === "Payable" &&
+                      transactionPurpose === "manual")) && (
                     <FormGroup>
-                      <Label>Receipt:</Label>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        <Button
-                          color="info"
-                          onClick={() => fileInputRef.current.click()}
-                          style={{ marginBottom: "0" }}
-                        >
-                          {receipt ? "Change Receipt" : "Upload Receipt"}
-                        </Button>
-                        {receipt && (
-                          <span style={{ color: "green" }}>✓ {receipt.name}</span>
-                        )}
-                      </div>
                       <Input
-                        type="file"
-                        innerRef={fileInputRef}
-                        onChange={handleReceiptUpload}
-                        accept="image/*,.pdf"
-                        style={{ display: "none" }}
+                        type="text"
+                        placeholder="Enter purpose manually"
+                        value={manualPurpose}
+                        onChange={(e) => {
+                          setManualPurpose(e.target.value);
+                          setFormErrors({ ...formErrors, manualPurpose: "" });
+                        }}
+                        style={{ marginTop: "10px" }}
+                        invalid={!!formErrors.manualPurpose}
                       />
+                      {formErrors.manualPurpose && (
+                        <div className="text-danger">
+                          {formErrors.manualPurpose}
+                        </div>
+                      )}
                     </FormGroup>
                   )}
-                  <Button
-                    color="success"
-                    onClick={handleAddTransaction}
-                    disabled={isAddingTransaction}
-                  >
-                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                  </Button>
-                </>
-              )}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Amount ($):</Label>
+                  <Input
+                    type="number"
+                    value={transactionAmount}
+                    onChange={(e) => setTransactionAmount(e.target.value)}
+                  />
+                </FormGroup>
+                {transactionType === "pay" && paymentMode === "new" && (
+                  <FormGroup>
+                    <Label>Receipt:</Label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <Button
+                        color="info"
+                        onClick={() => fileInputRef.current.click()}
+                        style={{ marginBottom: "0" }}
+                      >
+                        {receipt ? "Change Receipt" : "Upload Receipt"}
+                      </Button>
+                      {receipt && (
+                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      innerRef={fileInputRef}
+                      onChange={handleReceiptUpload}
+                      accept="image/*,.pdf"
+                      style={{ display: "none" }}
+                    />
+                  </FormGroup>
+                )}
+                <Button
+                  color="success"
+                  onClick={handleAddTransaction}
+                  disabled={isAddingTransaction}
+                >
+                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                </Button>
+              </>
+            )}
           </ModalBody>
         </Modal>
         {/* Previe modal */}

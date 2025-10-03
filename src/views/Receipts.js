@@ -200,8 +200,9 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const blob = await response.blob();
-      const fileName = `receipt-${receipt.transactionPurpose || "unknown"
-        }-${Date.now()}.${fileExtension}`;
+      const fileName = `receipt-${
+        receipt.transactionPurpose || "unknown"
+      }-${Date.now()}.${fileExtension}`;
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -299,8 +300,6 @@ const Receipts = ({ selectedUser }) => {
   //   }
   // };
 
-
-
   // const handleDownloadAll = async () => {
   //   try {
   //     if (receipts.length === 0) {
@@ -354,7 +353,6 @@ const Receipts = ({ selectedUser }) => {
   //   }
   // };
 
-
   const handleDownloadAll = async () => {
     try {
       if (receipts.length === 0) {
@@ -390,22 +388,28 @@ const Receipts = ({ selectedUser }) => {
               }
             } else {
               // Fallback: Extract extension from URL if available
-              const urlParts = url.split('.');
+              const urlParts = url.split(".");
               fileExtension = urlParts.length > 1 ? urlParts.pop() : "bin";
             }
 
             const blob = await response.blob();
-            const fileName = `receipt-${receipt.transactionPurpose || "unknown"}-${index + 1}.${fileExtension}`;
+            const fileName = `receipt-${
+              receipt.transactionPurpose || "unknown"
+            }-${index + 1}.${fileExtension}`;
 
             zip.file(fileName, blob);
           } catch (error) {
             console.error(
-              `Error downloading receipt ${receipt.transactionPurpose || index}:`,
+              `Error downloading receipt ${
+                receipt.transactionPurpose || index
+              }:`,
               error
             );
             notify(
               "tr",
-              `Error downloading receipt ${receipt.transactionPurpose || "unknown"}: ${error.message}`,
+              `Error downloading receipt ${
+                receipt.transactionPurpose || "unknown"
+              }: ${error.message}`,
               "danger"
             );
           }
@@ -443,7 +447,7 @@ const Receipts = ({ selectedUser }) => {
       <div className="content">
         {userRole === 0 && (
           <Row style={{ margin: "0" }}>
-            <Col xs={12}>
+            <Col xs={12} style={{ paddingInline: 0 }}>
               <Card style={{ marginBottom: "20px" }}>
                 <CardHeader></CardHeader>
                 <CardBody style={{ paddingBottom: "15px" }}>
@@ -457,10 +461,10 @@ const Receipts = ({ selectedUser }) => {
                       value={
                         users.find((u) => u.id === selectedUserId)
                           ? {
-                            value: selectedUserId,
-                            label: users.find((u) => u.id === selectedUserId)
-                              .email,
-                          }
+                              value: selectedUserId,
+                              label: users.find((u) => u.id === selectedUserId)
+                                .email,
+                            }
                           : null
                       }
                       onChange={(option) => {

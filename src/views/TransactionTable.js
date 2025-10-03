@@ -43,7 +43,7 @@ const TransactionTable = ({
         <thead>
           <tr>
             <th>Date</th>
-            <th>Sr. Number</th>
+            <th>Sr. No</th>
             <th>Transaction</th>
             <th>Debit</th>
             <th>Credit</th>

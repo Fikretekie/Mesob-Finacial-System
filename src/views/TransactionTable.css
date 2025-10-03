@@ -19,19 +19,19 @@
   border-bottom: 1px solid #ddd;
   white-space: normal; /* Allow wrapping */
   overflow-wrap: break-word; /* Break long words */
-  max-width: 150px; /* Adjust column max widths as needed */
+  max-width: 100px; /* Adjust column max widths as needed */
 }
 .transaction-table th:nth-child(1),
 .transaction-table td:nth-child(1) {
-  max-width: 130px;
+  max-width: 100px;
 } /* Date */
 .transaction-table th:nth-child(2),
 .transaction-table td:nth-child(2) {
-  max-width: 60px;
+  max-width: 30px;
 } /* Sr. Number */
 .transaction-table th:nth-child(6),
 .transaction-table td:nth-child(6) {
-  max-width: 80px;
+  max-width: 40px;
 } /* Actions */
 
 .transaction-table th {
@@ -46,7 +46,7 @@
 /* Debit & Credit styles */
 .debit {
   color: black;
-  padding: 5px 10px;
+
   border-radius: 5px;
 }
 
