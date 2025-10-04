@@ -200,9 +200,8 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const blob = await response.blob();
-      const fileName = `receipt-${
-        receipt.transactionPurpose || "unknown"
-      }-${Date.now()}.${fileExtension}`;
+      const fileName = `receipt-${receipt.transactionPurpose || "unknown"
+        }-${Date.now()}.${fileExtension}`;
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -242,116 +241,6 @@ const Receipts = ({ selectedUser }) => {
     setSearchedDates(null);
     setSelectedType("all");
   };
-
-  // const handleDownloadAll = async () => {
-  //   try {
-  //     if (receipts.length === 0) {
-  //       notify("tr", "No receipts to download.", "warning");
-  //       return;
-  //     }
-
-  //     notify("tr", "Preparing receipts for download...", "info");
-
-  //     const zip = new JSZip();
-
-  //     await Promise.all(
-  //       receipts.map(async (receipt, index) => {
-  //         try {
-  //           const url = receipt.receiptUrl;
-  //           const response = await fetch(url, {
-  //             mode: "cors",
-  //           });
-  //           if (!response.ok) {
-  //             throw new Error(`HTTP error! Status: ${response.status}`);
-  //           }
-
-  //           const blob = await response.blob();
-  //           zip.file(
-  //             `receipt-${receipt.transactionPurpose}-${index + 1}.pdf`,
-  //             blob
-  //           );
-  //         } catch (error) {
-  //           console.error(
-  //             `Error downloading receipt ${receipt.transactionPurpose}:`,
-  //             error
-  //           );
-  //           notify(
-  //             "tr",
-  //             `Error downloading receipt ${receipt.transactionPurpose}: ${error.message}`,
-  //             "danger"
-  //           );
-  //         }
-  //       })
-  //     );
-
-  //     zip
-  //       .generateAsync({ type: "blob" })
-  //       .then((blob) => {
-  //         saveAs(blob, "receipts.zip");
-  //         notify("tr", "All receipts downloaded successfully!", "success");
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error creating zip file:", error);
-  //         notify("tr", "Error creating zip file", "danger");
-  //       });
-  //   } catch (error) {
-  //     console.error("Error downloading all receipts:", error);
-  //     notify("tr", "Error downloading all receipts", "danger");
-  //   }
-  // };
-
-  // const handleDownloadAll = async () => {
-  //   try {
-  //     if (receipts.length === 0) {
-  //       notify("tr", "No receipts to download.", "warning");
-  //       return;
-  //     }
-
-  //     notify("tr", "Preparing receipts for download...", "info");
-
-  //     const zip = new JSZip();
-
-  //     const downloadPromises = receipts.map((receipt, index) =>
-  //       (async () => {
-  //         try {
-  //           const url = receipt.receiptUrl.replace(
-  //             "app.mesobfinancial.com.s3.amazonaws.com",
-  //             "s3.amazonaws.com/app.mesobfinancial.com"
-  //           );
-  //           const response = await fetch(url, { mode: "cors" });
-  //           if (!response.ok) {
-  //             throw new Error(`HTTP error! Status: ${response.status}`);
-  //           }
-
-  //           const blob = await response.blob();
-  //           zip.file(
-  //             `receipt-${receipt.transactionPurpose || "unknown"}-${index + 1}.pdf`,
-  //             blob
-  //           );
-  //         } catch (error) {
-  //           console.error(
-  //             `Error downloading receipt ${receipt.transactionPurpose || index}:`,
-  //             error
-  //           );
-  //           notify(
-  //             "tr",
-  //             `Error downloading receipt ${receipt.transactionPurpose || "unknown"}: ${error.message}`,
-  //             "danger"
-  //           );
-  //         }
-  //       })()
-  //     );
-
-  //     await Promise.all(downloadPromises);
-
-  //     const blob = await zip.generateAsync({ type: "blob" });
-  //     saveAs(blob, "receipts.zip");
-  //     notify("tr", "All receipts downloaded successfully!", "success");
-  //   } catch (error) {
-  //     console.error("Error downloading all receipts:", error);
-  //     notify("tr", "Error creating zip file", "danger");
-  //   }
-  // };
 
   const handleDownloadAll = async () => {
     try {
@@ -393,22 +282,19 @@ const Receipts = ({ selectedUser }) => {
             }
 
             const blob = await response.blob();
-            const fileName = `receipt-${
-              receipt.transactionPurpose || "unknown"
-            }-${index + 1}.${fileExtension}`;
+            const fileName = `receipt-${receipt.transactionPurpose || "unknown"
+              }-${index + 1}.${fileExtension}`;
 
             zip.file(fileName, blob);
           } catch (error) {
             console.error(
-              `Error downloading receipt ${
-                receipt.transactionPurpose || index
+              `Error downloading receipt ${receipt.transactionPurpose || index
               }:`,
               error
             );
             notify(
               "tr",
-              `Error downloading receipt ${
-                receipt.transactionPurpose || "unknown"
+              `Error downloading receipt ${receipt.transactionPurpose || "unknown"
               }: ${error.message}`,
               "danger"
             );
@@ -461,10 +347,10 @@ const Receipts = ({ selectedUser }) => {
                       value={
                         users.find((u) => u.id === selectedUserId)
                           ? {
-                              value: selectedUserId,
-                              label: users.find((u) => u.id === selectedUserId)
-                                .email,
-                            }
+                            value: selectedUserId,
+                            label: users.find((u) => u.id === selectedUserId)
+                              .email,
+                          }
                           : null
                       }
                       onChange={(option) => {

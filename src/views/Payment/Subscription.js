@@ -9,14 +9,12 @@ import { Card, CardHeader, CardBody, CardTitle, Row, Col } from "reactstrap";
 
 const isLocalhost = window.location.href.includes('localhost');
 
-// Set Stripe publishable key based on environment
 const stripePublishableKey = isLocalhost
   ? process.env.PUBLISHABLE_KEY_TEST // Test key
   : process.env.PUBLISHABLE_KEY; // Live key
 
 const stripePromise = loadStripe(stripePublishableKey);
 
-console.log("Stripe Publishable Key:", stripePublishableKey);
 
 const SubscriptionPage = () => {
   const { priceId } = useParams();
