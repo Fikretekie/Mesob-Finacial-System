@@ -93,7 +93,7 @@ const SubscriptionPlans = () => {
       ],
       price: { monthly: "$29.99/month", yearly: "$600/year" },
       priceId: {
-        monthly: "price_1RlUF2Ahnp7DBxtxAWHdp8jw",
+        monthly: "price_1SECeAAhnp7DBxtxSbajPWO3",
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
@@ -187,39 +187,7 @@ const SubscriptionPlans = () => {
       setTimeout(() => setJustSubscribed(false), 5000);
     }
   }, [location.state]);
-  // const updateCancelSubscription = async () => {
-  //   try {
-  //     setCancelLoading(true);
-  //     setError("");
 
-  //     if (!userData || !userData.subscriptionId) {
-  //       setError("Subscription ID missing.");
-  //       return;
-  //     }
-  //     console.log("backend.....", backendBaseUrl, userData);
-
-  //     // Perform DELETE request with subscriptionId in URL, no body sent
-  //     await axios.delete(
-  //       `${backendBaseUrl}/Subscription/${userData.subscriptionId}`,
-  //       {
-  //         // If your backend requires auth token or other headers, add here, e.g.:
-  //         // headers: { Authorization: `Bearer ${token}` }
-  //       }
-  //     );
-
-  //     // Refresh user data to update UI after cancellation
-  //     await fetchUser();
-  //     window.location.reload
-  //   } catch (err) {
-  //     console.error("Unsubscribe error:", err);
-  //     setError("Failed to unsubscribe. Please try again.");
-  //   } finally {
-  //     setCancelLoading(false);
-  //   }
-  // };
-
-
-  // Stripe cancellation function
   const cancelStripeSubscription = async () => {
     try {
       setCancelLoading(true);
@@ -299,9 +267,9 @@ const SubscriptionPlans = () => {
         <title>Subscription Plans - Mesob Finance</title>
       </Helmet>
       <PanelHeader size="sm" />
-      <div className="content">
+      <div className="content" >
         <Row>
-          <Col xs={12}>
+          <Col xs={12} style={{ paddingInline: 0 }}>
             <Card>
               <CardHeader>
                 <CardTitle tag="h4">Subscription Plans</CardTitle>
@@ -408,8 +376,7 @@ const SubscriptionPlans = () => {
                     setIsModalOpen(false);
                   }}
                 >
-                  <FaCreditCard size={20} /> {/* Credit card icon */} Pay with
-                  Card (Stripe)
+                  <FaCreditCard size={20} /> {/* Credit card icon */} {" "} Pay with Card
                 </Button>
               </Col>
               <Col md={6}>

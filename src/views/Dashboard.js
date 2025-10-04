@@ -459,47 +459,50 @@ function Dashboard() {
       <PanelHeader
         size="sm"
         content={
-          <div>
-            <h3
-              style={{
-                color: "white",
-                justifyContent: "center",
-                alignItems: "center",
-                display: "flex",
-              }}
-            >
-              {companyName}
-            </h3>
-          </div>
+          <Row >
+            <Col xs={12} md={8} lg={8} >
+              <h3
+                style={{
+                  color: "white",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  display: "flex",
+                  marginBottom: 0
+                }}
+              >
+                {companyName}
+              </h3>
+            </Col>
+            <Col >
+              {userRole !== 0 && userRole !== 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "10px",
+                    marginBottom: "30px",
+                  }}
+                >
+                  <Button
+                    style={{ marginRight: "4rem" }}
+                    color="primary"
+                    onClick={handleAddTransactionClick}
+                    disabled={!userSubscription && scheduleCount >= 4}
+                  >
+                    <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
+                    Add Transaction
+                  </Button>
+                </div>
+              )}
+            </Col>
+          </Row>
         }
       />
-      {userRole !== 0 && userRole !== 1 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            gap: "10px",
-            marginBottom: "30px",
-          }}
-        >
-          <Button
-            style={{ marginRight: "4rem" }}
-            color="primary"
-            onClick={handleAddTransactionClick}
-            disabled={!userSubscription && scheduleCount >= 4}
-          >
-            <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
-            Add Transaction
-          </Button>
-          {/* <Button color="secondary" onClick={getSchedule}>
-            Get Schedule
-          </Button> */}
-        </div>
-      )}
+
       {userRole === 0 && (
         <div
-          className="content"
+          className="content "
           style={{ marginBottom: "5px", minHeight: "100px", paddingInline: 15 }}
         >
           <Row>
@@ -550,7 +553,7 @@ function Dashboard() {
           </Row>
         </div>
       )}
-      <div className="content">
+      <div className="content" >
         <Row style={{ marginBottom: "5px" }}>
           <Col lg="3" md="6" xs="12" style={{ padding: 0 }}>
             <Card className="card-stats">

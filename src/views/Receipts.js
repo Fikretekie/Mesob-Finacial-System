@@ -330,11 +330,11 @@ const Receipts = ({ selectedUser }) => {
       </Helmet>
       <PanelHeader size="sm" />
       <NotificationAlert ref={notificationAlertRef} />
-      <div className="content">
+      <div className="content" style={{ paddingInline: 15 }} >
         {userRole === 0 && (
-          <Row style={{ margin: "0" }}>
+          <Row style={{ margin: "0", paddingInline: 0 }}>
             <Col xs={12} style={{ paddingInline: 0 }}>
-              <Card style={{ marginBottom: "20px" }}>
+              <Card style={{ marginBottom: "5px" }}>
                 <CardHeader></CardHeader>
                 <CardBody style={{ paddingBottom: "15px" }}>
                   <FormGroup style={{ marginBottom: "0" }}>

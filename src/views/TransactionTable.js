@@ -39,8 +39,8 @@ const TransactionTable = ({
   };
   return (
     <div className="table-container">
-      <table className="transaction-table">
-        <thead>
+      <table className="transaction-table" >
+        <thead >
           <tr>
             <th>Date</th>
             <th>Sr. No</th>
@@ -82,17 +82,17 @@ const TransactionTable = ({
                       {transaction.transactionType === "Pay"
                         ? "Pay [Cash]"
                         : transaction.transactionType === "Payable"
-                        ? "Payable "
-                        : transaction.transactionType === "New_Item"
-                        ? "Pay [Cash]"
-                        : transaction.transactionType}
+                          ? "Payable "
+                          : transaction.transactionType === "New_Item"
+                            ? "Pay [Cash]"
+                            : transaction.transactionType}
                     </div>
                   </>
                 )}
               </td>
 
               {/* Debit Column */}
-              <td className="debit">
+              <td className="debit" >
                 {transaction.transactionType === "Receive" && (
                   <>
                     <div style={{ backgroundColor: colors.cash }}>

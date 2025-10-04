@@ -550,7 +550,7 @@ const AdminSubscriptions = () => {
       <PanelHeader size="sm" />
       <div className="content">
         <Row>
-          <Col xs={12}>
+          <Col xs={12} style={{ paddingInline: 0, }}>
             <Card>
               <CardHeader>
                 <div

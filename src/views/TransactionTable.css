@@ -4,47 +4,74 @@
   margin: 0;
   padding: 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+  /* ✅ Always allow scroll if needed */
 }
 
 .transaction-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
-  /* or fixed if you want tight columns */
+  table-layout: fixed;
+  /* ✅ keeps column widths consistent */
 }
 
+/* Shared Cell Styles */
 .transaction-table th,
 .transaction-table td {
   padding: 8px 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
   white-space: normal;
-  /* Allow wrapping */
   overflow-wrap: break-word;
-  /* Break long words */
-  max-width: 100px;
-  /* Adjust column max widths as needed */
-}
-
-.transaction-table th:nth-child(1),
-.transaction-table td:nth-child(1) {
-  max-width: 100px;
 }
 
 /* Date */
-.transaction-table th:nth-child(2),
-.transaction-table td:nth-child(2) {
-  max-width: 20px;
+.transaction-table th:nth-child(1),
+.transaction-table td:nth-child(1) {
+  max-width: 35px;
+  width: 35px;
 }
 
 /* Sr. Number */
-.transaction-table th:nth-child(6),
-.transaction-table td:nth-child(6) {
-  max-width: 30px;
+.transaction-table th:nth-child(2),
+.transaction-table td:nth-child(2) {
+  max-width: 20px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Transaction Description */
+.transaction-table th:nth-child(3),
+.transaction-table td:nth-child(3) {
+  max-width: 40px;
+  width: 40px;
+}
+
+/* Debit */
+.transaction-table th:nth-child(4),
+.transaction-table td:nth-child(4) {
+  max-width: 25px;
+  width: 25px;
+  text-align: center;
+}
+
+/* Credit */
+.transaction-table th:nth-child(5),
+.transaction-table td:nth-child(5) {
+  max-width: 25px;
+  width: 25px;
+  text-align: center;
 }
 
 /* Actions */
+.transaction-table th:nth-child(6),
+.transaction-table td:nth-child(6) {
+  max-width: 30px;
+  width: 30px;
+  text-align: center;
+}
 
+/* Header */
 .transaction-table th {
   background-color: #f8f9fa;
   font-weight: bold;
@@ -52,19 +79,6 @@
 
 .transaction-table tr:hover {
   background-color: #f5f5f5;
-}
-
-/* Debit & Credit styles */
-.debit {
-  color: black;
-
-  border-radius: 5px;
-}
-
-.credit {
-  color: black;
-  padding: 5px 10px;
-  border-radius: 5px;
 }
 
 /* Action Buttons */
@@ -79,42 +93,16 @@
   transition: all 0.2s ease;
 }
 
-/* ✅ Ensuring Table Rows Stay in Row Format on Mobile */
+/* ✅ Mobile Adjustments */
 @media screen and (max-width: 768px) {
   .table-container {
     overflow-x: auto;
-    display: block;
-    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    /* smooth iOS scroll */
   }
 
   .transaction-table {
-    display: block;
-    width: 100%;
-    white-space: nowrap;
-    /* Keeps text in line */
-    overflow-x: auto;
-    /* Allows horizontal scrolling */
-  }
-
-  .transaction-table thead {
-    display: table-header-group;
-  }
-
-  .transaction-table tbody {
-    display: table-row-group;
-  }
-
-  .transaction-table tr {
-    display: table-row;
-  }
-
-  .transaction-table td {
-    display: table-cell;
-    padding: 10px;
-  }
-
-  /* Ensuring a Scrollable Table */
-  .table-container {
-    overflow-x: scroll;
+    min-width: 600px;
+    /* ✅ keeps structure, user can scroll horizontally */
   }
 }

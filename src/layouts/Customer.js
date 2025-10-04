@@ -35,7 +35,7 @@ function CustomerLayout(props) {
       <Sidebar {...props} routes={customerRoutes} backgroundColor="blue" />
       <div className="main-panel" ref={mainPanelRef}>
         <DemoNavbar {...props} />
-        <div className="content">
+        <div >
           <Routes>
             {getRoutes(customerRoutes)}
             <Route

@@ -4184,7 +4184,7 @@ Created using IcoMoon - icomoon.io
 }
 
 .main-panel>.content {
-  padding: 0 30px 30px;
+  /* padding: 0 30px 30px; */
   min-height: calc(100vh - 123px);
   margin-top: -30px;
 }
@@ -4238,7 +4238,7 @@ Created using IcoMoon - icomoon.io
 }
 
 .panel-header-sm {
-  height: 135px;
+  height: 100px;
 }
 
 .panel-header-lg {
@@ -5465,8 +5465,8 @@ Created using IcoMoon - icomoon.io
   }
 
   .main-panel .content {
-    padding-left: 15px;
-    padding-right: 15px;
+    /* padding-left: 15px;
+    padding-right: 15px; */
   }
 
   .footer nav {
@@ -6538,7 +6538,7 @@ Created using IcoMoon - icomoon.io
 }
 
 .main-panel div>.content {
-  padding: 0 30px 30px;
+  /* padding: 0 30px 30px; */
   min-height: calc(100vh - 123px);
   margin-top: -30px;
 }
@@ -6599,7 +6599,7 @@ Created using IcoMoon - icomoon.io
 }
 
 .panel-header-sm {
-  height: 135px;
+  height: 100px;
 }
 
 .panel-header-lg {

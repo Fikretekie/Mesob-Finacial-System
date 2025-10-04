@@ -20,24 +20,23 @@ import React from "react";
 import { Container } from "reactstrap";
 // used for making the prop types of this component
 import PropTypes from "prop-types";
-
+// 
 function Footer(props) {
   return (
     <footer className={"footer" + (props.default ? " footer-default" : "")}>
       <Container fluid={props.fluid ? true : false}>
-        <div className="copyright" style={{ textAlign: "center" }}>
-          &copy; {1900 + new Date().getYear()}. Copy right reserved for Mesob Financial
-          <br />
+        <div className="copyright">
+          &copy; {1900 + new Date().getYear()} · Copy right reserved for Mesob Financial ·
           Coded by{" "}
-          <a href="https://therevolutiontectnologies.tech/" target="_blank">
+          <a href="https://therevolutiontectnologies.io" target="_blank" rel="noopener noreferrer">
             The Revolution Technologies
           </a>
-          .
         </div>
       </Container>
     </footer>
   );
 }
+
 
 Footer.propTypes = {
   default: PropTypes.bool,

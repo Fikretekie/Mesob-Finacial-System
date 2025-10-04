@@ -102,7 +102,7 @@ const CompleteProfile = () => {
   return (
     <div className="complete-profile-container">
       <NotificationAlert ref={notificationAlertRef} />
-      <div className="complete-profile-box">
+      <div className="complete-profile-box" >
         <h2>Complete Your Profile</h2>
         <p>
           Please provide some additional information to finish setting up your

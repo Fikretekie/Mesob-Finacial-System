@@ -71,7 +71,7 @@ function UserPage() {
       // Use optional chaining and sensible defaults
       setEditDisabled(
         !res.data?.user?.subscription &&
-          (res.data?.user?.scheduleCount ?? 0) >= 4
+        (res.data?.user?.scheduleCount ?? 0) >= 4
       );
     };
     fetchSubscription();
@@ -139,7 +139,7 @@ function UserPage() {
       <PanelHeader size="sm" />
       <div className="content">
         <Row>
-          <Col md="8">
+          <Col md="8" style={{ paddingInline: 0 }}>
             <Card>
               <CardHeader>
                 <h5 className="title">User Profile</h5>
@@ -148,8 +148,8 @@ function UserPage() {
                 {error && <Alert color="danger">{error}</Alert>}
                 {success && <Alert color="success">{success}</Alert>}
                 <Form onSubmit={handleSubmit}>
-                  <Row>
-                    <Col className="pr-1" md="6">
+                  <Row >
+                    <Col className="pr-1" md="6" >
                       <FormGroup>
                         <label>Name</label>
                         <Input

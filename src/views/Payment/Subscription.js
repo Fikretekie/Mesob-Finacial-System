@@ -21,13 +21,10 @@ const SubscriptionPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Subscribe - Mesob Finance</title>
-      </Helmet>
       <PanelHeader size="sm" />
-      <div className="content">
+      <div className="content"  >
         <Row>
-          <Col xs={12}>
+          <Col xs={12} style={{ paddingInline: 0, }}>
             <Card>
               <CardHeader>
                 <CardTitle tag="h4">Subscribe</CardTitle>
