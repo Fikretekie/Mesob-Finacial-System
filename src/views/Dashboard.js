@@ -442,6 +442,7 @@ function Dashboard() {
       // Only set subscription if user exists
       if (response.data && response.data.user) {
         setUserSubscription(response.data.user.subscription);
+        console.log('=>>>>>', response.data.user.subscription);
         setScheduleCount(response.data.user.scheduleCount || 1);
       } else {
         setUserSubscription(false); // or null, or a sensible default
@@ -488,7 +489,7 @@ function Dashboard() {
                     style={{ marginRight: "4rem" }}
                     color="primary"
                     onClick={handleAddTransactionClick}
-                    disabled={!userSubscription && scheduleCount >= 4}
+                    disabled={!userSubscription}
                   >
                     <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
                     Add Transaction

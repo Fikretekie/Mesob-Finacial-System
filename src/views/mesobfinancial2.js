@@ -870,7 +870,10 @@ const MesobFinancial2 = () => {
         if (response.data?.user) {
           const userData = response.data.user;
           setUserSubscription(userData?.subscription || false);
+          console.log('subscription=>>> ', userData?.subscription);
           setTrialEndDate(new Date(userData?.trialEndDate));
+          console.log('trialEndDate=>>> ', userData?.trialEndDate);
+
           setScheduleCount(userData?.scheduleCount || 1);
         }
       } catch (error) {
