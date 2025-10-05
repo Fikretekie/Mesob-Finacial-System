@@ -93,7 +93,7 @@ const SubscriptionPlans = () => {
       ],
       price: { monthly: "$29.99/month", yearly: "$600/year" },
       priceId: {
-        monthly: "price_1SECeAAhnp7DBxtxSbajPWO3",
+        monthly: window?.location.hostname.includes("localhost") ? "price_1RlUF2Ahnp7DBxtxAWHdp8jw" : "price_1SECeAAhnp7DBxtxSbajPWO3",
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
