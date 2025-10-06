@@ -34,7 +34,7 @@ const SubscriptionPlans = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPriceId, setSelectedPriceId] = useState(null);
   const [justSubscribed, setJustSubscribed] = useState(false);
-
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   // Backend base URL
   const backendBaseUrl =
     "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
@@ -313,7 +313,7 @@ const SubscriptionPlans = () => {
                                 </Alert>
                                 <Button
                                   color="danger"
-                                  onClick={handleCancelSubscription}
+                                  onClick={() => setShowConfirmModal(true)}  // ← Opens modal
                                   disabled={cancelLoading}
                                 >
                                   {cancelLoading ? (
@@ -496,6 +496,37 @@ const SubscriptionPlans = () => {
           <ModalFooter>
             <Button color="secondary" onClick={handleCloseModal}>
               Cancel
+            </Button>
+          </ModalFooter>
+        </Modal>
+
+        {/* Confirmation modal for unsubscribe */}
+        <Modal isOpen={showConfirmModal} toggle={() => setShowConfirmModal(false)}>
+          <ModalHeader toggle={() => setShowConfirmModal(false)}>
+            Confirm Unsubscribe
+          </ModalHeader>
+          <ModalBody>
+            Are you sure you want to unsubscribe? This action cannot be undone.
+          </ModalBody>
+          <ModalFooter>
+            <Button color="secondary" onClick={() => setShowConfirmModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              color="danger"
+              onClick={() => {
+                handleCancelSubscription();
+                setShowConfirmModal(false);
+              }}
+              disabled={cancelLoading}
+            >
+              {cancelLoading ? (
+                <>
+                  <Spinner size="sm" /> Unsubscribing...
+                </>
+              ) : (
+                "Unsubscribe"
+              )}
             </Button>
           </ModalFooter>
         </Modal>

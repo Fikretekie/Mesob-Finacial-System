@@ -454,6 +454,8 @@ const AdminSubscriptions = () => {
         ),
       ]);
 
+
+
       console.log("Users Response:", usersRes.data);
       console.log("Subscriptions Response:", subsRes.data);
 
@@ -471,7 +473,33 @@ const AdminSubscriptions = () => {
         return { ...user, subscription };
       });
 
+      // After the enrichedUsers mapping
       console.log("Enriched users:", enrichedUsers);
+
+      // Add these new logs:
+      console.log("Users with PayPal subscriptions:",
+        enrichedUsers.filter(user =>
+          user.subscription?.provider?.toLowerCase() === 'paypal'
+        )
+      );
+
+      console.log("Users with non-Stripe subscriptions:",
+        enrichedUsers.filter(user =>
+          user.subscription &&
+          user.subscription.provider?.toLowerCase() !== 'stripe'
+        )
+      );
+
+      console.log("All subscription providers found:",
+        [...new Set(subscriptionsData
+          .filter(sub => sub.provider)
+          .map(sub => sub.provider.toLowerCase())
+        )]
+      );
+
+      console.log("Subscriptions without provider field:",
+        subscriptionsData.filter(sub => !sub.provider)
+      );
 
       setUsers(enrichedUsers);
       setSubscriptions(subscriptionsData);

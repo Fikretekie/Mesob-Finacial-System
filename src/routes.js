@@ -10,6 +10,9 @@ import AdminSubscriptions from "views/Payment/AdminSubscriptions";
 import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import MesobFinancial2 from "views/mesobfinancial2";
 
+const userRole = parseInt(localStorage.getItem("role"));
+console.log("userRole---=>>>", userRole);
+
 const adminRoutes = [
   {
     path: "/dashboard",
@@ -112,13 +115,13 @@ const customerRoutes = [
     component: <CSVReports />,
     layout: "/customer",
   },
-  {
+  ...(userRole !== 1 ? [{
     path: "/subscription",
     name: "Subscribe",
     icon: "business_money-coins",
     component: <SubscriptionPlans />,
     layout: "/customer",
-  },
+  }] : []),
 ];
 
 export { adminRoutes, customerRoutes };

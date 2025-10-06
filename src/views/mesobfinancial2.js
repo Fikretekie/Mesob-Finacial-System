@@ -1449,9 +1449,8 @@ const MesobFinancial2 = () => {
           <Button
             color="primary"
             onClick={handleRun}
-            disabled={
-              !userSubscription && (!isTrialActive() || scheduleCount >= 4)
-            }
+            disabled={userRole === 1 ? false : (!userSubscription && (!isTrialActive() || scheduleCount >= 4))}
+
             style={{ height: "38px" }}
           >
             Run
@@ -1459,9 +1458,8 @@ const MesobFinancial2 = () => {
           <Button
             color="secondary"
             onClick={handleClear}
-            disabled={
-              !userSubscription && (!isTrialActive() || scheduleCount >= 4)
-            }
+            disabled={userRole === 1 ? false : (!userSubscription && (!isTrialActive() || scheduleCount >= 4))}
+
             style={{ height: "38px" }}
           >
             Clear Filters
@@ -1469,9 +1467,8 @@ const MesobFinancial2 = () => {
           <Button
             color="danger"
             onClick={handleDeleteAllRecords}
-            disabled={
-              !userSubscription && (!isTrialActive() || scheduleCount >= 4)
-            }
+            disabled={userRole === 1 ? false : (!userSubscription && (!isTrialActive() || scheduleCount >= 4))}
+
             style={{ height: "38px" }}
           >
             Close
@@ -1652,7 +1649,7 @@ const MesobFinancial2 = () => {
                       <Button
                         color="primary"
                         onClick={() => setShowAddTransaction(true)}
-                        disabled={!userSubscription && !isTrialActive()}
+                        disabled={userRole === 1 ? false : (!userSubscription && !isTrialActive())}  // Enable for role 1 even if not subscribed/trial
                       >
                         <FontAwesomeIcon
                           icon={faPlus}
@@ -1661,11 +1658,13 @@ const MesobFinancial2 = () => {
                         Add Transaction
                       </Button>
                     )}
-                    <UserSubscriptionInfo
-                      userSubscription={userSubscription}
-                      trialEndDate={trialEndDate}
-                      scheduleCount={scheduleCount}
-                    />
+                    {userRole === 2 && (
+                      <UserSubscriptionInfo
+                        userSubscription={userSubscription}
+                        trialEndDate={trialEndDate}
+                        scheduleCount={scheduleCount}
+                      />
+                    )}
                   </div>
                 </CardHeader>
               </Card>
@@ -2087,7 +2086,8 @@ const MesobFinancial2 = () => {
                         selectedTimeRange,
                         searchTerm
                       )}
-                      disabled={!userSubscription && scheduleCount >= 4}
+                      disabled={userRole === 1 ? false : (!userSubscription && scheduleCount >= 4)}
+
                       selectedTimeRange={selectedTimeRange}
                       handleDelete={handleDelete}
                       handleAddExpense={handleAddExpense}

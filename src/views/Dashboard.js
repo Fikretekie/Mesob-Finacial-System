@@ -475,7 +475,7 @@ function Dashboard() {
               </h3>
             </Col>
             <Col >
-              {userRole !== 0 && userRole !== 1 && (
+              {userRole !== 0 && (
                 <div
                   style={{
                     display: "flex",
@@ -489,7 +489,7 @@ function Dashboard() {
                     style={{ marginRight: "4rem" }}
                     color="primary"
                     onClick={handleAddTransactionClick}
-                    disabled={!userSubscription}
+                    disabled={userRole === 1 ? false : !userSubscription}
                   >
                     <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
                     Add Transaction

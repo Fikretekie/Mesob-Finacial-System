@@ -43,9 +43,11 @@ const CSVReports = () => {
       const res = await axios.get(
         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
-      setDisabled(
-        !res.data.user.subscription && res.data.user.scheduleCount >= 4
-      );
+      // setDisabled(
+      //   !res.data.user.subscription && res.data.user.scheduleCount >= 4
+      // );
+      const { subscription, scheduleCount, userRole } = res.data.user;
+      setDisabled(!(subscription || userRole === 1) && scheduleCount >= 4);
     };
     checkSubscription();
   }, []);

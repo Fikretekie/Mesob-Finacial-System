@@ -247,6 +247,7 @@ const MesobFinancial = () => {
                   <Button
                     color="primary"
                     onClick={() => setShowAddTransaction(true)}
+                  // disabled={userRole === 1}
                   >
                     Add Transaction
                   </Button>

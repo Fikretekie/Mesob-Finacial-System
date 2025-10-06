@@ -80,7 +80,7 @@ const Receipts = ({ selectedUser }) => {
         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
       setDisabled(
-        !res.data.user.subscription && res.data.user.scheduleCount >= 4
+        userRole !== 1 && !res.data.user.subscription && res.data.user.scheduleCount >= 4
       );
     };
     checkSubscription();
