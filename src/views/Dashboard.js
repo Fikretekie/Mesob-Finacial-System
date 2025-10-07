@@ -65,6 +65,8 @@ function Dashboard() {
   const [totalPayable, setTotalPayable] = useState(0);
   const [monthlySales, setMonthlySales] = useState([]);
   const [users, setUsers] = useState([]);
+  const [trialEndDate, setTrialEndDate] = useState(null);
+
   const persistedUserId = localStorage.getItem("selectedUserId");
   console.log("Persisted User ID:", persistedUserId);
 
@@ -402,6 +404,10 @@ function Dashboard() {
     }
   };
 
+  const isTrialActive = () => {
+    return new Date() < trialEndDate && scheduleCount < 4;
+  };
+
   useEffect(() => {
     const fetchCompanyName = async () => {
       try {
@@ -442,6 +448,7 @@ function Dashboard() {
       // Only set subscription if user exists
       if (response.data && response.data.user) {
         setUserSubscription(response.data.user.subscription);
+        setTrialEndDate(new Date(response.data.user?.trialEndDate));
         console.log('=>>>>>', response.data.user.subscription);
         setScheduleCount(response.data.user.scheduleCount || 1);
       } else {
@@ -497,7 +504,7 @@ function Dashboard() {
                     }}
                     color="primary"
                     onClick={handleAddTransactionClick}
-                    disabled={userRole === 1 ? false : !userSubscription}
+                    disabled={userRole === 1 ? false : (!userSubscription && !isTrialActive())}
                   >
                     <FontAwesomeIcon
                       icon={faPlus}

@@ -47,7 +47,7 @@ function UserPage() {
         const user = response.data?.user;
         if (user) {
           setUserData({ ...user, id: userId });
-          setIsCustomer(user.role === 2);
+          setIsCustomer(user.role === 2 || user.role === 1);
         } else {
           setUserData({ id: userId });
           setIsCustomer(false);

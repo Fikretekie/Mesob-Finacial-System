@@ -76,8 +76,8 @@ const Receipts = ({ selectedUser }) => {
       );
       setDisabled(
         userRole !== 1 &&
-          !res.data.user.subscription &&
-          res.data.user.scheduleCount >= 4
+        !res.data.user.subscription &&
+        res.data.user.scheduleCount >= 4
       );
     };
     checkSubscription();
@@ -185,9 +185,8 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const blob = await response.blob();
-      const fileName = `receipt-${
-        receipt.transactionPurpose || "unknown"
-      }-${Date.now()}.${fileExtension}`;
+      const fileName = `receipt-${receipt.transactionPurpose || "unknown"
+        }-${Date.now()}.${fileExtension}`;
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -267,22 +266,19 @@ const Receipts = ({ selectedUser }) => {
             }
 
             const blob = await response.blob();
-            const fileName = `receipt-${
-              receipt.transactionPurpose || "unknown"
-            }-${index + 1}.${fileExtension}`;
+            const fileName = `receipt-${receipt.transactionPurpose || "unknown"
+              }-${index + 1}.${fileExtension}`;
 
             zip.file(fileName, blob);
           } catch (error) {
             console.error(
-              `Error downloading receipt ${
-                receipt.transactionPurpose || index
+              `Error downloading receipt ${receipt.transactionPurpose || index
               }:`,
               error
             );
             notify(
               "tr",
-              `Error downloading receipt ${
-                receipt.transactionPurpose || "unknown"
+              `Error downloading receipt ${receipt.transactionPurpose || "unknown"
               }: ${error.message}`,
               "danger"
             );
@@ -335,10 +331,10 @@ const Receipts = ({ selectedUser }) => {
                       value={
                         users.find((u) => u.id === selectedUserId)
                           ? {
-                              value: selectedUserId,
-                              label: users.find((u) => u.id === selectedUserId)
-                                .email,
-                            }
+                            value: selectedUserId,
+                            label: users.find((u) => u.id === selectedUserId)
+                              .email,
+                          }
                           : null
                       }
                       onChange={(option) => {
@@ -387,9 +383,9 @@ const Receipts = ({ selectedUser }) => {
               <CardHeader>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                   <CardTitle tag="h4" className="mb-0">
-                    Transaction Receipts
+                    Receipts
                   </CardTitle>
-                  <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+                  {/* <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
                     <div className="d-flex flex-column flex-sm-row gap-2">
                       <FormGroup className="mb-0 flex-fill">
                         <Label for="fromDate" className="mb-1">
@@ -439,6 +435,58 @@ const Receipts = ({ selectedUser }) => {
                         disabled={disabled}
                         className="flex-fill"
                         style={{ minWidth: "80px" }}
+                      >
+                        Download All
+                      </Button>
+                    </div>
+                  </div> */}
+                  <div className="d-flex flex-column flex-lg-row gap-3 w-100 align-items-lg-end">
+                    <div className="d-flex flex-column flex-sm-row gap-3 flex-lg-grow-1">
+                      <FormGroup className="mb-0 flex-fill p-2" >
+                        <Label for="fromDate" className="mb-1">
+                          From
+                        </Label>
+                        <Input
+                          type="date"
+                          id="fromDate"
+                          value={fromDate}
+                          onChange={(e) => setFromDate(e.target.value)}
+                          className="w-100"
+                        />
+                      </FormGroup>
+                      <FormGroup className="mb-0 flex-fill p-2">
+                        <Label for="toDate" className="mb-1">
+                          To
+                        </Label>
+                        <Input
+                          type="date"
+                          id="toDate"
+                          value={toDate}
+                          onChange={(e) => setToDate(e.target.value)}
+                          className="w-100"
+                        />
+                      </FormGroup>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <Button
+                        color="primary"
+                        onClick={handleRun}
+                        style={{ minWidth: "90px" }}
+                      >
+                        Run
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={handleClear}
+                        style={{ minWidth: "90px" }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        color="info"
+                        onClick={handleDownloadAll}
+                        disabled={disabled}
+                        style={{ minWidth: "120px" }}
                       >
                         Download All
                       </Button>

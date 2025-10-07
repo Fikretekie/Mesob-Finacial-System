@@ -86,7 +86,7 @@ function Users() {
       width: "100px",
       cell: (row) => (
         <Badge color={row.role === 2 ? "info" : "warning"}>
-          {row.role === 2 ? "User" : "Admin"}
+          {row.role === 2 ? "Customer" : row.role === 1 ? "Customer 1" : row.role === 0 ? "Super admin" : "Unknown"}
         </Badge>
       ),
     },
@@ -181,7 +181,8 @@ function Users() {
             <p className="text-muted mb-1 small">ID: {user.id}</p>
             <div className="d-flex justify-content-between align-items-center mt-2">
               <Badge color={user.role === 2 ? "info" : "warning"}>
-                {user.role === 2 ? "User" : "Admin"}
+
+                {user.role === 2 ? "Customer" : user.role === 1 ? "Customer 1" : user.role === 0 ? "Super admin" : "Unknown"}
               </Badge>
               <span className="font-weight-bold text-success">
                 ${user.cashBalance || "0"}

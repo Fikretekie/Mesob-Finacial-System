@@ -560,6 +560,7 @@ const AdminSubscriptions = () => {
 
       setUsers(enrichedUsers);
       setSubscriptions(subscriptionsData);
+      console.log('subscriptionsData=>>', subscriptionsData);
       setError(null);
     } catch (err) {
       console.error("Data fetch error:", err);
@@ -967,7 +968,7 @@ const AdminSubscriptions = () => {
               <Col xs={12} sm={6} className="mb-3">
                 <strong>Expire Date:</strong>{" "}
                 {selectedSubscription.expireDate &&
-                selectedSubscription.expireDate !== "N/A"
+                  selectedSubscription.expireDate !== "N/A"
                   ? new Date(selectedSubscription.expireDate).toLocaleString()
                   : "N/A"}
               </Col>

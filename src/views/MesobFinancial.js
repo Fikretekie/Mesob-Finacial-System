@@ -257,7 +257,7 @@ const MesobFinancial = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Journal Entry</CardTitle>
+                <CardTitle style={{ fontWeight: 600 }} tag="h4">Journal Entry</CardTitle>
               </CardHeader>
               <CardBody>
                 {loading ? (
@@ -333,7 +333,7 @@ const MesobFinancial = () => {
           <Col xs={12}>
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Income Statement</CardTitle>
+                <CardTitle tag="h4" style={{ fontWeight: 600 }} >Income Statement</CardTitle>
               </CardHeader>
               <CardBody>
                 <IncomeStatement items={journalEntries} />
@@ -346,7 +346,7 @@ const MesobFinancial = () => {
           <Col xs={12}>
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Balance Sheet</CardTitle>
+                <CardTitle tag="h4" style={{ fontWeight: 600 }} >Balance Sheet</CardTitle>
               </CardHeader>
               <CardBody>
                 <BalanceSheet items={journalEntries} />
