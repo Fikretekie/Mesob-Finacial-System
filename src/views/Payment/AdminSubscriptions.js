@@ -326,6 +326,18 @@ const AdminSubscriptions = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("1");
   const [providerFilter, setProviderFilter] = useState("all");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleSubscriptionClick = (subscription) => {
     setSelectedSubscription(subscription);
@@ -340,7 +352,8 @@ const AdminSubscriptions = () => {
     if (activeTab !== tab) setActiveTab(tab);
   };
 
-  const columns = [
+  // Desktop columns
+  const desktopColumns = [
     {
       name: "Name",
       selector: (row) => row.name || "-",
@@ -436,6 +449,85 @@ const AdminSubscriptions = () => {
     },
   ];
 
+  // Mobile columns - simplified view
+  const mobileColumns = [
+    {
+      name: "User",
+      selector: (row) => row.email,
+      sortable: true,
+      minWidth: "200px",
+      cell: (row) => (
+        <div>
+          <div className="font-weight-bold text-primary">{row.email}</div>
+          {row.name && <div className="text-muted small">Name: {row.name}</div>}
+          {row.companyName && (
+            <div className="text-muted small">Company: {row.companyName}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      name: "Subscription",
+      selector: (row) => row.subscription?.status || "-",
+      sortable: true,
+      width: "150px",
+      cell: (row) => {
+        const subscription = row.subscription;
+        if (!subscription) {
+          return (
+            <Badge color="secondary" pill>
+              No Sub
+            </Badge>
+          );
+        }
+
+        const isActive = subscription.status?.toLowerCase() === "active";
+        const provider = subscription.provider;
+
+        return (
+          <div>
+            <Badge
+              color={isActive ? "success" : "danger"}
+              pill
+              className="mb-1 d-block"
+            >
+              {subscription.status?.toUpperCase() || "N/A"}
+            </Badge>
+            <Badge
+              color={
+                provider?.toLowerCase() === "stripe" ? "primary" : "success"
+              }
+              pill
+              className="d-block"
+            >
+              {provider?.toUpperCase() || "N/A"}
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      name: "Actions",
+      cell: (row) =>
+        row.subscription ? (
+          <Button
+            color="info"
+            size="sm"
+            onClick={() => handleSubscriptionClick(row.subscription)}
+            className="w-100"
+          >
+            Details
+          </Button>
+        ) : (
+          <span className="text-muted">-</span>
+        ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+      width: "100px",
+    },
+  ];
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -454,17 +546,10 @@ const AdminSubscriptions = () => {
         ),
       ]);
 
-
-
-      console.log("Users Response:", usersRes.data);
-      console.log("Subscriptions Response:", subsRes.data);
-
       const usersData = Array.isArray(usersRes.data) ? usersRes.data : [];
       const subscriptionsData = Array.isArray(subsRes.data)
         ? subsRes.data
         : subsRes.data.subscriptions || [];
-
-      console.log("Processed subscriptions:", subscriptionsData);
 
       const enrichedUsers = usersData.map((user) => {
         const subscription = subscriptionsData.find(
@@ -472,34 +557,6 @@ const AdminSubscriptions = () => {
         );
         return { ...user, subscription };
       });
-
-      // After the enrichedUsers mapping
-      console.log("Enriched users:", enrichedUsers);
-
-      // Add these new logs:
-      console.log("Users with PayPal subscriptions:",
-        enrichedUsers.filter(user =>
-          user.subscription?.provider?.toLowerCase() === 'paypal'
-        )
-      );
-
-      console.log("Users with non-Stripe subscriptions:",
-        enrichedUsers.filter(user =>
-          user.subscription &&
-          user.subscription.provider?.toLowerCase() !== 'stripe'
-        )
-      );
-
-      console.log("All subscription providers found:",
-        [...new Set(subscriptionsData
-          .filter(sub => sub.provider)
-          .map(sub => sub.provider.toLowerCase())
-        )]
-      );
-
-      console.log("Subscriptions without provider field:",
-        subscriptionsData.filter(sub => !sub.provider)
-      );
 
       setUsers(enrichedUsers);
       setSubscriptions(subscriptionsData);
@@ -528,20 +585,21 @@ const AdminSubscriptions = () => {
 
     if (subscribed) {
       // Show users with active subscriptions
-      filtered = users.filter((user) =>
-        user.subscription && isSubscriptionActive(user.subscription)
+      filtered = users.filter(
+        (user) => user.subscription && isSubscriptionActive(user.subscription)
       );
     } else {
       // Show users without subscription or with cancelled/inactive subscriptions
-      filtered = users.filter((user) =>
-        !user.subscription || !isSubscriptionActive(user.subscription)
+      filtered = users.filter(
+        (user) => !user.subscription || !isSubscriptionActive(user.subscription)
       );
     }
 
     if (providerFilter !== "all" && subscribed) {
       filtered = filtered.filter(
         (user) =>
-          user.subscription?.provider?.toLowerCase() === providerFilter.toLowerCase()
+          user.subscription?.provider?.toLowerCase() ===
+          providerFilter.toLowerCase()
       );
     }
 
@@ -564,7 +622,7 @@ const AdminSubscriptions = () => {
     return {
       stripe: stripeCount,
       paypal: paypalCount,
-      total: activeSubscriptions.length
+      total: activeSubscriptions.length,
     };
   };
 
@@ -573,27 +631,105 @@ const AdminSubscriptions = () => {
     (user) => !user.subscription || !isSubscriptionActive(user.subscription)
   ).length;
 
+  // Mobile Card Component for better mobile experience
+  const MobileSubscriptionCard = ({ user, subscribed }) => (
+    <Card className="mb-3">
+      <CardBody>
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <div className="flex-grow-1">
+            <h6 className="font-weight-bold text-primary mb-1">{user.email}</h6>
+            {user.name && (
+              <p className="text-muted mb-1 small">Name: {user.name}</p>
+            )}
+            {user.companyName && (
+              <p className="text-muted mb-1 small">
+                Company: {user.companyName}
+              </p>
+            )}
+            {user.phone_number && (
+              <p className="text-muted mb-1 small">
+                Phone: {user.phone_number}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {user.subscription ? (
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <div>
+              <Badge
+                color={
+                  user.subscription.status?.toLowerCase() === "active"
+                    ? "success"
+                    : "danger"
+                }
+                pill
+                className="mr-2"
+              >
+                {user.subscription.status?.toUpperCase()}
+              </Badge>
+              <Badge
+                color={
+                  user.subscription.provider?.toLowerCase() === "stripe"
+                    ? "primary"
+                    : "success"
+                }
+                pill
+              >
+                {user.subscription.provider?.toUpperCase()}
+              </Badge>
+            </div>
+            <div className="text-right">
+              <small className="text-muted d-block">
+                Plan: {user.subscription.subscriptionPlan || "N/A"}
+              </small>
+              <small className="text-muted">
+                Created:{" "}
+                {user.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString()
+                  : "-"}
+              </small>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-2">
+            <Badge color="secondary" pill>
+              No Subscription
+            </Badge>
+          </div>
+        )}
+
+        {user.subscription && (
+          <Button
+            color="info"
+            size="sm"
+            onClick={() => handleSubscriptionClick(user.subscription)}
+            className="w-100 mt-2"
+          >
+            View Details
+          </Button>
+        )}
+      </CardBody>
+    </Card>
+  );
+
   return (
     <>
       <PanelHeader size="sm" />
       <div className="content">
         <Row>
-          <Col xs={12} style={{ paddingInline: 0, }}>
+          <Col xs={12} style={{ paddingInline: 0 }}>
             <Card>
               <CardHeader>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <CardTitle tag="h4">Subscriptions</CardTitle>
-                  <div>
-                    <Button color="secondary" className="btn-round btn-sm mr-2">
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                  <CardTitle tag="h4" className="mb-0">
+                    Subscriptions
+                  </CardTitle>
+                  <div className="d-flex flex-wrap gap-2">
+                    <Button color="secondary" className="btn-round btn-sm">
                       Total: {users.length}
                     </Button>
-                    <Button color="primary" className="btn-round btn-sm mr-2">
+                    <Button color="primary" className="btn-round btn-sm">
                       Stripe: {counts.stripe}
                     </Button>
                     <Button color="success" className="btn-round btn-sm">
@@ -601,23 +737,27 @@ const AdminSubscriptions = () => {
                     </Button>
                   </div>
                 </div>
-                <Nav tabs>
-                  <NavItem>
+
+                {/* Mobile-friendly tabs */}
+                <Nav tabs className={isMobile ? "flex-column" : ""}>
+                  <NavItem className={isMobile ? "w-100" : ""}>
                     <NavLink
                       className={activeTab === "1" ? "active" : ""}
                       onClick={() => toggleTab("1")}
                       style={{ cursor: "pointer" }}
+                      className={`text-center ${isMobile ? "w-100" : ""}`}
                     >
-                      Active Subscriptions ({counts.total})
+                      Active ({counts.total})
                     </NavLink>
                   </NavItem>
-                  <NavItem>
+                  <NavItem className={isMobile ? "w-100" : ""}>
                     <NavLink
                       className={activeTab === "2" ? "active" : ""}
                       onClick={() => toggleTab("2")}
                       style={{ cursor: "pointer" }}
+                      className={`text-center ${isMobile ? "w-100" : ""}`}
                     >
-                      Cancelled/Inactive ({unsubscribedCount})
+                      Inactive ({unsubscribedCount})
                     </NavLink>
                   </NavItem>
                 </Nav>
@@ -626,46 +766,79 @@ const AdminSubscriptions = () => {
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="1">
                     <div className="mb-3">
-                      <Button
-                        color={providerFilter === "all" ? "primary" : "secondary"}
-                        size="sm"
-                        className="mr-2"
-                        onClick={() => setProviderFilter("all")}
-                      >
-                        All ({counts.total})
-                      </Button>
-                      <Button
-                        color={providerFilter === "stripe" ? "primary" : "secondary"}
-                        size="sm"
-                        className="mr-2"
-                        onClick={() => setProviderFilter("stripe")}
-                      >
-                        Stripe ({counts.stripe})
-                      </Button>
-                      <Button
-                        color={providerFilter === "paypal" ? "success" : "secondary"}
-                        size="sm"
-                        onClick={() => setProviderFilter("paypal")}
-                      >
-                        PayPal ({counts.paypal})
-                      </Button>
+                      <div className="d-flex flex-wrap gap-2">
+                        <Button
+                          color={
+                            providerFilter === "all" ? "primary" : "secondary"
+                          }
+                          size="sm"
+                          onClick={() => setProviderFilter("all")}
+                        >
+                          All ({counts.total})
+                        </Button>
+                        <Button
+                          color={
+                            providerFilter === "stripe"
+                              ? "primary"
+                              : "secondary"
+                          }
+                          size="sm"
+                          onClick={() => setProviderFilter("stripe")}
+                        >
+                          Stripe ({counts.stripe})
+                        </Button>
+                        <Button
+                          color={
+                            providerFilter === "paypal"
+                              ? "success"
+                              : "secondary"
+                          }
+                          size="sm"
+                          onClick={() => setProviderFilter("paypal")}
+                        >
+                          PayPal ({counts.paypal})
+                        </Button>
+                      </div>
                     </div>
                     {error ? (
                       <Alert color="danger">{error}</Alert>
                     ) : loading ? (
-                      <div className="text-center">
+                      <div className="text-center py-4">
                         <Spinner color="primary" />
-                        <p>Loading subscriptions...</p>
+                        <p className="mt-2">Loading subscriptions...</p>
+                      </div>
+                    ) : isMobile ? (
+                      // Mobile Card Layout
+                      <div>
+                        {getFilteredUsers(true).length === 0 ? (
+                          <div className="text-center py-4 text-muted">
+                            No active subscriptions found
+                          </div>
+                        ) : (
+                          getFilteredUsers(true).map((user) => (
+                            <MobileSubscriptionCard
+                              key={user.id}
+                              user={user}
+                              subscribed={true}
+                            />
+                          ))
+                        )}
                       </div>
                     ) : (
+                      // Desktop Table Layout
                       <DataTable
-                        columns={columns}
+                        columns={desktopColumns}
                         data={getFilteredUsers(true)}
                         pagination
                         responsive
                         highlightOnHover
                         fixedHeader
-                        noDataComponent="No active subscriptions found"
+                        fixedHeaderScrollHeight="400px"
+                        noDataComponent={
+                          <div className="text-center py-4 text-muted">
+                            No active subscriptions found
+                          </div>
+                        }
                       />
                     )}
                   </TabPane>
@@ -673,19 +846,42 @@ const AdminSubscriptions = () => {
                     {error ? (
                       <Alert color="danger">{error}</Alert>
                     ) : loading ? (
-                      <div className="text-center">
+                      <div className="text-center py-4">
                         <Spinner color="primary" />
-                        <p>Loading data...</p>
+                        <p className="mt-2">Loading data...</p>
+                      </div>
+                    ) : isMobile ? (
+                      // Mobile Card Layout
+                      <div>
+                        {getFilteredUsers(false).length === 0 ? (
+                          <div className="text-center py-4 text-muted">
+                            No cancelled/inactive subscriptions found
+                          </div>
+                        ) : (
+                          getFilteredUsers(false).map((user) => (
+                            <MobileSubscriptionCard
+                              key={user.id}
+                              user={user}
+                              subscribed={false}
+                            />
+                          ))
+                        )}
                       </div>
                     ) : (
+                      // Desktop Table Layout
                       <DataTable
-                        columns={columns}
+                        columns={desktopColumns}
                         data={getFilteredUsers(false)}
                         pagination
                         responsive
                         highlightOnHover
                         fixedHeader
-                        noDataComponent="No cancelled/inactive subscriptions found"
+                        fixedHeaderScrollHeight="400px"
+                        noDataComponent={
+                          <div className="text-center py-4 text-muted">
+                            No cancelled/inactive subscriptions found
+                          </div>
+                        }
                       />
                     )}
                   </TabPane>
@@ -696,17 +892,18 @@ const AdminSubscriptions = () => {
         </Row>
       </div>
 
-      {/* Modal */}
+      {/* Modal - Made responsive */}
       <Modal
         isOpen={modalOpen}
         toggle={toggleModal}
-        contentClassName="custom-modal-width"
+        size={isMobile ? "lg" : "xl"}
+        className="modal-dialog-centered"
       >
         <ModalHeader toggle={toggleModal}>Subscription Details</ModalHeader>
         <ModalBody>
           {selectedSubscription ? (
             <Row>
-              <Col md="6" className="mb-3">
+              <Col xs={12} sm={6} className="mb-3">
                 <strong>Provider:</strong>{" "}
                 <Badge
                   color={
@@ -715,11 +912,12 @@ const AdminSubscriptions = () => {
                       : "success"
                   }
                   pill
+                  className="ml-2"
                 >
-                  {selectedSubscription.provider?.toUpperCase()}
+                  {selectedSubscription.provider?.toUpperCase() || "N/A"}
                 </Badge>
               </Col>
-              <Col md="6" className="mb-3">
+              <Col xs={12} sm={6} className="mb-3">
                 <strong>Status:</strong>{" "}
                 <Badge
                   color={
@@ -728,56 +926,70 @@ const AdminSubscriptions = () => {
                       : "danger"
                   }
                   pill
+                  className="ml-2"
                 >
                   {selectedSubscription.status?.toUpperCase() || "N/A"}
                 </Badge>
               </Col>
-              <Col md="6" className="mb-3">
-                <strong>ID:</strong> {selectedSubscription.id}
+              <Col xs={12} sm={6} className="mb-3">
+                <strong>ID:</strong> {selectedSubscription.id || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
-                <strong>Name:</strong> {selectedSubscription.name}
+              <Col xs={12} sm={6} className="mb-3">
+                <strong>Name:</strong> {selectedSubscription.name || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
-                <strong>Email:</strong> {selectedSubscription.email}
+              <Col xs={12} sm={6} className="mb-3">
+                <strong>Email:</strong> {selectedSubscription.email || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
-                <strong>Phone:</strong> {selectedSubscription.phone}
+              <Col xs={12} sm={6} className="mb-3">
+                <strong>Phone:</strong> {selectedSubscription.phone || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
-                <strong>User ID:</strong> {selectedSubscription.userId}
+              <Col xs={12} sm={6} className="mb-3">
+                <strong>User ID:</strong> {selectedSubscription.userId || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
+              <Col xs={12} sm={6} className="mb-3">
                 <strong>Payment Method:</strong>{" "}
-                {selectedSubscription.paymentMethodId}
+                {selectedSubscription.paymentMethodId || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
-                <strong>Address:</strong> {selectedSubscription.address}
+              <Col xs={12} className="mb-3">
+                <strong>Address:</strong>{" "}
+                {selectedSubscription.address || "N/A"}
               </Col>
-              <Col md="12" className="mb-3">
-                <strong>Plan:</strong> {selectedSubscription.subscriptionPlan}
+              <Col xs={12} className="mb-3">
+                <strong>Plan:</strong>{" "}
+                {selectedSubscription.subscriptionPlan || "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
+              <Col xs={12} sm={6} className="mb-3">
                 <strong>Start Date:</strong>{" "}
-                {new Date(selectedSubscription.startDate).toLocaleString()}
+                {selectedSubscription.startDate
+                  ? new Date(selectedSubscription.startDate).toLocaleString()
+                  : "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
+              <Col xs={12} sm={6} className="mb-3">
                 <strong>Expire Date:</strong>{" "}
-                {selectedSubscription.expireDate !== "N/A"
+                {selectedSubscription.expireDate &&
+                selectedSubscription.expireDate !== "N/A"
                   ? new Date(selectedSubscription.expireDate).toLocaleString()
                   : "N/A"}
               </Col>
-              <Col md="6" className="mb-3">
+              <Col xs={12} sm={6} className="mb-3">
                 <strong>Created At:</strong>{" "}
-                {new Date(selectedSubscription.createdAt).toLocaleString()}
+                {selectedSubscription.createdAt
+                  ? new Date(selectedSubscription.createdAt).toLocaleString()
+                  : "N/A"}
               </Col>
             </Row>
           ) : (
-            <p>No subscription data found.</p>
+            <p className="text-center text-muted">
+              No subscription data found.
+            </p>
           )}
         </ModalBody>
         <ModalFooter>
-          <Button color="secondary" onClick={toggleModal}>
+          <Button
+            color="secondary"
+            onClick={toggleModal}
+            className="w-100 w-sm-auto"
+          >
             Close
           </Button>
         </ModalFooter>

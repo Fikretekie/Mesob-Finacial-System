@@ -460,21 +460,21 @@ function Dashboard() {
       <PanelHeader
         size="sm"
         content={
-          <Row >
-            <Col xs={12} md={8} lg={8} >
+          <Row>
+            <Col xs={12} md={8} lg={8}>
               <h3
                 style={{
                   color: "white",
                   justifyContent: "center",
                   alignItems: "center",
                   display: "flex",
-                  marginBottom: 0
+                  marginBottom: 0,
                 }}
               >
                 {companyName}
               </h3>
             </Col>
-            <Col >
+            <Col>
               {userRole !== 0 && (
                 <div
                   style={{
@@ -486,12 +486,23 @@ function Dashboard() {
                   }}
                 >
                   <Button
-                    style={{ marginRight: "4rem" }}
+                    sx={{
+                      marginRight: { xs: "1rem", md: "2rem" },
+                      padding: { xs: "0.4rem 0.8rem", md: "0.5rem 1rem" },
+                      fontSize: { xs: "0.9rem", md: "1rem" },
+                      minWidth: { xs: "100px", md: "120px" },
+                      display: "inline-flex",
+                      alignItems: "center",
+                      marginBottom: { xs: "2rem" },
+                    }}
                     color="primary"
                     onClick={handleAddTransactionClick}
                     disabled={userRole === 1 ? false : !userSubscription}
                   >
-                    <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
+                    <FontAwesomeIcon
+                      icon={faPlus}
+                      style={{ marginRight: "0.5rem", fontSize: "0.9rem" }}
+                    />
                     Add Transaction
                   </Button>
                 </div>
@@ -554,9 +565,9 @@ function Dashboard() {
           </Row>
         </div>
       )}
-      <div className="content" >
+      <div className="content">
         <Row style={{ marginBottom: "5px" }}>
-          <Col lg="3" md="6" xs="12" style={{ padding: 0 }}>
+          <Col lg="3" md="6" xs="12" className="mt-5 mt-md-0 p-0">
             <Card className="card-stats">
               <CardBody>
                 <Row>
@@ -613,7 +624,7 @@ function Dashboard() {
                 <Row>
                   <Col xs="5">
                     <div className="icon-big text-center">
-                      <i className="fas fa-file-invoice-dollar text-warning" />
+                      <i className="fas fa-credit-card text-success" />
                     </div>
                   </Col>
                   <Col xs="7">
@@ -639,7 +650,7 @@ function Dashboard() {
                 <Row>
                   <Col xs="5">
                     <div className="icon-big text-center">
-                      <i className="fas fa-file-invoice-dollar text-warning" />
+                      <i className="fas fa-chart-line text-info" />
                     </div>
                   </Col>
                   <Col xs="7">

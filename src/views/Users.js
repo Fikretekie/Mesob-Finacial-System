@@ -10,6 +10,7 @@ import {
   Input,
   Spinner,
   Button,
+  Badge,
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
@@ -24,75 +25,80 @@ function Users() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
   const notificationAlertRef = useRef(null);
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const handleUserSelect = (user) => {
     dispatch(setSelectedUser({ id: user.id, email: user.email }));
+    notify("tr", `Selected user: ${user.email}`, "success");
   };
 
-  const columns = [
+  // Desktop columns
+  const desktopColumns = [
     {
       name: "User ID",
       selector: (row) => row.id,
       sortable: true,
-      width: "150px",
+      width: "120px",
     },
     {
       name: "Email",
       selector: (row) => row.email,
       sortable: true,
-      width: "300px",
+      minWidth: "200px",
+      wrap: true,
     },
     {
       name: "Name",
       selector: (row) => row.name || "-",
       sortable: true,
-      width: "200px",
+      width: "150px",
     },
     {
-      name: "Phone",
-      selector: (row) => row.phone_number || "-",
-      sortable: true,
-      width: "200px",
-    },
-    {
-      name: "Company Name",
+      name: "Company",
       selector: (row) => row.companyName || "-",
       sortable: true,
-      width: "200px",
+      width: "150px",
     },
     {
-      name: "Business Type",
-      selector: (row) => row.businessType || "-",
-      sortable: true,
-      width: "200px",
-    },
-    {
-      name: "Cash Balance",
+      name: "Balance",
       selector: (row) => row.cashBalance || 0,
       sortable: true,
-      width: "150px",
+      width: "120px",
       cell: (row) => `$${row.cashBalance || "0"}`,
     },
     {
       name: "Role",
       selector: (row) => row.role || "-",
       sortable: true,
-      width: "150px",
-      cell: (row) => (row.role === 2 ? "User" : "Admin"),
-    },
-    {
-      name: "Created At",
-      selector: (row) => row.createdAt,
-      sortable: true,
-      width: "200px",
-      cell: (row) => new Date(row.createdAt).toLocaleDateString(),
+      width: "100px",
+      cell: (row) => (
+        <Badge color={row.role === 2 ? "info" : "warning"}>
+          {row.role === 2 ? "User" : "Admin"}
+        </Badge>
+      ),
     },
     {
       name: "Select",
       cell: (row) => (
-        <Button color="primary" size="sm" onClick={() => handleUserSelect(row)}>
+        <Button
+          color="primary"
+          size="sm"
+          onClick={() => handleUserSelect(row)}
+          className="w-100"
+        >
           Select
         </Button>
       ),
@@ -102,6 +108,7 @@ function Users() {
       width: "100px",
     },
   ];
+
   const notify = (place, message, type) => {
     const options = {
       place: place,
@@ -129,7 +136,6 @@ function Users() {
 
         if (response.data) {
           setUsers(Array.isArray(response.data) ? response.data : []);
-          console.log("response data", response.data);
         }
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -157,6 +163,44 @@ function Users() {
     );
   });
 
+  // Mobile Card Component
+  const MobileUserCard = ({ user }) => (
+    <Card className="mb-3">
+      <CardBody>
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <div className="flex-grow-1">
+            <h6 className="font-weight-bold mb-1">{user.email}</h6>
+            {user.name && (
+              <p className="text-muted mb-1 small">Name: {user.name}</p>
+            )}
+            {user.companyName && (
+              <p className="text-muted mb-1 small">
+                Company: {user.companyName}
+              </p>
+            )}
+            <p className="text-muted mb-1 small">ID: {user.id}</p>
+            <div className="d-flex justify-content-between align-items-center mt-2">
+              <Badge color={user.role === 2 ? "info" : "warning"}>
+                {user.role === 2 ? "User" : "Admin"}
+              </Badge>
+              <span className="font-weight-bold text-success">
+                ${user.cashBalance || "0"}
+              </span>
+            </div>
+          </div>
+        </div>
+        <Button
+          color="primary"
+          size="sm"
+          onClick={() => handleUserSelect(user)}
+          className="w-100 mt-2"
+        >
+          Select User
+        </Button>
+      </CardBody>
+    </Card>
+  );
+
   return (
     <>
       <Helmet>
@@ -165,59 +209,88 @@ function Users() {
 
       <PanelHeader size="sm" />
       <NotificationAlert ref={notificationAlertRef} />
-      <div className="content" >
+      <div className="content">
         <Row>
           <Col xs={12} style={{ paddingInline: 0 }}>
             <Card>
               <CardHeader>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <CardTitle tag="h4">Users</CardTitle>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <Button color="secondary" className="btn-round btn-sm">
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                  <CardTitle tag="h4" className="mb-0">
+                    Users Management
+                  </CardTitle>
+                  <div className="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center w-100 w-md-auto gap-2">
+                    <Button
+                      color="secondary"
+                      className="btn-round btn-sm"
+                      style={{ minWidth: "120px" }}
+                    >
                       Users <span className="ml-2">({users.length})</span>
                     </Button>
                     <Input
                       type="text"
-                      placeholder="Search by email, user ID, or name..."
+                      placeholder="Search users..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      style={{ marginLeft: "10px", width: "250px" }}
+                      className="w-100"
+                      style={{ minWidth: "200px" }}
                     />
                   </div>
                 </div>
               </CardHeader>
               <CardBody>
                 {error ? (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      color: "red",
-                    }}
-                  >
-                    {error}
-                  </div>
+                  <div className="text-center py-4 text-danger">{error}</div>
                 ) : loading ? (
-                  <div style={{ textAlign: "center", padding: "20px" }}>
+                  <div className="text-center py-4">
                     <Spinner color="primary" />
-                    <p>Loading users...</p>
+                    <p className="mt-2">Loading users...</p>
+                  </div>
+                ) : isMobile ? (
+                  // Mobile Card Layout
+                  <div>
+                    {filteredData.length === 0 ? (
+                      <div className="text-center py-4 text-muted">
+                        No users found
+                      </div>
+                    ) : (
+                      filteredData.map((user) => (
+                        <MobileUserCard key={user.id} user={user} />
+                      ))
+                    )}
                   </div>
                 ) : (
-                  <DataTable
-                    columns={columns}
-                    data={filteredData}
-                    pagination
-                    responsive
-                    highlightOnHover
-                    fixedHeader
-                    noDataComponent="No users found"
-                  />
+                  // Desktop Table Layout
+                  <div className="table-responsive">
+                    <DataTable
+                      columns={desktopColumns}
+                      data={filteredData}
+                      pagination
+                      responsive
+                      highlightOnHover
+                      fixedHeader
+                      fixedHeaderScrollHeight="400px"
+                      noDataComponent={
+                        <div className="text-center py-4 text-muted">
+                          No users found
+                        </div>
+                      }
+                      customStyles={{
+                        headCells: {
+                          style: {
+                            backgroundColor: "#f8f9fa",
+                            fontWeight: "bold",
+                            fontSize: "14px",
+                          },
+                        },
+                        cells: {
+                          style: {
+                            fontSize: "14px",
+                            padding: "8px",
+                          },
+                        },
+                      }}
+                    />
+                  </div>
                 )}
               </CardBody>
             </Card>

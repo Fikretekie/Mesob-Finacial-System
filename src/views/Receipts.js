@@ -42,17 +42,12 @@ const Receipts = ({ selectedUser }) => {
   const [users, setUsers] = useState([]);
   const userRole = parseInt(localStorage.getItem("role") || 1);
 
-  // useEffect(() => {
-  //   if (selectedUser?.id) {
-  //     fetchReceipts();
-  //   }
-  // }, [selectedUser, startDate, endDate, selectedType]);
-
   useEffect(() => {
-    if (userRole === 0 && !selectedUserId) return; // admin must pick user
+    if (userRole === 0 && !selectedUserId) return;
 
     fetchReceipts();
   }, [selectedUserId, startDate, endDate, selectedType]);
+
   useEffect(() => {
     const persistedUserId = localStorage.getItem("selectedUserId");
 
@@ -80,11 +75,14 @@ const Receipts = ({ selectedUser }) => {
         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
       setDisabled(
-        userRole !== 1 && !res.data.user.subscription && res.data.user.scheduleCount >= 4
+        userRole !== 1 &&
+          !res.data.user.subscription &&
+          res.data.user.scheduleCount >= 4
       );
     };
     checkSubscription();
   }, []);
+
   useEffect(() => {
     if (userRole === 0) {
       const fetchUsers = async () => {
@@ -152,19 +150,6 @@ const Receipts = ({ selectedUser }) => {
     }
   };
 
-  // const handlePreview = async (receipt) => {
-  //   console.log("recerpt=>>", receipt);
-
-  //    setSelectedReceipt(receipt);
-  //   setPreviewModal(true);
-  // };
-
-  // const handlePreview = async (receipt) => {
-  //   console.log("Receipt URL:", receipt.receiptUrl); // Debugging: Check the URL
-  //   setSelectedReceipt(receipt); // Update state
-
-  //   setPreviewModal(true); // Open modal
-  // };
   const handlePreview = (receipt) => {
     const modifiedUrl = receipt.receiptUrl.replace(
       "app.mesobfinancial.com.s3.amazonaws.com",
@@ -200,8 +185,9 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const blob = await response.blob();
-      const fileName = `receipt-${receipt.transactionPurpose || "unknown"
-        }-${Date.now()}.${fileExtension}`;
+      const fileName = `receipt-${
+        receipt.transactionPurpose || "unknown"
+      }-${Date.now()}.${fileExtension}`;
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -216,14 +202,14 @@ const Receipts = ({ selectedUser }) => {
       notify("tr", `Error downloading receipt: ${error.message}`, "danger");
     }
   };
+
   const handleRun = () => {
     if (fromDate && toDate) {
-      // Create proper date objects with time handling
       const startDateTime = new Date(fromDate);
-      startDateTime.setHours(0, 0, 0, 0); // Start of day
+      startDateTime.setHours(0, 0, 0, 0);
 
       const endDateTime = new Date(toDate);
-      endDateTime.setHours(23, 59, 59, 999); // End of day
+      endDateTime.setHours(23, 59, 59, 999);
 
       setStartDate(startDateTime.toISOString());
       setEndDate(endDateTime.toISOString());
@@ -273,28 +259,30 @@ const Receipts = ({ selectedUser }) => {
               } else if (contentType === "application/pdf") {
                 fileExtension = "pdf";
               } else {
-                fileExtension = "bin"; // Default for unknown types
+                fileExtension = "bin";
               }
             } else {
-              // Fallback: Extract extension from URL if available
               const urlParts = url.split(".");
               fileExtension = urlParts.length > 1 ? urlParts.pop() : "bin";
             }
 
             const blob = await response.blob();
-            const fileName = `receipt-${receipt.transactionPurpose || "unknown"
-              }-${index + 1}.${fileExtension}`;
+            const fileName = `receipt-${
+              receipt.transactionPurpose || "unknown"
+            }-${index + 1}.${fileExtension}`;
 
             zip.file(fileName, blob);
           } catch (error) {
             console.error(
-              `Error downloading receipt ${receipt.transactionPurpose || index
+              `Error downloading receipt ${
+                receipt.transactionPurpose || index
               }:`,
               error
             );
             notify(
               "tr",
-              `Error downloading receipt ${receipt.transactionPurpose || "unknown"
+              `Error downloading receipt ${
+                receipt.transactionPurpose || "unknown"
               }: ${error.message}`,
               "danger"
             );
@@ -330,7 +318,7 @@ const Receipts = ({ selectedUser }) => {
       </Helmet>
       <PanelHeader size="sm" />
       <NotificationAlert ref={notificationAlertRef} />
-      <div className="content" style={{ paddingInline: 15 }} >
+      <div className="content" style={{ paddingInline: 15 }}>
         {userRole === 0 && (
           <Row style={{ margin: "0", paddingInline: 0 }}>
             <Col xs={12} style={{ paddingInline: 0 }}>
@@ -347,10 +335,10 @@ const Receipts = ({ selectedUser }) => {
                       value={
                         users.find((u) => u.id === selectedUserId)
                           ? {
-                            value: selectedUserId,
-                            label: users.find((u) => u.id === selectedUserId)
-                              .email,
-                          }
+                              value: selectedUserId,
+                              label: users.find((u) => u.id === selectedUserId)
+                                .email,
+                            }
                           : null
                       }
                       onChange={(option) => {
@@ -397,144 +385,229 @@ const Receipts = ({ selectedUser }) => {
           <Col xs={12}>
             <Card>
               <CardHeader>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "0 25px",
-                  }}
-                >
-                  <CardTitle tag="h4">Transaction Receipts</CardTitle>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    <FormGroup style={{ marginBottom: 0 }}>
-                      <Label for="fromDate">From</Label>
-                      <Input
-                        type="date"
-                        id="fromDate"
-                        value={fromDate}
-                        onChange={(e) => setFromDate(e.target.value)}
-                      />
-                    </FormGroup>
-                    <FormGroup style={{ marginBottom: 0 }}>
-                      <Label for="toDate">To</Label>
-                      <Input
-                        type="date"
-                        id="toDate"
-                        value={toDate}
-                        onChange={(e) => setToDate(e.target.value)}
-                      />
-                    </FormGroup>
-                    <Button
-                      color="primary"
-                      onClick={handleRun}
-                      style={{ marginBottom: 0, height: "38px" }}
-                    >
-                      Run
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={handleClear}
-                      style={{ marginBottom: 0, height: "38px" }}
-                    >
-                      Clear Filters
-                    </Button>
-                    <Button
-                      color="info"
-                      onClick={handleDownloadAll}
-                      disabled={disabled}
-                      style={{ marginBottom: 0, height: "38px" }}
-                    >
-                      Download All
-                    </Button>
+                <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                  <CardTitle tag="h4" className="mb-0">
+                    Transaction Receipts
+                  </CardTitle>
+                  <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+                    <div className="d-flex flex-column flex-sm-row gap-2">
+                      <FormGroup className="mb-0 flex-fill">
+                        <Label for="fromDate" className="mb-1">
+                          From
+                        </Label>
+                        <Input
+                          type="date"
+                          id="fromDate"
+                          value={fromDate}
+                          onChange={(e) => setFromDate(e.target.value)}
+                          className="w-100"
+                        />
+                      </FormGroup>
+                      <FormGroup className="mb-0 flex-fill">
+                        <Label for="toDate" className="mb-1">
+                          To
+                        </Label>
+                        <Input
+                          type="date"
+                          id="toDate"
+                          value={toDate}
+                          onChange={(e) => setToDate(e.target.value)}
+                          className="w-100"
+                        />
+                      </FormGroup>
+                    </div>
+                    <div className="d-flex flex-wrap gap-2 mt-2 mt-sm-0">
+                      <Button
+                        color="primary"
+                        onClick={handleRun}
+                        className="flex-fill"
+                        style={{ minWidth: "80px" }}
+                      >
+                        Run
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={handleClear}
+                        className="flex-fill"
+                        style={{ minWidth: "80px" }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        color="info"
+                        onClick={handleDownloadAll}
+                        disabled={disabled}
+                        className="flex-fill"
+                        style={{ minWidth: "80px" }}
+                      >
+                        Download All
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
               <CardBody>
                 {userRole === 0 && !selectedUserId && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      margin: "20px 0",
-                      color: "gray",
-                    }}
-                  >
+                  <div className="text-center my-4 text-muted">
                     Please select a user to view receipts.
                   </div>
                 )}
 
                 {loading ? (
-                  <div style={{ textAlign: "center", padding: "20px" }}>
+                  <div className="text-center py-4">
                     <Spinner color="primary" />
-                    <p>Loading receipts...</p>
+                    <p className="mt-2">Loading receipts...</p>
                   </div>
                 ) : receipts.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "20px" }}>
+                  <div className="text-center py-4">
                     <p>No receipts found</p>
                   </div>
                 ) : (
                   <>
                     {searchedDates && (
-                      <div style={{ marginBottom: "15px" }}>
+                      <div className="mb-3">
                         <strong>Searched dates:</strong> {searchedDates.from} -{" "}
                         {searchedDates.to}
                       </div>
                     )}
-                    <Table responsive>
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Purpose</th>
-                          <th>Amount</th>
-                          <th>Type</th>
-                          <th>Category</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {receipts.map((receipt) => (
-                          <tr key={receipt.id || receipt.receiptUrl}>
-                            <td>
-                              {new Date(receipt.createdAt).toLocaleDateString()}
-                            </td>
-                            <td>{receipt.transactionPurpose}</td>
-                            <td>${receipt.transactionAmount}</td>
-                            <td>{receipt.transactionType}</td>
-                            <td>{receipt.subType || "-"}</td>
-                            <td>
-                              <FaEye
-                                onClick={
-                                  !disabled
-                                    ? () => handlePreview(receipt)
-                                    : undefined
-                                }
-                                style={{
-                                  cursor: disabled ? "not-allowed" : "pointer",
-                                  marginRight: "1rem",
-                                }}
-                                title="Preview"
-                              />
-                              <FaDownload
-                                onClick={
-                                  !disabled
-                                    ? () => handleDownload(receipt)
-                                    : undefined
-                                }
-                                style={{
-                                  cursor: disabled ? "not-allowed" : "pointer",
-                                }}
-                              />
-                            </td>
+
+                    {/* Desktop Table */}
+                    <div className="d-none d-md-block">
+                      <Table responsive>
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Purpose</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                        </thead>
+                        <tbody>
+                          {receipts.map((receipt) => (
+                            <tr key={receipt.id || receipt.receiptUrl}>
+                              <td>
+                                {new Date(
+                                  receipt.createdAt
+                                ).toLocaleDateString()}
+                              </td>
+                              <td>{receipt.transactionPurpose}</td>
+                              <td>${receipt.transactionAmount}</td>
+                              <td>{receipt.transactionType}</td>
+                              <td>{receipt.subType || "-"}</td>
+                              <td>
+                                <FaEye
+                                  onClick={
+                                    !disabled
+                                      ? () => handlePreview(receipt)
+                                      : undefined
+                                  }
+                                  style={{
+                                    cursor: disabled
+                                      ? "not-allowed"
+                                      : "pointer",
+                                    marginRight: "1rem",
+                                  }}
+                                  title="Preview"
+                                />
+                                <FaDownload
+                                  onClick={
+                                    !disabled
+                                      ? () => handleDownload(receipt)
+                                      : undefined
+                                  }
+                                  style={{
+                                    cursor: disabled
+                                      ? "not-allowed"
+                                      : "pointer",
+                                  }}
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile Cards */}
+                    <div className="d-block d-md-none">
+                      {receipts.map((receipt) => (
+                        <Card
+                          key={receipt.id || receipt.receiptUrl}
+                          className="mb-3"
+                        >
+                          <CardBody>
+                            <Row>
+                              <Col xs={6}>
+                                <strong>Date:</strong>
+                              </Col>
+                              <Col xs={6}>
+                                {new Date(
+                                  receipt.createdAt
+                                ).toLocaleDateString()}
+                              </Col>
+                            </Row>
+                            <Row className="mt-2">
+                              <Col xs={6}>
+                                <strong>Purpose:</strong>
+                              </Col>
+                              <Col xs={6}>{receipt.transactionPurpose}</Col>
+                            </Row>
+                            <Row className="mt-2">
+                              <Col xs={6}>
+                                <strong>Amount:</strong>
+                              </Col>
+                              <Col xs={6}>${receipt.transactionAmount}</Col>
+                            </Row>
+                            <Row className="mt-2">
+                              <Col xs={6}>
+                                <strong>Type:</strong>
+                              </Col>
+                              <Col xs={6}>{receipt.transactionType}</Col>
+                            </Row>
+                            <Row className="mt-2">
+                              <Col xs={6}>
+                                <strong>Category:</strong>
+                              </Col>
+                              <Col xs={6}>{receipt.subType || "-"}</Col>
+                            </Row>
+                            <Row className="mt-3">
+                              <Col xs={12}>
+                                <div className="d-flex justify-content-center gap-3">
+                                  <Button
+                                    color="primary"
+                                    size="sm"
+                                    onClick={
+                                      !disabled
+                                        ? () => handlePreview(receipt)
+                                        : undefined
+                                    }
+                                    disabled={disabled}
+                                  >
+                                    <FaEye className="me-1" />
+                                    Preview
+                                  </Button>
+                                  <Button
+                                    color="info"
+                                    size="sm"
+                                    onClick={
+                                      !disabled
+                                        ? () => handleDownload(receipt)
+                                        : undefined
+                                    }
+                                    disabled={disabled}
+                                  >
+                                    <FaDownload className="me-1" />
+                                    Download
+                                  </Button>
+                                </div>
+                              </Col>
+                            </Row>
+                          </CardBody>
+                        </Card>
+                      ))}
+                    </div>
                   </>
                 )}
               </CardBody>
@@ -542,10 +615,12 @@ const Receipts = ({ selectedUser }) => {
           </Col>
         </Row>
       </div>
+
       <Modal
         isOpen={previewModal}
         toggle={() => setPreviewModal(false)}
         size="lg"
+        className="modal-dialog-centered"
       >
         <ModalHeader toggle={() => setPreviewModal(false)}>
           Receipt Preview
@@ -558,7 +633,7 @@ const Receipts = ({ selectedUser }) => {
                   data={selectedReceipt.receiptUrl}
                   type="application/pdf"
                   width="100%"
-                  height="600px"
+                  height="500px"
                 >
                   <p>
                     Your browser does not support PDFs.{" "}

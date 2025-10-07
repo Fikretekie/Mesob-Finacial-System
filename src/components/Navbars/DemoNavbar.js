@@ -189,11 +189,12 @@ function DemoNavbar(props) {
             nav
             isOpen={accountDropdownOpen}
             toggle={accountDropdownToggle}
+            className="account-dropdown"
           >
             <DropdownToggle caret nav>
               <i className="now-ui-icons users_single-02" />
             </DropdownToggle>
-            <DropdownMenu right>
+            <DropdownMenu right style={{ backgroundColor: "white" }}>
               <DropdownItem onClick={handleLogout}>Logout</DropdownItem>
             </DropdownMenu>
           </Dropdown>
