@@ -28,6 +28,7 @@
   margin-bottom: 15px;
 }
 
+
 .search-filter-container {
   display: flex;
   flex-direction: column;
@@ -54,11 +55,24 @@
 .custom-modal-width {
   width: 113%;
 }
+.searchbtn {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-direction: row; /* default for desktop */
+}
+
 
 @media screen and (min-width: 576px) {
   .content {
     padding: 15px;
   }
+  .clander{
+  display: flex;
+  
+}
+
+
 
   .button-group {
     flex-direction: row;
@@ -70,9 +84,15 @@
     justify-content: space-between;
     align-items: center;
   }
+  .buttons{
+  display: flex;
+  flex-direction: row;
+}
+
 }
 
 @media screen and (min-width: 768px) {
+
   .card-title {
     font-size: 1.2rem;
   }
@@ -98,6 +118,7 @@
   .button-group {
     flex: 1;
   }
+  
 }
 
 @media screen and (min-width: 992px) {
@@ -171,6 +192,7 @@
 }
 
 @media screen and (min-width: 768px) {
+  
   .journal-entry-header {
     flex-direction: row;
     justify-content: space-between;
@@ -192,6 +214,7 @@
     justify-content: space-between;
     width: auto;
   }
+  
 }
 
 .button-group {
@@ -205,4 +228,62 @@
     flex-direction: row;
     flex-wrap: wrap;
   }
+  
 }
+@media (max-width: 600px) {
+  .searchbtn {
+    flex-direction: column; /* only on mobile */
+  }
+
+}
+@media (max-width: 768px) {
+      .summary-card {
+        order: 1;
+        height: auto !important;
+        min-height: 300px;
+      }
+      
+      .journal-entry-card {
+        order: 2;
+        height: auto !important;
+        min-height: 400px;
+      }
+      
+      .income-statement-card {
+        order: 3;
+        height: auto !important;
+        min-height: 350px;
+      }
+      
+      .balance-sheet-card {
+        order: 4;
+        height: auto !important;
+        min-height: 350px;
+      }
+      
+      /* Dynamic height based on content */
+      .summary-card .card-body,
+      .journal-entry-card .card-body,
+      .income-statement-card .card-body,
+      .balance-sheet-card .card-body {
+        height: auto !important;
+        max-height: 500px;
+      }
+    }
+    
+    /* Desktop View - Fixed heights */
+    @media (min-width: 769px) {
+      .summary-card,
+      .income-statement-card,
+      .journal-entry-card,
+      .balance-sheet-card {
+        height: 480px !important;
+      }
+      
+      .summary-card .card-body,
+      .income-statement-card .card-body,
+      .journal-entry-card .card-body,
+      .balance-sheet-card .card-body {
+        height: 400px !important;
+      }
+    }

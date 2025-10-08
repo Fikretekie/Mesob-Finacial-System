@@ -12,6 +12,7 @@ import {
   Button,
   Popover,
   PopoverBody,
+  Spinner,
 } from "reactstrap";
 // import { Line } from "react-chartjs-2";
 import ReactApexChart from "react-apexcharts";
@@ -67,6 +68,13 @@ function Dashboard() {
   const [users, setUsers] = useState([]);
   const [trialEndDate, setTrialEndDate] = useState(null);
 
+  // Loading states for different API calls
+  const [loadingFinancialData, setLoadingFinancialData] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loadingCompanyName, setLoadingCompanyName] = useState(false);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
+
   const persistedUserId = localStorage.getItem("selectedUserId");
   console.log("Persisted User ID:", persistedUserId);
 
@@ -99,6 +107,7 @@ function Dashboard() {
     localStorage.setItem("selectedUserId", userId);
     fetchFinancialData(userId); // Pass userId directly!
   };
+
   useEffect(() => {
     const persistedUserId = localStorage.getItem("selectedUserId");
     if (persistedUserId) {
@@ -106,6 +115,7 @@ function Dashboard() {
       fetchFinancialData(persistedUserId);
     }
   }, []);
+
   useEffect(() => {
     if (selectedUserId) {
       fetchFinancialData(selectedUserId);
@@ -125,11 +135,13 @@ function Dashboard() {
   }));
 
   const getSchedule = async () => {
+    setLoadingSchedule(true);
     try {
       let user_id = localStorage.getItem("userId");
 
       if (!user_id) {
         console.error("User ID not found in localStorage.");
+        setLoadingSchedule(false);
         return;
       }
 
@@ -161,6 +173,8 @@ function Dashboard() {
         "Error fetching schedule:",
         error.response?.data || error.message
       );
+    } finally {
+      setLoadingSchedule(false);
     }
   };
 
@@ -191,6 +205,7 @@ function Dashboard() {
   };
 
   const fetchUsers = async () => {
+    setLoadingUsers(true);
     try {
       const response = await axios.get(
         "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
@@ -200,6 +215,8 @@ function Dashboard() {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
@@ -277,6 +294,7 @@ function Dashboard() {
   );
 
   const fetchFinancialData = async (uid = null) => {
+    setLoadingFinancialData(true);
     const targetUserId =
       uid ||
       localStorage.getItem("selectedUserId") ||
@@ -401,6 +419,8 @@ function Dashboard() {
     } catch (error) {
       console.error("Error fetching financial data:", error);
       setLoading(false);
+    } finally {
+      setLoadingFinancialData(false);
     }
   };
 
@@ -410,6 +430,7 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchCompanyName = async () => {
+      setLoadingCompanyName(true);
       try {
         const targetUserId = selectedUserId || localStorage.getItem("userId");
         const userResponse = await axios.get(
@@ -418,6 +439,8 @@ function Dashboard() {
         setCompanyName(userResponse.data?.user?.companyName || "");
       } catch (error) {
         console.error("Error fetching company name:", error);
+      } finally {
+        setLoadingCompanyName(false);
       }
     };
 
@@ -441,23 +464,60 @@ function Dashboard() {
 
   useEffect(() => {
     const fetchSubscription = async () => {
+      setLoadingSubscription(true);
       const userId = localStorage.getItem("userId");
-      const response = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
-      );
-      // Only set subscription if user exists
-      if (response.data && response.data.user) {
-        setUserSubscription(response.data.user.subscription);
-        setTrialEndDate(new Date(response.data.user?.trialEndDate));
-        console.log('=>>>>>', response.data.user.subscription);
-        setScheduleCount(response.data.user.scheduleCount || 1);
-      } else {
-        setUserSubscription(false); // or null, or a sensible default
+      try {
+        const response = await axios.get(
+          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        );
+        // Only set subscription if user exists
+        if (response.data && response.data.user) {
+          setUserSubscription(response.data.user.subscription);
+          setTrialEndDate(new Date(response.data.user?.trialEndDate));
+          console.log("=>>>>>", response.data.user.subscription);
+          setScheduleCount(response.data.user.scheduleCount || 1);
+        } else {
+          setUserSubscription(false); // or null, or a sensible default
+          setScheduleCount(1);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription:", error);
+        setUserSubscription(false);
         setScheduleCount(1);
+      } finally {
+        setLoadingSubscription(false);
       }
     };
     fetchSubscription();
   }, []);
+
+  // Loading overlay component
+  const LoadingOverlay = ({ loading, text = "Loading..." }) => {
+    if (!loading) return null;
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000,
+          borderRadius: "inherit",
+        }}
+      >
+        <div className="text-center">
+          <Spinner color="primary" />
+          <p className="mt-2">{text}</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -478,7 +538,11 @@ function Dashboard() {
                   marginBottom: 0,
                 }}
               >
-                {companyName}
+                {loadingCompanyName ? (
+                  <Spinner size="sm" color="light" />
+                ) : (
+                  companyName
+                )}
               </h3>
             </Col>
             <Col>
@@ -504,7 +568,11 @@ function Dashboard() {
                     }}
                     color="primary"
                     onClick={handleAddTransactionClick}
-                    disabled={userRole === 1 ? false : (!userSubscription && !isTrialActive())}
+                    disabled={
+                      userRole === 1
+                        ? false
+                        : !userSubscription && !isTrialActive()
+                    }
                   >
                     <FontAwesomeIcon
                       icon={faPlus}
@@ -532,7 +600,11 @@ function Dashboard() {
                     Select User
                   </CardTitle>
                 </CardHeader>
-                <CardBody>
+                <CardBody style={{ position: "relative" }}>
+                  <LoadingOverlay
+                    loading={loadingUsers}
+                    text="Loading users..."
+                  />
                   <FormGroup>
                     <Label>Select User to View:</Label>
                     <Select
@@ -572,10 +644,20 @@ function Dashboard() {
           </Row>
         </div>
       )}
-      <div className="content">
+
+      <div className="content" style={{ position: "relative" }}>
+        <LoadingOverlay
+          loading={loadingFinancialData}
+          text="Loading financial data..."
+        />
+
         <Row style={{ marginBottom: "5px" }}>
           <Col lg="3" md="6" xs="12" className="mt-5 mt-md-0 p-0">
-            <Card className="card-stats">
+            <Card className="card-stats" style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading..."
+              />
               <CardBody>
                 <Row>
                   <Col xs="4">
@@ -586,7 +668,13 @@ function Dashboard() {
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category">TOTAL CASH ON HAND</p>
-                      <CardTitle tag="h3">${calculateTotalCash()}</CardTitle>
+                      <CardTitle tag="h3">
+                        {loadingFinancialData ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          `$${calculateTotalCash()}`
+                        )}
+                      </CardTitle>
                     </div>
                   </Col>
                 </Row>
@@ -600,7 +688,11 @@ function Dashboard() {
             xs="12"
             style={{ paddingRight: "3px", paddingLeft: "3px" }}
           >
-            <Card className="card-stats">
+            <Card className="card-stats" style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading..."
+              />
               <CardBody>
                 <Row>
                   <Col xs="5">
@@ -612,11 +704,14 @@ function Dashboard() {
                     <div className="numbers">
                       <p className="card-category">TOTAL EXPENSES</p>
                       <CardTitle tag="h3">
-                        $
-                        {totalExpenses.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        {loadingFinancialData ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          `$${totalExpenses.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`
+                        )}
                       </CardTitle>
                     </div>
                   </Col>
@@ -626,7 +721,11 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingInline: 3 }}>
-            <Card className="card-stats">
+            <Card className="card-stats" style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading..."
+              />
               <CardBody>
                 <Row>
                   <Col xs="5">
@@ -638,11 +737,14 @@ function Dashboard() {
                     <div className="numbers">
                       <p className="card-category">TOTAL PAYABLE</p>
                       <CardTitle tag="h3">
-                        $
-                        {totalPayable.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        {loadingFinancialData ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          `$${totalPayable.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`
+                        )}
                       </CardTitle>
                     </div>
                   </Col>
@@ -652,7 +754,11 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ padding: 0 }}>
-            <Card className="card-stats">
+            <Card className="card-stats" style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading..."
+              />
               <CardBody>
                 <Row>
                   <Col xs="5">
@@ -664,11 +770,14 @@ function Dashboard() {
                     <div className="numbers">
                       <p className="card-category">Revenue</p>
                       <CardTitle tag="h3">
-                        $
-                        {totalrevenue.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        {loadingFinancialData ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          `$${totalrevenue.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}`
+                        )}
                       </CardTitle>
                     </div>
                   </Col>
@@ -680,7 +789,11 @@ function Dashboard() {
 
         <Row>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card>
+            <Card style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading chart..."
+              />
               <CardBody>
                 <p className="text-center mb-2">TOTAL CASH ON HAND Chart</p>
                 <h4 className="text-center mb-3"></h4>
@@ -694,7 +807,11 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3 }}>
-            <Card>
+            <Card style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading chart..."
+              />
               <CardBody>
                 <p className="text-center mb-2">REVENUE Chart</p>
                 <h4 className="text-center mb-3"></h4>
@@ -709,7 +826,11 @@ function Dashboard() {
           </Col>
 
           <Col md={6} style={{ padding: 0 }}>
-            <Card>
+            <Card style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading chart..."
+              />
               <CardBody>
                 <p className="text-center mb-2">TOTAL PAYABLE Chart</p>
                 <h4 className="text-center mb-3"></h4>
@@ -723,7 +844,11 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3 }}>
-            <Card>
+            <Card style={{ position: "relative" }}>
+              <LoadingOverlay
+                loading={loadingFinancialData}
+                text="Loading chart..."
+              />
               <CardBody>
                 <p className="text-center mb-2">TOTAL EXPENSES Chart</p>
                 <h4 className="text-center mb-3"></h4>
