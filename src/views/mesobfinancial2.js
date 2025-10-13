@@ -648,6 +648,117 @@ const MesobFinancial2 = () => {
     }
   };
 
+  // const handleUpdateTransaction = async (transaction) => {
+  //   console.log("Transaction ID:", transaction.id);
+  //   let Url = "";
+  //   if (receipt) {
+  //     Url = await uploadReceipt();
+  //   }
+  //   const paidAmount =
+  //     paymentOption === "full"
+  //       ? parseFloat(transaction.transactionAmount)
+  //       : parseFloat(remainingAmount);
+
+  //   setIsUpdatingTransaction(true);
+  //   try {
+  //     if (transaction.id !== "outstanding-debt") {
+  //       if (paidAmount > remainingAmount && paymentOption !== "full") {
+  //         notify(
+  //           "tr",
+  //           `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
+  //           "warning"
+  //         );
+  //         return;
+  //       }
+
+  //       const updatedTransaction = {
+  //         ...transaction,
+  //         receiptUrl: Url || transaction.receiptUrl,
+  //         status:
+  //           paymentOption === "full" ||
+  //           (paymentOption === "partial" &&
+  //             remainingAmount === transaction.transactionAmount)
+  //             ? "Paid"
+  //             : "Partially Paid",
+  //         updatedAt: new Date().toISOString(),
+  //         paidAmount: (transaction.paidAmount || 0) + paidAmount,
+  //         transactionAmount:
+  //           parseFloat(transaction.transactionAmount) -
+  //           parseFloat(remainingAmount),
+  //         remainingAmount: paidAmount,
+  //       };
+
+  //       const response = await fetch(
+  //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
+  //         {
+  //           method: "PUT",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify(updatedTransaction),
+  //         }
+  //       );
+
+  //       if (response.status !== 200) {
+  //         throw new Error("Failed to update the transaction");
+  //       }
+  //     } else {
+  //       setIsUpdatingTransaction(true);
+  //       let userid = localStorage.getItem("userId");
+  //       const response = await axios.put(
+  //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
+  //         {
+  //           outstandingDebt:
+  //             paymentOption === "full"
+  //               ? parseFloat(transaction.transactionAmount) -
+  //                 parseFloat(transaction.transactionAmount)
+  //               : parseFloat(transaction.transactionAmount) -
+  //                 parseFloat(remainingAmount),
+  //         }
+  //       );
+
+  //       if (response.status !== 200) {
+  //         throw new Error("Failed to update outstanding debt");
+  //       }
+  //     }
+
+  //     const newPaidTransaction = {
+  //       userId: localStorage.getItem("userId"),
+  //       transactionType: "Pay",
+  //       transactionPurpose:
+  //         transaction.id === "outstanding-debt"
+  //           ? "Payment for Outstanding Debt"
+  //           : paymentOption === "full"
+  //           ? `Full Payment for ${transaction.transactionPurpose}`
+  //           : `Partial Payment for ${transaction.transactionPurpose}`,
+  //       transactionAmount: paidAmount,
+  //       receiptUrl: Url || "",
+  //       payableId: transaction.id,
+  //       createdAt: new Date().toISOString(),
+  //     };
+
+  //     const response2 = await axios.post(
+  //       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+  //       newPaidTransaction
+  //     );
+
+  //     if (response2.status === 200) {
+  //       notify("tr", "Payment recorded successfully", "success");
+  //       fetchTransactions();
+  //       fetchUserInitialBalance();
+  //     } else {
+  //       throw new Error("Failed to add the payment record");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating transaction:", error);
+  //     notify("tr", `Error recording payment: ${error.message}`, "danger");
+  //   } finally {
+  //     setIsUpdatingTransaction(false);
+  //     setSelectedUnpaidTransaction(null);
+  //     setPaymentOption(null);
+  //     setShowAddTransaction(false);
+  //     setTransactionAmount("");
+  //     setRemainingAmount(0);
+  //   }
+  // };
   const handleUpdateTransaction = async (transaction) => {
     console.log("Transaction ID:", transaction.id);
     let Url = "";
@@ -671,21 +782,18 @@ const MesobFinancial2 = () => {
           return;
         }
 
+        // Calculate new remaining amount for the payable
+        const newRemainingAmount =
+          parseFloat(transaction.transactionAmount) - paidAmount;
+
         const updatedTransaction = {
           ...transaction,
           receiptUrl: Url || transaction.receiptUrl,
-          status:
-            paymentOption === "full" ||
-            (paymentOption === "partial" &&
-              remainingAmount === transaction.transactionAmount)
-              ? "Paid"
-              : "Partially Paid",
+          status: newRemainingAmount <= 0 ? "Paid" : "Partially Paid",
           updatedAt: new Date().toISOString(),
           paidAmount: (transaction.paidAmount || 0) + paidAmount,
-          transactionAmount:
-            parseFloat(transaction.transactionAmount) -
-            parseFloat(remainingAmount),
-          remainingAmount: paidAmount,
+          transactionAmount: newRemainingAmount, // This is the remaining unpaid amount
+          remainingAmount: newRemainingAmount,
         };
 
         const response = await fetch(
@@ -703,15 +811,16 @@ const MesobFinancial2 = () => {
       } else {
         setIsUpdatingTransaction(true);
         let userid = localStorage.getItem("userId");
+        const newDebt =
+          paymentOption === "full"
+            ? 0
+            : parseFloat(transaction.transactionAmount) -
+              parseFloat(remainingAmount);
+
         const response = await axios.put(
           `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
           {
-            outstandingDebt:
-              paymentOption === "full"
-                ? parseFloat(transaction.transactionAmount) -
-                  parseFloat(transaction.transactionAmount)
-                : parseFloat(transaction.transactionAmount) -
-                  parseFloat(remainingAmount),
+            outstandingDebt: newDebt,
           }
         );
 
@@ -759,7 +868,6 @@ const MesobFinancial2 = () => {
       setRemainingAmount(0);
     }
   };
-
   const filterItemsByTimeRange = (items, range, searchTerm) => {
     if (!range || !range.from || !range.to) {
       return items.filter((item) =>
