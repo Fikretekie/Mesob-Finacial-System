@@ -115,13 +115,18 @@ const customerRoutes = [
     component: <CSVReports />,
     layout: "/customer",
   },
-  ...(userRole !== 1 ? [{
-    path: "/subscription",
-    name: "Subscribe",
-    icon: "business_money-coins",
-    component: <SubscriptionPlans />,
-    layout: "/customer",
-  }] : []),
+  ...(userRole !== 1
+    ? [
+        {
+          path: "/subscription",
+          name: "Subscribe",
+          icon: "business_money-coins",
+          component: <SubscriptionPlans />,
+          layout: "/customer",
+          invisible: userRole === 1,
+        },
+      ]
+    : []),
 ];
 
 export { adminRoutes, customerRoutes };

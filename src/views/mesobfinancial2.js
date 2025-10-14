@@ -2482,7 +2482,7 @@ const MesobFinancial2 = () => {
                             ).toFixed(2)}
                           </td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #ddd" }}
                           >
@@ -2512,6 +2512,43 @@ const MesobFinancial2 = () => {
                             {(
                               initialBalance +
                               initialvalueableItems +
+                              parseFloat(calculateTotalRevenue()) -
+                              parseFloat(calculateTotalExpenses())
+                            ).toFixed(2)}
+                          </td>
+                        </tr> */}
+                        <tr>
+                          <td
+                            style={{ padding: "8px", border: "1px solid #ddd" }}
+                          >
+                            <strong>Total</strong>
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
+                            $
+                            {(
+                              parseFloat(calculateTotalCash()) +
+                              parseFloat(calculateTotalInventory())
+                            ).toFixed(2)}
+                          </td>
+                          <td
+                            style={{
+                              textAlign: "right",
+                              padding: "8px",
+                              border: "1px solid #ddd",
+                            }}
+                          >
+                            $
+                            {(
+                              parseFloat(calculateTotalPayable()) +
+                              initialBalance +
+                              initialvalueableItems -
+                              initialoutstandingDebt +
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
                             ).toFixed(2)}
@@ -3183,8 +3220,10 @@ const MesobFinancial2 = () => {
                           >
                             $
                             {(
+                              parseFloat(calculateTotalPayable()) +
                               initialBalance +
-                              initialvalueableItems +
+                              initialvalueableItems -
+                              initialoutstandingDebt +
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
                             ).toFixed(2)}
