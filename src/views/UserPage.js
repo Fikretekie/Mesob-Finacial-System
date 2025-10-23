@@ -30,6 +30,7 @@ function UserPage() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isCustomer, setIsCustomer] = useState(false);
+  const [originalData, setOriginalData] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -46,7 +47,11 @@ function UserPage() {
         console.log("api response", response);
         const user = response.data?.user;
         if (user) {
-          setUserData({ ...user, id: userId });
+          // Save both the current and the original copy
+          const fullUser = { ...user, id: userId };
+          setUserData(fullUser);
+          setOriginalData(fullUser);
+          // setUserData({ ...user, id: userId });
           setIsCustomer(user.role === 2 || user.role === 1);
         } else {
           setUserData({ id: userId });
@@ -62,6 +67,7 @@ function UserPage() {
     fetchUserData();
   }, []);
 
+
   useEffect(() => {
     const fetchSubscription = async () => {
       const userId = localStorage.getItem("userId");
@@ -76,6 +82,15 @@ function UserPage() {
     };
     fetchSubscription();
   }, []);
+
+  // Discard changes → restore original data
+  const handleDiscard = () => {
+    setUserData(originalData);
+    setIsEditing(false);
+    setHasChanges(false);
+    setSuccess(null);
+    setError(null);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -200,7 +215,7 @@ function UserPage() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Row>
+                  {/* <Row>
                     <Col md="12">
                       <FormGroup>
                         <label>Business Type</label>
@@ -211,6 +226,51 @@ function UserPage() {
                           disabled={!isEditing}
                           type="text"
                         />
+                      </FormGroup>
+                    </Col>
+                  </Row> */}
+                  <Row>
+                    <Col md="12">
+                      <FormGroup>
+                        <label>Business Type</label>
+                        {isEditing ? (
+                          <Input
+                            type="select"
+                            name="businessType"
+                            value={userData.businessType || ""}
+                            onChange={handleInputChange}
+                          >
+                            <option value="">Select Business Type</option>
+                            <option value="Trucking">Trucking</option>
+                            <option value="RIDESHARE DRIVERS/PARTNERS">
+                              RIDESHARE DRIVERS/PARTNERS
+                            </option>
+                            <option value="Groceries">Groceries</option>
+                            <option value="Individual/Households">
+                              Individual/Households
+                            </option>
+                            <option value="Resturant/Cafe">Resturant/Cafe</option>
+                            <option value="Cleaning Services">Cleaning Services</option>
+                            <option value="Beauty & Grooming">
+                              Beauty & Grooming (Salons, Barbershops)
+                            </option>
+                            <option value="E-commerce Sellers">
+                              E-commerce Sellers (Shopify, Amazon, Etsy)
+                            </option>
+                            <option value="Construction Trades">
+                              Construction Trades (Plumbing, Electrical, Painting, etc.)
+                            </option>
+                            <option value="Content Creator">Content Creator</option>
+                            <option value="Other">Other Businesses</option>
+                          </Input>
+                        ) : (
+                          <Input
+                            value={userData.businessType || "—"}
+                            disabled
+                            type="text"
+                            placeholder="Not specified"
+                          />
+                        )}
                       </FormGroup>
                     </Col>
                   </Row>
@@ -252,7 +312,7 @@ function UserPage() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  {isCustomer && (
+                  {/* {isCustomer && (
                     <>
                       {isEditing && hasChanges && (
                         <Row>
@@ -285,6 +345,51 @@ function UserPage() {
                           </Col>
                         </Row>
                       )}
+                    </>
+                  )} */}
+                  {isCustomer && (
+                    <>
+                      {/* Save + Discard when editing and there are changes */}
+                      {isEditing && hasChanges && (
+                        <Row>
+                          <Col md="12">
+                            <Button color="success" type="submit">
+                              Save Changes
+                            </Button>
+                            <Button
+                              color="secondary"
+                              className="ml-2"
+                              onClick={handleDiscard}
+                            >
+                              Discard
+                            </Button>
+                          </Col>
+                        </Row>
+                      )}
+
+                      {/* Edit button when NOT editing or no changes */}
+                      {(!isEditing || !hasChanges) && (
+                        <Row>
+                          <Col md="12">
+                            <Button
+                              color="primary"
+                              onClick={() => setIsEditing(true)}
+                              disabled={editDisabled}
+                            >
+                              Edit Profile
+                            </Button>
+                          </Col>
+                        </Row>
+                      )}
+
+                      {/* Delete account button */}
+                      <Row className="mt-3">
+                        <Col md="12">
+                          <Button color="danger" onClick={handleDelete}>
+                            Delete Account
+                          </Button>
+                        </Col>
+                      </Row>
                     </>
                   )}
                 </Form>
