@@ -41,6 +41,7 @@ export const businessTypes = {
       "Fuel Costs (Expense)",
       "Vehicle Maintenance (Expense)",
       "Insurance (Expense)",
+      "Oil Changes (Expense)",
       "Taxes (Expense)",
       "Rent (Expense)",
       "Miscellaneous (Expense)",
