@@ -345,7 +345,6 @@ function Dashboard() {
   //     let targetUserId;
   //     if (selectedUserId) {
   //       console.log("Using selectedUserId:", selectedUserId);
-
   //       targetUserId = selectedUserId;
   //     } else {
   //       targetUserId = uid || localStorage.getItem("userId");
@@ -380,9 +379,10 @@ function Dashboard() {
   //     let revenue = 0;
   //     let payable = outstandingDebt;
 
-  //     const monthlyData = {
+  //     // ✅ Changed to daily tracking
+  //     const dailyData = {
   //       Initial: {
-  //         month: "Initial Balance",
+  //         date: "Initial Balance",
   //         cashOnHand: initialCashBalance,
   //         revenue: 0,
   //         payable: outstandingDebt,
@@ -392,14 +392,20 @@ function Dashboard() {
   //       },
   //     };
 
-  //     transactions.forEach((transaction) => {
+  //     // ✅ Sort transactions by date first
+  //     const sortedTransactions = [...transactions].sort(
+  //       (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  //     );
+
+  //     sortedTransactions.forEach((transaction) => {
   //       const amount = parseFloat(transaction.transactionAmount);
   //       const date = new Date(transaction.createdAt);
-  //       const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
+  //       // ✅ Format as YYYY-MM-DD for daily tracking
+  //       const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-  //       if (!monthlyData[monthYear]) {
-  //         monthlyData[monthYear] = {
-  //           month: monthYear,
+  //       if (!dailyData[dateKey]) {
+  //         dailyData[dateKey] = {
+  //           date: dateKey,
   //           cashOnHand: cashOnHand,
   //           revenue: 0,
   //           payable: payable,
@@ -412,15 +418,14 @@ function Dashboard() {
   //       if (transaction.transactionType === "Receive") {
   //         cashOnHand += amount;
   //         revenue += amount;
-  //         monthlyData[monthYear].revenue += amount;
+  //         dailyData[dateKey].revenue += amount;
   //       } else if (transaction.transactionType === "Pay") {
   //         expenses += amount;
   //         cashOnHand -= amount;
-  //         monthlyData[monthYear].expenses += amount;
+  //         dailyData[dateKey].expenses += amount;
 
-  //         // Check if this payment is for a payable
   //         if (transaction.payableId) {
-  //           monthlyData[monthYear].paidPayables += amount;
+  //           dailyData[dateKey].paidPayables += amount;
   //         }
   //       } else if (
   //         transaction.transactionType === "Pay" &&
@@ -428,32 +433,34 @@ function Dashboard() {
   //       ) {
   //         newItem += amount;
   //         cashOnHand -= amount;
-  //         monthlyData[monthYear].expenses += amount;
-  //         monthlyData[monthYear].newItem += amount;
+  //         dailyData[dateKey].expenses += amount;
+  //         dailyData[dateKey].newItem += amount;
   //       } else if (
   //         (transaction.transactionType === "Payable" &&
   //           transaction.status === "Payable") ||
   //         transaction.status === "Partially Paid"
   //       ) {
   //         payable += amount;
-  //         monthlyData[monthYear].payable += amount;
+  //         dailyData[dateKey].payable += amount;
   //       }
 
-  //       monthlyData[monthYear].cashOnHand = cashOnHand;
+  //       dailyData[dateKey].cashOnHand = cashOnHand;
   //     });
 
   //     // Set final totals
-  //     setTotalCashOnHand(cashOnHand); // This will now match with the chart
+  //     setTotalCashOnHand(cashOnHand);
   //     setTotalExpenses(expenses);
   //     settotalRevenue(revenue);
   //     setTotalPayable(payable);
 
-  //     // Prepare monthly sales data
-  //     setMonthlySales(
-  //       Object.values(monthlyData).sort(
-  //         (a, b) => new Date(a.month) - new Date(b.month)
-  //       )
-  //     );
+  //     // ✅ Sort daily data with Initial Balance first
+  //     const sortedDailyData = Object.values(dailyData).sort((a, b) => {
+  //       if (a.date === "Initial Balance") return -1;
+  //       if (b.date === "Initial Balance") return 1;
+  //       return new Date(a.date) - new Date(b.date);
+  //     });
+
+  //     setMonthlySales(sortedDailyData); // Using same state variable
 
   //     setLoading(false);
   //   } catch (error) {
@@ -463,8 +470,6 @@ function Dashboard() {
   //     setLoadingFinancialData(false);
   //   }
   // };
-
-
 
   const fetchFinancialData = async (uid = null) => {
     setLoadingFinancialData(true);
@@ -510,7 +515,7 @@ function Dashboard() {
       let expenses = 0;
       let newItem = 0;
       let revenue = 0;
-      let payable = outstandingDebt;
+      let payable = outstandingDebt; // ✅ Start with initial outstanding debt
 
       // ✅ Changed to daily tracking
       const dailyData = {
@@ -518,7 +523,7 @@ function Dashboard() {
           date: "Initial Balance",
           cashOnHand: initialCashBalance,
           revenue: 0,
-          payable: outstandingDebt,
+          payable: outstandingDebt, // ✅ Initial payable
           expenses: 0,
           newItem: 0,
           paidPayables: 0,
@@ -533,7 +538,6 @@ function Dashboard() {
       sortedTransactions.forEach((transaction) => {
         const amount = parseFloat(transaction.transactionAmount);
         const date = new Date(transaction.createdAt);
-        // ✅ Format as YYYY-MM-DD for daily tracking
         const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
         if (!dailyData[dateKey]) {
@@ -541,7 +545,7 @@ function Dashboard() {
             date: dateKey,
             cashOnHand: cashOnHand,
             revenue: 0,
-            payable: payable,
+            payable: payable, // ✅ Carry forward current payable
             expenses: 0,
             newItem: 0,
             paidPayables: 0,
@@ -557,7 +561,9 @@ function Dashboard() {
           cashOnHand -= amount;
           dailyData[dateKey].expenses += amount;
 
+          // ✅ If paying off a payable, reduce the payable amount
           if (transaction.payableId) {
+            payable -= amount;
             dailyData[dateKey].paidPayables += amount;
           }
         } else if (
@@ -569,14 +575,15 @@ function Dashboard() {
           dailyData[dateKey].expenses += amount;
           dailyData[dateKey].newItem += amount;
         } else if (
-          (transaction.transactionType === "Payable" &&
-            transaction.status === "Payable") ||
-          transaction.status === "Partially Paid"
+          transaction.transactionType === "Payable" &&
+          (transaction.status === "Payable" || transaction.status === "Partially Paid")
         ) {
+          // ✅ Add new payables to the total
           payable += amount;
-          dailyData[dateKey].payable += amount;
         }
 
+        // ✅ Update the daily payable to reflect current state
+        dailyData[dateKey].payable = payable;
         dailyData[dateKey].cashOnHand = cashOnHand;
       });
 
@@ -593,7 +600,7 @@ function Dashboard() {
         return new Date(a.date) - new Date(b.date);
       });
 
-      setMonthlySales(sortedDailyData); // Using same state variable
+      setMonthlySales(sortedDailyData);
 
       setLoading(false);
     } catch (error) {
