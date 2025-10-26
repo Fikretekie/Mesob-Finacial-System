@@ -670,21 +670,18 @@ const MesobFinancial2 = () => {
   //         return;
   //       }
 
+  //       // Calculate new remaining amount for the payable
+  //       const newRemainingAmount =
+  //         parseFloat(transaction.transactionAmount) - paidAmount;
+
   //       const updatedTransaction = {
   //         ...transaction,
   //         receiptUrl: Url || transaction.receiptUrl,
-  //         status:
-  //           paymentOption === "full" ||
-  //           (paymentOption === "partial" &&
-  //             remainingAmount === transaction.transactionAmount)
-  //             ? "Paid"
-  //             : "Partially Paid",
+  //         status: newRemainingAmount <= 0 ? "Paid" : "Partially Paid",
   //         updatedAt: new Date().toISOString(),
   //         paidAmount: (transaction.paidAmount || 0) + paidAmount,
-  //         transactionAmount:
-  //           parseFloat(transaction.transactionAmount) -
-  //           parseFloat(remainingAmount),
-  //         remainingAmount: paidAmount,
+  //         transactionAmount: newRemainingAmount, // This is the remaining unpaid amount
+  //         remainingAmount: newRemainingAmount,
   //       };
 
   //       const response = await fetch(
@@ -702,15 +699,16 @@ const MesobFinancial2 = () => {
   //     } else {
   //       setIsUpdatingTransaction(true);
   //       let userid = localStorage.getItem("userId");
+  //       const newDebt =
+  //         paymentOption === "full"
+  //           ? 0
+  //           : parseFloat(transaction.transactionAmount) -
+  //           parseFloat(remainingAmount);
+
   //       const response = await axios.put(
   //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
   //         {
-  //           outstandingDebt:
-  //             paymentOption === "full"
-  //               ? parseFloat(transaction.transactionAmount) -
-  //                 parseFloat(transaction.transactionAmount)
-  //               : parseFloat(transaction.transactionAmount) -
-  //                 parseFloat(remainingAmount),
+  //           outstandingDebt: newDebt,
   //         }
   //       );
 
@@ -726,8 +724,8 @@ const MesobFinancial2 = () => {
   //         transaction.id === "outstanding-debt"
   //           ? "Payment for Outstanding Debt"
   //           : paymentOption === "full"
-  //           ? `Full Payment for ${transaction.transactionPurpose}`
-  //           : `Partial Payment for ${transaction.transactionPurpose}`,
+  //             ? `Full Payment for ${transaction.transactionPurpose}`
+  //             : `Partial Payment for ${transaction.transactionPurpose}`,
   //       transactionAmount: paidAmount,
   //       receiptUrl: Url || "",
   //       payableId: transaction.id,
@@ -758,6 +756,103 @@ const MesobFinancial2 = () => {
   //     setRemainingAmount(0);
   //   }
   // };
+
+  // const handleUpdateTransaction = async (transaction) => {
+  //   console.log("Transaction ID:", transaction.id);
+  //   let Url = "";
+  //   if (receipt) {
+  //     Url = await uploadReceipt();
+  //   }
+  //   const paidAmount =
+  //     paymentOption === "full"
+  //       ? parseFloat(transaction.transactionAmount)
+  //       : parseFloat(remainingAmount);
+
+  //   setIsUpdatingTransaction(true);
+  //   try {
+  //     if (transaction.id !== "outstanding-debt") {
+  //       // Handle regular payable transactions
+  //       if (paidAmount > remainingAmount && paymentOption !== "full") {
+  //         notify(
+  //           "tr",
+  //           `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
+  //           "warning"
+  //         );
+  //         return;
+  //       }
+
+  //       const newRemainingAmount =
+  //         parseFloat(transaction.transactionAmount) - paidAmount;
+
+  //       const updatedTransaction = {
+  //         ...transaction,
+  //         receiptUrl: Url || transaction.receiptUrl,
+  //         status: newRemainingAmount <= 0 ? "Paid" : "Partially Paid",
+  //         updatedAt: new Date().toISOString(),
+  //         paidAmount: (transaction.paidAmount || 0) + paidAmount,
+  //         transactionAmount: newRemainingAmount,
+  //         remainingAmount: newRemainingAmount,
+  //       };
+
+  //       const response = await fetch(
+  //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
+  //         {
+  //           method: "PUT",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify(updatedTransaction),
+  //         }
+  //       );
+
+  //       if (response.status !== 200) {
+  //         throw new Error("Failed to update the transaction");
+  //       }
+  //     } else {
+  //       // *** FIX: DON'T update user's outstandingDebt field ***
+  //       // The outstanding debt is now calculated dynamically from payments
+  //       console.log("Outstanding debt payment - tracking via transactions only");
+  //     }
+
+  //     // Create the payment transaction record
+  //     const newPaidTransaction = {
+  //       userId: localStorage.getItem("userId"),
+  //       transactionType: "Pay",
+  //       transactionPurpose:
+  //         transaction.id === "outstanding-debt"
+  //           ? "Payment for Outstanding Debt"
+  //           : paymentOption === "full"
+  //             ? `Full Payment for ${transaction.transactionPurpose}`
+  //             : `Partial Payment for ${transaction.transactionPurpose}`,
+  //       transactionAmount: paidAmount,
+  //       receiptUrl: Url || "",
+  //       payableId: transaction.id,
+  //       createdAt: new Date().toISOString(),
+  //     };
+
+  //     const response2 = await axios.post(
+  //       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+  //       newPaidTransaction
+  //     );
+
+  //     if (response2.status === 200) {
+  //       notify("tr", "Payment recorded successfully", "success");
+  //       fetchTransactions();
+  //       fetchUserInitialBalance();
+  //     } else {
+  //       throw new Error("Failed to add the payment record");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating transaction:", error);
+  //     notify("tr", `Error recording payment: ${error.message}`, "danger");
+  //   } finally {
+  //     setIsUpdatingTransaction(false);
+  //     setSelectedUnpaidTransaction(null);
+  //     setPaymentOption(null);
+  //     setShowAddTransaction(false);
+  //     setTransactionAmount("");
+  //     setRemainingAmount(0);
+  //   }
+  // };
+
   const handleUpdateTransaction = async (transaction) => {
     console.log("Transaction ID:", transaction.id);
     let Url = "";
@@ -772,6 +867,7 @@ const MesobFinancial2 = () => {
     setIsUpdatingTransaction(true);
     try {
       if (transaction.id !== "outstanding-debt") {
+        // Handle regular payable transactions
         if (paidAmount > remainingAmount && paymentOption !== "full") {
           notify(
             "tr",
@@ -781,7 +877,6 @@ const MesobFinancial2 = () => {
           return;
         }
 
-        // Calculate new remaining amount for the payable
         const newRemainingAmount =
           parseFloat(transaction.transactionAmount) - paidAmount;
 
@@ -791,7 +886,7 @@ const MesobFinancial2 = () => {
           status: newRemainingAmount <= 0 ? "Paid" : "Partially Paid",
           updatedAt: new Date().toISOString(),
           paidAmount: (transaction.paidAmount || 0) + paidAmount,
-          transactionAmount: newRemainingAmount, // This is the remaining unpaid amount
+          transactionAmount: newRemainingAmount,
           remainingAmount: newRemainingAmount,
         };
 
@@ -808,26 +903,12 @@ const MesobFinancial2 = () => {
           throw new Error("Failed to update the transaction");
         }
       } else {
-        setIsUpdatingTransaction(true);
-        let userid = localStorage.getItem("userId");
-        const newDebt =
-          paymentOption === "full"
-            ? 0
-            : parseFloat(transaction.transactionAmount) -
-            parseFloat(remainingAmount);
-
-        const response = await axios.put(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
-          {
-            outstandingDebt: newDebt,
-          }
-        );
-
-        if (response.status !== 200) {
-          throw new Error("Failed to update outstanding debt");
-        }
+        // *** FIX: DON'T update user's outstandingDebt field ***
+        // The outstanding debt is now calculated dynamically from payments
+        console.log("Outstanding debt payment - tracking via transactions only");
       }
 
+      // Create the payment transaction record
       const newPaidTransaction = {
         userId: localStorage.getItem("userId"),
         transactionType: "Pay",
@@ -867,6 +948,7 @@ const MesobFinancial2 = () => {
       setRemainingAmount(0);
     }
   };
+
   const filterItemsByTimeRange = (items, range, searchTerm) => {
     if (!range || !range.from || !range.to) {
       return items.filter((item) =>
@@ -1039,6 +1121,72 @@ const MesobFinancial2 = () => {
     return new Date() < trialEndDate && scheduleCount < 4;
   };
 
+  // const calculateFinancials = (transactions) => {
+  //   const newRevenues = {};
+  //   const newExpenses = {};
+  //   const newAccountsPayable = {};
+
+  //   const filteredTransactions = getFilteredItems();
+
+  //   filteredTransactions.forEach((transaction) => {
+  //     const amount = parseFloat(transaction.transactionAmount) || 0;
+  //     if (transaction.transactionType === "Receive") {
+  //       const purpose = transaction.transactionPurpose;
+  //       newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
+  //     } else if (
+  //       transaction.transactionType === "Pay" ||
+  //       transaction.transactionType === "Payable"
+  //     ) {
+  //       const purpose = transaction.transactionPurpose;
+  //       newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
+  //       if (transaction.transactionType === "Payable") {
+  //         newAccountsPayable[purpose] =
+  //           (newAccountsPayable[purpose] || 0) + amount;
+  //       }
+  //     }
+  //   });
+
+  //   setRevenues(newRevenues);
+  //   setExpenses(newExpenses);
+  //   setAccountsPayable(newAccountsPayable);
+  // };
+
+  // const calculateFinancials = (transactions) => {
+  //   const newRevenues = {};
+  //   const newExpenses = {};
+  //   const newAccountsPayable = {};
+
+  //   const filteredTransactions = getFilteredItems();
+
+  //   filteredTransactions.forEach((transaction) => {
+  //     const amount = parseFloat(transaction.transactionAmount) || 0;
+
+  //     if (transaction.transactionType === "Receive") {
+  //       const purpose = transaction.transactionPurpose;
+  //       newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
+  //     } else if (
+  //       transaction.transactionType === "Pay" ||
+  //       transaction.transactionType === "Payable"
+  //     ) {
+  //       const purpose = transaction.transactionPurpose;
+
+  //       // EXCLUDE outstanding debt payments from expenses
+  //       if (transaction.payableId !== "outstanding-debt" &&
+  //         !purpose.includes("Outstanding Debt")) {
+  //         newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
+  //       }
+
+  //       if (transaction.transactionType === "Payable") {
+  //         newAccountsPayable[purpose] = (newAccountsPayable[purpose] || 0) + amount;
+  //       }
+  //     }
+  //   });
+
+  //   setRevenues(newRevenues);
+  //   setExpenses(newExpenses);
+  //   setAccountsPayable(newAccountsPayable);
+  // };
+
   const calculateFinancials = (transactions) => {
     const newRevenues = {};
     const newExpenses = {};
@@ -1048,6 +1196,7 @@ const MesobFinancial2 = () => {
 
     filteredTransactions.forEach((transaction) => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
+
       if (transaction.transactionType === "Receive") {
         const purpose = transaction.transactionPurpose;
         newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
@@ -1056,10 +1205,15 @@ const MesobFinancial2 = () => {
         transaction.transactionType === "Payable"
       ) {
         const purpose = transaction.transactionPurpose;
-        newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
+
+        // *** FIX: Exclude outstanding debt payments from expenses ***
+        if (transaction.payableId !== "outstanding-debt" &&
+          !purpose.includes("Outstanding Debt")) {
+          newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
+        }
+
         if (transaction.transactionType === "Payable") {
-          newAccountsPayable[purpose] =
-            (newAccountsPayable[purpose] || 0) + amount;
+          newAccountsPayable[purpose] = (newAccountsPayable[purpose] || 0) + amount;
         }
       }
     });
@@ -1068,6 +1222,7 @@ const MesobFinancial2 = () => {
     setExpenses(newExpenses);
     setAccountsPayable(newAccountsPayable);
   };
+
 
   const calculateTotalRevenue = () => {
     const filteredItems = getFilteredItems();
@@ -1095,13 +1250,31 @@ const MesobFinancial2 = () => {
     return totalInventory.toFixed(2);
   };
 
+  // const calculateTotalExpenses = () => {
+  //   const filteredItems = getFilteredItems();
+  //   return filteredItems
+  //     .reduce((sum, value) => {
+  //       if (
+  //         value.transactionType === "Pay" ||
+  //         (value.transactionType === "Payable" && value.status !== "Paid")
+  //       ) {
+  //         return sum + parseFloat(value.transactionAmount || 0);
+  //       }
+  //       return sum;
+  //     }, 0)
+  //     .toFixed(2);
+  // };
+
   const calculateTotalExpenses = () => {
     const filteredItems = getFilteredItems();
     return filteredItems
       .reduce((sum, value) => {
+        // *** FIX: Exclude outstanding debt payments ***
         if (
-          value.transactionType === "Pay" ||
-          (value.transactionType === "Payable" && value.status !== "Paid")
+          (value.transactionType === "Pay" ||
+            (value.transactionType === "Payable" && value.status !== "Paid")) &&
+          value.payableId !== "outstanding-debt" &&
+          !value.transactionPurpose.includes("Outstanding Debt")
         ) {
           return sum + parseFloat(value.transactionAmount || 0);
         }
@@ -1110,20 +1283,34 @@ const MesobFinancial2 = () => {
       .toFixed(2);
   };
 
-  const calculateTotalPayables = () => {
-    return Object.values(items)
-      .reduce((sum, value) => {
-        if (
-          value.transactionType === "Payable" &&
-          (value.status === "Unpaid" || value.status === "Payable")
-        ) {
-          return sum + parseFloat(value.transactionAmount || 0);
-        }
-        return sum;
-      }, 0)
-      .toFixed(2);
-  };
+  // const calculateTotalCash = () => {
+  //   const filteredItems = getFilteredItems();
 
+  //   const totalReceived = filteredItems.reduce((sum, value) => {
+  //     if (value.transactionType === "Receive") {
+  //       return sum + parseFloat(value.transactionAmount || 0);
+  //     }
+  //     return sum;
+  //   }, 0);
+
+  //   const New_ItemReceived = filteredItems.reduce((sum, value) => {
+  //     if (value.transactionType === "New_Item") {
+  //       return sum + parseFloat(value.transactionAmount || 0);
+  //     }
+  //     return sum;
+  //   }, 0);
+
+  //   const totalExpenses = filteredItems.reduce((sum, value) => {
+  //     if (value.transactionType === "Pay") {
+  //       return sum + parseFloat(value.transactionAmount || 0);
+  //     }
+  //     return sum;
+  //   }, 0);
+
+  //   const totalCash =
+  //     initialBalance + totalReceived - totalExpenses - New_ItemReceived;
+  //   return totalCash.toFixed(2);
+  // };
   const calculateTotalCash = () => {
     const filteredItems = getFilteredItems();
 
@@ -1141,6 +1328,7 @@ const MesobFinancial2 = () => {
       return sum;
     }, 0);
 
+    // Include ALL Pay transactions (including outstanding debt payments)
     const totalExpenses = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Pay") {
         return sum + parseFloat(value.transactionAmount || 0);
@@ -1153,18 +1341,67 @@ const MesobFinancial2 = () => {
     return totalCash.toFixed(2);
   };
 
+  // const calculateTotalPayable = () => {
+  //   const filteredItems = getFilteredItems();
+
+  //   const totalReceived = filteredItems.reduce((sum, value) => {
+  //     if (value.transactionType === "Payable" && value.status !== "Paid") {
+  //       return sum + parseFloat(value.transactionAmount || 0);
+  //     }
+  //     return sum;
+  //   }, 0);
+
+  //   const outstandingDebtAmount = initialoutstandingDebt || 0;
+  //   return (totalReceived + outstandingDebtAmount).toFixed(2);
+  // };
+
+  // const calculateTotalPayable = () => {
+  //   const filteredItems = getFilteredItems();
+
+  //   // Only count unpaid Payables (not including outstanding debt)
+  //   const totalPayable = filteredItems.reduce((sum, value) => {
+  //     if (value.transactionType === "Payable" && value.status !== "Paid") {
+  //       return sum + parseFloat(value.transactionAmount || 0);
+  //     }
+  //     return sum;
+  //   }, 0);
+
+  //   // Calculate remaining outstanding debt by checking payment history
+  //   const outstandingDebtPayments = filteredItems.reduce((sum, value) => {
+  //     if (value.payableId === "outstanding-debt" && value.transactionType === "Pay") {
+  //       return sum + parseFloat(value.transactionAmount || 0);
+  //     }
+  //     return sum;
+  //   }, 0);
+
+  //   const remainingOutstandingDebt = Math.max(0, initialoutstandingDebt - outstandingDebtPayments);
+
+  //   return (totalPayable + remainingOutstandingDebt).toFixed(2);
+  // };
+
   const calculateTotalPayable = () => {
     const filteredItems = getFilteredItems();
 
-    const totalReceived = filteredItems.reduce((sum, value) => {
+    // Count unpaid regular Payables
+    const totalPayable = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Payable" && value.status !== "Paid") {
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
-    const outstandingDebtAmount = initialoutstandingDebt || 0;
-    return (totalReceived + outstandingDebtAmount).toFixed(2);
+    // *** FIX: Use 'items' instead of 'filteredItems' for complete payment history ***
+    const outstandingDebtPayments = items.reduce((sum, value) => {
+      if (value.payableId === "outstanding-debt" && value.transactionType === "Pay") {
+        return sum + parseFloat(value.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
+
+    // Calculate remaining outstanding debt
+    const remainingOutstandingDebt = Math.max(0, initialoutstandingDebt - outstandingDebtPayments);
+
+    return (totalPayable + remainingOutstandingDebt).toFixed(2);
   };
 
   const fetchTransactions = (uid = null) => {
@@ -1204,6 +1441,49 @@ const MesobFinancial2 = () => {
       });
   };
 
+  // const fetchUnpaidTransactions = () => {
+  //   setLoadingUnpaidTransactions(true);
+  //   axios
+  //     .get(
+  //       `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+  //     )
+  //     .then((response) => {
+  //       const unpaidOrPartiallyPaid = response.data
+  //         .filter(
+  //           (t) =>
+  //             t.transactionType === "Payable" &&
+  //             (!t.installmentPlan || t.installmentPlan.remainingAmount > 0)
+  //         )
+  //         .map((transaction) => ({
+  //           ...transaction,
+  //           remainingAmount: transaction.installmentPlan
+  //             ? transaction.installmentPlan.remainingAmount
+  //             : transaction.transactionAmount,
+  //         }));
+
+  //       const outstandingDebt = initialoutstandingDebt || 0;
+  //       if (outstandingDebt > 0) {
+  //         unpaidOrPartiallyPaid.push({
+  //           id: "outstanding-debt",
+  //           transactionType: "Payable",
+  //           transactionPurpose: "Initial Outstanding Debt",
+  //           transactionAmount: outstandingDebt,
+  //           remainingAmount: outstandingDebt,
+  //           createdAt: new Date().toISOString(),
+  //         });
+  //       }
+
+  //       setUnpaidTransactions(unpaidOrPartiallyPaid);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching unpaid transactions:", error);
+  //       notify("tr", "Error fetching unpaid transactions", "danger");
+  //     })
+  //     .finally(() => {
+  //       setLoadingUnpaidTransactions(false);
+  //     });
+  // };
+
   const fetchUnpaidTransactions = () => {
     setLoadingUnpaidTransactions(true);
     axios
@@ -1224,16 +1504,32 @@ const MesobFinancial2 = () => {
               : transaction.transactionAmount,
           }));
 
+        // ✅ FIX: Calculate remaining outstanding debt dynamically
         const outstandingDebt = initialoutstandingDebt || 0;
+
         if (outstandingDebt > 0) {
-          unpaidOrPartiallyPaid.push({
-            id: "outstanding-debt",
-            transactionType: "Payable",
-            transactionPurpose: "Initial Outstanding Debt",
-            transactionAmount: outstandingDebt,
-            remainingAmount: outstandingDebt,
-            createdAt: new Date().toISOString(),
-          });
+          // Calculate total payments made toward outstanding debt
+          const outstandingDebtPayments = response.data.reduce((sum, t) => {
+            if (t.payableId === "outstanding-debt" && t.transactionType === "Pay") {
+              return sum + parseFloat(t.transactionAmount || 0);
+            }
+            return sum;
+          }, 0);
+
+          // Calculate remaining outstanding debt
+          const remainingOutstandingDebt = outstandingDebt - outstandingDebtPayments;
+
+          // Only add to list if there's still debt remaining
+          if (remainingOutstandingDebt > 0) {
+            unpaidOrPartiallyPaid.push({
+              id: "outstanding-debt",
+              transactionType: "Payable",
+              transactionPurpose: "Initial Outstanding Debt",
+              transactionAmount: remainingOutstandingDebt,  // ✅ Now shows $900
+              remainingAmount: remainingOutstandingDebt,     // ✅ Now shows $900
+              createdAt: new Date().toISOString(),
+            });
+          }
         }
 
         setUnpaidTransactions(unpaidOrPartiallyPaid);
@@ -1297,22 +1593,29 @@ const MesobFinancial2 = () => {
     }
   };
 
+  // const handleOutstandingDebtDeletion = async (transaction) => {
+  //   let userId = localStorage.getItem("userId");
+  //   const userResponse = await axios.get(
+  //     `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+  //   );
+  //   const currentOutstandingDebt = userResponse.data.user.outstandingDebt || 0;
+
+  //   const updatedOutstandingDebt =
+  //     parseFloat(currentOutstandingDebt) +
+  //     parseFloat(transaction.transactionAmount);
+
+  //   await axios.put(
+  //     `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
+  //     { outstandingDebt: updatedOutstandingDebt }
+  //   );
+  // };
   const handleOutstandingDebtDeletion = async (transaction) => {
-    let userId = localStorage.getItem("userId");
-    const userResponse = await axios.get(
-      `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
-    );
-    const currentOutstandingDebt = userResponse.data.user.outstandingDebt || 0;
-
-    const updatedOutstandingDebt =
-      parseFloat(currentOutstandingDebt) +
-      parseFloat(transaction.transactionAmount);
-
-    await axios.put(
-      `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
-      { outstandingDebt: updatedOutstandingDebt }
-    );
+    // When deleting an outstanding debt payment, we DON'T need to update the user table
+    // because we're calculating it dynamically from transactions
+    console.log("Deleting outstanding debt payment - no user update needed");
+    // The payment transaction will be deleted, and calculateTotalPayable will reflect the change
   };
+
 
   const handlePayableDeletion = async (transaction) => {
     const payableItem = items.find((item) => item.id === transaction.payableId);
