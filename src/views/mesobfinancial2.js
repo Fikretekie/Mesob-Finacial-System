@@ -2175,7 +2175,7 @@ const MesobFinancial2 = () => {
                           fontWeight: "bold",
                         }}
                       >
-                        Total Cash on hand ={" "}
+                        Total Cash on  ={" "}
                       </span>
                       <span
                         style={{
@@ -2238,7 +2238,10 @@ const MesobFinancial2 = () => {
                                 padding: "2px 5px",
                               }}
                             >
-                              ${amount.toFixed(2)}
+                              ${amount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </span>
                           </div>
                         ))}
@@ -2406,7 +2409,10 @@ const MesobFinancial2 = () => {
                                 textAlign: "right",
                               }}
                             >
-                              ${amount.toFixed(2)}
+                              ${amount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </td>
                           </tr>
                         ))}
@@ -2489,7 +2495,10 @@ const MesobFinancial2 = () => {
                                     textAlign: "right",
                                   }}
                                 >
-                                  ${totalAmount.toFixed(2)}
+                                  ${totalAmount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
                                 </td>
                               </tr>
                             );
@@ -2948,7 +2957,10 @@ const MesobFinancial2 = () => {
                                 padding: "2px 5px",
                               }}
                             >
-                              ${amount.toFixed(2)}
+                              ${amount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </span>
                           </div>
                         ))}
@@ -3057,7 +3069,10 @@ const MesobFinancial2 = () => {
                                   padding: "2px 5px",
                                 }}
                               >
-                                ${totalAmount.toFixed(2)}
+                                ${totalAmount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                               </span>
                             </div>
                           );
@@ -3159,7 +3174,10 @@ const MesobFinancial2 = () => {
                                 textAlign: "right",
                               }}
                             >
-                              ${amount.toFixed(2)}
+                              ${amount.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </td>
                           </tr>
                         ))}
@@ -3242,7 +3260,10 @@ const MesobFinancial2 = () => {
                                     textAlign: "right",
                                   }}
                                 >
-                                  ${totalAmount.toFixed(2)}
+                                  ${totalAmount.toLocaleString(undefined, {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
                                 </td>
                               </tr>
                             );
