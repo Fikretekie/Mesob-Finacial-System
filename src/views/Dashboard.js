@@ -28,19 +28,10 @@ import {
 } from "chart.js";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
-import formatDate from "utils/formatDate";
 import Select from "react-select"; // Import react-select
 import { Helmet } from "react-helmet";
-import formatUserId from "utils/formatUID";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-// ✅ Correct
-import {
-  setSelectedUserId,
-  clearSelectedUserId,
-} from "../store/selectedUserSlice";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 ChartJS.register(
   CategoryScale,
@@ -73,13 +64,8 @@ function Dashboard() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingCompanyName, setLoadingCompanyName] = useState(false);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
-  const [loadingSchedule, setLoadingSchedule] = useState(false);
-
   const persistedUserId = localStorage.getItem("selectedUserId");
-  console.log("Persisted User ID:", persistedUserId);
-
   const userRole = parseInt(localStorage.getItem("role"));
-  console.log("userRole=>>>", userRole);
   const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null); // ✅ renamed local state variable
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
@@ -134,50 +120,6 @@ function Dashboard() {
     label: user.email,
   }));
 
-  const getSchedule = async () => {
-    setLoadingSchedule(true);
-    try {
-      let user_id = localStorage.getItem("userId");
-
-      if (!user_id) {
-        console.error("User ID not found in localStorage.");
-        setLoadingSchedule(false);
-        return;
-      }
-
-      // Retrieve the last schedule count from localStorage (or default to 1)
-      let lastScheduleCount =
-        parseInt(localStorage.getItem("schedule_count")) || 1;
-      let newScheduleCount = lastScheduleCount + 1;
-
-      const params = {
-        email: "asifhere121@gmail.com",
-        subject: "test",
-        message: "testing email for schedule",
-        user_id: user_id,
-        schedule_type: 1, // Default type
-        schedule_count: newScheduleCount,
-      };
-
-      const response = await axios.post(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/schedule",
-        params
-      );
-
-      console.log("Response Data:", response.data);
-
-      // Update schedule count in localStorage
-      localStorage.setItem("schedule_count", newScheduleCount);
-    } catch (error) {
-      console.error(
-        "Error fetching schedule:",
-        error.response?.data || error.message
-      );
-    } finally {
-      setLoadingSchedule(false);
-    }
-  };
-
   const calculateTotalCash = () => {
     const totalReceived = items?.reduce((sum, item) => {
       return (
@@ -201,7 +143,10 @@ function Dashboard() {
 
     const totalCash =
       initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-    return totalCash.toFixed(2);
+    return totalCash.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
   const fetchUsers = async () => {
@@ -220,18 +165,39 @@ function Dashboard() {
     }
   };
 
-  const getChartOptions = (title, data, labels) => {
+  const getChartOptions = (title, data, labels, color = "#007BFF") => {
     return {
       chart: {
         type: "line",
-        toolbar: { show: false },
-        zoom: { enabled: false },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            zoom: true,
+            zoomin: true,
+            zoomout: true,
+            pan: true,
+            reset: true
+          }
+        },
+        zoom: {
+          enabled: true,
+          type: 'x',
+          autoScaleYaxis: true
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800
+        }
       },
       title: {
         text: title,
         align: "center",
         style: {
           fontSize: "16px",
+          fontWeight: 600,
+          color: '#263238'
         },
       },
       series: [
@@ -242,37 +208,99 @@ function Dashboard() {
       ],
       xaxis: {
         categories: labels,
+        labels: {
+          rotate: -45,
+          rotateAlways: false,
+          style: {
+            fontSize: '11px'
+          }
+        },
+        title: {
+          text: 'Date',
+          style: {
+            fontSize: '12px',
+            fontWeight: 500
+          }
+        }
       },
       yaxis: {
         title: {
-          text: "Amount",
+          text: "Amount ($)",
+          style: {
+            fontSize: '12px',
+            fontWeight: 500
+          }
         },
-        //force nice rounding
-        tickAmount: 10,
+        labels: {
+          formatter: function (value) {
+            if (!value) return '$0';
+            return '$' + value.toLocaleString(undefined, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0
+            });
+          }
+        },
+        tickAmount: 8,
         min: 0,
-        max: Math.max(...data) + Math.max(...data) * 0.1, // Adjust the scaling factor as needed
+        max: function (max) {
+          return max > 0 ? max * 1.1 : 100; // Add 10% padding or default to 100
+        }
       },
       stroke: {
-        curve: "straight", // Use "straight" for a direct line between points
-        width: 2, // Adjust the line thickness as needed
+        curve: "smooth", // Changed to smooth for better line appearance
+        width: 3, // Thicker line for better visibility
+        lineCap: 'round'
       },
-      colors: ["#007BFF"], // Use a blue color, adjust as needed
+      colors: [color],
       markers: {
-        size: 5, // Adjust the size of the data point markers
-        colors: ["#007BFF"], // Make the markers the same color as the line
+        size: 5,
+        colors: [color],
+        strokeColors: '#fff',
+        strokeWidth: 2,
+        hover: {
+          size: 7,
+          sizeOffset: 3
+        }
       },
       grid: {
-        show: true, // Ensure the grid is visible
+        show: true,
         borderColor: "#e7e7e7",
+        strokeDashArray: 3,
         row: {
-          colors: ["#f3f3f3", "transparent"], // alternate grid colors
+          colors: ["#f9f9f9", "transparent"],
           opacity: 0.5,
         },
+        padding: {
+          top: 0,
+          right: 10,
+          bottom: 0,
+          left: 10
+        }
       },
+      tooltip: {
+        enabled: true,
+        shared: true,
+        intersect: false,
+        y: {
+          formatter: function (value) {
+            return '$' + value.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+          }
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      legend: {
+        show: true,
+        position: 'top',
+        horizontalAlign: 'right'
+      }
     };
   };
 
-  // ✅ Add this helper function to format date labels
   const formatDateLabel = (dateStr) => {
     if (dateStr === "Initial Balance") return "Initial";
 
@@ -283,193 +311,35 @@ function Dashboard() {
       year: "numeric"
     });
   };
-  // Generate chart data
-  // const revenueChartData = getChartOptions(
-  //   "Revenue",
-  //   monthlySales.map((item) => item.revenue),
-  //   monthlySales.map((item) => item.month)
-  // );
-  // const payableChartData = getChartOptions(
-  //   "Total Payable",
-  //   monthlySales.map((item) => item.payable),
-  //   monthlySales.map((item) => item.month)
-  // );
-  // const expensesChartData = getChartOptions(
-  //   "Total Expenses",
-  //   monthlySales.map((item) => item.expenses),
-  //   monthlySales.map((item) => item.month)
-  // );
-  // const cashOnHandChartData = getChartOptions(
-  //   "Total Cash on Hand",
-  //   monthlySales.map((item) => item.cashOnHand),
-  //   monthlySales.map((item) => item.month)
-  // );
-
-
 
   // Update chart data to use daily data
+  const cashOnHandChartData = getChartOptions(
+    "Total Cash on Hand",
+    monthlySales.map((item) => item.cashOnHand),
+    monthlySales.map((item) => formatDateLabel(item.date)),
+    "#28a745" // Green color
+  );
+
   const revenueChartData = getChartOptions(
     "Revenue",
     monthlySales.map((item) => item.revenue),
-    monthlySales.map((item) => formatDateLabel(item.date)) // ✅ Changed from item.month to item.date
+    monthlySales.map((item) => formatDateLabel(item.date)),
+    "#007BFF" // Blue color
   );
 
   const payableChartData = getChartOptions(
     "Total Payable",
     monthlySales.map((item) => item.payable),
-    monthlySales.map((item) => formatDateLabel(item.date))
+    monthlySales.map((item) => formatDateLabel(item.date)),
+    "#ffc107" // Yellow/Orange color
   );
 
   const expensesChartData = getChartOptions(
     "Total Expenses",
     monthlySales.map((item) => item.expenses),
-    monthlySales.map((item) => formatDateLabel(item.date))
+    monthlySales.map((item) => formatDateLabel(item.date)),
+    "#dc3545" // Red color
   );
-
-  const cashOnHandChartData = getChartOptions(
-    "Total Cash on Hand",
-    monthlySales.map((item) => item.cashOnHand),
-    monthlySales.map((item) => formatDateLabel(item.date))
-  );
-
-
-  // const fetchFinancialData = async (uid = null) => {
-  //   setLoadingFinancialData(true);
-  //   const targetUserId =
-  //     uid ||
-  //     localStorage.getItem("selectedUserId") ||
-  //     localStorage.getItem("userId");
-  //   console.log("Fetching financial data for user:", targetUserId);
-
-  //   try {
-  //     let targetUserId;
-  //     if (selectedUserId) {
-  //       console.log("Using selectedUserId:", selectedUserId);
-  //       targetUserId = selectedUserId;
-  //     } else {
-  //       targetUserId = uid || localStorage.getItem("userId");
-  //     }
-
-  //     // Fetch user initial data
-  //     const userResponse = await axios.get(
-  //       `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
-  //     );
-
-  //     const initialCashBalance =
-  //       parseFloat(userResponse.data?.user?.cashBalance) || 0;
-  //     const outstandingDebt =
-  //       parseFloat(userResponse.data?.user?.outstandingDebt) || 0;
-  //     const valuableItems =
-  //       parseFloat(userResponse.data?.user?.valueableItems) || 0;
-
-  //     setInitialBalance(initialCashBalance);
-  //     setoutstandingDebt(outstandingDebt);
-  //     setvalueableItems(valuableItems);
-
-  //     // Fetch transactions
-  //     const response = await axios.get(
-  //       `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
-  //     );
-  //     const transactions = response.data;
-  //     setItems(transactions);
-
-  //     let cashOnHand = initialCashBalance;
-  //     let expenses = 0;
-  //     let newItem = 0;
-  //     let revenue = 0;
-  //     let payable = outstandingDebt;
-
-  //     // ✅ Changed to daily tracking
-  //     const dailyData = {
-  //       Initial: {
-  //         date: "Initial Balance",
-  //         cashOnHand: initialCashBalance,
-  //         revenue: 0,
-  //         payable: outstandingDebt,
-  //         expenses: 0,
-  //         newItem: 0,
-  //         paidPayables: 0,
-  //       },
-  //     };
-
-  //     // ✅ Sort transactions by date first
-  //     const sortedTransactions = [...transactions].sort(
-  //       (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-  //     );
-
-  //     sortedTransactions.forEach((transaction) => {
-  //       const amount = parseFloat(transaction.transactionAmount);
-  //       const date = new Date(transaction.createdAt);
-  //       // ✅ Format as YYYY-MM-DD for daily tracking
-  //       const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-  //       if (!dailyData[dateKey]) {
-  //         dailyData[dateKey] = {
-  //           date: dateKey,
-  //           cashOnHand: cashOnHand,
-  //           revenue: 0,
-  //           payable: payable,
-  //           expenses: 0,
-  //           newItem: 0,
-  //           paidPayables: 0,
-  //         };
-  //       }
-
-  //       if (transaction.transactionType === "Receive") {
-  //         cashOnHand += amount;
-  //         revenue += amount;
-  //         dailyData[dateKey].revenue += amount;
-  //       } else if (transaction.transactionType === "Pay") {
-  //         expenses += amount;
-  //         cashOnHand -= amount;
-  //         dailyData[dateKey].expenses += amount;
-
-  //         if (transaction.payableId) {
-  //           dailyData[dateKey].paidPayables += amount;
-  //         }
-  //       } else if (
-  //         transaction.transactionType === "Pay" &&
-  //         transaction.subType === "New_Item"
-  //       ) {
-  //         newItem += amount;
-  //         cashOnHand -= amount;
-  //         dailyData[dateKey].expenses += amount;
-  //         dailyData[dateKey].newItem += amount;
-  //       } else if (
-  //         (transaction.transactionType === "Payable" &&
-  //           transaction.status === "Payable") ||
-  //         transaction.status === "Partially Paid"
-  //       ) {
-  //         payable += amount;
-  //         dailyData[dateKey].payable += amount;
-  //       }
-
-  //       dailyData[dateKey].cashOnHand = cashOnHand;
-  //     });
-
-  //     // Set final totals
-  //     setTotalCashOnHand(cashOnHand);
-  //     setTotalExpenses(expenses);
-  //     settotalRevenue(revenue);
-  //     setTotalPayable(payable);
-
-  //     // ✅ Sort daily data with Initial Balance first
-  //     const sortedDailyData = Object.values(dailyData).sort((a, b) => {
-  //       if (a.date === "Initial Balance") return -1;
-  //       if (b.date === "Initial Balance") return 1;
-  //       return new Date(a.date) - new Date(b.date);
-  //     });
-
-  //     setMonthlySales(sortedDailyData); // Using same state variable
-
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.error("Error fetching financial data:", error);
-  //     setLoading(false);
-  //   } finally {
-  //     setLoadingFinancialData(false);
-  //   }
-  // };
 
   const fetchFinancialData = async (uid = null) => {
     setLoadingFinancialData(true);
@@ -610,11 +480,6 @@ function Dashboard() {
       setLoadingFinancialData(false);
     }
   };
-
-
-
-
-
 
   const isTrialActive = () => {
     return new Date() < trialEndDate && scheduleCount < 4;
