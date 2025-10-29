@@ -467,22 +467,23 @@ const MesobFinancial2 = () => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "Payable"
-              ? "Payable"
-              : transactionType === "pay" && paymentMode === "boughtItem"
-                ? "New_Item"
-                : transactionType === "pay" && paymentMode !== "boughtItem"
-                  ? "Pay"
-                  : "New_Item",
-        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
-          }`,
+            ? "Payable"
+            : transactionType === "pay" && paymentMode === "boughtItem"
+            ? "New_Item"
+            : transactionType === "pay" && paymentMode !== "boughtItem"
+            ? "Pay"
+            : "New_Item",
+        transactionPurpose: `${transactionPurpose}${
+          manualPurpose ? ` ${manualPurpose}` : ""
+        }`,
         transactionAmount: parseFloat(transactionAmount),
         originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
             : paymentMode === "new"
-              ? "Expense"
-              : subType,
+            ? "Expense"
+            : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
@@ -905,7 +906,9 @@ const MesobFinancial2 = () => {
       } else {
         // *** FIX: DON'T update user's outstandingDebt field ***
         // The outstanding debt is now calculated dynamically from payments
-        console.log("Outstanding debt payment - tracking via transactions only");
+        console.log(
+          "Outstanding debt payment - tracking via transactions only"
+        );
       }
 
       // Create the payment transaction record
@@ -916,8 +919,8 @@ const MesobFinancial2 = () => {
           transaction.id === "outstanding-debt"
             ? "Payment for Outstanding Debt"
             : paymentOption === "full"
-              ? `Full Payment for ${transaction.transactionPurpose}`
-              : `Partial Payment for ${transaction.transactionPurpose}`,
+            ? `Full Payment for ${transaction.transactionPurpose}`
+            : `Partial Payment for ${transaction.transactionPurpose}`,
         transactionAmount: paidAmount,
         receiptUrl: Url || "",
         payableId: transaction.id,
@@ -1207,13 +1210,16 @@ const MesobFinancial2 = () => {
         const purpose = transaction.transactionPurpose;
 
         // *** FIX: Exclude outstanding debt payments from expenses ***
-        if (transaction.payableId !== "outstanding-debt" &&
-          !purpose.includes("Outstanding Debt")) {
+        if (
+          transaction.payableId !== "outstanding-debt" &&
+          !purpose.includes("Outstanding Debt")
+        ) {
           newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
         }
 
         if (transaction.transactionType === "Payable") {
-          newAccountsPayable[purpose] = (newAccountsPayable[purpose] || 0) + amount;
+          newAccountsPayable[purpose] =
+            (newAccountsPayable[purpose] || 0) + amount;
         }
       }
     });
@@ -1222,7 +1228,6 @@ const MesobFinancial2 = () => {
     setExpenses(newExpenses);
     setAccountsPayable(newAccountsPayable);
   };
-
 
   const calculateTotalRevenue = () => {
     const filteredItems = getFilteredItems();
@@ -1392,14 +1397,20 @@ const MesobFinancial2 = () => {
 
     // *** FIX: Use 'items' instead of 'filteredItems' for complete payment history ***
     const outstandingDebtPayments = items.reduce((sum, value) => {
-      if (value.payableId === "outstanding-debt" && value.transactionType === "Pay") {
+      if (
+        value.payableId === "outstanding-debt" &&
+        value.transactionType === "Pay"
+      ) {
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
     // Calculate remaining outstanding debt
-    const remainingOutstandingDebt = Math.max(0, initialoutstandingDebt - outstandingDebtPayments);
+    const remainingOutstandingDebt = Math.max(
+      0,
+      initialoutstandingDebt - outstandingDebtPayments
+    );
 
     return (totalPayable + remainingOutstandingDebt).toFixed(2);
   };
@@ -1510,14 +1521,18 @@ const MesobFinancial2 = () => {
         if (outstandingDebt > 0) {
           // Calculate total payments made toward outstanding debt
           const outstandingDebtPayments = response.data.reduce((sum, t) => {
-            if (t.payableId === "outstanding-debt" && t.transactionType === "Pay") {
+            if (
+              t.payableId === "outstanding-debt" &&
+              t.transactionType === "Pay"
+            ) {
               return sum + parseFloat(t.transactionAmount || 0);
             }
             return sum;
           }, 0);
 
           // Calculate remaining outstanding debt
-          const remainingOutstandingDebt = outstandingDebt - outstandingDebtPayments;
+          const remainingOutstandingDebt =
+            outstandingDebt - outstandingDebtPayments;
 
           // Only add to list if there's still debt remaining
           if (remainingOutstandingDebt > 0) {
@@ -1525,8 +1540,8 @@ const MesobFinancial2 = () => {
               id: "outstanding-debt",
               transactionType: "Payable",
               transactionPurpose: "Initial Outstanding Debt",
-              transactionAmount: remainingOutstandingDebt,  // ✅ Now shows $900
-              remainingAmount: remainingOutstandingDebt,     // ✅ Now shows $900
+              transactionAmount: remainingOutstandingDebt, // ✅ Now shows $900
+              remainingAmount: remainingOutstandingDebt, // ✅ Now shows $900
               createdAt: new Date().toISOString(),
             });
           }
@@ -1615,7 +1630,6 @@ const MesobFinancial2 = () => {
     console.log("Deleting outstanding debt payment - no user update needed");
     // The payment transaction will be deleted, and calculateTotalPayable will reflect the change
   };
-
 
   const handlePayableDeletion = async (transaction) => {
     const payableItem = items.find((item) => item.id === transaction.payableId);
@@ -2175,7 +2189,7 @@ const MesobFinancial2 = () => {
                           fontWeight: "bold",
                         }}
                       >
-                        Total Cash on  ={" "}
+                        Total Cash on ={" "}
                       </span>
                       <span
                         style={{
@@ -2183,7 +2197,14 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalCash()}
+                        $
+                        {parseFloat(calculateTotalCash()).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
                       </span>
                     </div>
 
@@ -2204,7 +2225,14 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalPayable()}
+                        $
+                        {parseFloat(calculateTotalPayable()).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
                       </span>
                     </div>
 
@@ -2238,7 +2266,8 @@ const MesobFinancial2 = () => {
                                 padding: "2px 5px",
                               }}
                             >
-                              ${amount.toLocaleString(undefined, {
+                              $
+                              {amount.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
@@ -2264,7 +2293,14 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalRevenue()}
+                        $
+                        {parseFloat(calculateTotalRevenue()).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
                       </span>
                     </div>
 
@@ -2278,7 +2314,13 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalExpenses(true)}
+                        $
+                        {parseFloat(
+                          calculateTotalExpenses(true)
+                        ).toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
 
@@ -2342,7 +2384,11 @@ const MesobFinancial2 = () => {
                                   padding: "2px 5px",
                                 }}
                               >
-                                ${totalAmount.toFixed(2)}
+                                $
+                                {totalAmount.toLocaleString("en-US", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
                               </span>
                             </div>
                           );
@@ -2409,7 +2455,8 @@ const MesobFinancial2 = () => {
                                 textAlign: "right",
                               }}
                             >
-                              ${amount.toLocaleString(undefined, {
+                              $
+                              {amount.toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
@@ -2431,7 +2478,14 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                             }}
                           >
-                            ${calculateTotalRevenue()}
+                            $
+                            {parseFloat(calculateTotalRevenue()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </td>
                         </tr>
 
@@ -2495,7 +2549,8 @@ const MesobFinancial2 = () => {
                                     textAlign: "right",
                                   }}
                                 >
-                                  ${totalAmount.toLocaleString(undefined, {
+                                  $
+                                  {amount.toLocaleString("en-US", {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2,
                                   })}
@@ -2518,7 +2573,13 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                             }}
                           >
-                            ${calculateTotalExpenses()}
+                            $
+                            {parseFloat(
+                              calculateTotalExpenses()
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
 
@@ -2529,7 +2590,7 @@ const MesobFinancial2 = () => {
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
-                                0
+                              0
                                 ? "Net Loss"
                                 : "Net Income"}
                             </strong>
@@ -2547,7 +2608,10 @@ const MesobFinancial2 = () => {
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
                       </tbody>
@@ -2673,7 +2737,14 @@ const MesobFinancial2 = () => {
                               border: "1px solid #ddd",
                             }}
                           >
-                            ${calculateTotalCash()}
+                            $
+                            {parseFloat(calculateTotalCash()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #ddd" }}
@@ -2693,7 +2764,13 @@ const MesobFinancial2 = () => {
                               border: "1px solid #ddd",
                             }}
                           >
-                            ${calculateTotalInventory()}
+                            $
+                            {parseFloat(
+                              calculateTotalInventory()
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #ddd" }}
@@ -2729,7 +2806,14 @@ const MesobFinancial2 = () => {
                               border: "1px solid #ddd",
                             }}
                           >
-                            ${calculateTotalPayable()}
+                            $
+                            {parseFloat(calculateTotalPayable()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </td>
                         </tr>
                         <tr>
@@ -2766,7 +2850,10 @@ const MesobFinancial2 = () => {
                               initialBalance +
                               initialvalueableItems -
                               initialoutstandingDebt
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
                         <tr>
@@ -2790,7 +2877,10 @@ const MesobFinancial2 = () => {
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
                         {/* <tr>
@@ -2845,7 +2935,10 @@ const MesobFinancial2 = () => {
                             {(
                               parseFloat(calculateTotalCash()) +
                               parseFloat(calculateTotalInventory())
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                           <td
                             style={{
@@ -2862,7 +2955,10 @@ const MesobFinancial2 = () => {
                               initialoutstandingDebt +
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
                       </tbody>
@@ -2922,7 +3018,14 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalPayable()}
+                        $
+                        {parseFloat(calculateTotalPayable()).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
                       </span>
                     </div>
 
@@ -2957,7 +3060,8 @@ const MesobFinancial2 = () => {
                                 padding: "2px 5px",
                               }}
                             >
-                              ${amount.toLocaleString(undefined, {
+                              $
+                              {amount.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
@@ -2984,7 +3088,14 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalRevenue()}
+                        $
+                        {parseFloat(calculateTotalRevenue()).toLocaleString(
+                          "en-US",
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          }
+                        )}
                       </span>
                     </div>
 
@@ -3004,7 +3115,13 @@ const MesobFinancial2 = () => {
                           padding: "5px 10px",
                         }}
                       >
-                        ${calculateTotalExpenses(true)}
+                        $
+                        {parseFloat(
+                          calculateTotalExpenses(true)
+                        ).toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
 
@@ -3069,7 +3186,8 @@ const MesobFinancial2 = () => {
                                   padding: "2px 5px",
                                 }}
                               >
-                                ${totalAmount.toLocaleString(undefined, {
+                                $
+                                {totalAmount.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
                                 })}
@@ -3174,7 +3292,8 @@ const MesobFinancial2 = () => {
                                 textAlign: "right",
                               }}
                             >
-                              ${amount.toLocaleString(undefined, {
+                              $
+                              {amount.toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })}
@@ -3196,7 +3315,14 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                             }}
                           >
-                            ${calculateTotalRevenue()}
+                            $
+                            {parseFloat(calculateTotalRevenue()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </td>
                         </tr>
 
@@ -3260,7 +3386,8 @@ const MesobFinancial2 = () => {
                                     textAlign: "right",
                                   }}
                                 >
-                                  ${totalAmount.toLocaleString(undefined, {
+                                  $
+                                  {totalAmount.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2,
                                   })}
@@ -3283,7 +3410,13 @@ const MesobFinancial2 = () => {
                               textAlign: "right",
                             }}
                           >
-                            ${calculateTotalExpenses()}
+                            $
+                            {parseFloat(
+                              calculateTotalExpenses()
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
 
@@ -3294,7 +3427,7 @@ const MesobFinancial2 = () => {
                             <strong>
                               {parseFloat(calculateTotalRevenue()) -
                                 parseFloat(calculateTotalExpenses()) <
-                                0
+                              0
                                 ? "Net Loss"
                                 : "Net Income"}
                             </strong>
@@ -3312,7 +3445,10 @@ const MesobFinancial2 = () => {
                             {(
                               parseFloat(calculateTotalRevenue()) -
                               parseFloat(calculateTotalExpenses())
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
                       </tbody>
@@ -3394,7 +3530,14 @@ const MesobFinancial2 = () => {
                               border: "1px solid #ddd",
                             }}
                           >
-                            ${calculateTotalCash()}
+                            $
+                            {parseFloat(calculateTotalCash()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #ddd" }}
@@ -3415,7 +3558,13 @@ const MesobFinancial2 = () => {
                               border: "1px solid #ddd",
                             }}
                           >
-                            ${calculateTotalInventory()}
+                            $
+                            {parseFloat(
+                              calculateTotalInventory()
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #ddd" }}
@@ -3451,7 +3600,14 @@ const MesobFinancial2 = () => {
                               border: "1px solid #ddd",
                             }}
                           >
-                            ${calculateTotalPayable()}
+                            $
+                            {parseFloat(calculateTotalPayable()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </td>
                         </tr>
                         <tr>
@@ -3488,7 +3644,10 @@ const MesobFinancial2 = () => {
                               initialBalance +
                               initialvalueableItems -
                               initialoutstandingDebt
-                            ).toFixed(2)}
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </td>
                         </tr>
                         <tr>
@@ -3907,7 +4066,7 @@ const MesobFinancial2 = () => {
                     (!remainingAmount ||
                       partialPaymentError ||
                       parseFloat(remainingAmount) >=
-                      selectedUnpaidTransaction.transactionAmount ||
+                        selectedUnpaidTransaction.transactionAmount ||
                       parseFloat(remainingAmount) <= 0)
                   }
                 >
@@ -3958,7 +4117,10 @@ const MesobFinancial2 = () => {
                         invalid={!!formErrors.manualPurpose}
                       />
                       {formErrors.manualPurpose && (
-                        <div className="text-danger" style={{ fontSize: "0.875rem" }}>
+                        <div
+                          className="text-danger"
+                          style={{ fontSize: "0.875rem" }}
+                        >
                           {formErrors.manualPurpose}
                         </div>
                       )}
@@ -4025,122 +4187,122 @@ const MesobFinancial2 = () => {
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "Payable") && (
-                <>
-                  <FormGroup>
-                    <Label>Purpose:</Label>
+              <>
+                <FormGroup>
+                  <Label>Purpose:</Label>
 
-                    <Input
-                      type="select"
-                      value={transactionPurpose}
-                      onChange={(e) => setTransactionPurpose(e.target.value)}
-                    >
-                      <option value="">Select purpose</option>
-                      {transactionType === "receive" && (
-                        <>
-                          {incomePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "pay" && paymentMode === "new" && (
-                        <>
-                          {expensePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                      {transactionType === "Payable" && (
-                        <>
-                          {payablePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
-                          <option value="manual">Enter Manually</option>
-                        </>
-                      )}
-                    </Input>
-                    {((transactionType === "receive" &&
+                  <Input
+                    type="select"
+                    value={transactionPurpose}
+                    onChange={(e) => setTransactionPurpose(e.target.value)}
+                  >
+                    <option value="">Select purpose</option>
+                    {transactionType === "receive" && (
+                      <>
+                        {incomePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "pay" && paymentMode === "new" && (
+                      <>
+                        {expensePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                    {transactionType === "Payable" && (
+                      <>
+                        {payablePurposes.map((purpose, index) => (
+                          <option key={index} value={purpose}>
+                            {purpose}
+                          </option>
+                        ))}
+                        <option value="manual">Enter Manually</option>
+                      </>
+                    )}
+                  </Input>
+                  {((transactionType === "receive" &&
+                    transactionPurpose === "manual") ||
+                    (transactionType === "pay" &&
+                      paymentMode === "new" &&
                       transactionPurpose === "manual") ||
-                      (transactionType === "pay" &&
-                        paymentMode === "new" &&
-                        transactionPurpose === "manual") ||
-                      (transactionType === "Payable" &&
-                        transactionPurpose === "manual")) && (
-                        <FormGroup>
-                          <Input
-                            type="text"
-                            placeholder="Enter purpose manually"
-                            value={manualPurpose}
-                            onChange={(e) => {
-                              setManualPurpose(e.target.value);
-                              setFormErrors({ ...formErrors, manualPurpose: "" });
-                            }}
-                            style={{ marginTop: "10px" }}
-                            invalid={!!formErrors.manualPurpose}
-                          />
-                          {formErrors.manualPurpose && (
-                            <div className="text-danger">
-                              {formErrors.manualPurpose}
-                            </div>
-                          )}
-                        </FormGroup>
-                      )}
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label>Amount ($):</Label>
-                    <Input
-                      type="number"
-                      value={transactionAmount}
-                      onChange={(e) => setTransactionAmount(e.target.value)}
-                    />
-                  </FormGroup>
-                  {transactionType === "pay" && paymentMode === "new" && (
+                    (transactionType === "Payable" &&
+                      transactionPurpose === "manual")) && (
                     <FormGroup>
-                      <Label>Receipt:</Label>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        <Button
-                          color="info"
-                          onClick={() => fileInputRef.current.click()}
-                          style={{ marginBottom: "0" }}
-                        >
-                          {receipt ? "Change Receipt" : "Upload Receipt"}
-                        </Button>
-                        {receipt && (
-                          <span style={{ color: "green" }}>✓ {receipt.name}</span>
-                        )}
-                      </div>
                       <Input
-                        type="file"
-                        innerRef={fileInputRef}
-                        onChange={handleReceiptUpload}
-                        accept="image/*,.pdf"
-                        style={{ display: "none" }}
+                        type="text"
+                        placeholder="Enter purpose manually"
+                        value={manualPurpose}
+                        onChange={(e) => {
+                          setManualPurpose(e.target.value);
+                          setFormErrors({ ...formErrors, manualPurpose: "" });
+                        }}
+                        style={{ marginTop: "10px" }}
+                        invalid={!!formErrors.manualPurpose}
                       />
+                      {formErrors.manualPurpose && (
+                        <div className="text-danger">
+                          {formErrors.manualPurpose}
+                        </div>
+                      )}
                     </FormGroup>
                   )}
-                  <Button
-                    color="success"
-                    onClick={handleAddTransaction}
-                    disabled={isAddingTransaction}
-                  >
-                    {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                  </Button>
-                </>
-              )}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Amount ($):</Label>
+                  <Input
+                    type="number"
+                    value={transactionAmount}
+                    onChange={(e) => setTransactionAmount(e.target.value)}
+                  />
+                </FormGroup>
+                {transactionType === "pay" && paymentMode === "new" && (
+                  <FormGroup>
+                    <Label>Receipt:</Label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <Button
+                        color="info"
+                        onClick={() => fileInputRef.current.click()}
+                        style={{ marginBottom: "0" }}
+                      >
+                        {receipt ? "Change Receipt" : "Upload Receipt"}
+                      </Button>
+                      {receipt && (
+                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      innerRef={fileInputRef}
+                      onChange={handleReceiptUpload}
+                      accept="image/*,.pdf"
+                      style={{ display: "none" }}
+                    />
+                  </FormGroup>
+                )}
+                <Button
+                  color="success"
+                  onClick={handleAddTransaction}
+                  disabled={isAddingTransaction}
+                >
+                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                </Button>
+              </>
+            )}
           </ModalBody>
         </Modal>
         {/* Previe modal */}

@@ -39,8 +39,8 @@ const TransactionTable = ({
   };
   return (
     <div className="table-container">
-      <table className="transaction-table" >
-        <thead >
+      <table className="transaction-table">
+        <thead>
           <tr>
             <th>Date</th>
             <th>Sr. No</th>
@@ -82,21 +82,28 @@ const TransactionTable = ({
                       {transaction.transactionType === "Pay"
                         ? "Pay [Cash]"
                         : transaction.transactionType === "Payable"
-                          ? "Payable "
-                          : transaction.transactionType === "New_Item"
-                            ? "Pay [Cash]"
-                            : transaction.transactionType}
+                        ? "Payable "
+                        : transaction.transactionType === "New_Item"
+                        ? "Pay [Cash]"
+                        : transaction.transactionType}
                     </div>
                   </>
                 )}
               </td>
 
               {/* Debit Column */}
-              <td className="debit" >
+              <td className="debit">
                 {transaction.transactionType === "Receive" && (
                   <>
                     <div style={{ backgroundColor: colors.cash }}>
-                      ${transaction.transactionAmount}
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
                     </div>
                     <div style={{ color: "white" }}>.</div>
                   </>
@@ -104,7 +111,14 @@ const TransactionTable = ({
                 {transaction.transactionType === "Payable" && (
                   <>
                     <div style={{ backgroundColor: colors.expense }}>
-                      ${transaction.originalAmount}
+                      $
+                      {parseFloat(transaction.originalAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
                     </div>
                     <div style={{ color: "white" }}>-</div>
                   </>
@@ -112,7 +126,14 @@ const TransactionTable = ({
                 {["Pay", "New_Item"].includes(transaction.transactionType) && (
                   <>
                     <div style={{ backgroundColor: colors.expense }}>
-                      ${transaction.transactionAmount}
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
                     </div>
                     <div style={{ color: "white" }}>.</div>
                   </>
@@ -125,7 +146,14 @@ const TransactionTable = ({
                   <>
                     <div style={{ color: "white" }}>.</div>
                     <div style={{ backgroundColor: colors.revenue }}>
-                      ${transaction.transactionAmount}
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
                     </div>
                   </>
                 )}
@@ -133,7 +161,14 @@ const TransactionTable = ({
                   <>
                     <div style={{ color: "white" }}>.</div>
                     <div style={{ backgroundColor: colors.payable }}>
-                      ${transaction.originalAmount}
+                      $
+                      {parseFloat(transaction.originalAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
                     </div>
                   </>
                 )}
@@ -141,7 +176,14 @@ const TransactionTable = ({
                   <>
                     <div style={{ color: "white" }}>.</div>
                     <div style={{ backgroundColor: colors.cash }}>
-                      ${transaction.transactionAmount}
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
                     </div>
                   </>
                 )}
