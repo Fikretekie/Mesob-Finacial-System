@@ -177,27 +177,27 @@ function Dashboard() {
             zoomin: true,
             zoomout: true,
             pan: true,
-            reset: true
-          }
+            reset: true,
+          },
         },
         zoom: {
           enabled: true,
-          type: 'x',
-          autoScaleYaxis: true
+          type: "x",
+          autoScaleYaxis: true,
         },
         animations: {
           enabled: true,
-          easing: 'easeinout',
-          speed: 800
-        }
+          easing: "easeinout",
+          speed: 800,
+        },
       },
       title: {
         text: title,
-        align: "center",
+        align: window.innerWidth < 576 ? "left" : "center",
         style: {
           fontSize: "16px",
           fontWeight: 600,
-          color: '#263238'
+          color: "#263238",
         },
       },
       series: [
@@ -212,55 +212,58 @@ function Dashboard() {
           rotate: -45,
           rotateAlways: false,
           style: {
-            fontSize: '11px'
-          }
+            fontSize: "11px",
+          },
         },
         title: {
-          text: 'Date',
+          text: "Date",
           style: {
-            fontSize: '12px',
-            fontWeight: 500
-          }
-        }
+            fontSize: "12px",
+            fontWeight: 500,
+          },
+        },
       },
       yaxis: {
         title: {
           text: "Amount ($)",
           style: {
-            fontSize: '12px',
-            fontWeight: 500
-          }
+            fontSize: "12px",
+            fontWeight: 500,
+          },
         },
         labels: {
           formatter: function (value) {
-            if (!value) return '$0';
-            return '$' + value.toLocaleString(undefined, {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0
-            });
-          }
+            if (!value) return "$0";
+            return (
+              "$" +
+              value.toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })
+            );
+          },
         },
         tickAmount: 8,
         min: 0,
         max: function (max) {
           return max > 0 ? max * 1.1 : 100; // Add 10% padding or default to 100
-        }
+        },
       },
       stroke: {
         curve: "smooth", // Changed to smooth for better line appearance
         width: 3, // Thicker line for better visibility
-        lineCap: 'round'
+        lineCap: "round",
       },
       colors: [color],
       markers: {
         size: 5,
         colors: [color],
-        strokeColors: '#fff',
+        strokeColors: "#fff",
         strokeWidth: 2,
         hover: {
           size: 7,
-          sizeOffset: 3
-        }
+          sizeOffset: 3,
+        },
       },
       grid: {
         show: true,
@@ -274,8 +277,8 @@ function Dashboard() {
           top: 0,
           right: 10,
           bottom: 0,
-          left: 10
-        }
+          left: 10,
+        },
       },
       tooltip: {
         enabled: true,
@@ -283,21 +286,24 @@ function Dashboard() {
         intersect: false,
         y: {
           formatter: function (value) {
-            return '$' + value.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            });
-          }
-        }
+            return (
+              "$" +
+              value.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            );
+          },
+        },
       },
       dataLabels: {
-        enabled: false
+        enabled: false,
       },
       legend: {
         show: true,
-        position: 'top',
-        horizontalAlign: 'right'
-      }
+        position: "top",
+        horizontalAlign: "right",
+      },
     };
   };
 
@@ -308,7 +314,7 @@ function Dashboard() {
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      year: "numeric"
+      year: "numeric",
     });
   };
 
@@ -408,7 +414,9 @@ function Dashboard() {
       sortedTransactions.forEach((transaction) => {
         const amount = parseFloat(transaction.transactionAmount);
         const date = new Date(transaction.createdAt);
-        const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const dateKey = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
         if (!dailyData[dateKey]) {
           dailyData[dateKey] = {
@@ -446,7 +454,8 @@ function Dashboard() {
           dailyData[dateKey].newItem += amount;
         } else if (
           transaction.transactionType === "Payable" &&
-          (transaction.status === "Payable" || transaction.status === "Partially Paid")
+          (transaction.status === "Payable" ||
+            transaction.status === "Partially Paid")
         ) {
           // ✅ Add new payables to the total
           payable += amount;
