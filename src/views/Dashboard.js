@@ -718,7 +718,13 @@ function Dashboard() {
         />
 
         <Row style={{ marginBottom: "5px" }}>
-          <Col lg="3" md="6" xs="12" className="mt-5 mt-md-0 p-0">
+          <Col
+            lg="3"
+            md="6"
+            xs="12"
+            className="mt-md-0 p-0"
+            style={{ marginBottom: "4px" }}
+          >
             <Card className="card-stats" style={{ position: "relative" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
@@ -752,7 +758,11 @@ function Dashboard() {
             lg="3"
             md="6"
             xs="12"
-            style={{ paddingRight: "3px", paddingLeft: "3px" }}
+            style={{
+              paddingRight: "3px",
+              paddingLeft: "3px",
+              marginBottom: "4px",
+            }}
           >
             <Card className="card-stats" style={{ position: "relative" }}>
               <LoadingOverlay
@@ -786,7 +796,12 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12" style={{ paddingInline: 3 }}>
+          <Col
+            lg="3"
+            md="6"
+            xs="12"
+            style={{ paddingInline: 3, marginBottom: "4px" }}
+          >
             <Card className="card-stats" style={{ position: "relative" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
@@ -872,7 +887,7 @@ function Dashboard() {
               </CardBody>
             </Card>
           </Col>
-          <Col md={6} style={{ paddingInline: 3 }}>
+          <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card style={{ position: "relative" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
@@ -891,7 +906,7 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col md={6} style={{ padding: 0 }}>
+          <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
             <Card style={{ position: "relative" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
@@ -909,7 +924,7 @@ function Dashboard() {
               </CardBody>
             </Card>
           </Col>
-          <Col md={6} style={{ paddingInline: 3 }}>
+          <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card style={{ position: "relative" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
