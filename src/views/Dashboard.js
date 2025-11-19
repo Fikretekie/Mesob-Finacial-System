@@ -601,7 +601,7 @@ function Dashboard() {
                   justifyContent: "center",
                   alignItems: "center",
                   display: "flex",
-                  marginBottom: 0,
+                  marginBottom: -3,
                 }}
               >
                 {loadingCompanyName ? (
@@ -658,7 +658,7 @@ function Dashboard() {
           className="content "
           style={{ marginBottom: "5px", minHeight: "100px", paddingInline: 15 }}
         >
-          <Row>
+          <Row style={{ marginTop: "34px" }}>
             <Col xs={12}>
               <Card>
                 <CardHeader>
