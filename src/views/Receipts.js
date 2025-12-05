@@ -314,15 +314,15 @@ const Receipts = ({ selectedUser }) => {
       </Helmet>
       <PanelHeader size="sm" />
       <NotificationAlert ref={notificationAlertRef} />
-      <div className="content" style={{ paddingInline: 15 }}>
+      <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         {userRole === 0 && (
           <Row style={{ margin: "0", paddingInline: 0 }}>
             <Col xs={12} style={{ paddingInline: 0 }}>
-              <Card style={{ marginBottom: "5px" }}>
-                <CardHeader></CardHeader>
-                <CardBody style={{ paddingBottom: "15px" }}>
+              <Card style={{ marginBottom: "5px", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+                <CardHeader style={{ backgroundColor: "#101926" }}></CardHeader>
+                <CardBody style={{ paddingBottom: "15px", backgroundColor: "#101926" }}>
                   <FormGroup style={{ marginBottom: "0" }}>
-                    <Label>Select User to View Receipts:</Label>
+                    <Label style={{ color: "#ffffff" }}>Select User to View Receipts:</Label>
                     <Select
                       options={users.map((user) => ({
                         value: user.id,
@@ -354,19 +354,41 @@ const Receipts = ({ selectedUser }) => {
                           ...provided,
                           minHeight: "38px",
                           height: "38px",
+                          backgroundColor: "#202a3a !important",
+                          borderColor: "#3a4555 !important",
+                          color: "#ffffff !important",
                         }),
                         valueContainer: (provided) => ({
                           ...provided,
                           height: "38px",
                           padding: "0 6px",
+                          color: "#ffffff !important",
                         }),
                         input: (provided) => ({
                           ...provided,
                           margin: "0px",
+                          color: "#ffffff !important",
                         }),
                         indicatorsContainer: (provided) => ({
                           ...provided,
                           height: "38px",
+                        }),
+                        singleValue: (provided) => ({
+                          ...provided,
+                          color: "#ffffff !important",
+                        }),
+                        placeholder: (provided) => ({
+                          ...provided,
+                          color: "#9ca5b0 !important",
+                        }),
+                        menu: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#202a3a",
+                        }),
+                        option: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isFocused ? "#2a3444" : "#202a3a",
+                          color: "#ffffff",
                         }),
                       }}
                     />
@@ -379,10 +401,10 @@ const Receipts = ({ selectedUser }) => {
 
         <Row>
           <Col xs={12}>
-            <Card>
-              <CardHeader>
+            <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+              <CardHeader style={{ backgroundColor: "#101926" }}>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                  <CardTitle tag="h4" className="mb-0">
+                  <CardTitle tag="h4" className="mb-0" style={{ color: "#2b427d" }}>
                     Receipts
                   </CardTitle>
                   {/* <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
@@ -443,7 +465,7 @@ const Receipts = ({ selectedUser }) => {
                   <div className="d-flex flex-column flex-lg-row gap-3 w-100 align-items-lg-end">
                     <div className="d-flex flex-column flex-sm-row gap-3 flex-lg-grow-1">
                       <FormGroup className="mb-0 flex-fill p-2" >
-                        <Label for="fromDate" className="mb-1">
+                        <Label for="fromDate" className="mb-1" style={{ color: "#ffffff" }}>
                           From
                         </Label>
                         <Input
@@ -452,10 +474,11 @@ const Receipts = ({ selectedUser }) => {
                           value={fromDate}
                           onChange={(e) => setFromDate(e.target.value)}
                           className="w-100"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555" }}
                         />
                       </FormGroup>
                       <FormGroup className="mb-0 flex-fill p-2">
-                        <Label for="toDate" className="mb-1">
+                        <Label for="toDate" className="mb-1" style={{ color: "#ffffff" }}>
                           To
                         </Label>
                         <Input
@@ -464,29 +487,27 @@ const Receipts = ({ selectedUser }) => {
                           value={toDate}
                           onChange={(e) => setToDate(e.target.value)}
                           className="w-100"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555" }}
                         />
                       </FormGroup>
                     </div>
                     <div className="d-flex gap-2">
                       <Button
-                        color="primary"
                         onClick={handleRun}
-                        style={{ minWidth: "90px" }}
+                        style={{ minWidth: "90px", backgroundColor: "#3d83f1", borderColor: "#3d83f1", color: "#ffffff" }}
                       >
                         Run
                       </Button>
                       <Button
-                        color="secondary"
                         onClick={handleClear}
-                        style={{ minWidth: "90px" }}
+                        style={{ minWidth: "90px", backgroundColor: "#1b283b", borderColor: "#1b283b", color: "#ffffff" }}
                       >
                         Clear
                       </Button>
                       <Button
-                        color="info"
                         onClick={handleDownloadAll}
                         disabled={disabled}
-                        style={{ minWidth: "120px" }}
+                        style={{ minWidth: "120px", backgroundColor: "#11b981", borderColor: "#11b981", color: "#ffffff" }}
                       >
                         Download All
                       </Button>
@@ -494,9 +515,9 @@ const Receipts = ({ selectedUser }) => {
                   </div>
                 </div>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926" }}>
                 {userRole === 0 && !selectedUserId && (
-                  <div className="text-center my-4 text-muted">
+                  <div className="text-center my-4" style={{ color: "#ffffff" }}>
                     Please select a user to view receipts.
                   </div>
                 )}
@@ -504,16 +525,16 @@ const Receipts = ({ selectedUser }) => {
                 {loading ? (
                   <div className="text-center py-4">
                     <Spinner color="primary" />
-                    <p className="mt-2">Loading receipts...</p>
+                    <p className="mt-2" style={{ color: "#ffffff" }}>Loading receipts...</p>
                   </div>
                 ) : receipts.length === 0 ? (
                   <div className="text-center py-4">
-                    <p>No receipts found</p>
+                    <p style={{ color: "#ffffff" }}>No receipts found for the selected period.</p>
                   </div>
                 ) : (
                   <>
                     {searchedDates && (
-                      <div className="mb-3">
+                      <div className="mb-3" style={{ color: "#ffffff" }}>
                         <strong>Searched dates:</strong> {searchedDates.from} -{" "}
                         {searchedDates.to}
                       </div>
@@ -521,29 +542,29 @@ const Receipts = ({ selectedUser }) => {
 
                     {/* Desktop Table */}
                     <div className="d-none d-md-block">
-                      <Table responsive>
+                      <Table responsive style={{ backgroundColor: "#101926" }}>
                         <thead>
                           <tr>
-                            <th>Date</th>
-                            <th>Purpose</th>
-                            <th>Amount</th>
-                            <th>Type</th>
-                            <th>Category</th>
-                            <th>Actions</th>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Date</th>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Purpose</th>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Amount</th>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Type</th>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Category</th>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {receipts.map((receipt) => (
-                            <tr key={receipt.id || receipt.receiptUrl}>
-                              <td>
+                            <tr key={receipt.id || receipt.receiptUrl} style={{ borderColor: "#3a4555" }}>
+                              <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>
                                 {new Date(
                                   receipt.createdAt
                                 ).toLocaleDateString()}
                               </td>
-                              <td>{receipt.transactionPurpose}</td>
-                              <td>${receipt.transactionAmount}</td>
-                              <td>{receipt.transactionType}</td>
-                              <td>{receipt.subType || "-"}</td>
+                              <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>{receipt.transactionPurpose}</td>
+                              <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>${receipt.transactionAmount}</td>
+                              <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>{receipt.transactionType}</td>
+                              <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>{receipt.subType || "-"}</td>
                               <td>
                                 <FaEye
                                   onClick={
@@ -584,13 +605,14 @@ const Receipts = ({ selectedUser }) => {
                         <Card
                           key={receipt.id || receipt.receiptUrl}
                           className="mb-3"
+                          style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}
                         >
-                          <CardBody>
+                          <CardBody style={{ backgroundColor: "#101926" }}>
                             <Row>
                               <Col xs={6}>
-                                <strong>Date:</strong>
+                                <strong style={{ color: "#ffffff" }}>Date:</strong>
                               </Col>
-                              <Col xs={6}>
+                              <Col xs={6} style={{ color: "#ffffff" }}>
                                 {new Date(
                                   receipt.createdAt
                                 ).toLocaleDateString()}
@@ -598,33 +620,32 @@ const Receipts = ({ selectedUser }) => {
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong>Purpose:</strong>
+                                <strong style={{ color: "#ffffff" }}>Purpose:</strong>
                               </Col>
-                              <Col xs={6}>{receipt.transactionPurpose}</Col>
+                              <Col xs={6} style={{ color: "#ffffff" }}>{receipt.transactionPurpose}</Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong>Amount:</strong>
+                                <strong style={{ color: "#ffffff" }}>Amount:</strong>
                               </Col>
-                              <Col xs={6}>${receipt.transactionAmount}</Col>
+                              <Col xs={6} style={{ color: "#ffffff" }}>${receipt.transactionAmount}</Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong>Type:</strong>
+                                <strong style={{ color: "#ffffff" }}>Type:</strong>
                               </Col>
-                              <Col xs={6}>{receipt.transactionType}</Col>
+                              <Col xs={6} style={{ color: "#ffffff" }}>{receipt.transactionType}</Col>
                             </Row>
                             <Row className="mt-2">
                               <Col xs={6}>
-                                <strong>Category:</strong>
+                                <strong style={{ color: "#ffffff" }}>Category:</strong>
                               </Col>
-                              <Col xs={6}>{receipt.subType || "-"}</Col>
+                              <Col xs={6} style={{ color: "#ffffff" }}>{receipt.subType || "-"}</Col>
                             </Row>
                             <Row className="mt-3">
                               <Col xs={12}>
                                 <div className="d-flex justify-content-center gap-3">
                                   <Button
-                                    color="primary"
                                     size="sm"
                                     onClick={
                                       !disabled
@@ -632,12 +653,12 @@ const Receipts = ({ selectedUser }) => {
                                         : undefined
                                     }
                                     disabled={disabled}
+                                    style={{ backgroundColor: "#2b427d", borderColor: "#2b427d", color: "#ffffff" }}
                                   >
                                     <FaEye className="me-1" />
                                     Preview
                                   </Button>
                                   <Button
-                                    color="info"
                                     size="sm"
                                     onClick={
                                       !disabled
@@ -645,6 +666,7 @@ const Receipts = ({ selectedUser }) => {
                                         : undefined
                                     }
                                     disabled={disabled}
+                                    style={{ backgroundColor: "#41926f", borderColor: "#41926f", color: "#ffffff" }}
                                   >
                                     <FaDownload className="me-1" />
                                     Download

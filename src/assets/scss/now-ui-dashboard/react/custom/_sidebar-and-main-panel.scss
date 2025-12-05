@@ -3,6 +3,7 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
+    background-color: #101926;
 
     &.wrapper-full-page{
         min-height: 100vh;
@@ -30,6 +31,7 @@
     width: 260px;
     left: 0;
     z-index: 1031;
+    background-color: #101926;
 
     .sidebar-wrapper{
         position: relative;
@@ -38,7 +40,7 @@
         width: 260px;
         z-index: 4;
         padding-bottom: 100px;
-
+        background-color: #101926 !important;
         .dropdown .dropdown-backdrop{
           display: none !important;
         }
@@ -204,7 +206,7 @@
             height: 100%;
             content: "";
             display: block;
-            background: #FFFFFF;
+            background: #101926;
             opacity: 1;
         }
     }
@@ -344,8 +346,7 @@
     float: right;
     // width: $sidebar-width;
     // width: 100%;
-    background-color: $light-gray;
-    background-color: #ebecf1;
+    background-color: #101926 !important;
 
     @include transition (0.50s, cubic-bezier(0.685, 0.0473, 0.346, 1));
 
@@ -357,6 +358,7 @@
 
     > .navbar{
         margin-bottom: 0;
+        background-color: #101926;
     }
 
 
@@ -395,7 +397,7 @@
   padding-top: 40px;
   padding-bottom: 45px;
   position: relative;
-  @include panel-gradient($black-color);
+  background-color: #101926 !important;
 
   .header{
     .title{
@@ -416,6 +418,7 @@
 
 .panel-header-sm{
   height: 135px;
+  background-color: #101926 !important;
 }
 
 .panel-header-lg{

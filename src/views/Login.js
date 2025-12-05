@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet";
 import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
@@ -153,7 +154,7 @@ const Login = () => {
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
-          <p>Welcome! Login to access the Mesob Store</p>
+          <p style={{color: "#9ca5b0"}}>Welcome! Login to access the <span style={{color: "#3b83f6"}}>Mesob Store</span> </p> 
           {loading && (
             <div
               className="loading-message"
@@ -182,7 +183,7 @@ const Login = () => {
             <>
               <form onSubmit={handleSubmit}>
                 <div className="login-input-group">
-                  <label>Email</label>
+                  <label style={{color:"#ffffff"}}>Email</label>
                   <input
                     type="email"
                     value={email}
@@ -193,7 +194,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="login-input-group">
-                  <label>Password</label>
+                  <label style={{color:"#ffffff"}}>Password</label>
                   <div className="password-container">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -229,7 +230,7 @@ const Login = () => {
                 </button>
               </form>
               <div className="separator" style={{ marginTop: 10 }}>
-                <span>OR</span>
+                <span style={{color:"#9ca5b0"}}>OR</span>
               </div>
               <button
                 onClick={handleGoogleSignIn}
@@ -263,16 +264,16 @@ const Login = () => {
                   </>
                 ) : (
                   <>
-                    <img
-                      src="/applelogo.png"
-                      alt="Apple"
+                    <FontAwesomeIcon
+                      icon={faApple}
                       className="social-icon"
+                      style={{ color: "#ffffff" }}
                     />
                     Continue with Apple
                   </>
                 )}
               </button>
-              <p style={{ marginTop: 10 }}>
+              <p style={{ marginTop: 10, color:"#9ca5b0" }}>
                 Don't have an account yet? <Link to="/signup">Sign up</Link>
               </p>
             </>

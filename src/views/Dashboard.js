@@ -168,7 +168,7 @@ function Dashboard() {
   const getChartOptions = (title, data, labels, color = "#007BFF") => {
     return {
       chart: {
-        type: "line",
+        type: "area",
         toolbar: {
           show: true,
           tools: {
@@ -197,7 +197,7 @@ function Dashboard() {
         style: {
           fontSize: "16px",
           fontWeight: 600,
-          color: "#263238",
+          color: "#ffffff",
         },
       },
       series: [
@@ -213,6 +213,7 @@ function Dashboard() {
           rotateAlways: false,
           style: {
             fontSize: "11px",
+            colors: "#ffffff",
           },
         },
         title: {
@@ -220,6 +221,7 @@ function Dashboard() {
           style: {
             fontSize: "12px",
             fontWeight: 500,
+            color: "#ffffff",
           },
         },
       },
@@ -229,6 +231,12 @@ function Dashboard() {
           style: {
             fontSize: "12px",
             fontWeight: 500,
+            color: "#ffffff",
+          },
+        },
+        labels: {
+          style: {
+            colors: "#ffffff",
           },
         },
         labels: {
@@ -242,6 +250,9 @@ function Dashboard() {
               })
             );
           },
+          style: {
+            colors: "#ffffff",
+          },
         },
         tickAmount: 8,
         min: 0,
@@ -254,11 +265,15 @@ function Dashboard() {
         width: 3, // Thicker line for better visibility
         lineCap: "round",
       },
+      fill: {
+        type: "solid",
+        opacity: 0.5,
+      },
       colors: [color],
       markers: {
         size: 5,
         colors: [color],
-        strokeColors: "#fff",
+        strokeColors: "#ffffff",
         strokeWidth: 2,
         hover: {
           size: 7,
@@ -267,11 +282,11 @@ function Dashboard() {
       },
       grid: {
         show: true,
-        borderColor: "#e7e7e7",
+        borderColor: "#817646",
         strokeDashArray: 3,
         row: {
-          colors: ["#f9f9f9", "transparent"],
-          opacity: 0.5,
+          colors: ["transparent", "transparent"],
+          opacity: 0,
         },
         padding: {
           top: 0,
@@ -284,6 +299,10 @@ function Dashboard() {
         enabled: true,
         shared: true,
         intersect: false,
+        theme: "dark",
+        style: {
+          fontSize: "12px",
+        },
         y: {
           formatter: function (value) {
             return (
@@ -303,6 +322,9 @@ function Dashboard() {
         show: true,
         position: "top",
         horizontalAlign: "right",
+        labels: {
+          colors: "#ffffff",
+        },
       },
     };
   };
@@ -323,28 +345,28 @@ function Dashboard() {
     "Total Cash on Hand",
     monthlySales.map((item) => item.cashOnHand),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#28a745" // Green color
+    "#41926f" // Green color
   );
 
   const revenueChartData = getChartOptions(
     "Revenue",
     monthlySales.map((item) => item.revenue),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#007BFF" // Blue color
+    "#2b427d" // Blue color
   );
 
   const payableChartData = getChartOptions(
     "Total Payable",
     monthlySales.map((item) => item.payable),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#ffc107" // Yellow/Orange color
+    "#c7ae4f" // Yellow color
   );
 
   const expensesChartData = getChartOptions(
     "Total Expenses",
     monthlySales.map((item) => item.expenses),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#dc3545" // Red color
+    "#a7565d" // Red color
   );
 
   const fetchFinancialData = async (uid = null) => {
@@ -494,6 +516,48 @@ function Dashboard() {
     return new Date() < trialEndDate && scheduleCount < 4;
   };
 
+  // Calculate percentage change vs last month
+  const calculatePercentageChange = (currentValue, previousValue) => {
+    if (!previousValue || previousValue === 0) {
+      if (currentValue === 0) return { text: "— No change", value: 0, isPositive: null };
+      return { text: "+100% vs last month", value: 100, isPositive: true };
+    }
+    const change = ((currentValue - previousValue) / previousValue) * 100;
+    const roundedChange = Math.round(change);
+    if (roundedChange === 0) {
+      return { text: "— No change", value: 0, isPositive: null };
+    }
+    const sign = roundedChange > 0 ? "+" : "";
+    return {
+      text: `${sign}${roundedChange}% vs last month`,
+      value: roundedChange,
+      isPositive: roundedChange > 0,
+    };
+  };
+
+  // Get previous month values for comparison
+  const getPreviousMonthValues = () => {
+    if (!monthlySales || monthlySales.length < 2) {
+      return {
+        cashOnHand: 0,
+        expenses: 0,
+        payable: 0,
+        revenue: 0,
+      };
+    }
+    
+    // Get values from second-to-last entry (previous period)
+    const previousIndex = monthlySales.length - 2;
+    const previous = monthlySales[previousIndex];
+    
+    return {
+      cashOnHand: previous?.cashOnHand || 0,
+      expenses: previous?.expenses || 0,
+      payable: previous?.payable || 0,
+      revenue: previous?.revenue || 0,
+    };
+  };
+
   useEffect(() => {
     const fetchCompanyName = async () => {
       setLoadingCompanyName(true);
@@ -623,16 +687,18 @@ function Dashboard() {
                   }}
                 >
                   <Button
-                    sx={{
-                      marginRight: { xs: "1rem", md: "2rem" },
-                      padding: { xs: "0.4rem 0.8rem", md: "0.5rem 1rem" },
-                      fontSize: { xs: "0.9rem", md: "1rem" },
-                      minWidth: { xs: "100px", md: "120px" },
+                    style={{
+                      marginRight: "2rem",
+                      padding: "0.5rem 1rem",
+                      fontSize: "1rem",
+                      minWidth: "120px",
                       display: "inline-flex",
                       alignItems: "center",
-                      marginBottom: { xs: "2rem" },
+                      marginBottom: "2rem",
+                      backgroundColor: "#41926f",
+                      borderColor: "#41926f",
+                      color: "#ffffff",
                     }}
-                    color="primary"
                     onClick={handleAddTransactionClick}
                     disabled={
                       userRole === 1
@@ -642,7 +708,7 @@ function Dashboard() {
                   >
                     <FontAwesomeIcon
                       icon={faPlus}
-                      style={{ marginRight: "0.5rem", fontSize: "0.9rem" }}
+                      style={{ marginRight: "0.5rem", fontSize: "0.9rem",  }}
                     />
                     Add Transaction
                   </Button>
@@ -660,9 +726,9 @@ function Dashboard() {
         >
           <Row style={{ marginTop: "34px" }}>
             <Col xs={12}>
-              <Card>
+              <Card style={{ backgroundColor: "#101926" }}>
                 <CardHeader>
-                  <CardTitle style={{ marginBottom: 0 }} tag="h4">
+                  <CardTitle style={{ marginBottom: 0, color: "#ffffff" }} tag="h4">
                     Select User
                   </CardTitle>
                 </CardHeader>
@@ -717,36 +783,43 @@ function Dashboard() {
           text="Loading financial data..."
         />
 
-        <Row style={{ marginBottom: "5px" }}>
+        <Row style={{ marginBottom: "5px", backgroundColor: "#101926" }}>
           <Col
             lg="3"
             md="6"
             xs="12"
-            className="mt-md-0 p-0"
-            style={{ marginBottom: "4px" }}
+            style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
           >
-            <Card className="card-stats" style={{ position: "relative" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #41926f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading..."
               />
               <CardBody>
                 <Row>
-                  <Col xs="4">
-                    <div className="icon-big text-center">
-                      <i className="fas fa-dollar-sign text-success" />
-                    </div>
-                  </Col>
                   <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category">TOTAL CASH ON HAND</p>
-                      <CardTitle tag="h3">
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL CASH ON HAND</p>
+                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
                         ) : (
                           `$${calculateTotalCash()}`
                         )}
                       </CardTitle>
+                      {!loadingFinancialData && (
+                        <p style={{ color: "#41926f", fontSize: "0.75rem", margin: 0 }}>
+                          {calculatePercentageChange(
+                            parseFloat(calculateTotalCash().replace(/,/g, "")),
+                            getPreviousMonthValues().cashOnHand
+                          ).text}
+                        </p>
+                      )}
+                    </div>
+                  </Col>
+                  <Col xs="4">
+                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+                      <i className="fas fa-dollar-sign" style={{ color: "#41926f", fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -758,28 +831,19 @@ function Dashboard() {
             lg="3"
             md="6"
             xs="12"
-            style={{
-              paddingRight: "3px",
-              paddingLeft: "3px",
-              marginBottom: "4px",
-            }}
+            style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
           >
-            <Card className="card-stats" style={{ position: "relative" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #a7565d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading..."
               />
               <CardBody>
                 <Row>
-                  <Col xs="5">
-                    <div className="icon-big text-center">
-                      <i className="fas fa-chart-line text-danger" />
-                    </div>
-                  </Col>
-                  <Col xs="7">
+                  <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category">TOTAL EXPENSES</p>
-                      <CardTitle tag="h3">
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL EXPENSES</p>
+                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
                         ) : (
@@ -789,6 +853,19 @@ function Dashboard() {
                           })}`
                         )}
                       </CardTitle>
+                      {!loadingFinancialData && (
+                        <p style={{ color: "#a7565d", fontSize: "0.75rem", margin: 0 }}>
+                          {calculatePercentageChange(
+                            totalExpenses,
+                            getPreviousMonthValues().expenses
+                          ).text}
+                        </p>
+                      )}
+                    </div>
+                  </Col>
+                  <Col xs="4">
+                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+                      <i className="fas fa-chart-line" style={{ color: "#a7565d", fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -800,24 +877,19 @@ function Dashboard() {
             lg="3"
             md="6"
             xs="12"
-            style={{ paddingInline: 3, marginBottom: "4px" }}
+            style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
           >
-            <Card className="card-stats" style={{ position: "relative" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #c7ae4f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading..."
               />
               <CardBody>
                 <Row>
-                  <Col xs="5">
-                    <div className="icon-big text-center">
-                      <i className="fas fa-credit-card text-success" />
-                    </div>
-                  </Col>
-                  <Col xs="7">
+                  <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category">TOTAL PAYABLE</p>
-                      <CardTitle tag="h3">
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL PAYABLE</p>
+                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
                         ) : (
@@ -827,6 +899,19 @@ function Dashboard() {
                           })}`
                         )}
                       </CardTitle>
+                      {!loadingFinancialData && (
+                        <p style={{ color: "#c7ae4f", fontSize: "0.75rem", margin: 0 }}>
+                          {calculatePercentageChange(
+                            totalPayable,
+                            getPreviousMonthValues().payable
+                          ).text}
+                        </p>
+                      )}
+                    </div>
+                  </Col>
+                  <Col xs="4">
+                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+                      <i className="fas fa-credit-card" style={{ color: "#c7ae4f", fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -834,23 +919,18 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12" style={{ padding: 0 }}>
-            <Card className="card-stats" style={{ position: "relative" }}>
+          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #2b427d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading..."
               />
               <CardBody>
                 <Row>
-                  <Col xs="5">
-                    <div className="icon-big text-center">
-                      <i className="fas fa-chart-line text-info" />
-                    </div>
-                  </Col>
-                  <Col xs="7">
+                  <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category">Revenue</p>
-                      <CardTitle tag="h3">
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>Revenue</p>
+                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
                         ) : (
@@ -860,6 +940,19 @@ function Dashboard() {
                           })}`
                         )}
                       </CardTitle>
+                      {!loadingFinancialData && (
+                        <p style={{ color: "#2b427d", fontSize: "0.75rem", margin: 0 }}>
+                          {calculatePercentageChange(
+                            totalrevenue,
+                            getPreviousMonthValues().revenue
+                          ).text}
+                        </p>
+                      )}
+                    </div>
+                  </Col>
+                  <Col xs="4">
+                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+                      <i className="fas fa-chart-line" style={{ color: "#2b427d", fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -868,38 +961,38 @@ function Dashboard() {
           </Col>
         </Row>
 
-        <Row>
+        <Row style={{ backgroundColor: "#101926" }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative" }}>
+            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2">TOTAL CASH ON HAND Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>TOTAL CASH ON HAND Chart</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={cashOnHandChartData}
                   series={cashOnHandChartData.series}
-                  type="line"
+                  type="area"
                   height={300}
                 />
               </CardBody>
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative" }}>
+            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2">REVENUE Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>REVENUE Chart</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={revenueChartData}
                   series={revenueChartData.series}
-                  type="line"
+                  type="area"
                   height={300}
                 />
               </CardBody>
@@ -907,36 +1000,36 @@ function Dashboard() {
           </Col>
 
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative" }}>
+            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2">TOTAL PAYABLE Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>TOTAL PAYABLE Chart</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={payableChartData}
                   series={payableChartData.series}
-                  type="line"
+                  type="area"
                   height={300}
                 />
               </CardBody>
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative" }}>
+            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2">TOTAL EXPENSES Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>TOTAL EXPENSES Chart</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={expensesChartData}
                   series={expensesChartData.series}
-                  type="line"
+                  type="area"
                   height={300}
                 />
               </CardBody>

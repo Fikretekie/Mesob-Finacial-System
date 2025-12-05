@@ -15,6 +15,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #1d212c;
 }
 
 .social-login-btn {
@@ -39,26 +40,29 @@ body {
 }
 
 .social-login-btn.google {
-  background-color: #ffffff;
-  color: #444;
-  border: 1px solid #ddd;
+  background-color: #202a3a !important;
+  color: #ffffff !important;
+  border: 1px solid #3a4555;
 }
 
 .social-login-btn.google:hover {
-  background-color: #f1f1f1;
+  background-color: #2a3444 !important;
+  border-color: #4a5565;
 }
 
 .social-login-btn.apple {
-  background-color: #f1f1f1;
-  color: #111;
+  background-color: #202a3a !important;
+  color: #ffffff !important;
+  border: 1px solid #3a4555;
 }
 
 .social-login-btn.apple:hover {
-  background-color: #111;
+  background-color: #2a3444 !important;
+  border-color: #4a5565;
 }
 
 .login-box {
-  background-color: #ffffff;
+  background-color: #181b26;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -69,14 +73,19 @@ body {
 
 h2 {
   margin-bottom: 20px;
-  color: #333333;
+  color: #ffffff;
 }
-
+.forgot-password-link{
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
 /* Input Group */
 .login-input-group {
   margin-bottom: 15px;
   text-align: left;
   display: inline;
+
 }
 
 .login-input-group label {
@@ -87,12 +96,37 @@ h2 {
   margin-top: 15px;
 }
 
-.login-input-group input {
+.login-input-group input,
+.login-input-group input[type="email"],
+.login-input-group input[type="password"],
+.login-input-group input[type="text"] {
   width: 100%;
   padding: 10px;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 0.5px solid #dedede;
   font-size: 16px;
+  background-color: #202a3a !important;
+  color: #ffffff !important;
+}
+
+.login-input-group input::placeholder {
+  color: #3a3a3a !important;
+  opacity: 1;
+}
+
+.login-input-group input::-webkit-input-placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
+}
+
+.login-input-group input::-moz-placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
+}
+
+.login-input-group input:-ms-input-placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
 }
 
 /* Button */
@@ -121,9 +155,33 @@ h2 {
   position: relative;
 }
 
-.password-container input {
+.password-container input,
+.password-container input[type="password"],
+.password-container input[type="text"] {
   width: 100%;
   padding-right: 40px;
+  background-color: #202a3a !important;
+  color: #ffffff !important;
+}
+
+.password-container input::placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
+}
+
+.password-container input::-webkit-input-placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
+}
+
+.password-container input::-moz-placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
+}
+
+.password-container input:-ms-input-placeholder {
+  color: #9ca5b0 !important;
+  opacity: 1;
 }
 
 .toggle-password {
@@ -134,8 +192,8 @@ h2 {
   background: none;
   border: none;
   cursor: pointer;
+  color: #ffffff;
 }
-
 
 /* Media Queries for Responsive Design */
 @media screen and (max-width: 768px) {
