@@ -54,13 +54,13 @@ const TransactionTable = ({
           {sortedTransactions.map((transaction, index) => (
             <tr key={transaction.id || index}>
               {/* Date */}
-              <td>{formatDate(transaction.createdAt)}</td>
+              <td style={{ color: "#ffffff" }}>{formatDate(transaction.createdAt)}</td>
 
               {/* Serial Number */}
-              <td>{sortedTransactions.length - index}</td>
+              <td style={{ color: "#ffffff" }}>{sortedTransactions.length - index}</td>
 
               {/* Transaction Purpose and Type */}
-              <td>
+              <td style={{ color: "#ffffff" }}>
                 {transaction.transactionType === "Receive" ? (
                   <>
                     {/* Transaction type first for Receive */}
@@ -94,104 +94,86 @@ const TransactionTable = ({
               {/* Debit Column */}
               <td className="debit">
                 {transaction.transactionType === "Receive" && (
-                  <>
-                    <div style={{ backgroundColor: colors.cash }}>
-                      $
-                      {parseFloat(transaction.transactionAmount).toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}
-                    </div>
-                    <div style={{ color: "white" }}>.</div>
-                  </>
+                  <div style={{ color: "#41926f", fontWeight: "bold" }}>
+                    $
+                    {parseFloat(transaction.transactionAmount).toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
+                  </div>
                 )}
                 {transaction.transactionType === "Payable" && (
-                  <>
-                    <div style={{ backgroundColor: colors.expense }}>
-                      $
-                      {parseFloat(transaction.originalAmount).toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}
-                    </div>
-                    <div style={{ color: "white" }}>-</div>
-                  </>
+                  <div style={{ color: "#a7565d", fontWeight: "bold" }}>
+                    $
+                    {parseFloat(transaction.originalAmount).toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
+                  </div>
                 )}
                 {["Pay", "New_Item"].includes(transaction.transactionType) && (
-                  <>
-                    <div style={{ backgroundColor: colors.expense }}>
-                      $
-                      {parseFloat(transaction.transactionAmount).toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}
-                    </div>
-                    <div style={{ color: "white" }}>.</div>
-                  </>
+                  <div style={{ color: "#a7565d", fontWeight: "bold" }}>
+                    $
+                    {parseFloat(transaction.transactionAmount).toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
+                  </div>
                 )}
               </td>
 
               {/* Credit Column */}
               <td className="credit">
                 {transaction.transactionType === "Receive" && (
-                  <>
-                    <div style={{ color: "white" }}>.</div>
-                    <div style={{ backgroundColor: colors.revenue }}>
-                      $
-                      {parseFloat(transaction.transactionAmount).toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}
-                    </div>
-                  </>
+                  <div style={{ color: "#41926f", fontWeight: "bold" }}>
+                    $
+                    {parseFloat(transaction.transactionAmount).toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
+                  </div>
                 )}
                 {transaction.transactionType === "Payable" && (
-                  <>
-                    <div style={{ color: "white" }}>.</div>
-                    <div style={{ backgroundColor: colors.payable }}>
-                      $
-                      {parseFloat(transaction.originalAmount).toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}
-                    </div>
-                  </>
+                  <div style={{ color: "#c7ae4f", fontWeight: "bold" }}>
+                    $
+                    {parseFloat(transaction.originalAmount).toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
+                  </div>
                 )}
                 {["Pay", "New_Item"].includes(transaction.transactionType) && (
-                  <>
-                    <div style={{ color: "white" }}>.</div>
-                    <div style={{ backgroundColor: colors.cash }}>
-                      $
-                      {parseFloat(transaction.transactionAmount).toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        }
-                      )}
-                    </div>
-                  </>
+                  <div style={{ color: "#41926f", fontWeight: "bold" }}>
+                    $
+                    {parseFloat(transaction.transactionAmount).toLocaleString(
+                      "en-US",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
+                  </div>
                 )}
               </td>
 
               {/* Actions */}
-              <td>
-                <div style={{ display: "flex", gap: "10px" }}>
+              <td style={{ verticalAlign: "middle" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
                   {/* Delete Button */}
                   <BsTrashFill
                     className="delete-btn"
@@ -202,6 +184,9 @@ const TransactionTable = ({
                       cursor: isFeatureEnabled() ? "pointer" : "not-allowed",
                       color: isFeatureEnabled() ? "#e10d05" : "#ccc",
                       opacity: isFeatureEnabled() ? 1 : 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   />
 
@@ -217,6 +202,9 @@ const TransactionTable = ({
                         cursor: isFeatureEnabled() ? "pointer" : "not-allowed",
                         color: isFeatureEnabled() ? "#007bff" : "#ccc",
                         opacity: isFeatureEnabled() ? 1 : 0.5,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     />
                   )}

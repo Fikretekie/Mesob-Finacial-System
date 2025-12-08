@@ -474,7 +474,7 @@ const Receipts = ({ selectedUser }) => {
                           value={fromDate}
                           onChange={(e) => setFromDate(e.target.value)}
                           className="w-100"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555" }}
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                       <FormGroup className="mb-0 flex-fill p-2">
@@ -487,7 +487,7 @@ const Receipts = ({ selectedUser }) => {
                           value={toDate}
                           onChange={(e) => setToDate(e.target.value)}
                           className="w-100"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555" }}
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </div>

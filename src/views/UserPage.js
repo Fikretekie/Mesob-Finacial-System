@@ -155,36 +155,38 @@ function UserPage() {
       <div className="content">
         <Row>
           <Col md="8" style={{ paddingInline: 0 }}>
-            <Card>
-              <CardHeader>
-                <h5 className="title">User Profile</h5>
+            <Card style={{ backgroundColor: "#1a273a" }}>
+              <CardHeader style={{ backgroundColor: "#1a273a" }}>
+                <h5 className="title" style={{ color: "#ffffff" }}>User Profile</h5>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#1a273a" }}>
                 {error && <Alert color="danger">{error}</Alert>}
                 {success && <Alert color="success">{success}</Alert>}
                 <Form onSubmit={handleSubmit}>
                   <Row >
                     <Col className="pr-1" md="6" >
                       <FormGroup>
-                        <label>Name</label>
+                        <label style={{ color: "#ffffff" }}>Name</label>
                         <Input
                           name="name"
                           value={userData.name}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="6">
                       <FormGroup>
-                        <label>Email address</label>
+                        <label style={{ color: "#ffffff" }}>Email address</label>
                         <Input
                           name="email"
                           value={userData.email}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="email"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -192,25 +194,27 @@ function UserPage() {
                   <Row>
                     <Col className="pr-1" md="6">
                       <FormGroup>
-                        <label>Phone</label>
+                        <label style={{ color: "#ffffff" }}>Phone</label>
                         <Input
                           name="phone"
                           value={userData.phone_number}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="6">
                       <FormGroup>
-                        <label>Company Name</label>
+                        <label style={{ color: "#ffffff" }}>Company Name</label>
                         <Input
                           name="companyName"
                           value={userData.companyName}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -218,7 +222,7 @@ function UserPage() {
                   {/* <Row>
                     <Col md="12">
                       <FormGroup>
-                        <label>Business Type</label>
+                        <label style={{ color: "#ffffff" }}>Business Type</label>
                         <Input
                           name="businessType"
                           value={userData.businessType}
@@ -232,13 +236,14 @@ function UserPage() {
                   <Row>
                     <Col md="12">
                       <FormGroup>
-                        <label>Business Type</label>
+                        <label style={{ color: "#ffffff" }}>Business Type</label>
                         {isEditing ? (
                           <Input
                             type="select"
                             name="businessType"
                             value={userData.businessType || ""}
                             onChange={handleInputChange}
+                            style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                           >
                             <option value="">Select Business Type</option>
                             <option value="Trucking">Trucking</option>
@@ -269,6 +274,7 @@ function UserPage() {
                             disabled
                             type="text"
                             placeholder="Not specified"
+                            style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                           />
                         )}
                       </FormGroup>
@@ -277,37 +283,40 @@ function UserPage() {
                   <Row>
                     <Col className="pr-1" md="4">
                       <FormGroup>
-                        <label>Cash Balance</label>
+                        <label style={{ color: "#ffffff" }}>Cash Balance</label>
                         <Input
                           name="cashBalance"
                           value={userData.cashBalance}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="px-1" md="4">
                       <FormGroup>
-                        <label>Outstanding Debt</label>
+                        <label style={{ color: "#ffffff" }}>Outstanding Debt</label>
                         <Input
                           name="outstandingDebt"
                           value={userData.outstandingDebt}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
                     <Col className="pl-1" md="4">
                       <FormGroup>
-                        <label>Valuable Items</label>
+                        <label style={{ color: "#ffffff" }}>Valuable Items</label>
                         <Input
                           name="valueableItems"
                           value={userData.valueableItems}
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
+                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -370,7 +379,7 @@ function UserPage() {
                       {/* Edit button when NOT editing or no changes */}
                       {(!isEditing || !hasChanges) && (
                         <Row>
-                          <Col md="12">
+                          <Col md="12" className="d-flex gap-2">
                             <Button
                               color="primary"
                               onClick={() => setIsEditing(true)}
@@ -378,18 +387,23 @@ function UserPage() {
                             >
                               Edit Profile
                             </Button>
+                            <Button color="danger" onClick={handleDelete}>
+                              Delete Account
+                            </Button>
                           </Col>
                         </Row>
                       )}
 
-                      {/* Delete account button */}
-                      <Row className="mt-3">
-                        <Col md="12">
-                          <Button color="danger" onClick={handleDelete}>
-                            Delete Account
-                          </Button>
-                        </Col>
-                      </Row>
+                      {/* Delete account button when editing */}
+                      {isEditing && (
+                        <Row className="mt-3">
+                          <Col md="12">
+                            <Button color="danger" onClick={handleDelete}>
+                              Delete Account
+                            </Button>
+                          </Col>
+                        </Row>
+                      )}
                     </>
                   )}
                 </Form>
