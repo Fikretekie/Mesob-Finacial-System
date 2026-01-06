@@ -783,7 +783,7 @@ function Dashboard() {
           text="Loading financial data..."
         />
 
-        <Row style={{ marginBottom: "5px", backgroundColor: "#101926" }}>
+        <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop:22 }}>
           <Col
             lg="3"
             md="6"
