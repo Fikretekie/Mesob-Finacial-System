@@ -157,7 +157,6 @@
 
     .logo{
         position: relative;
-        padding: $padding-base-vertical $padding-base-horizontal;
         z-index: 4;
 
         a.logo-mini,
@@ -202,7 +201,6 @@
 
         .simple-text{
             text-transform: uppercase;
-            padding: $padding-base-vertical 0;
             display: block;
             white-space: nowrap;
             font-size: $font-size-large;

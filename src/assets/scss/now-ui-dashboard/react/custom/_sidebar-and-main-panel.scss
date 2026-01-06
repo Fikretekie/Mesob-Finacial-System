@@ -39,7 +39,7 @@
         overflow: auto;
         width: 260px;
         z-index: 4;
-        padding-bottom: 100px;
+        // padding-bottom: 100px;
         background-color: #101926 !important;
         .dropdown .dropdown-backdrop{
           display: none !important;
@@ -213,7 +213,6 @@
 
     .logo{
         position: relative;
-        padding: $padding-base-vertical $padding-base-horizontal;
         z-index: 4;
 
         a.logo-mini,

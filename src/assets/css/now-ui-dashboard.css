@@ -3050,7 +3050,6 @@ Created using IcoMoon - icomoon.io
   overflow: auto;
   width: 260px;
   z-index: 4;
-  padding-bottom: 100px;
   background-color: #101926;
 }
 .sidebar .sidebar-wrapper .dropdown .dropdown-backdrop,
@@ -3177,7 +3176,6 @@ Created using IcoMoon - icomoon.io
 .sidebar .logo,
 .off-canvas-sidebar .logo {
   position: relative;
-  padding: 0.5rem 0.7rem;
   z-index: 4;
 }
 .sidebar .logo a.logo-mini,
@@ -3221,7 +3219,6 @@ Created using IcoMoon - icomoon.io
 .sidebar .logo .simple-text,
 .off-canvas-sidebar .logo .simple-text {
   text-transform: uppercase;
-  padding: 0.5rem 0;
   display: block;
   white-space: nowrap;
   font-size: 1em;
@@ -5152,7 +5149,6 @@ Created using IcoMoon - icomoon.io
 .sidebar .logo,
 .off-canvas-sidebar .logo {
   position: relative;
-  padding: 0.5rem 0.7rem;
   z-index: 4;
 }
 .sidebar .logo a.logo-mini,
@@ -5196,7 +5192,6 @@ Created using IcoMoon - icomoon.io
 .sidebar .logo .simple-text,
 .off-canvas-sidebar .logo .simple-text {
   text-transform: uppercase;
-  padding: 0.5rem 0;
   display: block;
   white-space: nowrap;
   font-size: 1em;

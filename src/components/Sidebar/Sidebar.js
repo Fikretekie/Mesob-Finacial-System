@@ -48,14 +48,11 @@ function Sidebar(props) {
   });
   return (
     <div className="sidebar" data-color={props.backgroundColor}>
-      <div className="logo" style={{backgroundColor:'#101926'}}>
-        <a href="#" className="simple-text logo-mini">
+     <div className="logo" style={{backgroundColor:'#101926'}}>
+        <a href="#" className="simple-text logo-mini" style={{width: '100%', float: 'none', margin: '0', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           <div className="logo-img">
             <img src={logo} alt="react-logo" />
           </div>
-        </a>
-        <a href="#" className="simple-text logo-normal">
-          Mesob Financial
         </a>
       </div>
       <div className="sidebar-wrapper" ref={sidebar}>
