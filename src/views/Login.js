@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
-const logo = "/logo.png";
+const logo = "/logo2.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
