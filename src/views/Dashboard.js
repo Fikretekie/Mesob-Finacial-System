@@ -108,6 +108,32 @@ function Dashboard() {
     }
   }, [selectedUserId]);
 
+  // Add CSS styling for ApexCharts menu items
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .apexcharts-menu-item {
+        color: #000000 !important;
+      }
+      .apexcharts-menu-item:hover {
+        color: #000000 !important;
+      }
+      .apexcharts-menu-item:active {
+        color: #000000 !important;
+      }
+      .apexcharts-menu-item:focus {
+        color: #000000 !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
+
   const handleAddTransactionClick = () => {
     // Use navigate to go to the MesobFinancial2 page
     navigate("/customer/financial-report", {
@@ -545,11 +571,11 @@ function Dashboard() {
         revenue: 0,
       };
     }
-    
+
     // Get values from second-to-last entry (previous period)
     const previousIndex = monthlySales.length - 2;
     const previous = monthlySales[previousIndex];
-    
+
     return {
       cashOnHand: previous?.cashOnHand || 0,
       expenses: previous?.expenses || 0,
@@ -708,7 +734,7 @@ function Dashboard() {
                   >
                     <FontAwesomeIcon
                       icon={faPlus}
-                      style={{ marginRight: "0.5rem", fontSize: "0.9rem",  }}
+                      style={{ marginRight: "0.5rem", fontSize: "0.9rem", }}
                     />
                     Add Transaction
                   </Button>
@@ -771,7 +797,7 @@ function Dashboard() {
                       }}
                     />
                   </FormGroup> */}
-                                    <FormGroup>
+                  <FormGroup>
                     <Label>Select User to View:</Label>
                     <Select
                       options={userOptions}
@@ -832,8 +858,8 @@ function Dashboard() {
                           backgroundColor: state.isSelected
                             ? "#2b427d"
                             : state.isFocused
-                            ? "#1a2332"
-                            : "#101926",
+                              ? "#1a2332"
+                              : "#101926",
                           color: "#ffffff",
                           cursor: "pointer",
                           "&:active": {
@@ -856,7 +882,7 @@ function Dashboard() {
           text="Loading financial data..."
         />
 
-        <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop:22 }}>
+        <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
           <Col
             lg="3"
             md="6"

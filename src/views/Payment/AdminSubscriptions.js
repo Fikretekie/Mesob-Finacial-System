@@ -1480,13 +1480,13 @@ const AdminSubscriptions = () => {
   return (
     <>
       <PanelHeader size="sm" />
-      <div className="content">
+      <div className="content" style={{ backgroundColor: "#101926", paddingInline: 15 }}>
         <Row>
           <Col xs={12} style={{ paddingInline: 0 }}>
-            <Card>
-              <CardHeader>
+            <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+              <CardHeader style={{ backgroundColor: "#101926" }}>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                  <CardTitle tag="h4" className="mb-0">
+                  <CardTitle tag="h4" className="mb-0" style={{ color: "#ffffff" }}>
                     Subscriptions
                   </CardTitle>
                   <div className="d-flex flex-wrap gap-2">
@@ -1505,27 +1505,25 @@ const AdminSubscriptions = () => {
                 <Nav tabs className={isMobile ? "flex-column" : ""}>
                   <NavItem className={isMobile ? "w-100" : ""}>
                     <NavLink
-                      className={activeTab === "1" ? "active" : ""}
+                      className={`text-center ${isMobile ? "w-100" : ""} ${activeTab === "1" ? "active" : ""}`}
                       onClick={() => toggleTab("1")}
                       style={{ cursor: "pointer" }}
-                      className={`text-center ${isMobile ? "w-100" : ""}`}
                     >
                       Subscribed ({counts.total})
                     </NavLink>
                   </NavItem>
                   <NavItem className={isMobile ? "w-100" : ""}>
                     <NavLink
-                      className={activeTab === "2" ? "active" : ""}
+                      className={`text-center ${isMobile ? "w-100" : ""} ${activeTab === "2" ? "active" : ""}`}
                       onClick={() => toggleTab("2")}
                       style={{ cursor: "pointer" }}
-                      className={`text-center ${isMobile ? "w-100" : ""}`}
                     >
                       UnSubscribed ({unsubscribedCount})
                     </NavLink>
                   </NavItem>
                 </Nav>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926" }}>
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="1">
                     <div className="mb-3">
@@ -1568,11 +1566,11 @@ const AdminSubscriptions = () => {
                     ) : loading ? (
                       <div className="text-center py-4">
                         <Spinner color="primary" />
-                        <p className="mt-2">Loading subscriptions...</p>
+                        <p className="mt-2" style={{ color: "#ffffff" }}>Loading subscriptions...</p>
                       </div>
                     ) : isMobile ? (
                       getFilteredSubscriptions(true).length === 0 ? (
-                        <div className="text-center py-4 text-muted">
+                        <div className="text-center py-4" style={{ color: "#ffffff" }}>
                           No active subscriptions found
                         </div>
                       ) : (
@@ -1589,14 +1587,54 @@ const AdminSubscriptions = () => {
                         data={getFilteredSubscriptions(true)}
                         pagination
                         responsive
-                        highlightOnHover
+                        highlightOnHover={false}
                         fixedHeader
                         fixedHeaderScrollHeight="400px"
                         noDataComponent={
-                          <div className="text-center py-4 text-muted">
+                          <div className="text-center py-4" style={{ color: "#ffffff" }}>
                             No active subscriptions found
                           </div>
                         }
+                        customStyles={{
+                          table: {
+                            style: {
+                              backgroundColor: "#000000",
+                            },
+                          },
+                          headRow: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                          headCells: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                          cells: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                          rows: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                              "&:hover": {
+                                backgroundColor: "#000000",
+                              },
+                            },
+                          },
+                          pagination: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                        }}
                       />
                     )}
                   </TabPane>
@@ -1606,11 +1644,11 @@ const AdminSubscriptions = () => {
                     ) : loading ? (
                       <div className="text-center py-4">
                         <Spinner color="primary" />
-                        <p className="mt-2">Loading data...</p>
+                        <p className="mt-2" style={{ color: "#ffffff" }}>Loading data...</p>
                       </div>
                     ) : isMobile ? (
                       getFilteredSubscriptions(false).length === 0 ? (
-                        <div className="text-center py-4 text-muted">
+                        <div className="text-center py-4" style={{ color: "#ffffff" }}>
                           No cancelled/inactive subscriptions found
                         </div>
                       ) : (
@@ -1627,14 +1665,54 @@ const AdminSubscriptions = () => {
                         data={getFilteredSubscriptions(false)}
                         pagination
                         responsive
-                        highlightOnHover
+                        highlightOnHover={false}
                         fixedHeader
                         fixedHeaderScrollHeight="400px"
                         noDataComponent={
-                          <div className="text-center py-4 text-muted">
+                          <div className="text-center py-4" style={{ color: "#ffffff" }}>
                             No cancelled/inactive subscriptions found
                           </div>
                         }
+                        customStyles={{
+                          table: {
+                            style: {
+                              backgroundColor: "#000000",
+                            },
+                          },
+                          headRow: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                          headCells: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                          cells: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                          rows: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                              "&:hover": {
+                                backgroundColor: "#000000",
+                              },
+                            },
+                          },
+                          pagination: {
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                            },
+                          },
+                        }}
                       />
                     )}
                   </TabPane>

@@ -74,11 +74,11 @@ const CSVReports = () => {
   return (
     <>
       <PanelHeader size="sm" />
-      <div className="content" >
+      <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         <Row>
           <Col xs={12} style={{ paddingInline: 0, }}>
-            <Card>
-              <CardHeader>
+            <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+              <CardHeader style={{ backgroundColor: "#101926" }}>
                 <div
                   style={{
                     display: "flex",
@@ -87,23 +87,23 @@ const CSVReports = () => {
                     alignItems: "center",
                   }}
                 >
-                  <CardTitle tag="h4">CSV Report</CardTitle>
+                  <CardTitle tag="h4" style={{ color: "#2b427d" }}>CSV Report</CardTitle>
                 </div>
               </CardHeader>
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926" }}>
                 {backupUrls.length > 0 ? (
-                  <Table responsive>
+                  <Table responsive style={{ backgroundColor: "#101926" }}>
                     <thead>
                       <tr>
-                        <th>Backup File</th>
-                        <th>Actions</th>
+                        <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Backup File</th>
+                        <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {backupUrls.map((url, index) => (
-                        <tr key={index}>
-                          <td>{url.split("/").pop()}</td>
-                          <td>
+                        <tr key={index} style={{ borderColor: "#3a4555" }}>
+                          <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>{url.split("/").pop()}</td>
+                          <td style={{ borderColor: "#3a4555" }}>
                             <Button
                               style={{ marginRight: "10px" }}
                               color="primary"
@@ -121,7 +121,7 @@ const CSVReports = () => {
                     </tbody>
                   </Table>
                 ) : (
-                  <p>No backup CSV files available.</p>
+                  <p style={{ color: "#ffffff" }}>No backup CSV files available.</p>
                 )}
               </CardBody>
             </Card>

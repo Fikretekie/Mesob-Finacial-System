@@ -3004,26 +3004,33 @@ const MesobFinancial2 = () => {
                     backgroundColor: "#1a273a",
                   }}
                 >
-                  <div style={{ width: "100%" }}>
-                    <TransactionTable
-                      items={filterItemsByTimeRange(
-                        items,
-                        selectedTimeRange,
-                        searchTerm
-                      )}
-                      disabled={
-                        userRole === 1
-                          ? false
-                          : !userSubscription && scheduleCount >= 4
-                      }
-                      selectedTimeRange={selectedTimeRange}
-                      handleDelete={handleDelete}
-                      handleAddExpense={handleAddExpense}
-                      handleReceiptClick={handleReceiptClick}
-                      scheduleCount={scheduleCount}
-                      userSubscription={userSubscription}
-                    />
-                  </div>
+                  {loadingTransactions ? (
+                    <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
+                      <Spinner color="primary" />
+                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>Loading transactions...</p>
+                    </div>
+                  ) : (
+                    <div style={{ width: "100%" }}>
+                      <TransactionTable
+                        items={filterItemsByTimeRange(
+                          items,
+                          selectedTimeRange,
+                          searchTerm
+                        )}
+                        disabled={
+                          userRole === 1
+                            ? false
+                            : !userSubscription && scheduleCount >= 4
+                        }
+                        selectedTimeRange={selectedTimeRange}
+                        handleDelete={handleDelete}
+                        handleAddExpense={handleAddExpense}
+                        handleReceiptClick={handleReceiptClick}
+                        scheduleCount={scheduleCount}
+                        userSubscription={userSubscription}
+                      />
+                    </div>
+                  )}
                 </CardBody>
               </Card>
 
@@ -3581,26 +3588,33 @@ const MesobFinancial2 = () => {
                     padding: "10px",
                   }}
                 >
-                  <div style={{ width: "100%" }}>
-                    <TransactionTable
-                      items={filterItemsByTimeRange(
-                        items,
-                        selectedTimeRange,
-                        searchTerm
-                      )}
-                      disabled={
-                        userRole === 1
-                          ? false
-                          : !userSubscription && scheduleCount >= 4
-                      }
-                      selectedTimeRange={selectedTimeRange}
-                      handleDelete={handleDelete}
-                      handleAddExpense={handleAddExpense}
-                      handleReceiptClick={handleReceiptClick}
-                      scheduleCount={scheduleCount}
-                      userSubscription={userSubscription}
-                    />
-                  </div>
+                  {loadingTransactions ? (
+                    <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
+                      <Spinner color="primary" />
+                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>Loading transactions...</p>
+                    </div>
+                  ) : (
+                    <div style={{ width: "100%" }}>
+                      <TransactionTable
+                        items={filterItemsByTimeRange(
+                          items,
+                          selectedTimeRange,
+                          searchTerm
+                        )}
+                        disabled={
+                          userRole === 1
+                            ? false
+                            : !userSubscription && scheduleCount >= 4
+                        }
+                        selectedTimeRange={selectedTimeRange}
+                        handleDelete={handleDelete}
+                        handleAddExpense={handleAddExpense}
+                        handleReceiptClick={handleReceiptClick}
+                        scheduleCount={scheduleCount}
+                        userSubscription={userSubscription}
+                      />
+                    </div>
+                  )}
                 </CardBody>
               </Card>
 

@@ -407,7 +407,7 @@ const Receipts = ({ selectedUser }) => {
                   <CardTitle tag="h4" className="mb-0" style={{ color: "#2b427d" }}>
                     Receipts
                   </CardTitle>
-                 
+
                   <div className="d-flex flex-column flex-lg-row gap-3 w-100 align-items-lg-end">
                     <div className="d-flex flex-column flex-sm-row gap-3 flex-lg-grow-1">
                       <FormGroup className="mb-0 flex-fill p-2" >
@@ -491,6 +491,7 @@ const Receipts = ({ selectedUser }) => {
                       <Table responsive style={{ backgroundColor: "#101926" }}>
                         <thead>
                           <tr>
+                            <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Sr.</th>
                             <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Date</th>
                             <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Purpose</th>
                             <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Amount</th>
@@ -500,8 +501,9 @@ const Receipts = ({ selectedUser }) => {
                           </tr>
                         </thead>
                         <tbody>
-                          {receipts.map((receipt) => (
+                          {receipts.map((receipt, index) => (
                             <tr key={receipt.id || receipt.receiptUrl} style={{ borderColor: "#3a4555" }}>
+                              <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>{index + 1}</td>
                               <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>
                                 {new Date(
                                   receipt.createdAt
@@ -523,6 +525,7 @@ const Receipts = ({ selectedUser }) => {
                                       ? "not-allowed"
                                       : "pointer",
                                     marginRight: "1rem",
+                                    color: disabled ? "#666" : "#3d83f1",
                                   }}
                                   title="Preview"
                                 />
@@ -536,6 +539,7 @@ const Receipts = ({ selectedUser }) => {
                                     cursor: disabled
                                       ? "not-allowed"
                                       : "pointer",
+                                    color: disabled ? "#666" : "#11b981",
                                   }}
                                 />
                               </td>
@@ -547,7 +551,7 @@ const Receipts = ({ selectedUser }) => {
 
                     {/* Mobile Cards */}
                     <div className="d-block d-md-none">
-                      {receipts.map((receipt) => (
+                      {receipts.map((receipt, index) => (
                         <Card
                           key={receipt.id || receipt.receiptUrl}
                           className="mb-3"
@@ -555,6 +559,14 @@ const Receipts = ({ selectedUser }) => {
                         >
                           <CardBody style={{ backgroundColor: "#101926" }}>
                             <Row>
+                              <Col xs={6}>
+                                <strong style={{ color: "#ffffff" }}>Sr.:</strong>
+                              </Col>
+                              <Col xs={6} style={{ color: "#ffffff" }}>
+                                {index + 1}
+                              </Col>
+                            </Row>
+                            <Row className="mt-2">
                               <Col xs={6}>
                                 <strong style={{ color: "#ffffff" }}>Date:</strong>
                               </Col>
