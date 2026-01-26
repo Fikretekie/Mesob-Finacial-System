@@ -662,7 +662,11 @@ const MesobFinancial2 = () => {
       type: receipt.type,
       sizeMB: (receipt.size / (1024 * 1024)).toFixed(2) + " MB",
     });
-
+ // Notify user if file is large
+ const fileSizeMB = receipt.size / (1024 * 1024);
+ if (fileSizeMB > 2.0) {
+   notify("tr", "Large file detected. Uploading may take a moment...", "info");
+ }
     let fileToUpload = receipt;
 
     // Helper function to convert WEBP to JPEG (better compression than PNG)

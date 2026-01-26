@@ -170,11 +170,11 @@ const TransactionTable = ({
                   </div>
                 )}
               </td> */}
- {/* Debit Column */}
- <td className="debit">
+              {/* Debit Column */}
+              <td className="debit">
                 {transaction.transactionType === "Receive" && (
                   <>
-                    <div className="debit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px",display: "inline-block", marginBottom: "4px" }}>
+                    <div className="debit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
                       $
                       {parseFloat(transaction.transactionAmount).toLocaleString(
                         "en-US",
@@ -189,7 +189,7 @@ const TransactionTable = ({
                 )}
                 {transaction.transactionType === "Payable" && (
                   <>
-                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px",display: "inline-block", marginBottom: "4px" }}>
+                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
                       $
                       {parseFloat(transaction.originalAmount).toLocaleString(
                         "en-US",
@@ -204,7 +204,7 @@ const TransactionTable = ({
                 )}
                 {["Pay", "New_Item"].includes(transaction.transactionType) && (
                   <>
-                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block", marginBottom: "4px" }}>
+                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
                       $
                       {parseFloat(transaction.transactionAmount).toLocaleString(
                         "en-US",
@@ -224,7 +224,7 @@ const TransactionTable = ({
                 {transaction.transactionType === "Receive" && (
                   <>
                     <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block" }}>
+                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
                       $
                       {parseFloat(transaction.transactionAmount).toLocaleString(
                         "en-US",
@@ -239,7 +239,7 @@ const TransactionTable = ({
                 {transaction.transactionType === "Payable" && (
                   <>
                     <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                    <div className="credit-value" style={{ backgroundColor: "#c7ae4f", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block" }}>
+                    <div className="credit-value" style={{ backgroundColor: "#c7ae4f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
                       $
                       {parseFloat(transaction.originalAmount).toLocaleString(
                         "en-US",
@@ -254,7 +254,7 @@ const TransactionTable = ({
                 {["Pay", "New_Item"].includes(transaction.transactionType) && (
                   <>
                     <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block" }}>
+                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
                       $
                       {parseFloat(transaction.transactionAmount).toLocaleString(
                         "en-US",

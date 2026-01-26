@@ -133,4 +133,54 @@
     min-width: 600px;
     /* ✅ keeps structure, user can scroll horizontally */
   }
+  .transaction-table th:nth-child(4),
+  .transaction-table td:nth-child(4) {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+  }
+
+  .transaction-table th:nth-child(5),
+  .transaction-table td:nth-child(5) {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+  }
+
+  /* Ensure proper cell padding */
+  .transaction-table td.debit,
+  .transaction-table td.credit {
+    padding: 6px 4px !important;
+  }
+
+  /* Fix background boxes to fit perfectly within their column */
+  .debit-value,
+  .credit-value {
+    display: block !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 6px 8px !important;
+    margin: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    border-radius: 0 !important;
+  }
+
+  /* Ensure all child divs are properly sized */
+  .debit > div,
+  .credit > div {
+    width: 100% !important;
+    text-align: center !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Prevent any overflow or overlap */
+  .debit,
+  .credit {
+    overflow: hidden !important;
+    position: relative !important;
+  }
 }
