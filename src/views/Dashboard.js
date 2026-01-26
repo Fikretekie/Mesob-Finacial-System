@@ -737,7 +737,7 @@ function Dashboard() {
                     loading={loadingUsers}
                     text="Loading users..."
                   />
-                  <FormGroup>
+                  {/* <FormGroup>
                     <Label>Select User to View:</Label>
                     <Select
                       options={userOptions}
@@ -753,6 +753,7 @@ function Dashboard() {
                           ...provided,
                           minHeight: "38px",
                           height: "38px",
+                          // backgroundColor:"#101926",
                         }),
                         valueContainer: (provided) => ({
                           ...provided,
@@ -766,6 +767,78 @@ function Dashboard() {
                         indicatorsContainer: (provided) => ({
                           ...provided,
                           height: "38px",
+                        }),
+                      }}
+                    />
+                  </FormGroup> */}
+                                    <FormGroup>
+                    <Label>Select User to View:</Label>
+                    <Select
+                      options={userOptions}
+                      value={userOptions.find(
+                        (option) => option.value === selectedUserId
+                      )}
+                      onChange={handleUserSelect}
+                      placeholder="Search or select a user..."
+                      isClearable
+                      isSearchable
+                      styles={{
+                        control: (provided, state) => ({
+                          ...provided,
+                          minHeight: "38px",
+                          height: "38px",
+                          backgroundColor: "#101926",
+                          color: "#ffffff",
+                          borderColor: state.isFocused ? "#ffffff" : "#ffffff",
+                          boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
+                          "&:hover": {
+                            borderColor: "#817646",
+                          },
+                        }),
+                        valueContainer: (provided) => ({
+                          ...provided,
+                          height: "38px",
+                          padding: "0 6px",
+                        }),
+                        input: (provided) => ({
+                          ...provided,
+                          margin: "0px",
+                          color: "#ffffff",
+                        }),
+                        singleValue: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                        }),
+                        placeholder: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                          opacity: 0.7,
+                        }),
+                        indicatorsContainer: (provided) => ({
+                          ...provided,
+                          height: "38px",
+                        }),
+                        menu: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#101926",
+                          border: "1px solid #ffffff",
+                        }),
+                        menuList: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#101926",
+                        }),
+                        option: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isSelected
+                            ? "#2b427d"
+                            : state.isFocused
+                            ? "#1a2332"
+                            : "#101926",
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          "&:active": {
+                            backgroundColor: "#2b427d",
+                          },
                         }),
                       }}
                     />

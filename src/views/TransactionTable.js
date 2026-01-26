@@ -92,7 +92,7 @@ const TransactionTable = ({
               </td>
 
               {/* Debit Column */}
-              <td className="debit">
+              {/* <td className="debit">
                 {transaction.transactionType === "Receive" && (
                   <div style={{ color: "#41926f", fontWeight: "bold" }}>
                     $
@@ -129,10 +129,10 @@ const TransactionTable = ({
                     )}
                   </div>
                 )}
-              </td>
+              </td> */}
 
               {/* Credit Column */}
-              <td className="credit">
+              {/* <td className="credit">
                 {transaction.transactionType === "Receive" && (
                   <div style={{ color: "#41926f", fontWeight: "bold" }}>
                     $
@@ -169,8 +169,104 @@ const TransactionTable = ({
                     )}
                   </div>
                 )}
+              </td> */}
+ {/* Debit Column */}
+ <td className="debit">
+                {transaction.transactionType === "Receive" && (
+                  <>
+                    <div className="debit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px",display: "inline-block", marginBottom: "4px" }}>
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </div>
+                    <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                  </>
+                )}
+                {transaction.transactionType === "Payable" && (
+                  <>
+                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px",display: "inline-block", marginBottom: "4px" }}>
+                      $
+                      {parseFloat(transaction.originalAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </div>
+                    <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                  </>
+                )}
+                {["Pay", "New_Item"].includes(transaction.transactionType) && (
+                  <>
+                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block", marginBottom: "4px" }}>
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </div>
+                    <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                  </>
+                )}
               </td>
 
+              {/* Credit Column */}
+              <td className="credit">
+                {transaction.transactionType === "Receive" && (
+                  <>
+                    <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block" }}>
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </div>
+                  </>
+                )}
+                {transaction.transactionType === "Payable" && (
+                  <>
+                    <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                    <div className="credit-value" style={{ backgroundColor: "#c7ae4f", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block" }}>
+                      $
+                      {parseFloat(transaction.originalAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </div>
+                  </>
+                )}
+                {["Pay", "New_Item"].includes(transaction.transactionType) && (
+                  <>
+                    <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", display: "inline-block" }}>
+                      $
+                      {parseFloat(transaction.transactionAmount).toLocaleString(
+                        "en-US",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </div>
+                  </>
+                )}
+              </td>
               {/* Actions */}
               <td style={{ verticalAlign: "middle" }}>
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>

@@ -233,7 +233,12 @@ function Users() {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-100"
-                      style={{ minWidth: "200px" }}
+                      style={{ 
+                        minWidth: "200px",
+                        backgroundColor: "#101926",
+                        color: "#ffffff",
+                        borderColor: "#ffffff",
+                      }}
                     />
                   </div>
                 </div>
@@ -278,15 +283,38 @@ function Users() {
                       customStyles={{
                         headCells: {
                           style: {
-                            backgroundColor: "#f8f9fa",
+                            backgroundColor: "#101926",
+                            color: "#ffffff",
                             fontWeight: "bold",
                             fontSize: "14px",
+                            borderBottom: "1px solid #817646",
                           },
                         },
                         cells: {
                           style: {
                             fontSize: "14px",
                             padding: "8px",
+                            color: "#ffffff",
+                            backgroundColor: "#101926",
+                            borderBottom: "1px solid rgba(129, 118, 70, 0.2)",
+                          },
+                        },
+                        rows: {
+                          style: {
+                            backgroundColor: "#101926",
+                            border: "none",
+                            "&:hover": {
+                              backgroundColor: "#1a2332 !important",
+                              border: "none !important",
+                              outline: "none !important",
+                            },
+                          },
+                        },
+                        pagination: {
+                          style: {
+                            backgroundColor: "#101926",
+                            color: "#ffffff",
+                            borderTop: "1px solid #817646",
                           },
                         },
                       }}

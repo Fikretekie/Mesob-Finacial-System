@@ -99,7 +99,28 @@
   transform: scale(1.1);
   transition: all 0.2s ease;
 }
+.debit,
+.credit {
+  vertical-align: middle;
+}
 
+.debit-value,
+.credit-value {
+  white-space: nowrap;
+}
+
+/* Ensure proper alignment */
+.debit > div:first-child,
+.credit > div:last-child {
+  text-align: center;
+  width: 100%;
+}
+
+.debit > div:last-child,
+.credit > div:first-child {
+  text-align: center;
+  width: 100%;
+}
 /* ✅ Mobile Adjustments */
 @media screen and (max-width: 768px) {
   .table-container {

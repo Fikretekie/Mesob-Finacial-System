@@ -155,11 +155,11 @@ function UserPage() {
       <div className="content">
         <Row>
           <Col md="8" style={{ paddingInline: 0 }}>
-            <Card style={{ backgroundColor: "#1a273a" }}>
-              <CardHeader style={{ backgroundColor: "#1a273a" }}>
+            <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+              <CardHeader style={{ backgroundColor: "#101926" }}>
                 <h5 className="title" style={{ color: "#ffffff" }}>User Profile</h5>
               </CardHeader>
-              <CardBody style={{ backgroundColor: "#1a273a" }}>
+              <CardBody style={{ backgroundColor: "#101926" }}>
                 {error && <Alert color="danger">{error}</Alert>}
                 {success && <Alert color="success">{success}</Alert>}
                 <Form onSubmit={handleSubmit}>

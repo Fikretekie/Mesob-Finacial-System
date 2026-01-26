@@ -1876,7 +1876,8 @@ const MesobFinancial2 = () => {
           alignItems: "flex-end", 
           justifyContent: "flex-start",
           flexWrap: "wrap",
-          gap: "15px",
+          gap: "20px",
+          paddingBottom: "10px",
         }}
       >
         <div
@@ -2002,8 +2003,8 @@ const MesobFinancial2 = () => {
             }
             style={{ 
               height: "38px", 
-              backgroundColor: "#1b283b", 
-              borderColor: "#1b283b", 
+              backgroundColor: "#888888", 
+              borderColor: "#888888", 
               color: "#ffffff",
               borderRadius: "4px",
               padding: "0 16px",
@@ -2108,10 +2109,17 @@ const MesobFinancial2 = () => {
                       isClearable
                       isSearchable
                       styles={{
-                        control: (provided) => ({
+                        control: (provided, state) => ({
                           ...provided,
                           minHeight: "38px",
                           height: "38px",
+                          backgroundColor: "#101926",
+                          color: "#ffffff",
+                          borderColor: state.isFocused ? "#ffffff" : "#ffffff",
+                          boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
+                          "&:hover": {
+                            borderColor: "#ffffff",
+                          },
                         }),
                         valueContainer: (provided) => ({
                           ...provided,
@@ -2121,10 +2129,42 @@ const MesobFinancial2 = () => {
                         input: (provided) => ({
                           ...provided,
                           margin: "0px",
+                          color: "#ffffff",
+                        }),
+                        singleValue: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                        }),
+                        placeholder: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                          opacity: 0.7,
                         }),
                         indicatorsContainer: (provided) => ({
                           ...provided,
                           height: "38px",
+                        }),
+                        menu: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#101926",
+                          border: "1px solid #ffffff",
+                        }),
+                        menuList: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#101926",
+                        }),
+                        option: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isSelected
+                            ? "#2b427d"
+                            : state.isFocused
+                            ? "#1a2332"
+                            : "#101926",
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          "&:active": {
+                            backgroundColor: "#2b427d",
+                          },
                         }),
                       }}
                     />

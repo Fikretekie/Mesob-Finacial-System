@@ -407,61 +407,7 @@ const Receipts = ({ selectedUser }) => {
                   <CardTitle tag="h4" className="mb-0" style={{ color: "#2b427d" }}>
                     Receipts
                   </CardTitle>
-                  {/* <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
-                    <div className="d-flex flex-column flex-sm-row gap-2">
-                      <FormGroup className="mb-0 flex-fill">
-                        <Label for="fromDate" className="mb-1">
-                          From
-                        </Label>
-                        <Input
-                          type="date"
-                          id="fromDate"
-                          value={fromDate}
-                          onChange={(e) => setFromDate(e.target.value)}
-                          className="w-100"
-                        />
-                      </FormGroup>
-                      <FormGroup className="mb-0 flex-fill">
-                        <Label for="toDate" className="mb-1">
-                          To
-                        </Label>
-                        <Input
-                          type="date"
-                          id="toDate"
-                          value={toDate}
-                          onChange={(e) => setToDate(e.target.value)}
-                          className="w-100"
-                        />
-                      </FormGroup>
-                    </div>
-                    <div className="d-flex flex-wrap gap-2 mt-2 mt-sm-0">
-                      <Button
-                        color="primary"
-                        onClick={handleRun}
-                        className="flex-fill"
-                        style={{ minWidth: "80px" }}
-                      >
-                        Run
-                      </Button>
-                      <Button
-                        color="secondary"
-                        onClick={handleClear}
-                        className="flex-fill"
-                        style={{ minWidth: "80px" }}
-                      >
-                        Clear
-                      </Button>
-                      <Button
-                        color="info"
-                        onClick={handleDownloadAll}
-                        disabled={disabled}
-                        className="flex-fill"
-                        style={{ minWidth: "80px" }}
-                      >
-                        Download All
-                      </Button>
-                    </div>
-                  </div> */}
+                 
                   <div className="d-flex flex-column flex-lg-row gap-3 w-100 align-items-lg-end">
                     <div className="d-flex flex-column flex-sm-row gap-3 flex-lg-grow-1">
                       <FormGroup className="mb-0 flex-fill p-2" >
