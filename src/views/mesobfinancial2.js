@@ -526,6 +526,127 @@ const MesobFinancial2 = () => {
     }
   };
 
+  // const uploadReceipt = async () => {
+  //   if (!receipt) {
+  //     notify("tr", "No receipt selected", "warning");
+  //     return;
+  //   }
+
+  //   setLoadingReceipt(true);
+  //   const maxFileSize = 4.0 * 1024 * 1024;
+
+  //   console.log("Original file:", {
+  //     name: receipt.name,
+  //     type: receipt.type,
+  //     sizeMB: (receipt.size / (1024 * 1024)).toFixed(2) + " MB",
+  //   });
+
+  //   let fileToUpload = receipt;
+
+  //   if (receipt.size > maxFileSize && receipt.type.startsWith("image/")) {
+  //     try {
+  //       const options = {
+  //         maxSizeMB: 4.0,
+  //         maxWidthOrHeight: 1920,
+  //         useWebWorker: true,
+  //       };
+
+  //       notify("tr", "Compressing large image before upload...", "info");
+  //       console.log("Compressing image...");
+
+  //       const compressedFile = await imageCompression(receipt, options);
+
+  //       console.log("Compressed file:", {
+  //         name: compressedFile.name,
+  //         type: compressedFile.type,
+  //         sizeMB: (compressedFile.size / (1024 * 1024)).toFixed(2) + " MB",
+  //       });
+
+  //       if (compressedFile.size > maxFileSize) {
+  //         notify(
+  //           "tr",
+  //           "The image is still too large after compression. Please upload a smaller file.",
+  //           "danger"
+  //         );
+  //         return;
+  //       }
+
+  //       fileToUpload = compressedFile;
+  //     } catch (err) {
+  //       console.error("Image compression failed:", err);
+  //       notify(
+  //         "tr",
+  //         "Image compression failed. Please upload a smaller file.",
+  //         "danger"
+  //       );
+  //       return;
+  //     }
+  //   } else if (receipt.size > maxFileSize) {
+  //     notify(
+  //       "tr",
+  //       "File larger than 4.9 MB and cannot be compressed.",
+  //       "danger"
+  //     );
+  //     return;
+  //   }
+
+  //   const toBase64 = (file) =>
+  //     new Promise((resolve, reject) => {
+  //       const reader = new FileReader();
+  //       reader.readAsDataURL(file);
+  //       reader.onload = () => resolve(reader.result.split(",")[1]);
+  //       reader.onerror = reject;
+  //     });
+
+  //   const fileContent = await toBase64(fileToUpload);
+
+  //   console.log(
+  //     "Base64 size (approx MB):",
+  //     ((fileContent.length * 3) / 4 / (1024 * 1024)).toFixed(2)
+  //   );
+
+  //   const payload = {
+  //     fileName: fileToUpload.name,
+  //     fileType: fileToUpload.type,
+  //     fileContent,
+  //     userId: localStorage.getItem("userId"),
+  //   };
+
+  //   console.log(
+  //     "Payload size (MB):",
+  //     (JSON.stringify(payload).length / (1024 * 1024)).toFixed(2)
+  //   );
+
+  //   try {
+  //     const response = await fetch(
+  //       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Receipt",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify(payload),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       throw new Error(`Server responded ${response.status}: ${errorText}`);
+  //     }
+
+  //     const data = await response.json();
+  //     notify("tr", "Receipt uploaded successfully", "success");
+  //     setReceipt(null);
+  //     return data.url;
+  //   } catch (error) {
+  //     console.error("Error uploading receipt:", error);
+  //     notify(
+  //       "tr",
+  //       `Failed to upload receipt: ${error.message || "Unknown error"}`,
+  //       "danger"
+  //     );
+  //   } finally {
+  //     setLoadingReceipt(false);
+  //   }
+  // };
   const uploadReceipt = async () => {
     if (!receipt) {
       notify("tr", "No receipt selected", "warning");
@@ -534,6 +655,7 @@ const MesobFinancial2 = () => {
 
     setLoadingReceipt(true);
     const maxFileSize = 4.0 * 1024 * 1024;
+    const maxPayloadSize = 4.0 * 1024 * 1024; // Also check payload size
 
     console.log("Original file:", {
       name: receipt.name,
@@ -543,18 +665,92 @@ const MesobFinancial2 = () => {
 
     let fileToUpload = receipt;
 
-    if (receipt.size > maxFileSize && receipt.type.startsWith("image/")) {
+    // Helper function to convert WEBP to JPEG (better compression than PNG)
+    const convertWebpToSupportedFormat = (webpFile) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            
+            // Use JPEG for better compression
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const convertedFile = new File(
+                    [blob],
+                    webpFile.name.replace(/\.webp$/i, ".jpg"),
+                    { type: "image/jpeg" }
+                  );
+                  console.log("WEBP converted to JPEG:", {
+                    originalSize: (webpFile.size / (1024 * 1024)).toFixed(2) + " MB",
+                    convertedSize: (convertedFile.size / (1024 * 1024)).toFixed(2) + " MB",
+                  });
+                  resolve(convertedFile);
+                } else {
+                  reject(new Error("Failed to convert WEBP to JPEG"));
+                }
+              },
+              "image/jpeg",
+              0.85 // Lower quality for better compression
+            );
+          };
+          img.onerror = (err) => {
+            console.error("Image load error:", err);
+            reject(new Error("Failed to load WEBP image"));
+          };
+          img.src = e.target.result;
+        };
+        reader.onerror = (err) => {
+          console.error("FileReader error:", err);
+          reject(new Error("Failed to read WEBP file"));
+        };
+        reader.readAsDataURL(webpFile);
+      });
+    };
+
+    // ALWAYS convert WEBP files first, regardless of size
+    if (receipt.type === "image/webp") {
+      try {
+        notify("tr", "Converting WEBP image...", "info");
+        console.log("Converting WEBP file to JPEG...");
+        fileToUpload = await convertWebpToSupportedFormat(receipt);
+        console.log("Converted file:", {
+          name: fileToUpload.name,
+          type: fileToUpload.type,
+          sizeMB: (fileToUpload.size / (1024 * 1024)).toFixed(2) + " MB",
+        });
+      } catch (err) {
+        console.error("WEBP conversion failed:", err);
+        notify(
+          "tr",
+          "Failed to convert WEBP file. Please try a different format.",
+          "danger"
+        );
+        setLoadingReceipt(false);
+        return;
+      }
+    }
+
+    // Compress if file is still too large
+    if (fileToUpload.size > maxFileSize && fileToUpload.type.startsWith("image/")) {
       try {
         const options = {
-          maxSizeMB: 4.0,
+          maxSizeMB: 3.5, // Target 3.5 MB to leave room for payload overhead
           maxWidthOrHeight: 1920,
           useWebWorker: true,
+          fileType: fileToUpload.type, // Preserve the converted type
         };
 
         notify("tr", "Compressing large image before upload...", "info");
         console.log("Compressing image...");
 
-        const compressedFile = await imageCompression(receipt, options);
+        const compressedFile = await imageCompression(fileToUpload, options);
 
         console.log("Compressed file:", {
           name: compressedFile.name,
@@ -568,6 +764,7 @@ const MesobFinancial2 = () => {
             "The image is still too large after compression. Please upload a smaller file.",
             "danger"
           );
+          setLoadingReceipt(false);
           return;
         }
 
@@ -579,14 +776,16 @@ const MesobFinancial2 = () => {
           "Image compression failed. Please upload a smaller file.",
           "danger"
         );
+        setLoadingReceipt(false);
         return;
       }
-    } else if (receipt.size > maxFileSize) {
+    } else if (fileToUpload.size > maxFileSize) {
       notify(
         "tr",
-        "File larger than 4.9 MB and cannot be compressed.",
+        "File larger than 4.0 MB and cannot be compressed.",
         "danger"
       );
+      setLoadingReceipt(false);
       return;
     }
 
@@ -598,24 +797,79 @@ const MesobFinancial2 = () => {
         reader.onerror = reject;
       });
 
-    const fileContent = await toBase64(fileToUpload);
+    let fileContent = await toBase64(fileToUpload);
 
-    console.log(
-      "Base64 size (approx MB):",
-      ((fileContent.length * 3) / 4 / (1024 * 1024)).toFixed(2)
-    );
-
-    const payload = {
+    // Check payload size and compress further if needed
+    let payload = {
       fileName: fileToUpload.name,
       fileType: fileToUpload.type,
       fileContent,
       userId: localStorage.getItem("userId"),
     };
 
+    let payloadSize = JSON.stringify(payload).length;
+    let payloadSizeMB = payloadSize / (1024 * 1024);
+
+    console.log(
+      "Base64 size (approx MB):",
+      ((fileContent.length * 3) / 4 / (1024 * 1024)).toFixed(2)
+    );
+
     console.log(
       "Payload size (MB):",
-      (JSON.stringify(payload).length / (1024 * 1024)).toFixed(2)
+      payloadSizeMB.toFixed(2)
     );
+
+    // If payload is still too large, compress more aggressively
+    if (payloadSize > maxPayloadSize && fileToUpload.type.startsWith("image/")) {
+      try {
+        notify("tr", "Further compressing to meet size limit...", "info");
+        const options = {
+          maxSizeMB: 2.5, // More aggressive compression
+          maxWidthOrHeight: 1600, // Smaller dimensions
+          useWebWorker: true,
+          fileType: fileToUpload.type,
+        };
+
+        const furtherCompressed = await imageCompression(fileToUpload, options);
+        fileToUpload = furtherCompressed;
+        fileContent = await toBase64(fileToUpload);
+        
+        payload = {
+          fileName: fileToUpload.name,
+          fileType: fileToUpload.type,
+          fileContent,
+          userId: localStorage.getItem("userId"),
+        };
+        
+        payloadSize = JSON.stringify(payload).length;
+        payloadSizeMB = payloadSize / (1024 * 1024);
+        
+        console.log("After further compression:", {
+          fileSize: (fileToUpload.size / (1024 * 1024)).toFixed(2) + " MB",
+          payloadSize: payloadSizeMB.toFixed(2) + " MB",
+        });
+
+        if (payloadSize > maxPayloadSize) {
+          notify(
+            "tr",
+            "File is too large even after compression. Please use a smaller image.",
+            "danger"
+          );
+          setLoadingReceipt(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Further compression failed:", err);
+        notify(
+          "tr",
+          "Unable to compress file to required size. Please use a smaller image.",
+          "danger"
+        );
+        setLoadingReceipt(false);
+        return;
+      }
+    }
 
     try {
       const response = await fetch(
@@ -647,7 +901,6 @@ const MesobFinancial2 = () => {
       setLoadingReceipt(false);
     }
   };
-
   // const handleUpdateTransaction = async (transaction) => {
   //   console.log("Transaction ID:", transaction.id);
   //   let Url = "";
