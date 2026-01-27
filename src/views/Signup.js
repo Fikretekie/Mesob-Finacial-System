@@ -10,6 +10,7 @@ import axios from "axios";
 import { businessTypes } from "./BusinessTypes";
 import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
+import colors from "variables/colors";
 const SignupPage = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -587,6 +588,8 @@ const SignupPage = () => {
                 Login
               </Link>
             </p>
+              <div className="login-input-group">
+
             <input
               type="text"
               placeholder="Enter Your Name"
@@ -635,6 +638,7 @@ const SignupPage = () => {
                 provider === "Google" || provider === "Apple" ? true : false
               }
             />
+        
             {errors.email && <p style={styles.error}>{errors.email}</p>}
 
             <PhoneInput
@@ -645,6 +649,7 @@ const SignupPage = () => {
                 ...styles.input,
                 width: "100%",
                 height: "40px",
+                backgroundColor:'#202a3a',
                 fontSize: "16px",
                 paddingLeft: "48px",
                 borderColor: errors.phone ? "red" : "#000",
@@ -654,7 +659,7 @@ const SignupPage = () => {
                 marginBottom: "10px",
               }}
               buttonStyle={{
-                backgroundColor: "transparent",
+                backgroundColor: "#202a3a",
                 border: "none",
                 padding: "0 5px",
               }}
@@ -682,7 +687,7 @@ const SignupPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white"/>}
                 </button>
               </div>
             )}
@@ -700,14 +705,17 @@ const SignupPage = () => {
               onMouseLeave={() => setIsHovered(false)}
               disabled={isLoading}
             >
+
               {isLoading ? "Loading..." : "Next"}
             </button>
+                </div>
           </div>
         );
       case 2:
         return (
           <div>
             <h2>Select Business Type</h2>
+            <div className="login-input-group">
             <select
               value={selectedBusinessType}
               onChange={(e) => {
@@ -777,6 +785,7 @@ const SignupPage = () => {
               ))}
             </select>
 
+            </div>
             <button
               onClick={handleNextStep}
               style={{
@@ -887,7 +896,7 @@ const SignupPage = () => {
                 onChange={(e) => setTermsChecked(e.target.checked)}
                 style={{ marginRight: "5px" }}
               />
-              I agree to the{" "}
+              I agree to the{" "} 
               <Link
                 to="/terms-of-use"
                 target="_blank"
@@ -934,13 +943,13 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    backgroundColor: "#fff",
+    backgroundColor: "#1d212c",
     color: "#000",
   },
   card: {
     padding: "20px",
     borderRadius: "10px",
-    backgroundColor: "#fff",
+    backgroundColor: "#181b26",
     boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
     width: "400px",
   },
@@ -949,9 +958,9 @@ const styles = {
     padding: "10px",
     marginBottom: "10px",
     borderRadius: "5px",
-    border: "1px solid #000",
-    backgroundColor: "#fff",
-    color: "#000",
+    border: "0.5px solid #dedede",
+    backgroundColor: "#202a3a",
+    color: "#ffffff",
   },
   button: {
     width: "100%",
@@ -964,6 +973,7 @@ const styles = {
   },
   subtext: {
     marginBottom: "20px",
+    color:'rgb(156, 165, 176)'
   },
   link: {
     color: "#3b82f6",
@@ -976,8 +986,8 @@ const styles = {
     marginBottom: "10px",
   },
   infoText: {
-    backgroundColor: "#fff",
-    color: "#000",
+    backgroundColor: "#181b26",
+    color: "white",
     padding: "10px",
     marginBottom: "5px",
   },
@@ -986,6 +996,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     marginBottom: "10px",
+    color:'rgb(156, 165, 176)'
   },
   /* Style for the terms and conditions link */
   termsLink: {

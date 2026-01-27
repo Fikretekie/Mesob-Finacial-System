@@ -191,7 +191,7 @@ const MesobFinanceAuth = () => {
               <h2>Sign Up</h2>
               <p>Create an account to access Mesob Financial Services</p>
 
-              <div className="explanation-box">
+              <div className="explanation-box" >
                 <p>
                   To get started, we need to know where your business stands
                   financially today. This includes how much cash you have, any

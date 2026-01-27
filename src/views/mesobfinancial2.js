@@ -4180,7 +4180,7 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
-                  Receive Cash
+                  Received Cash
                 </Button>
                 <Button
                   color={transactionType === "pay" ? "primary" : "secondary"}
@@ -4189,7 +4189,7 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
-                  Pay Cash
+                 Paid Cash
                 </Button>
                 <Button
                   color={

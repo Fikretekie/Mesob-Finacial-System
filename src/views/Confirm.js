@@ -194,6 +194,7 @@ const Confirm = () => {
       <NotificationAlert ref={notificationAlertRef} />
       <div style={styles.card}>
         <h2>Confirm Your Account</h2>
+        <div className="login-input-group">
         <input
           type="text"
           placeholder="Enter confirmation code"
@@ -216,6 +217,7 @@ const Confirm = () => {
         >
           {isLoading ? "Confirming..." : "Confirm"}
         </button>
+        </div>
         <button onClick={handleResendCode} style={styles.resendButton}>
           Resend Code
         </button>
@@ -230,13 +232,13 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     height: "100vh",
-    backgroundColor: "#fff",
+    backgroundColor: "#1d212c",
     color: "#000",
   },
   card: {
     padding: "20px",
     borderRadius: "10px",
-    backgroundColor: "#fff",
+    backgroundColor: "#181b26",
     boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.5)",
     width: "400px",
   },
@@ -245,7 +247,7 @@ const styles = {
     padding: "10px",
     marginBottom: "10px",
     borderRadius: "5px",
-    border: "1px solid #000",
+    border: "0.5px solid #dedede",
     backgroundColor: "#fff",
     color: "#000",
   },
