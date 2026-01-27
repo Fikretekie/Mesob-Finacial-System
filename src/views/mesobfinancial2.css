@@ -149,6 +149,86 @@
   }
 }
 
+/* Add Transaction modal dark theme */
+.add-transaction-modal .modal-content {
+  background-color: #101926;
+  color: #ffffff;
+  border: 1px solid #2a3444;
+}
+
+.add-transaction-modal .modal-header,
+.add-transaction-modal .modal-body,
+.add-transaction-modal .modal-footer {
+  background-color: #101926;
+  color: #ffffff;
+  border-color: #2a3444;
+}
+
+.add-transaction-modal .close {
+  color: #ffffff;
+  opacity: 0.8;
+}
+
+.add-transaction-modal .close:hover {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.add-transaction-modal .form-control,
+.add-transaction-modal .custom-select,
+.add-transaction-modal select,
+.add-transaction-modal input {
+  background-color: #202a3a;
+  color: #ffffff;
+  border: 1px solid #3a4555;
+}
+
+.add-transaction-modal .form-control::placeholder,
+.add-transaction-modal input::placeholder {
+  color: #9ca5b0;
+}
+
+.add-transaction-modal label,
+.add-transaction-modal .modal-title,
+.add-transaction-modal h4 {
+  color: #ffffff;
+}
+
+.add-transaction-modal .modal-content a {
+  color: #3d83f1;
+}
+
+/* Add Transaction modal button theming */
+.add-transaction-modal .transaction-type-btn.btn-secondary {
+  background-color: #2a3444;
+  border-color: #2a3444;
+  color: #ffffff;
+}
+
+.add-transaction-modal .transaction-type-btn.btn-primary {
+  background-color: #3d83f1;
+  border-color: #3d83f1;
+  color: #ffffff;
+}
+
+.add-transaction-modal .transaction-action-btn {
+  background-color: #3d83f1;
+  border-color: #3d83f1;
+  color: #ffffff;
+}
+
+.add-transaction-modal .transaction-action-btn.action-expense {
+  background-color: #d9534f;
+  border-color: #d9534f;
+  color: #ffffff;
+}
+
+.add-transaction-modal .transaction-action-btn.action-new-item {
+  background-color: #f5a623;
+  border-color: #f5a623;
+  color: #1a1a1a;
+}
+
 .navbar-toggle {
   display: none;
   position: absolute;

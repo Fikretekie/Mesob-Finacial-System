@@ -4158,6 +4158,7 @@ const MesobFinancial2 = () => {
             resetForm();
             setShowAddTransaction(false);
           }}
+          className="add-transaction-modal"
         >
           <ModalHeader
             toggle={() => {
@@ -4175,6 +4176,7 @@ const MesobFinancial2 = () => {
                   color={
                     transactionType === "receive" ? "primary" : "secondary"
                   }
+                  className="transaction-type-btn"
                   onClick={() => {
                     setTransactionType("receive");
                     setPaymentMode(null);
@@ -4184,6 +4186,7 @@ const MesobFinancial2 = () => {
                 </Button>
                 <Button
                   color={transactionType === "pay" ? "primary" : "secondary"}
+                  className="transaction-type-btn"
                   onClick={() => {
                     setTransactionType("pay");
                     setPaymentMode(null);
@@ -4195,6 +4198,7 @@ const MesobFinancial2 = () => {
                   color={
                     transactionType === "Payable" ? "primary" : "secondary"
                   }
+                  className="transaction-type-btn"
                   onClick={() => {
                     setTransactionType("Payable");
                     setPaymentMode(null);
@@ -4217,6 +4221,7 @@ const MesobFinancial2 = () => {
                 >
                   <Button
                     color="primary"
+                    className="transaction-action-btn"
                     onClick={() => {
                       setsubType("Recorded");
                       setPaymentMode("recorded");
@@ -4227,6 +4232,7 @@ const MesobFinancial2 = () => {
 
                   <Button
                     color="primary"
+                    className="transaction-action-btn action-expense"
                     onClick={() => {
                       setsubType("Expense");
                       setPaymentMode("new");
@@ -4236,6 +4242,7 @@ const MesobFinancial2 = () => {
                   </Button>
                   <Button
                     color="warning"
+                    className="transaction-action-btn action-new-item"
                     onClick={() => {
                       setsubType("New_Item");
                       setPaymentMode("boughtItem");
