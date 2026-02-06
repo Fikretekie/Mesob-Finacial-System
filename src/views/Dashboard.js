@@ -32,6 +32,8 @@ import Select from "react-select"; // Import react-select
 import { Helmet } from "react-helmet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 ChartJS.register(
   CategoryScale,
@@ -66,6 +68,7 @@ function Dashboard() {
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const persistedUserId = localStorage.getItem("selectedUserId");
   const userRole = parseInt(localStorage.getItem("role"));
+  const { t } = useTranslation();
   const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null); // ✅ renamed local state variable
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
@@ -253,7 +256,7 @@ function Dashboard() {
       },
       yaxis: {
         title: {
-          text: "Amount ($)",
+          text: t('dashboard.amount'),
           style: {
             fontSize: "12px",
             fontWeight: 500,
@@ -368,28 +371,28 @@ function Dashboard() {
 
   // Update chart data to use daily data
   const cashOnHandChartData = getChartOptions(
-    "Total Cash on Hand",
+      t('dashboard.totalCashOnHandChart'),
     monthlySales.map((item) => item.cashOnHand),
     monthlySales.map((item) => formatDateLabel(item.date)),
     "#41926f" // Green color
   );
 
   const revenueChartData = getChartOptions(
-    "Revenue",
+    t('dashboard.revenueChart'),
     monthlySales.map((item) => item.revenue),
     monthlySales.map((item) => formatDateLabel(item.date)),
     "#2b427d" // Blue color
   );
 
   const payableChartData = getChartOptions(
-    "Total Payable",
+    t('dashboard.totalPayableChart'),
     monthlySales.map((item) => item.payable),
     monthlySales.map((item) => formatDateLabel(item.date)),
     "#c7ae4f" // Yellow color
   );
 
   const expensesChartData = getChartOptions(
-    "Total Expenses",
+    t('dashboard.totalExpensesChart'),
     monthlySales.map((item) => item.expenses),
     monthlySales.map((item) => formatDateLabel(item.date)),
     "#a7565d" // Red color
@@ -680,7 +683,7 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
-      <PanelHeader
+      {/* <PanelHeader
         size="sm"
         content={
           <Row>
@@ -743,8 +746,74 @@ function Dashboard() {
             </Col>
           </Row>
         }
-      />
-
+      /> */}
+<PanelHeader
+  size="sm"
+  content={
+    <Row>
+      <Col xs={12} md={4} lg={4}>
+        <LanguageSelector />
+      </Col>
+      <Col xs={12} md={4} lg={4}>
+        <h3
+          style={{
+            color: "white",
+            justifyContent: "center",
+            alignItems: "center",
+            display: "flex",
+            marginBottom: -3,
+          }}
+        >
+          {loadingCompanyName ? (
+            <Spinner size="sm" color="light" />
+          ) : (
+            companyName
+          )}
+        </h3>
+      </Col>
+      <Col xs={12} md={4} lg={4}>
+        {userRole !== 0 && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+              marginBottom: "30px",
+            }}
+          >
+            <Button
+              style={{
+                marginRight: "2rem",
+                padding: "0.5rem 1rem",
+                fontSize: "1rem",
+                minWidth: "120px",
+                display: "inline-flex",
+                alignItems: "center",
+                marginBottom: "2rem",
+                backgroundColor: "#41926f",
+                borderColor: "#41926f",
+                color: "#ffffff",
+              }}
+              onClick={handleAddTransactionClick}
+              disabled={
+                userRole === 1
+                  ? false
+                  : !userSubscription && !isTrialActive()
+              }
+            >
+              <FontAwesomeIcon
+                icon={faPlus}
+                style={{ marginRight: "0.5rem", fontSize: "0.9rem" }}
+              />
+              {t('dashboard.addTransaction')}
+            </Button>
+          </div>
+        )}
+      </Col>
+    </Row>
+  }
+/>
       {userRole === 0 && (
         <div
           className="content "
@@ -755,7 +824,7 @@ function Dashboard() {
               <Card style={{ backgroundColor: "#101926" }}>
                 <CardHeader>
                   <CardTitle style={{ marginBottom: 0, color: "#ffffff" }} tag="h4">
-                    Select User
+                    {t('dashboard.selectUser')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ position: "relative" }}>
@@ -763,42 +832,9 @@ function Dashboard() {
                     loading={loadingUsers}
                     text="Loading users..."
                   />
-                  {/* <FormGroup>
-                    <Label>Select User to View:</Label>
-                    <Select
-                      options={userOptions}
-                      value={userOptions.find(
-                        (option) => option.value === selectedUserId
-                      )}
-                      onChange={handleUserSelect}
-                      placeholder="Search or select a user..."
-                      isClearable
-                      isSearchable
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          minHeight: "38px",
-                          height: "38px",
-                          // backgroundColor:"#101926",
-                        }),
-                        valueContainer: (provided) => ({
-                          ...provided,
-                          height: "38px",
-                          padding: "0 6px",
-                        }),
-                        input: (provided) => ({
-                          ...provided,
-                          margin: "0px",
-                        }),
-                        indicatorsContainer: (provided) => ({
-                          ...provided,
-                          height: "38px",
-                        }),
-                      }}
-                    />
-                  </FormGroup> */}
+                
                   <FormGroup>
-                    <Label>Select User to View:</Label>
+                    <Label>{t('dashboard.selectUserToView')}</Label>
                     <Select
                       options={userOptions}
                       value={userOptions.find(
@@ -898,7 +934,7 @@ function Dashboard() {
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL CASH ON HAND</p>
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
@@ -941,7 +977,7 @@ function Dashboard() {
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL EXPENSES</p>
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalExpenses')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
@@ -987,7 +1023,7 @@ function Dashboard() {
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>TOTAL PAYABLE</p>
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalPayable')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
@@ -1028,7 +1064,7 @@ function Dashboard() {
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>Revenue</p>
+                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.revenue')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? (
                           <Spinner size="sm" />
@@ -1068,7 +1104,7 @@ function Dashboard() {
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>TOTAL CASH ON HAND Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={cashOnHandChartData}
@@ -1086,7 +1122,7 @@ function Dashboard() {
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>REVENUE Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={revenueChartData}
@@ -1105,7 +1141,7 @@ function Dashboard() {
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>TOTAL PAYABLE Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={payableChartData}
@@ -1123,7 +1159,7 @@ function Dashboard() {
                 text="Loading chart..."
               />
               <CardBody>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>TOTAL EXPENSES Chart</p>
+                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <ReactApexChart
                   options={expensesChartData}

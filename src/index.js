@@ -31,6 +31,7 @@ import Confirm from "views/Confirm";
 import OAuthListener from "components/OAuthListener";
 import TermsOfUse from "views/Terms";
 import CompleteProfile from "views/CompleteProfile";
+import "./i18n"; 
 // Create Redux store
 const store = configureStore({
   reducer: {

@@ -23,7 +23,7 @@ import Select from "react-select";
 import heic2any from "heic2any";
 import imageCompression from "browser-image-compression";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
 import { Helmet } from "react-helmet";
@@ -32,6 +32,7 @@ import "react-notification-alert/dist/animate.css";
 import TransactionTable from "./TransactionTable";
 import { AddExpenseButton } from "components/AddExpenseButton";
 import IncomeStatement from "components/IncomeStatement";
+import DownloadReportModal from "components/DownloadReportModal";
 import colors from "variables/colors";
 import { setSelectedUser, clearSelectedUser } from "../store/userSlice";
 import CSVReports from "./CSVReports";
@@ -42,7 +43,10 @@ import { useLocation } from "react-router-dom";
 import { businessTypes } from "./BusinessTypes";
 import getUserInfo from "utils/Getuser";
 import UserSubscriptionInfo from "./Payment/UserSubscriptionInfo";
-
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
+import i18n from "../i18n";
+import { getTranslatedBusinessPurposes, translatePurpose } from "utils/translatedBusinessTypes";
 const MesobFinancial2 = () => {
   const location = useLocation();
   const [items, setItems] = useState([]);
@@ -87,11 +91,13 @@ const MesobFinancial2 = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [showInstallmentModal, setShowInstallmentModal] = useState(false);
+  const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
   const [installmentAmount, setInstallmentAmount] = useState("");
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const selectedUser = useSelector((state) => state.selectedUser);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const firstLoadRef = useRef(true);
@@ -175,24 +181,35 @@ const MesobFinancial2 = () => {
   };
 
   // business type
-  const getBusinessPurposes = (type) => {
-    if (type === "Other") {
-      return {
-        income: manualIncomePurposes,
-        expenses: manualExpensePurposes,
-        payables: manualPayablePurposes,
-      };
-    } else if (businessTypes[type]) {
-      return businessTypes[type];
-    } else {
-      return {
-        income: [],
-        expenses: [],
-        payables: [],
-      };
-    }
-  };
-
+  // const getBusinessPurposes = (type) => {
+  //   if (type === "Other") {
+  //     return {
+  //       income: manualIncomePurposes,
+  //       expenses: manualExpensePurposes,
+  //       payables: manualPayablePurposes,
+  //     };
+  //   } else if (businessTypes[type]) {
+  //     return businessTypes[type];
+  //   } else {
+  //     return {
+  //       income: [],
+  //       expenses: [],
+  //       payables: [],
+  //     };
+  //   }
+  // };
+const getBusinessPurposes = (type) => {
+  if (type === "Other") {
+    return {
+      income: manualIncomePurposes,
+      expenses: manualExpensePurposes,
+      payables: manualPayablePurposes,
+    };
+  } else {
+    // Use translated business purposes instead of static ones
+    return getTranslatedBusinessPurposes(type);
+  }
+};
   // Format users for react-select
   const userOptions = users.map((user) => ({
     value: user.id,
@@ -214,7 +231,7 @@ const MesobFinancial2 = () => {
     if (!selectedUnpaidTransaction || !installmentAmount) {
       notify(
         "tr",
-        "Please select a transaction and enter an installment amount",
+        t("financialReport.noUnpaidSelected"),
         "warning"
       );
       return;
@@ -227,7 +244,7 @@ const MesobFinancial2 = () => {
     if (parseFloat(installmentAmount) > remainingAmount) {
       notify(
         "tr",
-        `Installment amount cannot exceed the remaining amount of $${remainingAmount}`,
+        t("financialReport.installmentExceedError", { amount: remainingAmount }),
         "warning"
       );
       return;
@@ -261,7 +278,7 @@ const MesobFinancial2 = () => {
       }
 
       const result = await response.json();
-      notify("tr", "Installment payment recorded successfully", "success");
+      notify("tr", t("financialReport.paymentRecordedInstallment"), "success");
 
       // Create a new transaction for the installment payment
       const newPaymentResponse = await fetch(
@@ -336,7 +353,7 @@ const MesobFinancial2 = () => {
     if (receiptUrl) {
       handlePreview(receiptUrl);
     } else {
-      notify("tr", "No receipt available for this transaction", "warning");
+      notify("tr", t("financialReport.noReceipt"), "warning");
     }
   };
 
@@ -381,7 +398,7 @@ const MesobFinancial2 = () => {
       console.error("Error processing file:", error);
       notify(
         "tr",
-        "Failed to upload receipt. Please try another file.",
+        t("financialReport.uploadFailed"),
         "danger"
       );
     }
@@ -400,7 +417,7 @@ const MesobFinancial2 = () => {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      notify("tr", "Error fetching users", "danger");
+      notify("tr", t("financialReport.errorFetchingUsers"), "danger");
     } finally {
       setLoadingUsers(false);
     }
@@ -448,7 +465,7 @@ const MesobFinancial2 = () => {
     }
 
     if (!transactionType || !transactionAmount) {
-      notify("tr", "Please fill in all fields", "warning");
+      notify("tr", t("financialReport.fillFields"), "warning");
       return;
     }
 
@@ -496,8 +513,8 @@ const MesobFinancial2 = () => {
       if (response.status === 200) {
         const successMessage =
           transactionType === "pay" && paymentMode === "boughtItem"
-            ? "New item purchase recorded successfully"
-            : "Transaction added successfully";
+            ? t("financialReport.newItemSuccess")
+            : t("financialReport.transactionAdded");
         notify("tr", successMessage, "success");
         resetForm();
         fetchTransactions();
@@ -526,127 +543,7 @@ const MesobFinancial2 = () => {
     }
   };
 
-  // const uploadReceipt = async () => {
-  //   if (!receipt) {
-  //     notify("tr", "No receipt selected", "warning");
-  //     return;
-  //   }
-
-  //   setLoadingReceipt(true);
-  //   const maxFileSize = 4.0 * 1024 * 1024;
-
-  //   console.log("Original file:", {
-  //     name: receipt.name,
-  //     type: receipt.type,
-  //     sizeMB: (receipt.size / (1024 * 1024)).toFixed(2) + " MB",
-  //   });
-
-  //   let fileToUpload = receipt;
-
-  //   if (receipt.size > maxFileSize && receipt.type.startsWith("image/")) {
-  //     try {
-  //       const options = {
-  //         maxSizeMB: 4.0,
-  //         maxWidthOrHeight: 1920,
-  //         useWebWorker: true,
-  //       };
-
-  //       notify("tr", "Compressing large image before upload...", "info");
-  //       console.log("Compressing image...");
-
-  //       const compressedFile = await imageCompression(receipt, options);
-
-  //       console.log("Compressed file:", {
-  //         name: compressedFile.name,
-  //         type: compressedFile.type,
-  //         sizeMB: (compressedFile.size / (1024 * 1024)).toFixed(2) + " MB",
-  //       });
-
-  //       if (compressedFile.size > maxFileSize) {
-  //         notify(
-  //           "tr",
-  //           "The image is still too large after compression. Please upload a smaller file.",
-  //           "danger"
-  //         );
-  //         return;
-  //       }
-
-  //       fileToUpload = compressedFile;
-  //     } catch (err) {
-  //       console.error("Image compression failed:", err);
-  //       notify(
-  //         "tr",
-  //         "Image compression failed. Please upload a smaller file.",
-  //         "danger"
-  //       );
-  //       return;
-  //     }
-  //   } else if (receipt.size > maxFileSize) {
-  //     notify(
-  //       "tr",
-  //       "File larger than 4.9 MB and cannot be compressed.",
-  //       "danger"
-  //     );
-  //     return;
-  //   }
-
-  //   const toBase64 = (file) =>
-  //     new Promise((resolve, reject) => {
-  //       const reader = new FileReader();
-  //       reader.readAsDataURL(file);
-  //       reader.onload = () => resolve(reader.result.split(",")[1]);
-  //       reader.onerror = reject;
-  //     });
-
-  //   const fileContent = await toBase64(fileToUpload);
-
-  //   console.log(
-  //     "Base64 size (approx MB):",
-  //     ((fileContent.length * 3) / 4 / (1024 * 1024)).toFixed(2)
-  //   );
-
-  //   const payload = {
-  //     fileName: fileToUpload.name,
-  //     fileType: fileToUpload.type,
-  //     fileContent,
-  //     userId: localStorage.getItem("userId"),
-  //   };
-
-  //   console.log(
-  //     "Payload size (MB):",
-  //     (JSON.stringify(payload).length / (1024 * 1024)).toFixed(2)
-  //   );
-
-  //   try {
-  //     const response = await fetch(
-  //       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Receipt",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify(payload),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       const errorText = await response.text();
-  //       throw new Error(`Server responded ${response.status}: ${errorText}`);
-  //     }
-
-  //     const data = await response.json();
-  //     notify("tr", "Receipt uploaded successfully", "success");
-  //     setReceipt(null);
-  //     return data.url;
-  //   } catch (error) {
-  //     console.error("Error uploading receipt:", error);
-  //     notify(
-  //       "tr",
-  //       `Failed to upload receipt: ${error.message || "Unknown error"}`,
-  //       "danger"
-  //     );
-  //   } finally {
-  //     setLoadingReceipt(false);
-  //   }
-  // };
+  
   const uploadReceipt = async () => {
     if (!receipt) {
       notify("tr", "No receipt selected", "warning");
@@ -905,211 +802,7 @@ const MesobFinancial2 = () => {
       setLoadingReceipt(false);
     }
   };
-  // const handleUpdateTransaction = async (transaction) => {
-  //   console.log("Transaction ID:", transaction.id);
-  //   let Url = "";
-  //   if (receipt) {
-  //     Url = await uploadReceipt();
-  //   }
-  //   const paidAmount =
-  //     paymentOption === "full"
-  //       ? parseFloat(transaction.transactionAmount)
-  //       : parseFloat(remainingAmount);
-
-  //   setIsUpdatingTransaction(true);
-  //   try {
-  //     if (transaction.id !== "outstanding-debt") {
-  //       if (paidAmount > remainingAmount && paymentOption !== "full") {
-  //         notify(
-  //           "tr",
-  //           `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
-  //           "warning"
-  //         );
-  //         return;
-  //       }
-
-  //       // Calculate new remaining amount for the payable
-  //       const newRemainingAmount =
-  //         parseFloat(transaction.transactionAmount) - paidAmount;
-
-  //       const updatedTransaction = {
-  //         ...transaction,
-  //         receiptUrl: Url || transaction.receiptUrl,
-  //         status: newRemainingAmount <= 0 ? "Paid" : "Partially Paid",
-  //         updatedAt: new Date().toISOString(),
-  //         paidAmount: (transaction.paidAmount || 0) + paidAmount,
-  //         transactionAmount: newRemainingAmount, // This is the remaining unpaid amount
-  //         remainingAmount: newRemainingAmount,
-  //       };
-
-  //       const response = await fetch(
-  //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
-  //         {
-  //           method: "PUT",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify(updatedTransaction),
-  //         }
-  //       );
-
-  //       if (response.status !== 200) {
-  //         throw new Error("Failed to update the transaction");
-  //       }
-  //     } else {
-  //       setIsUpdatingTransaction(true);
-  //       let userid = localStorage.getItem("userId");
-  //       const newDebt =
-  //         paymentOption === "full"
-  //           ? 0
-  //           : parseFloat(transaction.transactionAmount) -
-  //           parseFloat(remainingAmount);
-
-  //       const response = await axios.put(
-  //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userid}`,
-  //         {
-  //           outstandingDebt: newDebt,
-  //         }
-  //       );
-
-  //       if (response.status !== 200) {
-  //         throw new Error("Failed to update outstanding debt");
-  //       }
-  //     }
-
-  //     const newPaidTransaction = {
-  //       userId: localStorage.getItem("userId"),
-  //       transactionType: "Pay",
-  //       transactionPurpose:
-  //         transaction.id === "outstanding-debt"
-  //           ? "Payment for Outstanding Debt"
-  //           : paymentOption === "full"
-  //             ? `Full Payment for ${transaction.transactionPurpose}`
-  //             : `Partial Payment for ${transaction.transactionPurpose}`,
-  //       transactionAmount: paidAmount,
-  //       receiptUrl: Url || "",
-  //       payableId: transaction.id,
-  //       createdAt: new Date().toISOString(),
-  //     };
-
-  //     const response2 = await axios.post(
-  //       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-  //       newPaidTransaction
-  //     );
-
-  //     if (response2.status === 200) {
-  //       notify("tr", "Payment recorded successfully", "success");
-  //       fetchTransactions();
-  //       fetchUserInitialBalance();
-  //     } else {
-  //       throw new Error("Failed to add the payment record");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating transaction:", error);
-  //     notify("tr", `Error recording payment: ${error.message}`, "danger");
-  //   } finally {
-  //     setIsUpdatingTransaction(false);
-  //     setSelectedUnpaidTransaction(null);
-  //     setPaymentOption(null);
-  //     setShowAddTransaction(false);
-  //     setTransactionAmount("");
-  //     setRemainingAmount(0);
-  //   }
-  // };
-
-  // const handleUpdateTransaction = async (transaction) => {
-  //   console.log("Transaction ID:", transaction.id);
-  //   let Url = "";
-  //   if (receipt) {
-  //     Url = await uploadReceipt();
-  //   }
-  //   const paidAmount =
-  //     paymentOption === "full"
-  //       ? parseFloat(transaction.transactionAmount)
-  //       : parseFloat(remainingAmount);
-
-  //   setIsUpdatingTransaction(true);
-  //   try {
-  //     if (transaction.id !== "outstanding-debt") {
-  //       // Handle regular payable transactions
-  //       if (paidAmount > remainingAmount && paymentOption !== "full") {
-  //         notify(
-  //           "tr",
-  //           `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
-  //           "warning"
-  //         );
-  //         return;
-  //       }
-
-  //       const newRemainingAmount =
-  //         parseFloat(transaction.transactionAmount) - paidAmount;
-
-  //       const updatedTransaction = {
-  //         ...transaction,
-  //         receiptUrl: Url || transaction.receiptUrl,
-  //         status: newRemainingAmount <= 0 ? "Paid" : "Partially Paid",
-  //         updatedAt: new Date().toISOString(),
-  //         paidAmount: (transaction.paidAmount || 0) + paidAmount,
-  //         transactionAmount: newRemainingAmount,
-  //         remainingAmount: newRemainingAmount,
-  //       };
-
-  //       const response = await fetch(
-  //         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
-  //         {
-  //           method: "PUT",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify(updatedTransaction),
-  //         }
-  //       );
-
-  //       if (response.status !== 200) {
-  //         throw new Error("Failed to update the transaction");
-  //       }
-  //     } else {
-  //       // *** FIX: DON'T update user's outstandingDebt field ***
-  //       // The outstanding debt is now calculated dynamically from payments
-  //       console.log("Outstanding debt payment - tracking via transactions only");
-  //     }
-
-  //     // Create the payment transaction record
-  //     const newPaidTransaction = {
-  //       userId: localStorage.getItem("userId"),
-  //       transactionType: "Pay",
-  //       transactionPurpose:
-  //         transaction.id === "outstanding-debt"
-  //           ? "Payment for Outstanding Debt"
-  //           : paymentOption === "full"
-  //             ? `Full Payment for ${transaction.transactionPurpose}`
-  //             : `Partial Payment for ${transaction.transactionPurpose}`,
-  //       transactionAmount: paidAmount,
-  //       receiptUrl: Url || "",
-  //       payableId: transaction.id,
-  //       createdAt: new Date().toISOString(),
-  //     };
-
-  //     const response2 = await axios.post(
-  //       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
-  //       newPaidTransaction
-  //     );
-
-  //     if (response2.status === 200) {
-  //       notify("tr", "Payment recorded successfully", "success");
-  //       fetchTransactions();
-  //       fetchUserInitialBalance();
-  //     } else {
-  //       throw new Error("Failed to add the payment record");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating transaction:", error);
-  //     notify("tr", `Error recording payment: ${error.message}`, "danger");
-  //   } finally {
-  //     setIsUpdatingTransaction(false);
-  //     setSelectedUnpaidTransaction(null);
-  //     setPaymentOption(null);
-  //     setShowAddTransaction(false);
-  //     setTransactionAmount("");
-  //     setRemainingAmount(0);
-  //   }
-  // };
+  
 
   const handleUpdateTransaction = async (transaction) => {
     console.log("Transaction ID:", transaction.id);
@@ -1129,7 +822,7 @@ const MesobFinancial2 = () => {
         if (paidAmount > remainingAmount && paymentOption !== "full") {
           notify(
             "tr",
-            `Payment amount cannot exceed the remaining amount of $${remainingAmount}`,
+            t("financialReport.paymentExceedError", { remainingAmount }),
             "warning"
           );
           return;
@@ -1190,7 +883,7 @@ const MesobFinancial2 = () => {
       );
 
       if (response2.status === 200) {
-        notify("tr", "Payment recorded successfully", "success");
+        notify("tr", t("financialReport.paymentRecorded"), "success");
         fetchTransactions();
         fetchUserInitialBalance();
       } else {
@@ -1265,20 +958,28 @@ const MesobFinancial2 = () => {
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      notify("tr", "Error fetching initial balance", "danger");
+      notify("tr", t("financialReport.errorInitialBalance"), "danger");
     } finally {
       setLoadingUserInitialBalance(false);
     }
   };
 
+  // useEffect(() => {
+  //   console.log("Selected Business Type: ????", selectedBusinessType);
+  //   const purposes = getBusinessPurposes(selectedBusinessType);
+  //   console.log("Business Purposes:", purposes);
+  //   setIncomePurposes(purposes.income || []);
+  //   setExpensePurposes(purposes.expenses || []);
+  //   setPayablePurposes(purposes.payables || []);
+  // }, [selectedBusinessType]);
   useEffect(() => {
-    console.log("Selected Business Type: ????", selectedBusinessType);
-    const purposes = getBusinessPurposes(selectedBusinessType);
-    console.log("Business Purposes:", purposes);
-    setIncomePurposes(purposes.income || []);
-    setExpensePurposes(purposes.expenses || []);
-    setPayablePurposes(purposes.payables || []);
-  }, [selectedBusinessType]);
+  console.log("Selected Business Type: ????", selectedBusinessType);
+  const purposes = getBusinessPurposes(selectedBusinessType);
+  console.log("Business Purposes:", purposes);
+  setIncomePurposes(purposes.income || []);
+  setExpensePurposes(purposes.expenses || []);
+  setPayablePurposes(purposes.payables || []);
+}, [selectedBusinessType, i18n.language]); // ← ADD i18n.language dependency
 
   useEffect(() => {
     const savedIncome = JSON.parse(
@@ -1381,71 +1082,7 @@ const MesobFinancial2 = () => {
     return new Date() < trialEndDate && scheduleCount < 4;
   };
 
-  // const calculateFinancials = (transactions) => {
-  //   const newRevenues = {};
-  //   const newExpenses = {};
-  //   const newAccountsPayable = {};
-
-  //   const filteredTransactions = getFilteredItems();
-
-  //   filteredTransactions.forEach((transaction) => {
-  //     const amount = parseFloat(transaction.transactionAmount) || 0;
-  //     if (transaction.transactionType === "Receive") {
-  //       const purpose = transaction.transactionPurpose;
-  //       newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
-  //     } else if (
-  //       transaction.transactionType === "Pay" ||
-  //       transaction.transactionType === "Payable"
-  //     ) {
-  //       const purpose = transaction.transactionPurpose;
-  //       newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
-  //       if (transaction.transactionType === "Payable") {
-  //         newAccountsPayable[purpose] =
-  //           (newAccountsPayable[purpose] || 0) + amount;
-  //       }
-  //     }
-  //   });
-
-  //   setRevenues(newRevenues);
-  //   setExpenses(newExpenses);
-  //   setAccountsPayable(newAccountsPayable);
-  // };
-
-  // const calculateFinancials = (transactions) => {
-  //   const newRevenues = {};
-  //   const newExpenses = {};
-  //   const newAccountsPayable = {};
-
-  //   const filteredTransactions = getFilteredItems();
-
-  //   filteredTransactions.forEach((transaction) => {
-  //     const amount = parseFloat(transaction.transactionAmount) || 0;
-
-  //     if (transaction.transactionType === "Receive") {
-  //       const purpose = transaction.transactionPurpose;
-  //       newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
-  //     } else if (
-  //       transaction.transactionType === "Pay" ||
-  //       transaction.transactionType === "Payable"
-  //     ) {
-  //       const purpose = transaction.transactionPurpose;
-
-  //       // EXCLUDE outstanding debt payments from expenses
-  //       if (transaction.payableId !== "outstanding-debt" &&
-  //         !purpose.includes("Outstanding Debt")) {
-  //         newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
-  //       }
-
-  //       if (transaction.transactionType === "Payable") {
-  //         newAccountsPayable[purpose] = (newAccountsPayable[purpose] || 0) + amount;
-  //       }
-  //     }
-  //   });
-
-  //   setRevenues(newRevenues);
-  //   setExpenses(newExpenses);
-  //   setAccountsPayable(newAccountsPayable);
-  // };
+  
 
   const calculateFinancials = (transactions) => {
     const newRevenues = {};
@@ -1512,20 +1149,7 @@ const MesobFinancial2 = () => {
     return totalInventory.toFixed(2);
   };
 
-  // const calculateTotalExpenses = () => {
-  //   const filteredItems = getFilteredItems();
-  //   return filteredItems
-  //     .reduce((sum, value) => {
-  //       if (
-  //         value.transactionType === "Pay" ||
-  //         (value.transactionType === "Payable" && value.status !== "Paid")
-  //       ) {
-  //         return sum + parseFloat(value.transactionAmount || 0);
-  //       }
-  //       return sum;
-  //     }, 0)
-  //     .toFixed(2);
-  // };
+
 
   const calculateTotalExpenses = () => {
     const filteredItems = getFilteredItems();
@@ -1545,34 +1169,7 @@ const MesobFinancial2 = () => {
       .toFixed(2);
   };
 
-  // const calculateTotalCash = () => {
-  //   const filteredItems = getFilteredItems();
-
-  //   const totalReceived = filteredItems.reduce((sum, value) => {
-  //     if (value.transactionType === "Receive") {
-  //       return sum + parseFloat(value.transactionAmount || 0);
-  //     }
-  //     return sum;
-  //   }, 0);
-
-  //   const New_ItemReceived = filteredItems.reduce((sum, value) => {
-  //     if (value.transactionType === "New_Item") {
-  //       return sum + parseFloat(value.transactionAmount || 0);
-  //     }
-  //     return sum;
-  //   }, 0);
-
-  //   const totalExpenses = filteredItems.reduce((sum, value) => {
-  //     if (value.transactionType === "Pay") {
-  //       return sum + parseFloat(value.transactionAmount || 0);
-  //     }
-  //     return sum;
-  //   }, 0);
-
-  //   const totalCash =
-  //     initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-  //   return totalCash.toFixed(2);
-  // };
+  
   const calculateTotalCash = () => {
     const filteredItems = getFilteredItems();
 
@@ -1603,43 +1200,7 @@ const MesobFinancial2 = () => {
     return totalCash.toFixed(2);
   };
 
-  // const calculateTotalPayable = () => {
-  //   const filteredItems = getFilteredItems();
-
-  //   const totalReceived = filteredItems.reduce((sum, value) => {
-  //     if (value.transactionType === "Payable" && value.status !== "Paid") {
-  //       return sum + parseFloat(value.transactionAmount || 0);
-  //     }
-  //     return sum;
-  //   }, 0);
-
-  //   const outstandingDebtAmount = initialoutstandingDebt || 0;
-  //   return (totalReceived + outstandingDebtAmount).toFixed(2);
-  // };
-
-  // const calculateTotalPayable = () => {
-  //   const filteredItems = getFilteredItems();
-
-  //   // Only count unpaid Payables (not including outstanding debt)
-  //   const totalPayable = filteredItems.reduce((sum, value) => {
-  //     if (value.transactionType === "Payable" && value.status !== "Paid") {
-  //       return sum + parseFloat(value.transactionAmount || 0);
-  //     }
-  //     return sum;
-  //   }, 0);
-
-  //   // Calculate remaining outstanding debt by checking payment history
-  //   const outstandingDebtPayments = filteredItems.reduce((sum, value) => {
-  //     if (value.payableId === "outstanding-debt" && value.transactionType === "Pay") {
-  //       return sum + parseFloat(value.transactionAmount || 0);
-  //     }
-  //     return sum;
-  //   }, 0);
-
-  //   const remainingOutstandingDebt = Math.max(0, initialoutstandingDebt - outstandingDebtPayments);
-
-  //   return (totalPayable + remainingOutstandingDebt).toFixed(2);
-  // };
+  
 
   const calculateTotalPayable = () => {
     const filteredItems = getFilteredItems();
@@ -1709,49 +1270,7 @@ const MesobFinancial2 = () => {
       });
   };
 
-  // const fetchUnpaidTransactions = () => {
-  //   setLoadingUnpaidTransactions(true);
-  //   axios
-  //     .get(
-  //       `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
-  //     )
-  //     .then((response) => {
-  //       const unpaidOrPartiallyPaid = response.data
-  //         .filter(
-  //           (t) =>
-  //             t.transactionType === "Payable" &&
-  //             (!t.installmentPlan || t.installmentPlan.remainingAmount > 0)
-  //         )
-  //         .map((transaction) => ({
-  //           ...transaction,
-  //           remainingAmount: transaction.installmentPlan
-  //             ? transaction.installmentPlan.remainingAmount
-  //             : transaction.transactionAmount,
-  //         }));
-
-  //       const outstandingDebt = initialoutstandingDebt || 0;
-  //       if (outstandingDebt > 0) {
-  //         unpaidOrPartiallyPaid.push({
-  //           id: "outstanding-debt",
-  //           transactionType: "Payable",
-  //           transactionPurpose: "Initial Outstanding Debt",
-  //           transactionAmount: outstandingDebt,
-  //           remainingAmount: outstandingDebt,
-  //           createdAt: new Date().toISOString(),
-  //         });
-  //       }
-
-  //       setUnpaidTransactions(unpaidOrPartiallyPaid);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching unpaid transactions:", error);
-  //       notify("tr", "Error fetching unpaid transactions", "danger");
-  //     })
-  //     .finally(() => {
-  //       setLoadingUnpaidTransactions(false);
-  //     });
-  // };
-
+  
   const fetchUnpaidTransactions = () => {
     setLoadingUnpaidTransactions(true);
     axios
@@ -1829,7 +1348,7 @@ const MesobFinancial2 = () => {
   };
 
   const handleDelete = async (transaction) => {
-    if (window.confirm("Are you sure you want to delete this record?")) {
+    if (window.confirm(t("financialReport.confirmDeleteRecord"))) {
       setLoadingDelete(true);
       try {
         if (transaction?.payableId === "outstanding-debt") {
@@ -1865,22 +1384,7 @@ const MesobFinancial2 = () => {
     }
   };
 
-  // const handleOutstandingDebtDeletion = async (transaction) => {
-  //   let userId = localStorage.getItem("userId");
-  //   const userResponse = await axios.get(
-  //     `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
-  //   );
-  //   const currentOutstandingDebt = userResponse.data.user.outstandingDebt || 0;
 
-  //   const updatedOutstandingDebt =
-  //     parseFloat(currentOutstandingDebt) +
-  //     parseFloat(transaction.transactionAmount);
-
-  //   await axios.put(
-  //     `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`,
-  //     { outstandingDebt: updatedOutstandingDebt }
-  //   );
-  // };
   const handleOutstandingDebtDeletion = async (transaction) => {
     // When deleting an outstanding debt payment, we DON'T need to update the user table
     // because we're calculating it dynamically from transactions
@@ -1941,7 +1445,7 @@ const MesobFinancial2 = () => {
       }
     } catch (error) {
       console.error("Error deleting all records:", error);
-      notify("tr", "Error deleting records", "danger");
+      notify("tr", t("financialReport.deleteAllError"), "danger");
     } finally {
       setLoadingDeleteAll(false);
       setShowDeleteConfirmation(false);
@@ -1998,15 +1502,15 @@ const MesobFinancial2 = () => {
       );
 
       if (response.status === 200) {
-        notify("tr", "CSV saved to S3 successfully!", "success");
+        notify("tr", t("backupCSV.savedSuccess"), "success");
         return true;
       } else {
-        notify("tr", "Failed to save CSV to S3.", "danger");
+        notify("tr", t("backupCSV.saveFailed"), "danger");
         return false;
       }
     } catch (error) {
       console.error("Error uploading CSV to S3:", error);
-      notify("tr", "Error saving CSV to S3", "danger");
+      notify("tr", t("backupCSV.errorSaving"), "danger");
       return false;
     }
   };
@@ -2116,7 +1620,7 @@ const MesobFinancial2 = () => {
         onSelectRange({ from: fromDate, to: toDate });
         setSearchedDates({ from: fromDate, to: toDate });
       } else {
-        notify("tr", "Please select both From and To dates", "warning");
+        notify("tr", t("financialReport.selectDates"), "warning");
       }
     };
 
@@ -2164,7 +1668,7 @@ const MesobFinancial2 = () => {
                 lineHeight: "1.2"
               }}
             >
-              From
+         {t('financialReport.from')}
             </Label>
             <Input
               type="date"
@@ -2201,7 +1705,7 @@ const MesobFinancial2 = () => {
                 lineHeight: "1.2"
               }}
             >
-              To
+            {t('financialReport.to')}
             </Label>
             <Input
               type="date"
@@ -2249,7 +1753,7 @@ const MesobFinancial2 = () => {
               justifyContent: "center"
             }}
           >
-            Run
+          {t('financialReport.run')}
           </Button>
           <Button
             onClick={handleClear}
@@ -2270,7 +1774,7 @@ const MesobFinancial2 = () => {
               justifyContent: "center"
             }}
           >
-            Clear Filters
+           {t('financialReport.clearFilters')}
           </Button>
           <Button
             color="danger"
@@ -2292,7 +1796,7 @@ const MesobFinancial2 = () => {
               justifyContent: "center"
             }}
           >
-            Close
+           {t('financialReport.close')}
           </Button>
         </div>
       </div>
@@ -2312,25 +1816,28 @@ const MesobFinancial2 = () => {
         <title>Mesob Financial - Mesob Finance</title>
       </Helmet>
 
-      <PanelHeader
-        size="sm"
-        content={
-          <div>
-            <h3
-              style={{
-                color: "white",
-                justifyContent: "center",
-                alignItems: "center",
-                display: "flex",
-              }}
-            >
-              {companyName}
-            </h3>
-
-            {/* <CSVReports /> */}
-          </div>
-        }
-      />
+   <PanelHeader
+  size="sm"
+  content={
+    <Row>
+      <Col xs={12} md={6}>
+        <LanguageSelector />
+      </Col>
+      <Col xs={12} md={6}>
+        <h3
+          style={{
+            color: "white",
+            justifyContent: "center",
+            alignItems: "center",
+            display: "flex",
+          }}
+        >
+          {companyName}
+        </h3>
+      </Col>
+    </Row>
+  }
+/>
 
       <NotificationAlert ref={notificationAlertRef} />
 
@@ -2348,12 +1855,12 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px" }}>
                 <CardHeader>
                   <CardTitle style={{ marginBottom: 0 }} tag="h4">
-                    Select User
+         {t('financialReport.selectUser')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ paddingBottom: "5px" }}>
                   <FormGroup style={{ marginBottom: "0" }}>
-                    <Label>Select User to View:</Label>
+                    <Label>{t('financialReport.selectUserToView')}</Label>
                     <Select
                       options={userOptions}
                       value={
@@ -2362,7 +1869,7 @@ const MesobFinancial2 = () => {
                         ) || null
                       }
                       onChange={handleUserSelect}
-                      placeholder="Search or select a user..."
+               placeholder={t('financialReport.searchUser')}
                       isClearable
                       isSearchable
                       styles={{
@@ -2463,7 +1970,7 @@ const MesobFinancial2 = () => {
                         <div style={{ position: "relative", width: "250px" }}>
                           <Input
                             type="text"
-                            placeholder="Search Journal Entries"
+                            placeholder={t("financialReport.searchJournal")}
                             value={searchTerm}
                             onChange={(e) => {
                               const value = e.target.value;
@@ -2533,6 +2040,31 @@ const MesobFinancial2 = () => {
                       flexWrap: "wrap",
                     }}
                   >
+                      <Button
+                        onClick={() => setShowDownloadReportModal(true)}
+                        disabled={
+                          userRole === 1
+                            ? false
+                            : !userSubscription && !isTrialActive()
+                        }
+                        style={{ 
+                          backgroundColor: "#2b427d", 
+                          borderColor: "#2b427d", 
+                          color: "#ffffff",
+                          height: "38px",
+                          borderRadius: "4px",
+                          padding: "0 16px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        <FontAwesomeIcon
+                          icon={faDownload}
+                          style={{ marginRight: "5px" }}
+                        />
+                      {t('financialReport.downloadReport')}
+                      </Button>
                       {userRole !== 0 && (
                         <Button
                           onClick={() => setShowAddTransaction(true)}
@@ -2557,9 +2089,10 @@ const MesobFinancial2 = () => {
                             icon={faPlus}
                             style={{ marginRight: "5px" }}
                           />
-                          Add Transaction
+                {t('financialReport.addTransaction')}
                         </Button>
                       )}
+                    
                       {userRole === 2 && (
                         <UserSubscriptionInfo
                           userSubscription={userSubscription}
@@ -2585,7 +2118,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#2b427d" }} tag="h4">
-                    Summary
+                {t('financialReport.summary')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -2607,7 +2140,7 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        Total Cash on Hand:
+                       {t('financialReport.totalCashOnHand')}:
                       </div>
                       <div
                         style={{
@@ -2637,7 +2170,7 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        Total Payable (Unpaid):
+                        {t('financialReport.totalPayable')}
                       </div>
                       <div
                         style={{
@@ -2659,12 +2192,12 @@ const MesobFinancial2 = () => {
 
                     <div style={{ marginTop: "20px" }}>
                       <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                        Breakdown:
+                        {t('financialReport.breakdown')}
                       </div>
                       <div style={{ marginTop: "8px" }}>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            Revenue:
+                            {t('financialReport.revenue')}
                       </span>
                       <span
                         style={{
@@ -2685,7 +2218,7 @@ const MesobFinancial2 = () => {
                     </div>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            Total Expense:
+                       {t('financialReport.totalExpense')}
                       </span>
                       <span
                         style={{
@@ -2752,7 +2285,9 @@ const MesobFinancial2 = () => {
                               }}
                             >
                                   <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                    {purpose}:
+                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                  {translatePurpose(purpose)}:
+                                </span>
                               </span>
                               <span
                                 style={{
@@ -2782,7 +2317,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
-                    Income Statement
+                   {t('financialReport.incomeStatement')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -2813,7 +2348,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>Revenue (manual sales)</strong>
+                            <strong>{t('financialReport.revenueManualSales')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", textAlign: "right" }}
@@ -2828,7 +2363,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
                           >
-                            <strong>Total Revenue</strong>
+                            <strong>{t('financialReport.totalRevenue')}</strong>
                           </td>
                           <td
                             style={{
@@ -2854,7 +2389,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>Expenses</strong>
+                            <strong>{t('financialReport.expenses')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -2901,7 +2436,7 @@ const MesobFinancial2 = () => {
                                     color: "#ffffff",
                                   }}
                                 >
-                                  Expenses ({purpose})
+                                  {t('financialReport.expenses')} ({purpose})
                                 </td>
                                 <td
                                   style={{
@@ -2925,7 +2460,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#a7565d", fontWeight: "bold" }}
                           >
-                            <strong>Total Expenses</strong>
+                            <strong>{t('financialReport.totalExpenses')}</strong>
                           </td>
                           <td
                             style={{
@@ -2950,13 +2485,11 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>
-                              {parseFloat(calculateTotalRevenue()) -
-                                parseFloat(calculateTotalExpenses()) <
-                              0
-                                ? "Net Loss"
-                                : "Net Income"}
-                            </strong>
+                           <strong>
+  {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
+    ? t('financialReport.netLoss')
+    : t('financialReport.netIncome')}
+</strong>
                           </td>
                           <td
                             style={{
@@ -2992,7 +2525,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#2b427d" }} tag="h4">
-                    Journal Entry
+              {t('financialReport.journalEntry')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -3007,7 +2540,7 @@ const MesobFinancial2 = () => {
                   {loadingTransactions ? (
                     <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
                       <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>Loading transactions...</p>
+                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
                     </div>
                   ) : (
                     <div style={{ width: "100%" }}>
@@ -3037,7 +2570,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
-                    Balance Sheet
+              {t('financialReport.balanceSheet')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -3073,7 +2606,7 @@ const MesobFinancial2 = () => {
                               color: "#ffffff",
                             }}
                           >
-                            <strong>Assets</strong>
+                            <strong>{t('financialReport.assets')}</strong>
                           </td>
                           <td
                             style={{
@@ -3084,7 +2617,7 @@ const MesobFinancial2 = () => {
                               color: "#ffffff",
                             }}
                           >
-                            <strong>Amount</strong>
+                            <strong>{t('financialReport.amount2')}</strong>
                           </td>
                           <td
                             style={{
@@ -3095,14 +2628,14 @@ const MesobFinancial2 = () => {
                               color: "#ffffff",
                             }}
                           >
-                            <strong>Amount</strong>
+                            <strong>{t('financialReport.amount2')}</strong>
                           </td>
                         </tr>
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Cash
+                          {t('financialReport.cash')}
                           </td>
                           <td
                             style={{
@@ -3129,7 +2662,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Inventory
+                          {t('financialReport.inventory')}
                           </td>
                           <td
                             style={{
@@ -3155,7 +2688,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
                           >
-                            <strong>Total Assets</strong>
+                            <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
                           <td
                             style={{
@@ -3183,7 +2716,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}
                           >
-                            <strong>Liabilities & Equity</strong>
+                            <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3196,7 +2729,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Payable
+                      {t('financialReport.payable')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3223,7 +2756,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Beginning Equity
+                          {t('financialReport.beginningEquity')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3251,7 +2784,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Retained Earnings / Net Income
+                          {t('financialReport.retainedEarnings')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3278,7 +2811,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
                           >
-                            <strong>Total Liabilities & Equity</strong>
+                            <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3303,46 +2836,12 @@ const MesobFinancial2 = () => {
                             })}
                           </td>
                         </tr>
-                        {/* <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555" }}
-                          >
-                            <strong>Total</strong>
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toFixed(2)}
-                          </td>
-                          <td
-                            style={{
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {(
-                              initialBalance +
-                              initialvalueableItems +
-                              parseFloat(calculateTotalRevenue()) -
-                              parseFloat(calculateTotalExpenses())
-                            ).toFixed(2)}
-                          </td>
-                        </tr> */}
+                       
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555" }}
                           >
-                            <strong>Total</strong>
+                            <strong>{t('common.total')}</strong>
                           </td>
                           <td
                             style={{
@@ -3395,7 +2894,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#2b427d" }} tag="h4">
-                    Summary
+                   {t('financialReport.summary')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ overflowY: "auto", overflowX: "visible", backgroundColor: "#1a273a" }}>
@@ -3410,7 +2909,7 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        Total Cash on Hand:
+                      {t('financialReport.totalCashOnHand')}
                       </div>
                       <div
                         style={{
@@ -3433,7 +2932,7 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        Total Payable (Unpaid):
+                {t('financialReport.totalPayable')}
                       </div>
                       <div
                         style={{
@@ -3455,12 +2954,12 @@ const MesobFinancial2 = () => {
 
                     <div style={{ marginTop: "20px" }}>
                       <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                        Breakdown:
+                       {t('financialReport.breakdown')}
                       </div>
                       <div style={{ marginTop: "8px" }}>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            Revenue:
+                           {t('financialReport.revenue')}
                       </span>
                       <span
                         style={{
@@ -3481,7 +2980,7 @@ const MesobFinancial2 = () => {
                     </div>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            Total Expense:
+                     {t('financialReport.totalExpense')}
                       </span>
                       <span
                         style={{
@@ -3621,7 +3120,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
-                    Income Statement
+               {t('financialReport.incomeStatement')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -3714,7 +3213,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>Expenses</strong>
+                            <strong>{t('financialReport.expenses')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3761,7 +3260,7 @@ const MesobFinancial2 = () => {
                                     color: "#ffffff",
                                   }}
                                 >
-                                  Expenses ({purpose})
+                                  {t('financialReport.expenses')} ({purpose})
                                 </td>
                                 <td
                                   style={{
@@ -3785,7 +3284,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#a7565d", fontWeight: "bold" }}
                           >
-                            <strong>Total Expenses</strong>
+                            <strong>{t('financialReport.totalExpenses')}</strong>
                           </td>
                           <td
                             style={{
@@ -3810,13 +3309,11 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}
                           >
-                            <strong>
-                              {parseFloat(calculateTotalRevenue()) -
-                                parseFloat(calculateTotalExpenses()) <
-                              0
-                                ? "Net Loss"
-                                : "Net Income"}
-                            </strong>
+                          <strong>
+  {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
+    ? t('financialReport.netLoss')
+    : t('financialReport.netIncome')}
+</strong>
                           </td>
                           <td
                             style={{
@@ -3846,7 +3343,7 @@ const MesobFinancial2 = () => {
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
-                    Balance Sheet
+                 {t('financialReport.balanceSheet')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -3881,7 +3378,7 @@ const MesobFinancial2 = () => {
                               color: "#ffffff",
                             }}
                           >
-                            <strong>Assets</strong>
+                            <strong>{t('financialReport.assets')}</strong>
                           </td>
                           <td
                             style={{
@@ -3892,7 +3389,7 @@ const MesobFinancial2 = () => {
                               color: "#ffffff",
                             }}
                           >
-                            <strong>Amount</strong>
+                            <strong>{t('financialReport.amount2')}</strong>
                           </td>
                           <td
                             style={{
@@ -3903,14 +3400,14 @@ const MesobFinancial2 = () => {
                               color: "#ffffff",
                             }}
                           >
-                            <strong>Amount</strong>
+                            <strong>{t('financialReport.amount2')}</strong>
                           </td>
                         </tr>
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Cash
+                            {t('financialReport.cash')}
                           </td>
                           <td
                             style={{
@@ -3938,7 +3435,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Inventory
+                          {t('financialReport.inventory')}
                           </td>
                           <td
                             style={{
@@ -3964,7 +3461,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
                           >
-                            <strong>Total Assets</strong>
+                            <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
                           <td
                             style={{
@@ -3992,7 +3489,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}
                           >
-                            <strong>Liabilities & Equity</strong>
+                            <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -4005,7 +3502,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Payable
+                            {t('financialReport.payable')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -4032,7 +3529,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Beginning Equity
+                           {t('financialReport.beginningEquity')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -4060,7 +3557,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            Retained Earnings / Net Income
+                           {t('financialReport.retainedEarnings')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -4087,7 +3584,7 @@ const MesobFinancial2 = () => {
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
                           >
-                            <strong>Total Liabilities & Equity</strong>
+                            <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -4125,11 +3622,10 @@ const MesobFinancial2 = () => {
           toggle={() => setShowDeleteConfirmation(false)}
         >
           <ModalHeader toggle={() => setShowDeleteConfirmation(false)}>
-            Confirm Delete
+         {t('financialReport.confirmDelete')}
           </ModalHeader>
           <ModalBody>
-            Are you sure you want to delete all records? This action cannot be
-            undone.
+           {t('financialReport.confirmDeleteMessage')}
             <div className="modal-footer">
               <Button
                 color="danger"
@@ -4137,16 +3633,16 @@ const MesobFinancial2 = () => {
                   confirmDeleteandsave();
                 }}
               >
-                Save and Delete All
+              {t('financialReport.saveAndDeleteAll')}
               </Button>
               <Button
                 color="secondary"
                 onClick={() => setShowDeleteConfirmation(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button color="danger" onClick={confirmDelete}>
-                Delete All
+             {t('financialReport.deleteAll')}
               </Button>
             </div>
           </ModalBody>
@@ -4166,11 +3662,11 @@ const MesobFinancial2 = () => {
               setShowAddTransaction(false);
             }}
           >
-            {editingTransaction ? "Edit Transaction" : "Add Transaction"}
+            {editingTransaction ? t('financialReport.editTransaction') : t('financialReport.addTransaction')}
           </ModalHeader>
           <ModalBody>
             <FormGroup>
-              <Label>Type:</Label>
+              <Label>{t('financialReport.type')}:</Label>
               <div style={{ display: "flex", gap: "10px" }}>
                 <Button
                   color={
@@ -4182,7 +3678,7 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
-                  Received Cash
+                 {t('financialReport.receivedCash')}
                 </Button>
                 <Button
                   color={transactionType === "pay" ? "primary" : "secondary"}
@@ -4192,7 +3688,7 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
-                 Paid Cash
+                {t('financialReport.paidCash')}
                 </Button>
                 <Button
                   color={
@@ -4204,14 +3700,14 @@ const MesobFinancial2 = () => {
                     setPaymentMode(null);
                   }}
                 >
-                  Haven't Yet Paid
+                  {t('financialReport.haventYetPaid')}
                 </Button>
               </div>
             </FormGroup>
             {/* Show action buttons for Pay Cash */}
             {transactionType === "pay" && (
               <FormGroup>
-                <Label>Select Action:</Label>
+                <Label>{t('financialReport.selectAction')}:</Label>
                 <div
                   style={{
                     display: "flex",
@@ -4227,7 +3723,7 @@ const MesobFinancial2 = () => {
                       setPaymentMode("recorded");
                     }}
                   >
-                    Recorded Earlier as Payable
+                   {t('financialReport.recordedEarlierAsPayable')}
                   </Button>
 
                   <Button
@@ -4238,7 +3734,7 @@ const MesobFinancial2 = () => {
                       setPaymentMode("new");
                     }}
                   >
-                    New Expense
+             {t('financialReport.newExpense')}
                   </Button>
                   <Button
                     color="warning"
@@ -4248,7 +3744,7 @@ const MesobFinancial2 = () => {
                       setPaymentMode("boughtItem");
                     }}
                   >
-                    Bought a New Item
+                 {t('financialReport.boughtNewItem')}
                   </Button>
                 </div>
               </FormGroup>
@@ -4256,61 +3752,31 @@ const MesobFinancial2 = () => {
             {/* Show dropdown for recorded payment mode under Pay Cash */}
             {selectedBusinessType === "Other" && (
               <div className="manual-purpose-management">
-                <h4>Manage Custom Purposes</h4>
+                <h4>{t('financialReport.manageCustomPurposes')}</h4>
                 <Input
                   type="text"
                   value={newPurpose}
                   onChange={(e) => setNewPurpose(e.target.value)}
-                  placeholder="Enter new purpose"
+                placeholder={t('financialReport.enterNewPurpose')}
                 />
                 <Input
                   type="select"
                   value={purposeType}
                   onChange={(e) => setPurposeType(e.target.value)}
                 >
-                  <option value="income">Income Purpose</option>
-                  <option value="expense">Expense Purpose</option>
-                  <option value="payable">Payable Purpose</option>
+                  <option value="income">{t('financialReport.incomePurpose')}</option>
+                  <option value="expense">{t('financialReport.expensePurpose')}</option>
+                  <option value="payable">{t('financialReport.payablePurpose')}</option>
                 </Input>
-                <Button onClick={handleAddPurpose}>Add Purpose</Button>
+                <Button onClick={handleAddPurpose}>{t('financialReport.addPurpose')}</Button>
               </div>
             )}
 
             {transactionType === "pay" && paymentMode === "recorded" && (
               <>
-                {/* <FormGroup>
-                  <Label>Select Unpaid Transaction:</Label>
-                  <Input
-                    type="select"
-                    value={
-                      selectedUnpaidTransaction
-                        ? selectedUnpaidTransaction.id
-                        : ""
-                    }
-                    onChange={(e) => {
-                      const selected = unpaidTransactions.find(
-                        (t) =>
-                          t.id ===
-                          (e.target.value === "outstanding-debt"
-                            ? e.target.value
-                            : parseInt(e.target.value))
-                      );
-                      // handlePayableSelection(selected);
-                    }}
-                  >
-                    <option value="">Select transaction</option>
-                    {unpaidTransactions
-                      .filter((t) => t.status !== "Paid")
-                      .map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.transactionPurpose} - ${t.transactionAmount}
-                        </option>
-                      ))}
-                  </Input>
-
-                </FormGroup> */}
+                
                 <FormGroup>
-                  <Label>Select Unpaid Transaction:</Label>
+                  <Label>{t('financialReport.selectUnpaidTransaction')}:</Label>
                   <Input
                     type="select"
                     value={
@@ -4331,7 +3797,7 @@ const MesobFinancial2 = () => {
                       setPartialPaymentError(null); // Add this line
                     }}
                   >
-                    <option value="">Select transaction</option>
+                    <option value="">{t('financialReport.selectTransaction')}</option>
                     {unpaidTransactions
                       .filter(
                         (t) => t.status !== "Paid" && t.transactionAmount !== 0
@@ -4347,7 +3813,7 @@ const MesobFinancial2 = () => {
 
                 {selectedUnpaidTransaction && (
                   <FormGroup tag="fieldset">
-                    <legend>Payment Option:</legend>
+                    <legend>{t('financialReport.paymentOption')}:</legend>
                     <FormGroup check>
                       <Label check>
                         <Input
@@ -4357,7 +3823,7 @@ const MesobFinancial2 = () => {
                           checked={paymentOption === "full"}
                           onChange={() => setPaymentOption("full")}
                         />{" "}
-                        Full Payment
+                      {t('financialReport.fullPayment')}
                       </Label>
                     </FormGroup>
                     <FormGroup check>
@@ -4369,26 +3835,16 @@ const MesobFinancial2 = () => {
                           checked={paymentOption === "partial"}
                           onChange={() => setPaymentOption("partial")}
                         />{" "}
-                        Partial Payment
+                    {t('financialReport.partialPayment')}
                       </Label>
                     </FormGroup>
                   </FormGroup>
                 )}
 
-                {/* {selectedUnpaidTransaction && paymentOption === "partial" && (
-                  <FormGroup>
-                    <Label>Partial Payment Amount:</Label>
-                    <Input
-                      type="number"
-                      value={remainingAmount}
-                      onChange={(e) => setRemainingAmount(e.target.value)}
-                      max={selectedUnpaidTransaction.transactionAmount}
-                    />
-                  </FormGroup>
-                )} */}
+               
                 {selectedUnpaidTransaction && paymentOption === "partial" && (
                   <FormGroup>
-                    <Label>Partial Payment Amount:</Label>
+                    <Label>{t('financialReport.partialPaymentAmount')}:</Label>
                     <Input
                       type="number"
                       value={remainingAmount}
@@ -4436,7 +3892,7 @@ const MesobFinancial2 = () => {
                 )}
                 {/* Receipts form */}
                 <FormGroup>
-                  <Label>Receipt:</Label>
+                  <Label>{t('financialReport.receipt')}:</Label>
                   <div
                     style={{
                       display: "flex",
@@ -4449,7 +3905,7 @@ const MesobFinancial2 = () => {
                       onClick={() => fileInputRef.current.click()}
                       style={{ marginBottom: "0" }}
                     >
-                      {receipt ? "Change Receipt" : "Upload Receipt"}
+                     {receipt ? t('financialReport.changeReceipt') : t('financialReport.uploadReceipt')}
                     </Button>
                     {receipt && (
                       <span style={{ color: "green" }}>✓ {receipt.name}</span>
@@ -4489,33 +3945,24 @@ const MesobFinancial2 = () => {
             {transactionType === "pay" && paymentMode === "boughtItem" && (
               <>
                 <FormGroup>
-                  <Label>Item Description:</Label>
+                  <Label>{t('financialReport.itemDescription')}:</Label>
                   <Input
                     type="select"
                     value={isManual}
                     onChange={(e) => setIsManual(e.target.value)}
                   >
-                    <option value="">Select Option</option>
-                    <option value="manual">Enter Manually</option>
+                    <option value="">{t('financialReport.selectOption')}</option>
+                    <option value="manual">{t('financialReport.enterManually')}</option>
                   </Input>
 
-                  {/* Show text input when "Enter Manually" is selected */}
-                  {/* {isManual == "manual" && (
-                    <Input
-                      type="text"
-                      placeholder="Enter item description"
-                      value={manualPurpose === "manual" ? "" : manualPurpose}
-                      onChange={(e) => setManualPurpose(e.target.value)}
-                      className="mt-2"
-                    />
-                  )} */}
+                 
 
                   {/* ----------  NEW VALIDATION FOR MANUAL DESCRIPTION ---------- */}
                   {isManual === "manual" && (
                     <FormGroup className="mt-2">
                       <Input
                         type="text"
-                        placeholder="Enter item description"
+                       placeholder={t('financialReport.enterItemDescription')}
                         value={manualPurpose}
                         onChange={(e) => {
                           setManualPurpose(e.target.value);
@@ -4537,7 +3984,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Amount ($):</Label>
+                  <Label>{t('financialReport.amount')}:</Label>
                   <Input
                     type="number"
                     value={transactionAmount}
@@ -4545,7 +3992,7 @@ const MesobFinancial2 = () => {
                   />
                 </FormGroup>
                 <FormGroup>
-                  <Label>Receipt:</Label>
+                  <Label>{t('financialReport.receipt')}:</Label>
                   <div
                     style={{
                       display: "flex",
@@ -4558,7 +4005,7 @@ const MesobFinancial2 = () => {
                       onClick={() => fileInputRef.current.click()}
                       style={{ marginBottom: "0" }}
                     >
-                      {receipt ? "Change Receipt" : "Upload Receipt"}
+                {receipt ? t('financialReport.changeReceipt') : t('financialReport.uploadReceipt')}
                     </Button>
                     {receipt && (
                       <span style={{ color: "green" }}>✓ {receipt.name}</span>
@@ -4572,13 +4019,7 @@ const MesobFinancial2 = () => {
                     style={{ display: "none" }}
                   />
                 </FormGroup>
-                {/* <Button
-                  color="success"
-                  onClick={handleAddTransaction}
-                  disabled={isAddingTransaction}
-                >
-                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                </Button> */}
+               
                 <Button
                   color="success"
                   onClick={handleAddTransaction}
@@ -4587,7 +4028,7 @@ const MesobFinancial2 = () => {
                     (isManual === "manual" && !manualPurpose.trim())
                   }
                 >
-                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
+                  {isAddingTransaction ? <Spinner size="sm" /> : "{t('financialReport.save')}"}
                 </Button>
               </>
             )}
@@ -4597,14 +4038,14 @@ const MesobFinancial2 = () => {
               transactionType === "Payable") && (
               <>
                 <FormGroup>
-                  <Label>Purpose:</Label>
+                  <Label>{t('financialReport.purpose')}:</Label>
 
                   <Input
                     type="select"
                     value={transactionPurpose}
                     onChange={(e) => setTransactionPurpose(e.target.value)}
                   >
-                    <option value="">Select purpose</option>
+             <option value="">{t('financialReport.selectPurpose')}</option>
                     {transactionType === "receive" && (
                       <>
                         {incomePurposes.map((purpose, index) => (
@@ -4612,7 +4053,7 @@ const MesobFinancial2 = () => {
                             {purpose}
                           </option>
                         ))}
-                        <option value="manual">Enter Manually</option>
+                        <option value="manual">{t('financialReport.enterManually')}</option>
                       </>
                     )}
                     {transactionType === "pay" && paymentMode === "new" && (
@@ -4622,7 +4063,7 @@ const MesobFinancial2 = () => {
                             {purpose}
                           </option>
                         ))}
-                        <option value="manual">Enter Manually</option>
+                        <option value="manual">{t('financialReport.enterManually')}</option>
                       </>
                     )}
                     {transactionType === "Payable" && (
@@ -4632,7 +4073,7 @@ const MesobFinancial2 = () => {
                             {purpose}
                           </option>
                         ))}
-                        <option value="manual">Enter Manually</option>
+                        <option value="manual">{t('financialReport.enterManually')}</option>
                       </>
                     )}
                   </Input>
@@ -4665,7 +4106,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Amount ($):</Label>
+                  <Label>{t('financialReport.amount')}:</Label>
                   <Input
                     type="number"
                     value={transactionAmount}
@@ -4703,12 +4144,12 @@ const MesobFinancial2 = () => {
                   </FormGroup>
                 )}
                 <Button
-                  color="success"
-                  onClick={handleAddTransaction}
-                  disabled={isAddingTransaction}
-                >
-                  {isAddingTransaction ? <Spinner size="sm" /> : "Save"}
-                </Button>
+  color="success"
+  onClick={handleAddTransaction}
+  disabled={isAddingTransaction}
+>
+  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+</Button>
               </>
             )}
           </ModalBody>
@@ -4720,7 +4161,7 @@ const MesobFinancial2 = () => {
           size="lg"
         >
           <ModalHeader toggle={() => setPreviewModal(false)}>
-            Receipt Preview
+            {t('receipts.receiptPreview')}
           </ModalHeader>
           <ModalBody>
             {selectedReceipt?.receiptUrl && (
@@ -4766,28 +4207,28 @@ const MesobFinancial2 = () => {
           toggle={() => setShowInstallmentModal(false)}
         >
           <ModalHeader toggle={() => setShowInstallmentModal(false)}>
-            Installment Payment for{" "}
+            {t('financialReport.installmentPaymentFor')}{" "}
             {selectedUnpaidTransaction?.transactionPurpose}
           </ModalHeader>
           <ModalBody>
             <FormGroup>
-              <Label>Select Payment Type:</Label>
+              <Label>{t('financialReport.selectPaymentType')}:</Label>
               <div>
                 <Button color="primary" onClick={handleFullPayment}>
-                  Pay Full Amount ($
+                 {t('financialReport.payFullAmount')} ($
                   {selectedUnpaidTransaction?.transactionAmount})
                 </Button>
                 <Button
                   color="primary"
                   onClick={() => setShowInstallmentInput(true)}
                 >
-                  Pay Installment
+         {t('financialReport.payInstallment')}
                 </Button>
               </div>
             </FormGroup>
             {showInstallmentInput && (
               <FormGroup>
-                <Label>Installment Amount:</Label>
+                <Label>{t('financialReport.installmentAmount')}:</Label>
                 <Input
                   type="number"
                   value={installmentAmount}
@@ -4799,16 +4240,35 @@ const MesobFinancial2 = () => {
           </ModalBody>
           <ModalFooter>
             <Button color="success" onClick={handleInstallmentPayment}>
-              Pay
+         {t('financialReport.pay2')}
             </Button>
             <Button
               color="secondary"
               onClick={() => setShowInstallmentModal(false)}
             >
-              Cancel
+          {t('common.cancel')}
             </Button>
           </ModalFooter>
         </Modal>
+
+        {/* Download Report Modal */}
+        <DownloadReportModal
+          isOpen={showDownloadReportModal}
+          toggle={() => setShowDownloadReportModal(false)}
+          companyName={companyName}
+          items={filterItemsByTimeRange(items, selectedTimeRange, searchTerm)}
+          revenues={revenues}
+          expenses={expenses}
+          initialBalance={initialBalance}
+          initialvalueableItems={initialvalueableItems}
+          initialoutstandingDebt={initialoutstandingDebt}
+          calculateTotalCash={calculateTotalCash}
+          calculateTotalRevenue={calculateTotalRevenue}
+          calculateTotalExpenses={calculateTotalExpenses}
+          calculateTotalPayable={calculateTotalPayable}
+          calculateTotalInventory={calculateTotalInventory}
+          searchedDates={searchedDates}
+        />
       </div>
     </>
   );

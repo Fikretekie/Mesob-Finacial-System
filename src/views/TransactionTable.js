@@ -3,7 +3,7 @@ import { useState } from "react";
 import { BsTrashFill, BsReceipt } from "react-icons/bs";
 import "./TransactionTable.css";
 import colors from "variables/colors";
-
+import { useTranslation } from "react-i18next";
 const TransactionTable = ({
   items = [],
   handleDelete,
@@ -12,6 +12,7 @@ const TransactionTable = ({
   scheduleCount,
   userSubscription,
 }) => {
+  const { t } = useTranslation();
   const isFeatureEnabled = () => {
     return userSubscription || scheduleCount < 4;
   };
@@ -42,12 +43,12 @@ const TransactionTable = ({
       <table className="transaction-table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Sr. No</th>
-            <th>Transaction</th>
-            <th>Debit</th>
-            <th>Credit</th>
-            <th>Actions</th>
+            <th>{t('financialReport.date')}</th>
+            <th>{t('financialReport.srNo')}</th>
+            <th>{t('financialReport.transaction')}</th>
+            <th>{t('financialReport.debit')}</th>
+            <th>{t('financialReport.credit')}</th>
+            <th>{t('financialReport.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -64,7 +65,7 @@ const TransactionTable = ({
                 {transaction.transactionType === "Receive" ? (
                   <>
                     {/* Transaction type first for Receive */}
-                    <div style={{ fontWeight: "bold" }}>Receive [Cash]</div>
+                    <div style={{ fontWeight: "bold" }}>{t('financialReport.receive')}</div>
                     {/* Purpose below */}
                     <div>{transaction.transactionPurpose}</div>
                   </>
@@ -73,103 +74,24 @@ const TransactionTable = ({
                     {/* Purpose first for other cases */}
                     <div>
                       {transaction.transactionPurpose}
-                      {transaction.transactionType === "Payable"
-                        ? " [Expense]"
-                        : ""}
+                     {transaction.transactionType === "Payable" ? " " 
+                     + t('financialReport.expense') : ""}
                     </div>
                     {/* Transaction type below */}
                     <div style={{ fontWeight: "bold" }}>
-                      {transaction.transactionType === "Pay"
-                        ? "Pay [Cash]"
-                        : transaction.transactionType === "Payable"
-                        ? "Payable "
-                        : transaction.transactionType === "New_Item"
-                        ? "Pay [Cash]"
-                        : transaction.transactionType}
-                    </div>
+                {transaction.transactionType === "Pay"
+                  ? t('financialReport.pay')
+                  : transaction.transactionType === "Payable"
+                  ? t('financialReport.payable')
+                  : transaction.transactionType === "New_Item"
+                  ? t('financialReport.pay')
+                  : transaction.transactionType}
+              </div>
                   </>
                 )}
               </td>
 
-              {/* Debit Column */}
-              {/* <td className="debit">
-                {transaction.transactionType === "Receive" && (
-                  <div style={{ color: "#41926f", fontWeight: "bold" }}>
-                    $
-                    {parseFloat(transaction.transactionAmount).toLocaleString(
-                      "en-US",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </div>
-                )}
-                {transaction.transactionType === "Payable" && (
-                  <div style={{ color: "#a7565d", fontWeight: "bold" }}>
-                    $
-                    {parseFloat(transaction.originalAmount).toLocaleString(
-                      "en-US",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </div>
-                )}
-                {["Pay", "New_Item"].includes(transaction.transactionType) && (
-                  <div style={{ color: "#a7565d", fontWeight: "bold" }}>
-                    $
-                    {parseFloat(transaction.transactionAmount).toLocaleString(
-                      "en-US",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </div>
-                )}
-              </td> */}
-
-              {/* Credit Column */}
-              {/* <td className="credit">
-                {transaction.transactionType === "Receive" && (
-                  <div style={{ color: "#41926f", fontWeight: "bold" }}>
-                    $
-                    {parseFloat(transaction.transactionAmount).toLocaleString(
-                      "en-US",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </div>
-                )}
-                {transaction.transactionType === "Payable" && (
-                  <div style={{ color: "#c7ae4f", fontWeight: "bold" }}>
-                    $
-                    {parseFloat(transaction.originalAmount).toLocaleString(
-                      "en-US",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </div>
-                )}
-                {["Pay", "New_Item"].includes(transaction.transactionType) && (
-                  <div style={{ color: "#41926f", fontWeight: "bold" }}>
-                    $
-                    {parseFloat(transaction.transactionAmount).toLocaleString(
-                      "en-US",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </div>
-                )}
-              </td> */}
+             
               {/* Debit Column */}
               <td className="debit">
                 {transaction.transactionType === "Receive" && (
