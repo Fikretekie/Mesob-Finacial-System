@@ -31,10 +31,18 @@ const LanguageSelector = () => {
 
   const toggle = () => setDropdownOpen(prev => !prev);
 
-  const handleLanguageChange = (langCode) => {
+  const handleLanguageChange = (langCode, e) => {
+    // Stop event propagation to prevent toggle from firing
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
     setSelectedLanguage(langCode);
     i18n.changeLanguage(langCode);
     localStorage.setItem("selectedLanguage", langCode);
+    
+    // Force close the dropdown
     setDropdownOpen(false);
   };
 
@@ -64,7 +72,6 @@ const LanguageSelector = () => {
           <span>{currentLanguage.name}</span>
         </DropdownToggle>
 
-        {/* 🔥 CRITICAL FIX HERE */}
         <DropdownMenu
           container="body"
           strategy="fixed"
@@ -82,7 +89,7 @@ const LanguageSelector = () => {
           {languages.map((lang) => (
             <DropdownItem
               key={lang.code}
-              onClick={() => handleLanguageChange(lang.code)}
+              onClick={(e) => handleLanguageChange(lang.code, e)}
               active={selectedLanguage === lang.code}
               style={{
                 backgroundColor:
@@ -94,6 +101,17 @@ const LanguageSelector = () => {
                 alignItems: "center",
                 gap: "12px",
                 fontSize: "14px",
+                transition: "background-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                if (selectedLanguage !== lang.code) {
+                  e.currentTarget.style.backgroundColor = "#2d3e50";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedLanguage !== lang.code) {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }
               }}
             >
               <span style={{ fontSize: "18px" }}>{lang.flag}</span>

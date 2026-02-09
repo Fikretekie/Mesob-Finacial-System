@@ -219,20 +219,6 @@ function UserPage() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  {/* <Row>
-                    <Col md="12">
-                      <FormGroup>
-                        <label style={{ color: "#ffffff" }}>Business Type</label>
-                        <Input
-                          name="businessType"
-                          value={userData.businessType}
-                          onChange={handleInputChange}
-                          disabled={!isEditing}
-                          type="text"
-                        />
-                      </FormGroup>
-                    </Col>
-                  </Row> */}
                   <Row>
                     <Col md="12">
                       <FormGroup>
@@ -321,41 +307,7 @@ function UserPage() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  {/* {isCustomer && (
-                    <>
-                      {isEditing && hasChanges && (
-                        <Row>
-                          <Col md="12">
-                            <Button color="success" type="submit">
-                              Save Changes
-                            </Button>
-                          </Col>
-                        </Row>
-                      )}
-                      {(!isEditing || !hasChanges) && (
-                        <Row>
-                          <Col md="12">
-                            <Button
-                              color="primary"
-                              onClick={() => setIsEditing(true)}
-                              disabled={editDisabled}
-                            >
-                              Edit Profile
-                            </Button>
-                          </Col>
-                        </Row>
-                      )}
-                      {isCustomer && (
-                        <Row className="mt-3">
-                          <Col md="12">
-                            <Button color="danger" onClick={handleDelete}>
-                              Delete Account
-                            </Button>
-                          </Col>
-                        </Row>
-                      )}
-                    </>
-                  )} */}
+                 
                   {isCustomer && (
                     <>
                       {/* Save + Discard when editing and there are changes */}

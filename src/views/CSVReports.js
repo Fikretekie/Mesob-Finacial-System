@@ -6,16 +6,17 @@ import {
   CardTitle,
   Button,
   Table,
-  Input,
   Row,
   Col,
 } from "reactstrap";
-import { FaDownload, FaTrash } from "react-icons/fa";
-import * as XLSX from "xlsx";
+import { FaDownload } from "react-icons/fa";
 import axios from "axios";
 import PanelHeader from "components/PanelHeader/PanelHeader";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 const CSVReports = () => {
+  const { t } = useTranslation();
   const [csvData, setCsvData] = useState(null);
   const [backupUrls, setBackupUrls] = useState([]);
   const [disabled, setDisabled] = useState(false);
@@ -37,15 +38,13 @@ const CSVReports = () => {
 
     fetchUserData();
   }, []);
+
   useEffect(() => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
       );
-      // setDisabled(
-      //   !res.data.user.subscription && res.data.user.scheduleCount >= 4
-      // );
       const { subscription, scheduleCount, userRole } = res.data.user;
       setDisabled(!(subscription || userRole === 1) && scheduleCount >= 4);
     };
@@ -76,7 +75,10 @@ const CSVReports = () => {
       <PanelHeader size="sm" />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         <Row>
-          <Col xs={12} style={{ paddingInline: 0, }}>
+          <Col xs={12} md={4} lg={4}>
+            <LanguageSelector />
+          </Col>
+          <Col xs={12} style={{ paddingInline: 0 }}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
                 <div
@@ -87,7 +89,9 @@ const CSVReports = () => {
                     alignItems: "center",
                   }}
                 >
-                  <CardTitle tag="h4" style={{ color: "#2b427d" }}>CSV Report</CardTitle>
+                  <CardTitle tag="h4" style={{ color: "#2b427d" }}>
+                    {t('backupCSV.title')}
+                  </CardTitle>
                 </div>
               </CardHeader>
               <CardBody style={{ backgroundColor: "#101926" }}>
@@ -95,14 +99,20 @@ const CSVReports = () => {
                   <Table responsive style={{ backgroundColor: "#101926" }}>
                     <thead>
                       <tr>
-                        <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Backup File</th>
-                        <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>Actions</th>
+                        <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>
+                          {t('backupCSV.backupFile')}
+                        </th>
+                        <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>
+                          {t('backupCSV.actions')}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {backupUrls.map((url, index) => (
                         <tr key={index} style={{ borderColor: "#3a4555" }}>
-                          <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>{url.split("/").pop()}</td>
+                          <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>
+                            {url.split("/").pop()}
+                          </td>
                           <td style={{ borderColor: "#3a4555" }}>
                             <Button
                               style={{ marginRight: "10px" }}
@@ -110,18 +120,17 @@ const CSVReports = () => {
                               onClick={() => handleDownload(url)}
                               disabled={disabled}
                             >
-                              <FaDownload /> Download
+                              <FaDownload /> {t('backupCSV.download')}
                             </Button>
-                            {/* <Button color="danger" onClick={() => handleDelete(url)}>
-                        <FaTrash /> Delete
-                      </Button> */}
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 ) : (
-                  <p style={{ color: "#ffffff" }}>No backup CSV files available.</p>
+                  <p style={{ color: "#ffffff" }}>
+                    {t('backupCSV.noBackups')}
+                  </p>
                 )}
               </CardBody>
             </Card>

@@ -1098,7 +1098,7 @@ function Dashboard() {
 
         <Row style={{ backgroundColor: "#101926" }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card  style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay
                 loading={loadingFinancialData}
                 text="Loading chart..."

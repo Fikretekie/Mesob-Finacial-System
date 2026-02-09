@@ -302,11 +302,14 @@ const DownloadReportModal = ({
     
     // Balance Sheet Details section
     doc.setFillColor(43, 66, 125);
-    doc.rect(15, yPos, pageWidth - 30, 8, "F");
-    doc.setTextColor(255, 255, 255);
+    // doc.rect(15, yPos, pageWidth - 30, 8, "F");
+    doc.setDrawColor(43, 66, 125);     // same blue as before
+doc.setLineWidth(3.5);             // thickness — 3 to 4 looks good
+doc.line(15, yPos - 2, 15, yPos + 11);
+    doc.setTextColor(30, 40, 70);
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("BALANCE SHEET DETAILS", 20, yPos + 6);
+    doc.text("BALANCE SHEET DETAILS", 22, yPos + 7);
     
     yPos += 12;
     
@@ -352,11 +355,14 @@ const DownloadReportModal = ({
     
     // Income Statement Summary section
     doc.setFillColor(43, 66, 125);
-    doc.rect(15, yPos, pageWidth - 30, 8, "F");
-    doc.setTextColor(255, 255, 255);
+    // doc.rect(15, yPos, pageWidth - 30, 8, "F");
+    doc.setDrawColor(43, 66, 125);     // same blue as before
+doc.setLineWidth(3.5);             // thickness — 3 to 4 looks good
+doc.line(15, yPos - 2, 15, yPos + 11);
+    doc.setTextColor(30, 40, 70);
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("INCOME STATEMENT SUMMARY", 20, yPos + 6);
+    doc.text("INCOME STATEMENT SUMMARY", 22, yPos + 7);
     
     yPos += 12;
     
@@ -432,11 +438,14 @@ const DownloadReportModal = ({
     
     // Verified Journal Entries section
     doc.setFillColor(43, 66, 125);
-    doc.rect(15, yPos, pageWidth - 30, 8, "F");
-    doc.setTextColor(255, 255, 255);
+    // doc.rect(15, yPos, pageWidth - 30, 8, "F");
+    doc.setDrawColor(43, 66, 125);     // same blue as before
+doc.setLineWidth(3.5);             // thickness — 3 to 4 looks good
+doc.line(15, yPos - 2, 15, yPos + 11);
+    doc.setTextColor(30, 40, 70);
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("VERIFIED JOURNAL ENTRIES", 20, yPos + 6);
+    doc.text("VERIFIED JOURNAL ENTRIES", 22, yPos + 7);
     
     yPos += 12;
     

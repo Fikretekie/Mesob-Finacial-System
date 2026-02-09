@@ -243,7 +243,7 @@
     "unknown": "Unknown",
     "selectedUser": "Selected user:"
   },
-"businessTypes": {
+  "businessTypes": {
   "trucking": "Trucking",
   "rideshare": "RIDESHARE DRIVERS/PARTNERS",
   "groceries": "Groceries",
@@ -431,7 +431,7 @@
     "scheduledPayments": "Scheduled payments to freelancers or agencies",
     "equipmentLeases": "Equipment leases"
   }
-},
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

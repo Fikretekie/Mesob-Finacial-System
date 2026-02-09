@@ -19,12 +19,15 @@ import {
   ModalFooter,
 } from "reactstrap";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { FaPaypal } from "react-icons/fa"; // Using react-icons for PayPal logo
-import { FaCreditCard } from "react-icons/fa"; // Using react-icons for card icon
+import { FaPaypal } from "react-icons/fa";
+import { FaCreditCard } from "react-icons/fa";
+import LanguageSelector from "components/Languageselector/LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 const SubscriptionPlans = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [userData, setUserData] = useState(null);
@@ -35,6 +38,7 @@ const SubscriptionPlans = () => {
   const [selectedPriceId, setSelectedPriceId] = useState(null);
   const [justSubscribed, setJustSubscribed] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  
   // Backend base URL
   const backendBaseUrl =
     "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
@@ -67,31 +71,31 @@ const SubscriptionPlans = () => {
     }
   };
 
-
-
   useEffect(() => {
     const userId = getUserId();
     if (userId) fetchUser();
   }, []);
+
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.get("paypal") === "success") {
       fetchUser();
     }
   }, [location.search]);
+
   // Billing plans info with Stripe priceIds and PayPal plan IDs
   const plans = [
     {
-      name: "Pricing Plan",
+      name: t('subscription.pricingPlan'),
       features: [
-        "✅ View Transaction History",
-        "✅ See Financial Reports (Basic Summary)",
-        "✅ Check Balance Sheet",
-        "✅ View Income Statement",
-        "✅ User Profile Management",
-        "✅ Download & View Receipts",
+        t('subscription.features.viewHistory'),
+        t('subscription.features.seeReports'),
+        t('subscription.features.checkBalance'),
+        t('subscription.features.viewIncome'),
+        t('subscription.features.userProfile'),
+        t('subscription.features.downloadReceipts'),
       ],
-      price: { monthly: "$29.99/month", yearly: "$600/year" },
+      price: { monthly: `$29.99${t('subscription.perMonth')}`, yearly: `$600${t('subscription.perYear')}` },
       priceId: {
         monthly: window?.location.hostname.includes("localhost") ? "price_1RlUF2Ahnp7DBxtxAWHdp8jw" : "price_1SECeAAhnp7DBxtxSbajPWO3",
         yearly: "price_basic_yearly",
@@ -107,7 +111,7 @@ const SubscriptionPlans = () => {
     (userData.subscription === true || userData.subscription === "true")
     : false;
 
-  // Stripe subscription handler (your existing method)
+  // Stripe subscription handler
   const handleSubscribe = async () => {
     console.log("Stripe subscribe clicked for priceId");
     try {
@@ -118,7 +122,6 @@ const SubscriptionPlans = () => {
         setError("Email or User ID missing");
         return;
       }
-
 
       const baseUrl = window.location.origin + "/customer/dashboard";
 
@@ -132,8 +135,7 @@ const SubscriptionPlans = () => {
           email,
         }),
       });
-      console.log("rsponse of subsctiption session....", response);
-
+      console.log("response of subscription session....", response);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -165,15 +167,14 @@ const SubscriptionPlans = () => {
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
     return isLocalhost
-      ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A" // sandbox client id
-      : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u"; // live client id
+      ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A"
+      : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u";
   };
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.get("success") === "true") {
       setJustSubscribed(true);
-      // Optionally remove query param from the URL
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete("success");
       window.history.replaceState({}, document.title, newUrl.toString());
@@ -229,14 +230,11 @@ const SubscriptionPlans = () => {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            // Include Authorization header if your API requires authentication
-            // "Authorization": `Bearer ${token}`
           }
         }
       );
       console.log('res=>>', res);
       await fetchUser();
-      // window.location.reload();
     } catch (err) {
       console.error("PayPal unsubscribe error:", err);
       setError("Failed to cancel PayPal subscription. Please try again.");
@@ -245,7 +243,7 @@ const SubscriptionPlans = () => {
     }
   };
 
-  // Main cancellation handler - detects payment type
+  // Main cancellation handler
   const handleCancelSubscription = () => {
     console.log("Payment Type:", userData?.paymentType);
 
@@ -260,24 +258,26 @@ const SubscriptionPlans = () => {
     }
   };
 
-
   return (
     <>
       <Helmet>
-        <title>Subscription Plans - Mesob Finance</title>
+        <title>{t('subscription.title')} - Mesob Finance</title>
       </Helmet>
       <PanelHeader size="sm" />
-      <div className="content" >
+      <div className="content">
         <Row>
+          <Col xs={12} md={4} lg={4}>
+            <LanguageSelector />
+          </Col>
           <Col xs={12} style={{ paddingInline: 0 }}>
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Subscription Plans</CardTitle>
+                <CardTitle tag="h4">{t('subscription.title')}</CardTitle>
               </CardHeader>
               <CardBody>
                 {justSubscribed && (
                   <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">
-                    🎉 Congratulations! You’ve successfully subscribed.
+                    {t('subscription.congratulations')}
                   </div>
                 )}
                 <Row>
@@ -304,24 +304,24 @@ const SubscriptionPlans = () => {
                             {loading ? (
                               <div className="text-center">
                                 <Spinner color="primary" />
-                                <p>Loading...</p>
+                                <p>{t('subscription.loadingSubscription')}</p>
                               </div>
                             ) : isSubscribed ? (
                               <>
                                 <Alert color="success" className="mb-4">
-                                  You are already subscribed to this plan.
+                                  {t('subscription.alreadySubscribed')}
                                 </Alert>
                                 <Button
                                   color="danger"
-                                  onClick={() => setShowConfirmModal(true)}  // ← Opens modal
+                                  onClick={() => setShowConfirmModal(true)}
                                   disabled={cancelLoading}
                                 >
                                   {cancelLoading ? (
                                     <>
-                                      <Spinner size="sm" /> Cancelling...
+                                      <Spinner size="sm" /> {t('subscription.cancelling')}
                                     </>
                                   ) : (
-                                    "Unsubscribe"
+                                    t('subscription.unsubscribe')
                                   )}
                                 </Button>
                               </>
@@ -333,7 +333,7 @@ const SubscriptionPlans = () => {
                                   setIsModalOpen(true);
                                 }}
                               >
-                                Subscribe
+                                {t('subscription.subscribe')}
                               </Button>
                             )}
                           </CardBody>
@@ -346,7 +346,7 @@ const SubscriptionPlans = () => {
                 {loading && (
                   <div className="text-center mt-3">
                     <Spinner color="primary" />
-                    <p>Loading subscription details...</p>
+                    <p>{t('subscription.loadingSubscription')}</p>
                   </div>
                 )}
 
@@ -363,7 +363,7 @@ const SubscriptionPlans = () => {
         {/* Payment selection modal */}
         <Modal isOpen={isModalOpen} toggle={handleCloseModal}>
           <ModalHeader toggle={handleCloseModal}>
-            Choose Payment Method
+            {t('subscription.choosePaymentMethod')}
           </ModalHeader>
           <ModalBody>
             <Row>
@@ -372,11 +372,11 @@ const SubscriptionPlans = () => {
                   color="primary"
                   block
                   onClick={() => {
-                    handleSubscribe(); // Stripe payment
+                    handleSubscribe();
                     setIsModalOpen(false);
                   }}
                 >
-                  <FaCreditCard size={20} /> {/* Credit card icon */} {" "} Pay with Card
+                  <FaCreditCard size={20} /> {" "} {t('subscription.payWithCard')}
                 </Button>
               </Col>
               <Col md={6}>
@@ -399,21 +399,21 @@ const SubscriptionPlans = () => {
                         <Col md={14}>
                           <Button
                             style={{
-                              backgroundColor: "#003087", // PayPal dark blue
-                              borderColor: "#003087", // Match border to background
-                              color: "#ffffff", // White text for contrast
+                              backgroundColor: "#003087",
+                              borderColor: "#003087",
+                              color: "#ffffff",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              gap: "8px", // Space between logo and text
-                              padding: "10px 10px", // Adjust padding for better appearance
-                              fontSize: "16px", // Consistent font size
+                              gap: "8px",
+                              padding: "10px 10px",
+                              fontSize: "16px",
                             }}
                             block
-                            disabled={loading} // Disable button while loading
+                            disabled={loading}
                             onClick={async () => {
-                              setLoading(true); // Start loading
-                              setError(""); // Clear any previous errors
+                              setLoading(true);
+                              setError("");
 
                               try {
                                 console.log("[PayPal Subscribe]", {
@@ -437,7 +437,6 @@ const SubscriptionPlans = () => {
                                   return;
                                 }
 
-                                // Call your backend to create the subscription
                                 const res = await fetch(
                                   `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`,
                                   {
@@ -458,7 +457,7 @@ const SubscriptionPlans = () => {
                                 console.log("[PayPal Backend Response]", data);
 
                                 if (data.success && data.approvalLink) {
-                                  window.location.href = data.approvalLink; // Redirect to PayPal
+                                  window.location.href = data.approvalLink;
                                 } else {
                                   setError(
                                     "Failed to create PayPal subscription. Try again."
@@ -470,19 +469,19 @@ const SubscriptionPlans = () => {
                                   "PayPal subscription failed. Please try again."
                                 );
                               } finally {
-                                setLoading(false); // Stop loading in all cases
+                                setLoading(false);
                               }
                             }}
                           >
                             {loading ? (
                               <>
                                 <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                Processing...
+                                {t('subscription.processing')}
                               </>
                             ) : (
                               <>
-                                <FaPaypal size={20} /> {/* PayPal logo icon */}
-                                Pay with PayPal
+                                <FaPaypal size={20} />
+                                {t('subscription.payWithPaypal')}
                               </>
                             )}
                           </Button>
@@ -495,7 +494,7 @@ const SubscriptionPlans = () => {
           </ModalBody>
           <ModalFooter>
             <Button color="secondary" onClick={handleCloseModal}>
-              Cancel
+              {t('subscription.cancel')}
             </Button>
           </ModalFooter>
         </Modal>
@@ -503,14 +502,14 @@ const SubscriptionPlans = () => {
         {/* Confirmation modal for unsubscribe */}
         <Modal isOpen={showConfirmModal} toggle={() => setShowConfirmModal(false)}>
           <ModalHeader toggle={() => setShowConfirmModal(false)}>
-            Confirm Unsubscribe
+            {t('subscription.confirmUnsubscribe')}
           </ModalHeader>
           <ModalBody>
-            Are you sure you want to unsubscribe? This action cannot be undone.
+            {t('subscription.unsubscribeMessage')}
           </ModalBody>
           <ModalFooter>
             <Button color="secondary" onClick={() => setShowConfirmModal(false)}>
-              Cancel
+              {t('subscription.cancel')}
             </Button>
             <Button
               color="danger"
@@ -522,10 +521,10 @@ const SubscriptionPlans = () => {
             >
               {cancelLoading ? (
                 <>
-                  <Spinner size="sm" /> Unsubscribing...
+                  <Spinner size="sm" /> {t('subscription.unsubscribing')}
                 </>
               ) : (
-                "Unsubscribe"
+                t('subscription.unsubscribe')
               )}
             </Button>
           </ModalFooter>
