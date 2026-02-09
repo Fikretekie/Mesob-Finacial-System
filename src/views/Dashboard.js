@@ -1106,12 +1106,14 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
                 <h4 className="text-center mb-3"></h4>
-                <ReactApexChart
-                  options={cashOnHandChartData}
-                  series={cashOnHandChartData.series}
-                  type="area"
-                  height={300}
-                />
+                <div id="cashFlowChart">
+                  <ReactApexChart
+                    options={cashOnHandChartData}
+                    series={cashOnHandChartData.series}
+                    type="area"
+                    height={300}
+                  />
+                </div>
               </CardBody>
             </Card>
           </Col>
@@ -1124,12 +1126,14 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
                 <h4 className="text-center mb-3"></h4>
+                <div id="revenueChart">
                 <ReactApexChart
                   options={revenueChartData}
                   series={revenueChartData.series}
                   type="area"
                   height={300}
                 />
+                </div>
               </CardBody>
             </Card>
           </Col>
@@ -1143,12 +1147,14 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
                 <h4 className="text-center mb-3"></h4>
+                <div id="payableChart">
                 <ReactApexChart
                   options={payableChartData}
                   series={payableChartData.series}
                   type="area"
                   height={300}
                 />
+                </div>
               </CardBody>
             </Card>
           </Col>
@@ -1161,12 +1167,14 @@ function Dashboard() {
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
                 <h4 className="text-center mb-3"></h4>
+                <div id="expensesChart">
                 <ReactApexChart
                   options={expensesChartData}
                   series={expensesChartData.series}
                   type="area"
                   height={300}
                 />
+                </div>
               </CardBody>
             </Card>
           </Col>
