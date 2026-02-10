@@ -11,6 +11,14 @@ import { businessTypes } from "./BusinessTypes";
 import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
 import colors from "variables/colors";
+
+import { signInWithRedirect, signOut } from "aws-amplify/auth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faApple } from "@fortawesome/free-brands-svg-icons";
+import { Spinner } from "reactstrap";
+
+const logo = "/logo2.png";
+
 const SignupPage = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
@@ -48,6 +56,7 @@ const SignupPage = () => {
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
   const [isLoading, setIsLoading] = useState(false);
+  const [socialAuth, setSocialAuth] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startFromZeroConfirmed, setStartFromZeroConfirmed] = useState(false);
 
@@ -189,6 +198,39 @@ const SignupPage = () => {
       newErrors.valueableItems = "Valuable items are required.";
     return Object.keys(newErrors).length === 0;
   };
+
+  // ADD these two functions BEFORE the handleSignup function
+
+const handleGoogleSignUp = async () => {
+  try {
+    setLoading(true);
+    setSocialAuth("google");
+    await signOut();
+    await signInWithRedirect({
+      provider: "Google",
+      customState: "google_signup",
+    });
+    localStorage.setItem("provider", "Google");
+  } catch (error) {
+    console.error("Google sign-up error:", error);
+    setLoading(false);
+    setSocialAuth("");
+  }
+};
+
+const handleAppleSignUp = async () => {
+  try {
+    setLoading(true);
+    setSocialAuth("apple");
+    await signOut();
+    await signInWithRedirect({ provider: "SignInWithApple" });
+    localStorage.setItem("provider", "Apple");
+  } catch (error) {
+    console.error("Apple sign-up error:", error);
+    setLoading(false);
+    setSocialAuth("");
+  }
+};
 
   const handleSignup = async (e, type) => {
     if (isSubmitting) return;
@@ -581,6 +623,10 @@ const SignupPage = () => {
       case 1:
         return (
           <div>
+              <div style={{ textAlign: "center", marginBottom: "16px" }}>
+        <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+      </div>
+
             <h2>Create Your Account</h2>
             <p style={styles.subtext}>
               Already have an account?
@@ -709,11 +755,64 @@ const SignupPage = () => {
               {isLoading ? "Loading..." : "Next"}
             </button>
                 </div>
+
+                 <div className="separator" style={styles.separator}>
+            <span style={{ color: "#9ca5b0", alignSelf:'center' }}>OR</span>
+          </div>
+
+                {/* Social Login Buttons - NEW */}
+      {provider !== "Google" && provider !== "Apple" && (
+        <>
+          <button
+            onClick={handleGoogleSignUp}
+            className="social-login-btn google"
+            style={styles.socialButton}
+            disabled={loading && socialAuth === "google"}
+          >
+            {socialAuth === "google" && loading ? (
+              <>
+                <Spinner color="light" size="sm" /> Processing...
+              </>
+            ) : (
+              <>
+                <img src="/googlelogo.png" alt="Google" style={styles.socialIcon} />
+                Continue with Google
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleAppleSignUp}
+            className="social-login-btn apple"
+            style={styles.socialButton}
+            disabled={loading && socialAuth === "apple"}
+          >
+            {socialAuth === "apple" && loading ? (
+              <>
+                <Spinner color="light" size="sm" /> Processing...
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon
+                  icon={faApple}
+                  style={{ marginRight: "8px", fontSize: "18px", color: "#ffffff" }}
+                />
+                Continue with Apple
+              </>
+            )}
+          </button>
+
+         
+        </>
+      )}
           </div>
         );
       case 2:
         return (
           <div>
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+  <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+</div>
             <h2>Select Business Type</h2>
             <div className="login-input-group">
             <select
@@ -803,6 +902,9 @@ const SignupPage = () => {
       case 3:
         return (
           <div>
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+  <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+</div>
             <h2>Financial Information</h2>
             <p style={styles.infoText}>
               To get started, we need to know where your business stands
@@ -1016,6 +1118,34 @@ const styles = {
     border: "none",
     cursor: "pointer",
   },
+  socialButton: {
+  width: "100%",
+  padding: "10px",
+  borderRadius: "5px",
+  border: "1px solid #333",
+  cursor: "pointer",
+  color: "#fff",
+  marginBottom: "10px",
+  fontSize: "14px",
+  fontWeight: "500",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#202a3a",
+},
+socialIcon: {
+  width: "20px",
+  height: "20px",
+  marginRight: "8px",
+},
+separator: {
+  display: "flex",
+  alignItems: "center",
+  textAlign: "center",
+  margin: "15px 0",
+  color: "#9ca5b0",
+},
+
 };
 
 export default SignupPage;
