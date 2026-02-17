@@ -2040,7 +2040,7 @@ const getBusinessPurposes = (type) => {
                       flexWrap: "wrap",
                     }}
                   >
-                      <Button
+                      {/* <Button
                         onClick={() => setShowDownloadReportModal(true)}
                         disabled={
                           userRole === 1
@@ -2064,7 +2064,7 @@ const getBusinessPurposes = (type) => {
                           style={{ marginRight: "5px" }}
                         />
                       {t('financialReport.downloadReport')}
-                      </Button>
+                      </Button> */}
                       {userRole !== 0 && (
                         <Button
                           onClick={() => setShowAddTransaction(true)}

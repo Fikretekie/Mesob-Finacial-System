@@ -34,7 +34,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+import DownloadReportModal from "components/DownloadReportModal";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -60,7 +61,7 @@ function Dashboard() {
   const [monthlySales, setMonthlySales] = useState([]);
   const [users, setUsers] = useState([]);
   const [trialEndDate, setTrialEndDate] = useState(null);
-
+  const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
   // Loading states for different API calls
   const [loadingFinancialData, setLoadingFinancialData] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -683,71 +684,8 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
-      {/* <PanelHeader
-        size="sm"
-        content={
-          <Row>
-            <Col xs={12} md={8} lg={8}>
-              <h3
-                style={{
-                  color: "white",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  display: "flex",
-                  marginBottom: -3,
-                }}
-              >
-                {loadingCompanyName ? (
-                  <Spinner size="sm" color="light" />
-                ) : (
-                  companyName
-                )}
-              </h3>
-            </Col>
-            <Col>
-              {userRole !== 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "10px",
-                    marginBottom: "30px",
-                  }}
-                >
-                  <Button
-                    style={{
-                      marginRight: "2rem",
-                      padding: "0.5rem 1rem",
-                      fontSize: "1rem",
-                      minWidth: "120px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      marginBottom: "2rem",
-                      backgroundColor: "#41926f",
-                      borderColor: "#41926f",
-                      color: "#ffffff",
-                    }}
-                    onClick={handleAddTransactionClick}
-                    disabled={
-                      userRole === 1
-                        ? false
-                        : !userSubscription && !isTrialActive()
-                    }
-                  >
-                    <FontAwesomeIcon
-                      icon={faPlus}
-                      style={{ marginRight: "0.5rem", fontSize: "0.9rem", }}
-                    />
-                    Add Transaction
-                  </Button>
-                </div>
-              )}
-            </Col>
-          </Row>
-        }
-      /> */}
-<PanelHeader
+     
+{/* <PanelHeader
   size="sm"
   content={
     <Row>
@@ -809,6 +747,76 @@ function Dashboard() {
               {t('dashboard.addTransaction')}
             </Button>
           </div>
+        )}
+      </Col>
+    </Row>
+  }
+/> */}
+<PanelHeader
+  size="sm"
+  content={
+    <Row style={{ alignItems: "center", width: "100%", margin: 0 }}>
+      <Col xs={6} md={4} style={{ padding: "0 8px" }}>
+        <LanguageSelector />
+      </Col>
+      <Col xs={6} md={4} style={{ padding: "0 8px" }}>
+        <h3 style={{
+          color: "white",
+          justifyContent: "center",
+          alignItems: "center",
+          display: "flex",
+          margin: 0,
+          fontSize: "clamp(14px, 2vw, 20px)",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}>
+          {companyName}
+        </h3>
+      </Col>
+      <Col xs={12} md={4} style={{ padding: "4px 8px 0", display: "flex", justifyContent: "flex-end", gap: "8px", flexWrap: "wrap" }}>
+        <Button
+          onClick={() => setShowDownloadReportModal(true)}
+          disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+          style={{
+            backgroundColor: "#2b427d",
+            borderColor: "#2b427d",
+            color: "#ffffff",
+            height: "36px",
+            borderRadius: "4px",
+            padding: "0 14px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "13px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
+          {t('financialReport.downloadReport')}
+        </Button>
+
+        {userRole !== 0 && (
+          <Button
+            onClick={handleAddTransactionClick}
+            disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+            style={{
+              backgroundColor: "#41926f",
+              borderColor: "#41926f",
+              color: "#ffffff",
+              height: "36px",
+              borderRadius: "4px",
+              padding: "0 14px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "13px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
+            {t('dashboard.addTransaction')}
+          </Button>
         )}
       </Col>
     </Row>
@@ -1180,6 +1188,23 @@ function Dashboard() {
           </Col>
         </Row>
       </div>
+      <DownloadReportModal
+  isOpen={showDownloadReportModal}
+  toggle={() => setShowDownloadReportModal(false)}
+  companyName={companyName}
+  items={items || []}
+  revenues={{}}
+  expenses={{}}
+  initialBalance={initialBalance}
+  initialvalueableItems={initialvalueableItems}
+  initialoutstandingDebt={initialoutstandingDebt}
+  calculateTotalCash={calculateTotalCash}
+  calculateTotalRevenue={() => totalrevenue.toFixed(2)}
+  calculateTotalExpenses={() => totalExpenses.toFixed(2)}
+  calculateTotalPayable={() => totalPayable.toFixed(2)}
+  calculateTotalInventory={() => initialvalueableItems.toFixed(2)}
+  searchedDates={null}
+/>
     </>
   );
 }
