@@ -4,32 +4,262 @@ import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import axios from "axios";
 import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardTitle,
   Row,
   Col,
-  Button,
   Spinner,
-  Alert,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
 } from "reactstrap";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { FaPaypal } from "react-icons/fa";
-import { FaCreditCard } from "react-icons/fa";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { FaPaypal, FaCreditCard, FaCheck } from "react-icons/fa";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { useTranslation } from "react-i18next";
 
-const SubscriptionPlans = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { t } = useTranslation();
+/* ─── inline styles ─────────────────────────────────────────── */
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#101926",
+    display: "flex",
+    alignItems: "flex-start",
+    justifyContent: "center",
+    padding: "1rem 2rem",
+  },
+  wrapper: {
+    width: "100%",
+    maxWidth: "560px",
+    marginTop: "1.5rem",
+  },
+  /* gradient border card */
+  gradientBorder: {
+    background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #3b82f6 100%)",
+    borderRadius: "20px",
+    padding: "1.5px",
+  },
+  card: {
+    background: "#131c2e",
+    borderRadius: "19px",
+    padding: "2.5rem 2rem",
+  },
+  heading: {
+    textAlign: "center",
+    marginBottom: "1.0rem",
+  },
+  h2: {
+    fontSize: "1.6rem",
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: "0.75rem",
+    lineHeight: 1.3,
+  },
+  accent: { color: "#60a5fa" },
+  subtitle: {
+    color: "#94a3b8",
+    fontSize: "0.95rem",
+    lineHeight: 1.7,
+    margin: 0,
+  },
+  bold: { fontWeight: "600", color: "#e2e8f0" },
+  /* features box */
+  featuresBox: {
+    background: "rgba(30, 41, 59, 0.6)",
+    border: "1px solid rgba(59, 130, 246, 0.15)",
+    borderRadius: "14px",
+    padding: "1.5rem",
+    marginBottom: "1.0rem",
+  },
+  featureRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "0.75rem",
+    marginBottom: "0.3rem",
+  },
+  checkIcon: {
+    color: "#60a5fa",
+    marginTop: "3px",
+    flexShrink: 0,
+    fontSize: "14px",
+  },
+  featureText: {
+    color: "#94a3b8",
+    fontSize: "0.875rem",
+    lineHeight: 1.6,
+    margin: 0,
+  },
+  featureBold: { fontWeight: "600", color: "#e2e8f0" },
+  pitch: {
+    color: "#64748b",
+    fontSize: "0.82rem",
+    textAlign: "center",
+    marginTop: "1rem",
+    lineHeight: 1.6,
+    margin: "1rem 0 0",
+  },
+  /* price */
+  priceWrap: { textAlign: "center", marginBottom: "1.25rem" },
+  price: { fontSize: "2.25rem", fontWeight: "700", color: "#ffffff", margin: 0 },
+  perMonth: { fontSize: "1rem", fontWeight: "400", color: "#64748b" },
+  /* CTA */
+  ctaBtn: {
+    width: "100%",
+    background: "linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)",
+    border: "none",
+    borderRadius: "12px",
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: "1rem",
+    padding: "0.875rem 1.5rem",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+    boxShadow: "0 4px 20px rgba(59,130,246,0.35)",
+    letterSpacing: "0.01em",
+  },
+  footNote: {
+    color: "#475569",
+    fontSize: "0.75rem",
+    textAlign: "center",
+    marginTop: "0.875rem",
+    marginBottom: 0,
+  },
+  /* subscribed state */
+  subscribedBadge: {
+    background: "rgba(16, 185, 129, 0.12)",
+    border: "1px solid rgba(16,185,129,0.3)",
+    borderRadius: "10px",
+    color: "#34d399",
+    padding: "0.75rem 1rem",
+    fontSize: "0.875rem",
+    textAlign: "center",
+    marginBottom: "1rem",
+    fontWeight: "500",
+  },
+  cancelBtn: {
+    width: "100%",
+    background: "transparent",
+    border: "1px solid rgba(239,68,68,0.5)",
+    borderRadius: "12px",
+    color: "#f87171",
+    fontWeight: "600",
+    fontSize: "0.95rem",
+    padding: "0.8rem 1.5rem",
+    cursor: "pointer",
+    transition: "all 0.25s ease",
+  },
+  /* error */
+  errorBox: {
+    marginTop: "1rem",
+    padding: "10px 14px",
+    backgroundColor: "#1a0000",
+    border: "1px solid #ff4444",
+    borderRadius: "8px",
+    color: "#ff6b6b",
+    fontSize: "14px",
+  },
+  /* success toast */
+  successToast: {
+    background: "rgba(16,185,129,0.1)",
+    border: "1px solid rgba(16,185,129,0.25)",
+    borderRadius: "10px",
+    color: "#34d399",
+    padding: "0.75rem 1rem",
+    fontSize: "0.875rem",
+    marginBottom: "1.25rem",
+    textAlign: "center",
+  },
+  /* Modal dark theme */
+  modalContent: {
+    backgroundColor: "#0d1117",
+    border: "1px solid #1e293b",
+    borderRadius: "16px",
+    overflow: "hidden",
+  },
+  modalHeader: {
+    backgroundColor: "#111827",
+    borderBottom: "1px solid #1e293b",
+    color: "#ffffff",
+    padding: "1rem 1.5rem",
+  },
+  modalBody: {
+    backgroundColor: "#0d1117",
+    padding: "1.75rem",
+  },
+  modalFooter: {
+    backgroundColor: "#111827",
+    borderTop: "1px solid #1e293b",
+    padding: "0.875rem 1.5rem",
+  },
+  payBtn: (gradient, shadow) => ({
+    width: "100%",
+    background: gradient,
+    border: "none",
+    borderRadius: "10px",
+    padding: "13px",
+    fontSize: "15px",
+    fontWeight: "600",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "9px",
+    boxShadow: shadow,
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+  }),
+  cancelModalBtn: {
+    background: "#1e293b",
+    border: "1px solid #334155",
+    borderRadius: "8px",
+    color: "#94a3b8",
+    padding: "8px 20px",
+    cursor: "pointer",
+    fontSize: "0.875rem",
+    transition: "all 0.2s ease",
+  },
+  /* confirm modal */
+  confirmModalBody: {
+    backgroundColor: "#0d1117",
+    color: "#94a3b8",
+    padding: "1.5rem",
+  },
+  dangerBtn: {
+    background: "linear-gradient(135deg,#ef4444,#b91c1c)",
+    border: "none",
+    borderRadius: "8px",
+    color: "#fff",
+    padding: "8px 20px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "0.875rem",
+  },
+};
 
-  const [billingCycle, setBillingCycle] = useState("monthly");
+const features = (t) => [
+  {
+    title: "Unlimited Transactions:",
+    desc: "Track every transaction without limits — always know your real profit.",
+  },
+  {
+    title: "Tax-Ready Financial Reports:",
+    desc: "Instantly generate clear reports to stay prepared for tax season and make smarter decisions.",
+  },
+  {
+    title: "Export & Download Receipts:",
+    desc: "Keep all your receipts organized and audit-ready.",
+  },
+  {
+    title: "User Profile Management:",
+    desc: "Manage your business info easily, no confusion or lost data.",
+  },
+];
+
+/* ─── component ─────────────────────────────────────────────── */
+const SubscriptionPlans = () => {
+  const { t } = useTranslation();
+  const location = useLocation();
+
+  const [billingCycle] = useState("monthly");
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,146 +268,42 @@ const SubscriptionPlans = () => {
   const [selectedPriceId, setSelectedPriceId] = useState(null);
   const [justSubscribed, setJustSubscribed] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  
-  // Backend base URL
+  const [ctaHover, setCtaHover] = useState(false);
+
   const backendBaseUrl =
     "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
 
-  // Helper to get userId from localStorage
   const getUserId = () => localStorage.getItem("userId") || null;
 
-  // Fetch user data to determine subscription state
   const fetchUser = async () => {
     try {
       setLoading(true);
       setError("");
       const userId = getUserId();
-      if (!userId) {
-        setUserData(null);
-        return;
-      }
-
+      if (!userId) { setUserData(null); return; }
       const response = await axios.get(`${backendBaseUrl}/Users/${userId}`);
-      const rawData = response.data.user || response.data;
-      setUserData(rawData);
+      setUserData(response.data.user || response.data);
     } catch (err) {
-      if (err.response?.status === 404) {
-        setUserData(null);
-      } else {
-        setError(err.response?.data?.message || "Failed to fetch user data.");
-      }
+      if (err.response?.status === 404) setUserData(null);
+      else setError(err.response?.data?.message || "Failed to fetch user data.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const userId = getUserId();
-    if (userId) fetchUser();
-  }, []);
+  useEffect(() => { if (getUserId()) fetchUser(); }, []);
 
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    if (q.get("paypal") === "success") {
-      fetchUser();
-    }
+    if (new URLSearchParams(window.location.search).get("paypal") === "success") fetchUser();
   }, [location.search]);
-
-  // Billing plans info with Stripe priceIds and PayPal plan IDs
-  const plans = [
-    {
-      name: t('subscription.pricingPlan'),
-      features: [
-        t('subscription.features.viewHistory'),
-        t('subscription.features.seeReports'),
-        t('subscription.features.checkBalance'),
-        t('subscription.features.viewIncome'),
-        t('subscription.features.userProfile'),
-        t('subscription.features.downloadReceipts'),
-      ],
-      price: { monthly: `$29.99${t('subscription.perMonth')}`, yearly: `$600${t('subscription.perYear')}` },
-      priceId: {
-        monthly: window?.location.hostname.includes("localhost") ? "price_1RlUF2Ahnp7DBxtxAWHdp8jw" : "price_1SECeAAhnp7DBxtxSbajPWO3",
-        yearly: "price_basic_yearly",
-      },
-      paypalPlanId: {
-        monthly: window?.location.hostname.includes("localhost") ? "P-75006919S65969906NDAXFNA" : "P-1E453171T1240781XNDIUNGY"
-      },
-    },
-  ];
-
-  const isSubscribed = userData
-    ? userData.isPaid === true &&
-    (userData.subscription === true || userData.subscription === "true")
-    : false;
-
-  // Stripe subscription handler
-  const handleSubscribe = async () => {
-    console.log("Stripe subscribe clicked for priceId");
-    try {
-      const email = localStorage.getItem("user_email");
-      const userId = getUserId();
-
-      if (!email || !userId) {
-        setError("Email or User ID missing");
-        return;
-      }
-
-      const baseUrl = window.location.origin + "/customer/dashboard";
-
-      const response = await fetch(`${backendBaseUrl}/Subscription/Session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planType: billingCycle,
-          redirectUrl: baseUrl,
-          userId,
-          email,
-        }),
-      });
-      console.log("response of subscription session....", response);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, message: ${errorText}`
-        );
-      }
-
-      const session = await response.json();
-      console.log("Stripe session response....", session);
-
-      const checkoutUrl = session?.url || session?.session?.url;
-      console.log("checkoutUrl....", checkoutUrl);
-
-      if (!checkoutUrl) throw new Error("Session URL missing");
-
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      setError(error.message || "Failed to create Stripe subscription session");
-    }
-  };
-
-  // Modal controls
-  const handleCloseModal = () => setIsModalOpen(false);
-
-  // PayPal Client ID switch for sandbox/live
-  const getPaypalClientId = () => {
-    const isLocalhost =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1";
-    return isLocalhost
-      ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A"
-      : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u";
-  };
 
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.get("success") === "true") {
       setJustSubscribed(true);
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete("success");
-      window.history.replaceState({}, document.title, newUrl.toString());
+      const u = new URL(window.location.href);
+      u.searchParams.delete("success");
+      window.history.replaceState({}, document.title, u.toString());
       setTimeout(() => setJustSubscribed(false), 5000);
     }
   }, []);
@@ -189,79 +315,93 @@ const SubscriptionPlans = () => {
     }
   }, [location.state]);
 
+  const plans = [
+    {
+      name: t("subscription.pricingPlan"),
+      price: { monthly: "$29.99/month", yearly: "$600/year" },
+      priceId: {
+        monthly: window?.location.hostname.includes("localhost")
+          ? "price_1RlUF2Ahnp7DBxtxAWHdp8jw"
+          : "price_1SECeAAhnp7DBxtxSbajPWO3",
+        yearly: "price_basic_yearly",
+      },
+      paypalPlanId: {
+        monthly: window?.location.hostname.includes("localhost")
+          ? "P-75006919S65969906NDAXFNA"
+          : "P-1E453171T1240781XNDIUNGY",
+      },
+    },
+  ];
+
+  const isSubscribed =
+    userData?.isPaid === true &&
+    (userData?.subscription === true || userData?.subscription === "true");
+
+  const handleSubscribe = async () => {
+    try {
+      const email = localStorage.getItem("user_email");
+      const userId = getUserId();
+      if (!email || !userId) { setError("Email or User ID missing"); return; }
+      const response = await fetch(`${backendBaseUrl}/Subscription/Session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planType: billingCycle,
+          redirectUrl: window.location.origin + "/customer/dashboard",
+          userId,
+          email,
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const session = await response.json();
+      const url = session?.url || session?.session?.url;
+      if (!url) throw new Error("Session URL missing");
+      window.location.href = url;
+    } catch (err) {
+      setError(err.message || "Failed to create Stripe subscription session");
+    }
+  };
+
   const cancelStripeSubscription = async () => {
     try {
-      setCancelLoading(true);
-      setError("");
-
-      if (!userData || !userData.subscriptionId) {
-        setError("Subscription ID missing.");
-        return;
-      }
-
-      await axios.delete(
-        `${backendBaseUrl}/Subscription/${userData.subscriptionId}`
-      );
-
+      setCancelLoading(true); setError("");
+      if (!userData?.subscriptionId) { setError("Subscription ID missing."); return; }
+      await axios.delete(`${backendBaseUrl}/Subscription/${userData.subscriptionId}`);
       await fetchUser();
       window.location.reload();
-    } catch (err) {
-      console.error("Stripe unsubscribe error:", err);
-      setError("Failed to cancel Stripe subscription. Please try again.");
-    } finally {
-      setCancelLoading(false);
-    }
+    } catch { setError("Failed to cancel Stripe subscription."); }
+    finally { setCancelLoading(false); }
   };
 
-  // PayPal cancellation function
   const cancelPaypalSubscription = async () => {
     try {
-      setCancelLoading(true);
-      setError("");
-
-      if (!userData || !userData.subscriptionId) {
-        setError("Subscription ID missing.");
-        return;
-      }
-
-      const res = await fetch(
-        `${backendBaseUrl}/PaypalSubscription/${userData.subscriptionId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          }
-        }
-      );
-      console.log('res=>>', res);
+      setCancelLoading(true); setError("");
+      if (!userData?.subscriptionId) { setError("Subscription ID missing."); return; }
+      await fetch(`${backendBaseUrl}/PaypalSubscription/${userData.subscriptionId}`, {
+        method: "DELETE", headers: { "Content-Type": "application/json" },
+      });
       await fetchUser();
-    } catch (err) {
-      console.error("PayPal unsubscribe error:", err);
-      setError("Failed to cancel PayPal subscription. Please try again.");
-    } finally {
-      setCancelLoading(false);
-    }
+    } catch { setError("Failed to cancel PayPal subscription."); }
+    finally { setCancelLoading(false); }
   };
 
-  // Main cancellation handler
   const handleCancelSubscription = () => {
-    console.log("Payment Type:", userData?.paymentType);
-
-    if (userData?.paymentType === "STRIPE") {
-      console.log("Cancelling Stripe subscription...");
-      cancelStripeSubscription();
-    } else if (userData?.paymentType === "PAYPAL") {
-      console.log("Cancelling PayPal subscription...");
-      cancelPaypalSubscription();
-    } else {
-      setError("Unable to determine payment type. Please contact support.");
-    }
+    if (userData?.paymentType === "STRIPE") cancelStripeSubscription();
+    else if (userData?.paymentType === "PAYPAL") cancelPaypalSubscription();
+    else setError("Unable to determine payment type. Please contact support.");
   };
+
+  const getPaypalClientId = () =>
+    ["localhost", "127.0.0.1"].includes(window.location.hostname)
+      ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A"
+      : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u";
+
+  const currentPriceId = plans[0].priceId[billingCycle];
 
   return (
     <>
       <Helmet>
-        <title>{t('subscription.title')} - Mesob Finance</title>
+        <title>{t("subscription.title")} - Mesob Finance</title>
       </Helmet>
       <PanelHeader size="sm" />
       <div className="content">
@@ -269,265 +409,265 @@ const SubscriptionPlans = () => {
           <Col xs={12} md={4} lg={4}>
             <LanguageSelector />
           </Col>
-          <Col xs={12} style={{ paddingInline: 0 }}>
-            <Card>
-              <CardHeader>
-                <CardTitle tag="h4">{t('subscription.title')}</CardTitle>
-              </CardHeader>
-              <CardBody>
-                {justSubscribed && (
-                  <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded">
-                    {t('subscription.congratulations')}
-                  </div>
-                )}
-                <Row>
-                  {plans.map((plan, index) => {
-                    const currentPriceId = plan.priceId[billingCycle];
-                    const currentPaypalPlanId = plan.paypalPlanId[billingCycle];
-                    return (
-                      <Col md={12} key={index}>
-                        <Card className="text-center">
-                          <CardHeader>
-                            <h3>{plan.name}</h3>
-                          </CardHeader>
-                          <CardBody>
-                            <ul className="list-unstyled">
-                              {plan.features.map((feature, i) => (
-                                <li key={i} className="mb-2">
-                                  {feature}
-                                </li>
-                              ))}
-                            </ul>
-                            <p className="h4 text-primary mb-4">
-                              {plan.price[billingCycle]}
-                            </p>
-                            {loading ? (
-                              <div className="text-center">
-                                <Spinner color="primary" />
-                                <p>{t('subscription.loadingSubscription')}</p>
-                              </div>
-                            ) : isSubscribed ? (
-                              <>
-                                <Alert color="success" className="mb-4">
-                                  {t('subscription.alreadySubscribed')}
-                                </Alert>
-                                <Button
-                                  color="danger"
-                                  onClick={() => setShowConfirmModal(true)}
-                                  disabled={cancelLoading}
-                                >
-                                  {cancelLoading ? (
-                                    <>
-                                      <Spinner size="sm" /> {t('subscription.cancelling')}
-                                    </>
-                                  ) : (
-                                    t('subscription.unsubscribe')
-                                  )}
-                                </Button>
-                              </>
-                            ) : (
-                              <Button
-                                color="primary"
-                                onClick={() => {
-                                  setSelectedPriceId(currentPriceId);
-                                  setIsModalOpen(true);
-                                }}
-                              >
-                                {t('subscription.subscribe')}
-                              </Button>
-                            )}
-                          </CardBody>
-                        </Card>
-                      </Col>
-                    );
-                  })}
-                </Row>
-
-                {loading && (
-                  <div className="text-center mt-3">
-                    <Spinner color="primary" />
-                    <p>{t('subscription.loadingSubscription')}</p>
-                  </div>
-                )}
-
-                {error && (
-                  <Alert color="danger" className="mt-3">
-                    {error}
-                  </Alert>
-                )}
-              </CardBody>
-            </Card>
-          </Col>
         </Row>
 
-        {/* Payment selection modal */}
-        <Modal isOpen={isModalOpen} toggle={handleCloseModal}>
-          <ModalHeader toggle={handleCloseModal}>
-            {t('subscription.choosePaymentMethod')}
-          </ModalHeader>
-          <ModalBody>
-            <Row>
-              <Col md={6} className="mb-3">
-                <Button
-                  color="primary"
-                  block
-                  onClick={() => {
-                    handleSubscribe();
-                    setIsModalOpen(false);
-                  }}
-                >
-                  <FaCreditCard size={20} /> {" "} {t('subscription.payWithCard')}
-                </Button>
-              </Col>
-              <Col md={6}>
-                <PayPalScriptProvider
-                  options={{
-                    "client-id": getPaypalClientId(),
-                    currency: "USD",
-                    intent: "subscription",
-                    vault: true,
-                  }}
-                >
-                  {billingCycle === "monthly" &&
-                    (() => {
+        <div style={styles.page}>
+          <div style={styles.wrapper}>
+            {justSubscribed && (
+              <div style={styles.successToast}>
+                🎉 {t("subscription.congratulations")}
+              </div>
+            )}
+
+            {error && <div style={styles.errorBox}>⚠️ {error}</div>}
+
+            {/* ── Gradient-border card ── */}
+            <div style={styles.gradientBorder}>
+              <div style={styles.card}>
+
+                {/* Header */}
+                <div style={styles.heading}>
+                  <h2 style={styles.h2}>
+                    Full Access with{" "}
+                    <span style={styles.accent}>Pro Plan</span>
+                  </h2>
+                  <p style={styles.subtitle}>
+                    Enjoy{" "}
+                    <span style={styles.bold}>
+                      unlimited access free for 30 days
+                    </span>{" "}
+                    — no credit card required.
+                    <br />
+                    After your trial, your subscription continues automatically
+                    at <span style={styles.bold}>$29.99/month</span>.
+                  </p>
+                </div>
+
+                {/* Features */}
+                <div style={styles.featuresBox}>
+                  {features(t).map((f, i) => (
+                    <div key={i} style={{ ...styles.featureRow, marginBottom: i === features(t).length - 1 ? 0 : "0.5rem" }}>
+                      <FaCheck style={styles.checkIcon} />
+                      <p style={styles.featureText}>
+                        <span style={styles.featureBold}>{f.title}</span>{" "}
+                        {f.desc}
+                      </p>
+                    </div>
+                  ))}
+                  <p style={styles.pitch}>
+                    Save hours every week on bookkeeping. Stop guessing where
+                    your money goes — focus on growing your business.
+                  </p>
+                </div>
+
+                {/* Price */}
+                <div style={styles.priceWrap}>
+                  <p style={styles.price}>
+                    $29.99{" "}
+                    <span style={styles.perMonth}>/ month</span>
+                  </p>
+                </div>
+
+                {/* CTA / subscribed state */}
+                {loading ? (
+                  <div style={{ textAlign: "center", padding: "1rem" }}>
+                    <Spinner style={{ color: "#60a5fa" }} />
+                    <p style={{ color: "#64748b", marginTop: "0.5rem", fontSize: "0.875rem" }}>
+                      {t("subscription.loadingSubscription")}
+                    </p>
+                  </div>
+                ) : isSubscribed ? (
+                  <>
+                    <div style={styles.subscribedBadge}>
+                      ✓ {t("subscription.alreadySubscribed")}
+                    </div>
+                    <button
+                      style={styles.cancelBtn}
+                      disabled={cancelLoading}
+                      onClick={() => setShowConfirmModal(true)}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                    >
+                      {cancelLoading ? (
+                        <><Spinner size="sm" /> {t("subscription.cancelling")}</>
+                      ) : t("subscription.unsubscribe")}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    style={{
+                      ...styles.ctaBtn,
+                      ...(ctaHover ? {
+                        boxShadow: "0 6px 28px rgba(59,130,246,0.55)",
+                        transform: "translateY(-1px)",
+                      } : {}),
+                    }}
+                    onMouseEnter={() => setCtaHover(true)}
+                    onMouseLeave={() => setCtaHover(false)}
+                    onClick={() => {
+                      setSelectedPriceId(currentPriceId);
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    Start My Free Trial
+                  </button>
+                )}
+
+                <p style={styles.footNote}>
+                  No credit card required. Cancel anytime before your 30-day
+                  trial ends.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Payment Method Modal ── */}
+        <Modal
+          isOpen={isModalOpen}
+          toggle={() => setIsModalOpen(false)}
+          contentClassName=""
+          style={{ "--bs-modal-bg": "transparent" }}
+        >
+          <div style={styles.modalContent}>
+            <ModalHeader
+              toggle={() => setIsModalOpen(false)}
+              style={styles.modalHeader}
+            >
+              <span style={{ color: "#fff", fontWeight: 600 }}>
+                {t("subscription.choosePaymentMethod")}
+              </span>
+            </ModalHeader>
+
+            <ModalBody style={styles.modalBody}>
+              <Row className="g-3">
+                <Col md={6}>
+                  <button
+                    style={styles.payBtn(
+                      "linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%)",
+                      "0 4px 16px rgba(59,130,246,0.3)"
+                    )}
+                    onClick={() => { handleSubscribe(); setIsModalOpen(false); }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 22px rgba(59,130,246,0.55)"}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(59,130,246,0.3)"}
+                  >
+                    <FaCreditCard size={19} />
+                    {t("subscription.payWithCard")}
+                  </button>
+                </Col>
+
+                <Col md={6}>
+                  <PayPalScriptProvider
+                    options={{
+                      "client-id": getPaypalClientId(),
+                      currency: "USD",
+                      intent: "subscription",
+                      vault: true,
+                    }}
+                  >
+                    {billingCycle === "monthly" && (() => {
                       const selectedPlan = plans.find((p) =>
                         Object.values(p.priceId).includes(selectedPriceId)
                       );
                       const planId = selectedPlan?.paypalPlanId?.monthly;
-
                       return (
-                        <Col md={14}>
-                          <Button
-                            style={{
-                              backgroundColor: "#003087",
-                              borderColor: "#003087",
-                              color: "#ffffff",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "8px",
-                              padding: "10px 10px",
-                              fontSize: "16px",
-                            }}
-                            block
-                            disabled={loading}
-                            onClick={async () => {
-                              setLoading(true);
-                              setError("");
-
-                              try {
-                                console.log("[PayPal Subscribe]", {
-                                  planId,
-                                  billingCycle,
-                                  selectedPriceId,
-                                });
-
-                                if (!planId) {
-                                  setError(
-                                    "PayPal plan not configured for this billing cycle."
-                                  );
-                                  return;
+                        <button
+                          disabled={loading}
+                          style={{
+                            ...styles.payBtn(
+                              "linear-gradient(135deg,#0070ba 0%,#003087 100%)",
+                              "0 4px 16px rgba(0,112,186,0.3)"
+                            ),
+                            opacity: loading ? 0.7 : 1,
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 22px rgba(0,112,186,0.55)"}
+                          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,112,186,0.3)"}
+                          onClick={async () => {
+                            setLoading(true); setError("");
+                            try {
+                              if (!planId) { setError("PayPal plan not configured."); return; }
+                              const userId = getUserId();
+                              const email = localStorage.getItem("user_email");
+                              if (!userId || !email) { setError("User not logged in"); return; }
+                              const res = await fetch(
+                                `${backendBaseUrl}/createPaypalSubscription`,
+                                {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    planId, userId, email,
+                                    redirectUrl: window.location.origin + "/customer/subscription",
+                                  }),
                                 }
-
-                                const userId = getUserId();
-                                const email = localStorage.getItem("user_email");
-
-                                if (!userId || !email) {
-                                  setError("User not logged in");
-                                  return;
-                                }
-
-                                const res = await fetch(
-                                  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createPaypalSubscription`,
-                                  {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                      planId,
-                                      userId,
-                                      email,
-                                      redirectUrl: window.location.origin + "/customer/subscription",
-                                    }),
-                                  }
-                                );
-
-                                const data = await res.json();
-                                console.log("[PayPal Backend Response]", data);
-
-                                if (data.success && data.approvalLink) {
-                                  window.location.href = data.approvalLink;
-                                } else {
-                                  setError(
-                                    "Failed to create PayPal subscription. Try again."
-                                  );
-                                }
-                              } catch (err) {
-                                console.error("[PayPal Button Error]", err);
-                                setError(
-                                  "PayPal subscription failed. Please try again."
-                                );
-                              } finally {
-                                setLoading(false);
+                              );
+                              const data = await res.json();
+                              if (data.success && data.approvalLink) {
+                                window.location.href = data.approvalLink;
+                              } else {
+                                setError("Failed to create PayPal subscription.");
                               }
-                            }}
-                          >
-                            {loading ? (
-                              <>
-                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                {t('subscription.processing')}
-                              </>
-                            ) : (
-                              <>
-                                <FaPaypal size={20} />
-                                {t('subscription.payWithPaypal')}
-                              </>
-                            )}
-                          </Button>
-                        </Col>
+                            } catch { setError("PayPal subscription failed. Please try again."); }
+                            finally { setLoading(false); }
+                          }}
+                        >
+                          {loading ? (
+                            <><span className="spinner-border spinner-border-sm" /> {t("subscription.processing")}</>
+                          ) : (
+                            <><FaPaypal size={19} /> {t("subscription.payWithPaypal")}</>
+                          )}
+                        </button>
                       );
                     })()}
-                </PayPalScriptProvider>
-              </Col>
-            </Row>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="secondary" onClick={handleCloseModal}>
-              {t('subscription.cancel')}
-            </Button>
-          </ModalFooter>
+                  </PayPalScriptProvider>
+                </Col>
+              </Row>
+
+              {error && <div style={styles.errorBox}>⚠️ {error}</div>}
+            </ModalBody>
+
+            <ModalFooter style={styles.modalFooter}>
+              <button
+                style={styles.cancelModalBtn}
+                onClick={() => setIsModalOpen(false)}
+                onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.background = "#334155"; }}
+                onMouseLeave={e => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.background = "#1e293b"; }}
+              >
+                {t("subscription.cancel")}
+              </button>
+            </ModalFooter>
+          </div>
         </Modal>
 
-        {/* Confirmation modal for unsubscribe */}
+        {/* ── Confirm Unsubscribe Modal ── */}
         <Modal isOpen={showConfirmModal} toggle={() => setShowConfirmModal(false)}>
-          <ModalHeader toggle={() => setShowConfirmModal(false)}>
-            {t('subscription.confirmUnsubscribe')}
-          </ModalHeader>
-          <ModalBody>
-            {t('subscription.unsubscribeMessage')}
-          </ModalBody>
-          <ModalFooter>
-            <Button color="secondary" onClick={() => setShowConfirmModal(false)}>
-              {t('subscription.cancel')}
-            </Button>
-            <Button
-              color="danger"
-              onClick={() => {
-                handleCancelSubscription();
-                setShowConfirmModal(false);
-              }}
-              disabled={cancelLoading}
+          <div style={styles.modalContent}>
+            <ModalHeader
+              toggle={() => setShowConfirmModal(false)}
+              style={styles.modalHeader}
             >
-              {cancelLoading ? (
-                <>
-                  <Spinner size="sm" /> {t('subscription.unsubscribing')}
-                </>
-              ) : (
-                t('subscription.unsubscribe')
-              )}
-            </Button>
-          </ModalFooter>
+              <span style={{ color: "#fff" }}>{t("subscription.confirmUnsubscribe")}</span>
+            </ModalHeader>
+            <ModalBody style={styles.confirmModalBody}>
+              {t("subscription.unsubscribeMessage")}
+            </ModalBody>
+            <ModalFooter style={styles.modalFooter}>
+              <button
+                style={styles.cancelModalBtn}
+                onClick={() => setShowConfirmModal(false)}
+              >
+                {t("subscription.cancel")}
+              </button>
+              <button
+                style={styles.dangerBtn}
+                disabled={cancelLoading}
+                onClick={() => { handleCancelSubscription(); setShowConfirmModal(false); }}
+              >
+                {cancelLoading ? (
+                  <><Spinner size="sm" /> {t("subscription.unsubscribing")}</>
+                ) : t("subscription.unsubscribe")}
+              </button>
+            </ModalFooter>
+          </div>
         </Modal>
       </div>
     </>

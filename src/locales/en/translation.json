@@ -74,7 +74,7 @@
     "editTransaction": "Edit Transaction",
     "type": "Type",
     "receivedCash": "Received Cash",
-    "paidCash": "Pay Cash",
+    "paidCash": "Paid Cash",
     "haventYetPaid": "Haven't Yet Paid",
     "selectAction": "Select Action",
     "recordedEarlierAsPayable": "Recorded Earlier as Payable",

@@ -4028,7 +4028,7 @@ const getBusinessPurposes = (type) => {
                     (isManual === "manual" && !manualPurpose.trim())
                   }
                 >
-                  {isAddingTransaction ? <Spinner size="sm" /> : "{t('financialReport.save')}"}
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
                 </Button>
               </>
             )}
