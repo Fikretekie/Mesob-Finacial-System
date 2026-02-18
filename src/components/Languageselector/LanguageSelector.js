@@ -49,79 +49,77 @@ const LanguageSelector = () => {
   const currentLanguage =
     languages.find((lang) => lang.code === selectedLanguage) || languages[0];
 
-  return (
-    <div className="language-selector-wrapper">
-      <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-        <DropdownToggle
-          caret
-          className="language-toggle"
-          style={{
-            backgroundColor: "#5e72e4",
-            borderColor: "#5e72e4",
-            color: "#ffffff",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            fontSize: "14px",
-            fontWeight: "500",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <span>{currentLanguage.flag}</span>
-          <span>{currentLanguage.name}</span>
-        </DropdownToggle>
 
-        <DropdownMenu
-          container="body"
-          strategy="fixed"
-          style={{
-            backgroundColor: "#1a273a",
-            border: "1px solid #3a4555",
-            borderRadius: "6px",
-            marginTop: "6px",
-            minWidth: "220px",
-            maxHeight: "320px",
-            overflowY: "auto",
-            zIndex: 9999,
-          }}
-        >
-          {languages.map((lang) => (
-            <DropdownItem
-              key={lang.code}
-              onClick={(e) => handleLanguageChange(lang.code, e)}
-              active={selectedLanguage === lang.code}
-              style={{
-                backgroundColor:
-                  selectedLanguage === lang.code ? "#2b427d" : "transparent",
-                color: "#ffffff",
-                padding: "10px 16px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                fontSize: "14px",
-                transition: "background-color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                if (selectedLanguage !== lang.code) {
-                  e.currentTarget.style.backgroundColor = "#2d3e50";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedLanguage !== lang.code) {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }
-              }}
-            >
-              <span style={{ fontSize: "18px" }}>{lang.flag}</span>
-              <span>{lang.name}</span>
-            </DropdownItem>
-          ))}
-        </DropdownMenu>
-      </Dropdown>
-    </div>
-  );
+return (
+  <div className="language-selector-wrapper">
+    <Dropdown isOpen={dropdownOpen} toggle={toggle}>
+      <DropdownToggle
+        caret
+        className="language-toggle"
+        style={{
+          backgroundColor: "#5e72e4",
+          borderColor: "#5e72e4",
+          color: "#ffffff",
+          padding: "7px 14px",
+          borderRadius: "6px",
+          fontSize: "13px",
+          fontWeight: "500",
+          display: "flex",
+          alignItems: "center",
+          gap: "7px",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span>{currentLanguage.flag}</span>
+        <span>{currentLanguage.name}</span>
+      </DropdownToggle>
+
+      <DropdownMenu
+        container="body"
+        strategy="fixed"
+        style={{
+          backgroundColor: "#1a273a",
+          border: "1px solid #3a4555",
+          borderRadius: "6px",
+          marginTop: "6px",
+          minWidth: "200px",
+          maxHeight: "320px",
+          overflowY: "auto",
+          zIndex: 9999,
+        }}
+      >
+        {languages.map((lang) => (
+          <DropdownItem
+            key={lang.code}
+            onClick={(e) => handleLanguageChange(lang.code, e)}
+            active={selectedLanguage === lang.code}
+            style={{
+              backgroundColor: selectedLanguage === lang.code ? "#2b427d" : "transparent",
+              color: "#ffffff",
+              padding: "10px 16px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              fontSize: "14px",
+            }}
+            onMouseEnter={(e) => {
+              if (selectedLanguage !== lang.code)
+                e.currentTarget.style.backgroundColor = "#2d3e50";
+            }}
+            onMouseLeave={(e) => {
+              if (selectedLanguage !== lang.code)
+                e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            <span style={{ fontSize: "18px" }}>{lang.flag}</span>
+            <span>{lang.name}</span>
+          </DropdownItem>
+        ))}
+      </DropdownMenu>
+    </Dropdown>
+  </div>
+);
 };
 
 export default LanguageSelector;

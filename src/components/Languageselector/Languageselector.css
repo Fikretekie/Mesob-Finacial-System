@@ -1,7 +1,11 @@
 .language-selector-wrapper {
   position: relative;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 6px 0 6px 12px;
 }
+
 
 .language-dropdown .dropdown-toggle {
   transition: all 0.3s ease;
@@ -78,5 +82,17 @@
   .language-item {
     font-size: 13px;
     padding: 8px 12px;
+  }
+}
+@media (max-width: 768px) {
+ .language-selector-wrapper {
+    /* padding: 8px 0 4px 12px; */
+    margin-left: 4rem;
+    width: auto;
+  }
+
+  .language-toggle {
+    width: auto !important;
+    min-width: 160px;
   }
 }
