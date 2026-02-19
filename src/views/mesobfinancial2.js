@@ -1547,7 +1547,23 @@ const getBusinessPurposes = (type) => {
       hasShownNotifyRef.current = false;
     }
   }, [selectedUserId]);
+useEffect(() => {
+    const handleSidebarReset = () => {
+      confirmDeleteandsave(); // saves CSV to S3 + downloads + deletes all
+    };
+    const handleSidebarDownload = () => {
+      downloadCSVOnly(); // just downloads CSV directly, no modal
+    };
 
+    window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
+    window.addEventListener("mesob:downloadReport", handleSidebarDownload);
+
+    return () => {
+      window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
+      window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
+    };
+  
+  }, [items]);
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
       setSelectedUserId(null);
@@ -1610,7 +1626,15 @@ const getBusinessPurposes = (type) => {
       setShowDeleteConfirmation(false);
     }
   };
-
+const downloadCSVOnly = () => {
+    const csvData = generateCSV(items);
+    if (csvData) {
+      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
+      saveAs(blob, "transactions.csv");
+    } else {
+      notify("tr", "No transactions to download", "warning");
+    }
+  };
   const RunButtons = ({ onSelectRange, onClearFilters }) => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
@@ -1776,7 +1800,7 @@ const getBusinessPurposes = (type) => {
           >
            {t('financialReport.clearFilters')}
           </Button>
-          <Button
+          {/* <Button
             color="danger"
             onClick={handleDeleteAllRecords}
             disabled={
@@ -1797,7 +1821,7 @@ const getBusinessPurposes = (type) => {
             }}
           >
            {t('financialReport.close')}
-          </Button>
+          </Button> */}
         </div>
       </div>
     );
@@ -2040,7 +2064,7 @@ const getBusinessPurposes = (type) => {
                       flexWrap: "wrap",
                     }}
                   >
-                      {/* <Button
+                      <Button
                         onClick={() => setShowDownloadReportModal(true)}
                         disabled={
                           userRole === 1
@@ -2064,7 +2088,7 @@ const getBusinessPurposes = (type) => {
                           style={{ marginRight: "5px" }}
                         />
                       {t('financialReport.downloadReport')}
-                      </Button> */}
+                      </Button>
                       {userRole !== 0 && (
                         <Button
                           onClick={() => setShowAddTransaction(true)}
@@ -3617,7 +3641,7 @@ const getBusinessPurposes = (type) => {
             </Col>
           </Row>
         </Container>
-        <Modal
+        {/* <Modal
           isOpen={showDeleteConfirmation}
           toggle={() => setShowDeleteConfirmation(false)}
         >
@@ -3646,7 +3670,7 @@ const getBusinessPurposes = (type) => {
               </Button>
             </div>
           </ModalBody>
-        </Modal>
+        </Modal> */}
 
         <Modal
           isOpen={showAddTransaction}
