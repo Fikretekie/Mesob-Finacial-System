@@ -102,7 +102,7 @@ const MesobFinancial2 = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const firstLoadRef = useRef(true);
   const hasShownNotifyRef = useRef(false);
-
+const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   // Loading states for different API calls
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
@@ -1564,6 +1564,11 @@ useEffect(() => {
     };
   
   }, [items]);
+  useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
       setSelectedUserId(null);
@@ -1849,15 +1854,15 @@ const downloadCSVOnly = () => {
       </Col>
       <Col xs={12} md={6}>
         <h3
-          style={{
-            color: "white",
-            justifyContent: "center",
-            alignItems: "center",
-            display: "flex",
-          }}
-        >
-          {companyName}
-        </h3>
+        style={{
+  color: "white",
+  alignItems: "center",
+  display: "flex",
+  justifyContent: isMobile ? "center" : "flex-start",
+}}
+      >
+        {companyName}
+      </h3>
       </Col>
     </Row>
   }
@@ -2309,8 +2314,8 @@ const downloadCSVOnly = () => {
                               }}
                             >
                                   <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                  {translatePurpose(purpose)}:
+                                  <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft:"10px" }}>
+                                   {translatePurpose(purpose)}:
                                 </span>
                               </span>
                               <span

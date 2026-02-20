@@ -768,7 +768,6 @@ function Dashboard() {
           margin: 0,
           fontSize: "clamp(14px, 2vw, 20px)",
           whiteSpace: "nowrap",
-          overflow: "hidden",
           textOverflow: "ellipsis",
         }}>
           {companyName}
