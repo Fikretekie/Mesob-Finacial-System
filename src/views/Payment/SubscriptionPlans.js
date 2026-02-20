@@ -25,70 +25,74 @@ const styles = {
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
-    padding: "1rem 2rem",
+    padding: "1rem",          // ← adds side padding on mobile
   },
   wrapper: {
     width: "100%",
     maxWidth: "560px",
-    marginTop: "1.5rem",
+    marginTop: "1rem",        // ← less top gap on mobile
   },
   /* gradient border card */
   gradientBorder: {
     background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #3b82f6 100%)",
     borderRadius: "20px",
-    padding: "1.5px",
+            // ← add padding so gradient border shows
   },
   card: {
-    background: "#131c2e",
+    background: "#1c1e3d",
     borderRadius: "19px",
-    padding: "2.5rem 2rem",
+    padding: "1.5rem 1.25rem", // ← tighter padding on mobile
   },
   heading: {
     textAlign: "center",
     marginBottom: "1.0rem",
   },
-  h2: {
-    fontSize: "1.6rem",
+    h2: {
+    fontSize: "clamp(1.3rem, 5vw, 1.6rem)", // ← fluid font size
     fontWeight: "700",
     color: "#ffffff",
     marginBottom: "0.75rem",
     lineHeight: 1.3,
   },
-  accent: { color: "#60a5fa" },
-  subtitle: {
+  accent: { color: "white" },
+   subtitle: {
     color: "#94a3b8",
-    fontSize: "0.95rem",
-    lineHeight: 1.7,
+    fontSize: "clamp(0.8rem, 3.5vw, 0.95rem)", // ← fluid
+    lineHeight: 1.6,
     margin: 0,
+    textAlign: "center",
   },
   bold: { fontWeight: "600", color: "#e2e8f0" },
   /* features box */
-  featuresBox: {
-    background: "rgba(30, 41, 59, 0.6)",
+featuresBox: {
+    background: "#282d57",
     border: "1px solid rgba(59, 130, 246, 0.15)",
     borderRadius: "14px",
-    padding: "1.5rem",
+    padding: "1rem",          // ← less padding on mobile
     marginBottom: "1.0rem",
   },
-  featureRow: {
+   featureRow: {
     display: "flex",
     alignItems: "flex-start",
-    gap: "0.75rem",
+    gap: "0.6rem",
     marginBottom: "0.3rem",
   },
-  checkIcon: {
-    color: "#60a5fa",
+ checkIcon: {
+    color: "#8e94b3",
     marginTop: "3px",
     flexShrink: 0,
-    fontSize: "14px",
+    fontSize: "13px",
   },
   featureText: {
     color: "#94a3b8",
-    fontSize: "0.875rem",
+    fontSize: "clamp(0.8rem, 3.2vw, 0.875rem)", // ← fluid
     lineHeight: 1.6,
     margin: 0,
   },
-  featureBold: { fontWeight: "600", color: "#e2e8f0" },
+  featureBold: { 
+    fontWeight: "600", 
+    color: "#e2e8f0",
+  },
   pitch: {
     color: "#64748b",
     fontSize: "0.82rem",
@@ -98,19 +102,24 @@ const styles = {
     margin: "1rem 0 0",
   },
   /* price */
-  priceWrap: { textAlign: "center", marginBottom: "1.25rem" },
-  price: { fontSize: "2.25rem", fontWeight: "700", color: "#ffffff", margin: 0 },
+  priceWrap: { textAlign: "center", marginBottom: "0.5rem" },
+  price: { 
+    fontSize: "clamp(1.75rem, 7vw, 2.25rem)", // ← fluid
+    fontWeight: "700", 
+    color: "#ffffff", 
+    margin: 0 
+  },
   perMonth: { fontSize: "1rem", fontWeight: "400", color: "#64748b" },
   /* CTA */
-  ctaBtn: {
+ ctaBtn: {
     width: "100%",
     background: "linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)",
     border: "none",
     borderRadius: "12px",
     color: "#ffffff",
     fontWeight: "600",
-    fontSize: "1rem",
-    padding: "0.875rem 1.5rem",
+    fontSize: "clamp(0.9rem, 4vw, 1rem)", // ← fluid
+    padding: "0.875rem 1rem",
     cursor: "pointer",
     transition: "all 0.3s ease",
     boxShadow: "0 4px 20px rgba(59,130,246,0.35)",
@@ -241,19 +250,26 @@ const features = (t) => [
     desc: "Track every transaction without limits — always know your real profit.",
   },
   {
-    title: "Tax-Ready Financial Reports:",
-    desc: "Instantly generate clear reports to stay prepared for tax season and make smarter decisions.",
+    title: "Advanced Financial Reports:",
+    desc: "Instantly generate clear reports for taxes and smarter decisions.",
+  },
+  {
+    title: "Check Balance Sheet:",
+    desc: "View a full balance sheet to understand your assets, liabilities, and equity at a glance.",
+  },
+  {
+    title: "View Income Statement:",
+    desc: "Track your revenue and expenses over time with a clear income statement.",
   },
   {
     title: "Export & Download Receipts:",
-    desc: "Keep all your receipts organized and audit-ready.",
+    desc: "Keep all your receipts organized, downloadable, and audit-ready.",
   },
   {
     title: "User Profile Management:",
-    desc: "Manage your business info easily, no confusion or lost data.",
+    desc: "Manage your business info easily, no confusion, no lost data.",
   },
 ];
-
 /* ─── component ─────────────────────────────────────────────── */
 const SubscriptionPlans = () => {
   const { t } = useTranslation();
@@ -427,21 +443,14 @@ const SubscriptionPlans = () => {
 
                 {/* Header */}
                 <div style={styles.heading}>
-                  <h2 style={styles.h2}>
-                    Full Access with{" "}
-                    <span style={styles.accent}>Pro Plan</span>
-                  </h2>
-                  <p style={styles.subtitle}>
-                    Enjoy{" "}
-                    <span style={styles.bold}>
-                      unlimited access free for 30 days
-                    </span>{" "}
-                    — no credit card required.
-                    <br />
-                    After your trial, your subscription continues automatically
-                    at <span style={styles.bold}>$29.99/month</span>.
-                  </p>
-                </div>
+                <h2 style={styles.h2}>
+                  <span style={styles.accent}>Pro Plan</span>
+                </h2>
+                <p style={styles.subtitle}>
+                  Your 30-day free trial is ending. Don't lose access to your
+                  transactions, reports, and saved business data.
+                </p>
+              </div>
 
                 {/* Features */}
                 <div style={styles.featuresBox}>
@@ -454,10 +463,10 @@ const SubscriptionPlans = () => {
                       </p>
                     </div>
                   ))}
-                  <p style={styles.pitch}>
-                    Save hours every week on bookkeeping. Stop guessing where
-                    your money goes — focus on growing your business.
-                  </p>
+                <p style={styles.pitch}>
+                  Stop guessing where your money goes. Keep full
+                  control of your finances.
+                </p>
                 </div>
 
                 {/* Price */}
@@ -509,14 +518,13 @@ const SubscriptionPlans = () => {
                       setIsModalOpen(true);
                     }}
                   >
-                    Start My Free Trial
+                    Keep My Unlimited Access
                   </button>
                 )}
 
-                <p style={styles.footNote}>
-                  No credit card required. Cancel anytime before your 30-day
-                  trial ends.
-                </p>
+               <p style={styles.footNote}>
+                No interruption. Cancel anytime.
+              </p>
               </div>
             </div>
           </div>

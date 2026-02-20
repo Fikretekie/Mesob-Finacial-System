@@ -49,7 +49,7 @@
     "credit": "Credit",
     "actions": "Actions",
     "receive": "Receive [Cash]",
-    "pay": "Pay [Cash]",
+    "pay": "Paid [Cash]",
     "payable": "Payable",
     "expense": "[Expense]",
     "loadingTransactions": "Loading transactions...",
