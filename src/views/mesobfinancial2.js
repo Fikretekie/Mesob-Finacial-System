@@ -1904,85 +1904,7 @@ const isMobileLandscape = isMobile && isLandscape;
       <Helmet>
         <title>Mesob Financial - Mesob Finance</title>
       </Helmet>
-
-         <PanelHeader
-  size="sm"
-  content={
-    <>
-      {/* Desktop Layout */}
-      {!isMobile && (
-        <div style={{
-          position: "absolute",
-          top: 0, left: 0, right: 0, bottom: 0,
-          display: "flex",
-          alignItems: "center",
-          padding: "0 20px",
-          marginTop: isMobileLandscape ? 0 : -45, // add top margin in landscape to prevent overlap with header
-          left: isMobileLandscape ? "70px" : "44px",  // ← bigger gap in landscape
-
-        }}>
-          <div style={{ flexShrink: 0 }}>
-            <LanguageSelector />
-          </div>
-
-          <div style={{
-            position: "absolute",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}>
-            <h3 style={{
-              color: "white",
-              margin: 0,
-              fontSize: "clamp(14px, 2vw, 20px)",
-              whiteSpace: "nowrap",
-            }}>
-              {companyName}
-            </h3>
-          </div>
-
-         
-        </div>
-      )}
-
-      {/* Mobile Layout - TWO ROWS inside header */}
-      {isMobile && (
-        <div style={{
-          position: "absolute",
-          top: 0, left: 0, right: 0, bottom: 0,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "4px 8px 4px 8px",
-        }}>
-          {/* Row 1: Hamburger space → EN → Company Name → Profile space */}
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginTop: -50,
-            paddingLeft: "44px",  // space for hamburger
-            paddingRight: "44px", // space for profile icon
-          }}>
-            <LanguageSelector />
-            <h3 style={{
-              color: "white",
-              margin: 0,
-              fontSize: "clamp(11px, 3.5vw, 15px)",
-              whiteSpace: "nowrap",
-              textOverflow: "ellipsis",
-              flex: 1,
-              textAlign: "center",
-            }}>
-              {companyName}
-            </h3>
-          </div>
-
-         
-        </div>
-      )}
-    </>
-  }
-/>  
+ 
       <NotificationAlert ref={notificationAlertRef} />
 
       {userRole === 0 && (
@@ -2084,7 +2006,7 @@ const isMobileLandscape = isMobile && isLandscape;
         </div>
       )}
 
-      <div className="content" style={{ paddingTop: "0", backgroundColor: "#1a273a" }}>
+      <div className="content" style={{marginTop:80,  paddingTop: "0", backgroundColor: "#1a273a" }}>
         {/* Transactions Table Section - First */}
         <Container fluid style={{ paddingInline: 0 }}>
           <Row>

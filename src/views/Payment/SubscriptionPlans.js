@@ -25,68 +25,67 @@ const styles = {
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
-    padding: "1rem",          // ← adds side padding on mobile
+    padding: "0.75rem",          // ← optimized padding
   },
   wrapper: {
     width: "100%",
     maxWidth: "560px",
-    marginTop: "1rem",        // ← less top gap on mobile
+    marginTop: "1rem",
   },
   /* gradient border card */
   gradientBorder: {
-    background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #3b82f6 100%)",
     borderRadius: "20px",
-            // ← add padding so gradient border shows
+    padding: "3px",              // ← border thickness
   },
   card: {
     background: "#1c1e3d",
-    borderRadius: "19px",
-    padding: "1.5rem 1.25rem", // ← tighter padding on mobile
+    borderRadius: "18px",
+    padding: "1.75rem 1.5rem",   // ← better spacing
   },
   heading: {
     textAlign: "center",
-    marginBottom: "1.0rem",
+    marginBottom: "1.25rem",
   },
-    h2: {
-    fontSize: "clamp(1.3rem, 5vw, 1.6rem)", // ← fluid font size
+  h2: {
+    fontSize: "clamp(1.5rem, 6vw, 1.8rem)", // ← larger, more readable
     fontWeight: "700",
     color: "#ffffff",
-    marginBottom: "0.75rem",
-    lineHeight: 1.3,
+    marginBottom: "0.875rem",
+    lineHeight: 1.2,
   },
   accent: { color: "white" },
-   subtitle: {
+  subtitle: {
     color: "#94a3b8",
-    fontSize: "clamp(0.8rem, 3.5vw, 0.95rem)", // ← fluid
-    lineHeight: 1.6,
+    fontSize: "clamp(0.9rem, 4vw, 1rem)", // ← more readable
+    lineHeight: 1.5,
     margin: 0,
     textAlign: "center",
   },
   bold: { fontWeight: "600", color: "#e2e8f0" },
   /* features box */
-featuresBox: {
+  featuresBox: {
     background: "#282d57",
     border: "1px solid rgba(59, 130, 246, 0.15)",
     borderRadius: "14px",
-    padding: "1rem",          // ← less padding on mobile
-    marginBottom: "1.0rem",
+    padding: "1.25rem",
+    marginBottom: "1.25rem",
   },
-   featureRow: {
+  featureRow: {
     display: "flex",
     alignItems: "flex-start",
-    gap: "0.6rem",
-    marginBottom: "0.3rem",
+    gap: "0.75rem",
+    marginBottom: "0.75rem",
   },
- checkIcon: {
+  checkIcon: {
     color: "#8e94b3",
-    marginTop: "3px",
+    marginTop: "2px",
     flexShrink: 0,
-    fontSize: "13px",
+    fontSize: "14px",
   },
   featureText: {
     color: "#94a3b8",
-    fontSize: "clamp(0.8rem, 3.2vw, 0.875rem)", // ← fluid
-    lineHeight: 1.6,
+    fontSize: "clamp(0.85rem, 3.5vw, 0.95rem)", // ← balanced sizing
+    lineHeight: 1.5,
     margin: 0,
   },
   featureBold: { 
@@ -95,31 +94,31 @@ featuresBox: {
   },
   pitch: {
     color: "#64748b",
-    fontSize: "0.82rem",
+    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
     textAlign: "center",
     marginTop: "1rem",
     lineHeight: 1.6,
-    margin: "1rem 0 0",
   },
   /* price */
-  priceWrap: { textAlign: "center", marginBottom: "0.5rem" },
+  priceWrap: { textAlign: "center", marginBottom: "1.25rem" },
   price: { 
-    fontSize: "clamp(1.75rem, 7vw, 2.25rem)", // ← fluid
+    fontSize: "clamp(1.9rem, 8vw, 2.4rem)", // ← more prominent
     fontWeight: "700", 
     color: "#ffffff", 
-    margin: 0 
+    margin: 0,
+    marginBottom: "0.25rem",
   },
-  perMonth: { fontSize: "1rem", fontWeight: "400", color: "#64748b" },
+  perMonth: { fontSize: "clamp(0.85rem, 3vw, 1rem)", fontWeight: "400", color: "#64748b" },
   /* CTA */
- ctaBtn: {
+  ctaBtn: {
     width: "100%",
     background: "linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)",
     border: "none",
     borderRadius: "12px",
     color: "#ffffff",
     fontWeight: "600",
-    fontSize: "clamp(0.9rem, 4vw, 1rem)", // ← fluid
-    padding: "0.875rem 1rem",
+    fontSize: "clamp(0.95rem, 4vw, 1.05rem)", // ← readable
+    padding: "1rem 1.25rem",
     cursor: "pointer",
     transition: "all 0.3s ease",
     boxShadow: "0 4px 20px rgba(59,130,246,0.35)",
@@ -127,9 +126,9 @@ featuresBox: {
   },
   footNote: {
     color: "#475569",
-    fontSize: "0.75rem",
+    fontSize: "clamp(0.7rem, 2.5vw, 0.8rem)",
     textAlign: "center",
-    marginTop: "0.875rem",
+    marginTop: "1rem",
     marginBottom: 0,
   },
   /* subscribed state */
@@ -138,8 +137,8 @@ featuresBox: {
     border: "1px solid rgba(16,185,129,0.3)",
     borderRadius: "10px",
     color: "#34d399",
-    padding: "0.75rem 1rem",
-    fontSize: "0.875rem",
+    padding: "0.875rem 1rem",
+    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
     textAlign: "center",
     marginBottom: "1rem",
     fontWeight: "500",
@@ -151,20 +150,20 @@ featuresBox: {
     borderRadius: "12px",
     color: "#f87171",
     fontWeight: "600",
-    fontSize: "0.95rem",
-    padding: "0.8rem 1.5rem",
+    fontSize: "clamp(0.9rem, 3.5vw, 1rem)",
+    padding: "0.875rem 1.25rem",
     cursor: "pointer",
     transition: "all 0.25s ease",
   },
   /* error */
   errorBox: {
     marginTop: "1rem",
-    padding: "10px 14px",
+    padding: "12px 14px",
     backgroundColor: "#1a0000",
     border: "1px solid #ff4444",
     borderRadius: "8px",
     color: "#ff6b6b",
-    fontSize: "14px",
+    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
   },
   /* success toast */
   successToast: {
@@ -172,8 +171,8 @@ featuresBox: {
     border: "1px solid rgba(16,185,129,0.25)",
     borderRadius: "10px",
     color: "#34d399",
-    padding: "0.75rem 1rem",
-    fontSize: "0.875rem",
+    padding: "0.875rem 1rem",
+    fontSize: "clamp(0.85rem, 3vw, 0.95rem)",
     marginBottom: "1.25rem",
     textAlign: "center",
   },
@@ -192,26 +191,26 @@ featuresBox: {
   },
   modalBody: {
     backgroundColor: "#0d1117",
-    padding: "1.75rem",
+    padding: "1.75rem 1.25rem",
   },
   modalFooter: {
     backgroundColor: "#111827",
     borderTop: "1px solid #1e293b",
-    padding: "0.875rem 1.5rem",
+    padding: "1rem 1.25rem",
   },
   payBtn: (gradient, shadow) => ({
     width: "100%",
     background: gradient,
     border: "none",
     borderRadius: "10px",
-    padding: "13px",
-    fontSize: "15px",
+    padding: "clamp(11px, 3vw, 14px)",
+    fontSize: "clamp(0.85rem, 3vw, 0.95rem)",
     fontWeight: "600",
     color: "#fff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "9px",
+    gap: "8px",
     boxShadow: shadow,
     cursor: "pointer",
     transition: "all 0.3s ease",
@@ -221,26 +220,28 @@ featuresBox: {
     border: "1px solid #334155",
     borderRadius: "8px",
     color: "#94a3b8",
-    padding: "8px 20px",
+    padding: "8px 16px",
     cursor: "pointer",
-    fontSize: "0.875rem",
+    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
     transition: "all 0.2s ease",
   },
   /* confirm modal */
   confirmModalBody: {
     backgroundColor: "#0d1117",
     color: "#94a3b8",
-    padding: "1.5rem",
+    padding: "1.5rem 1.25rem",
+    fontSize: "clamp(0.85rem, 3vw, 0.95rem)",
+    lineHeight: 1.6,
   },
   dangerBtn: {
     background: "linear-gradient(135deg,#ef4444,#b91c1c)",
     border: "none",
     borderRadius: "8px",
     color: "#fff",
-    padding: "8px 20px",
+    padding: "8px 16px",
     cursor: "pointer",
     fontWeight: "600",
-    fontSize: "0.875rem",
+    fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
   },
 };
 
@@ -411,26 +412,20 @@ const SubscriptionPlans = () => {
     ["localhost", "127.0.0.1"].includes(window.location.hostname)
       ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A"
       : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u";
-const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-useEffect(() => {
-  const handleResize = () => setIsMobile(window.innerWidth < 768);
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
-const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-useEffect(() => {
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768);
-    setIsLandscape(window.innerWidth > window.innerHeight);
-  };
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
-
-const isMobileLandscape = isMobile && isLandscape;
+  const isMobileLandscape = isMobile && isLandscape;
   const currentPriceId = plans[0].priceId[billingCycle];
 
   return (
@@ -438,25 +433,8 @@ const isMobileLandscape = isMobile && isLandscape;
       <Helmet>
         <title>{t("subscription.title")} - Mesob Finance</title>
       </Helmet>
-    <PanelHeader
-  size="sm"
-  content={
-    <Row className="w-100"  style={{ 
-          paddingLeft: isMobileLandscape ? "80px" : isMobile ? "60px" : "50px" ,marginTop:-20
-        }}>
-      <Col 
-        xs={12} 
-        md={6} 
-        className="d-flex justify-content-center justify-content-md-start"
-       
-      >
-        <LanguageSelector />
-      </Col>
-    </Row>
-  }
-/>
-      <div className="content">
-       
+    
+      <div className="content" style={{marginTop:80}}>
         <div style={styles.page}>
           <div style={styles.wrapper}>
             {justSubscribed && (
@@ -473,19 +451,19 @@ const isMobileLandscape = isMobile && isLandscape;
 
                 {/* Header */}
                 <div style={styles.heading}>
-                <h2 style={styles.h2}>
-                  <span style={styles.accent}>Pro Plan</span>
-                </h2>
-                <p style={styles.subtitle}>
-                  Your 30-day free trial is ending. Don't lose access to your
-                  transactions, reports, and saved business data.
-                </p>
-              </div>
+                  <h2 style={styles.h2}>
+                    <span style={styles.accent}>Pro Plan</span>
+                  </h2>
+                  <p style={styles.subtitle}>
+                    Your 30-day free trial is ending. Don't lose access to your
+                    transactions, reports, and saved business data.
+                  </p>
+                </div>
 
                 {/* Features */}
                 <div style={styles.featuresBox}>
                   {features(t).map((f, i) => (
-                    <div key={i} style={{ ...styles.featureRow, marginBottom: i === features(t).length - 1 ? 0 : "0.5rem" }}>
+                    <div key={i} style={{ ...styles.featureRow, marginBottom: i === features(t).length - 1 ? 0 : "0.75rem" }}>
                       <FaCheck style={styles.checkIcon} />
                       <p style={styles.featureText}>
                         <span style={styles.featureBold}>{f.title}</span>{" "}
@@ -493,10 +471,10 @@ const isMobileLandscape = isMobile && isLandscape;
                       </p>
                     </div>
                   ))}
-                <p style={styles.pitch}>
-                  Stop guessing where your money goes. Keep full
-                  control of your finances.
-                </p>
+                  <p style={styles.pitch}>
+                    Stop guessing where your money goes. Keep full
+                    control of your finances.
+                  </p>
                 </div>
 
                 {/* Price */}
@@ -509,9 +487,9 @@ const isMobileLandscape = isMobile && isLandscape;
 
                 {/* CTA / subscribed state */}
                 {loading ? (
-                  <div style={{ textAlign: "center", padding: "1rem" }}>
+                  <div style={{ textAlign: "center", padding: "1.25rem 0" }}>
                     <Spinner style={{ color: "#60a5fa" }} />
-                    <p style={{ color: "#64748b", marginTop: "0.5rem", fontSize: "0.875rem" }}>
+                    <p style={{ color: "#64748b", marginTop: "0.75rem", fontSize: "clamp(0.8rem, 3vw, 0.9rem)" }}>
                       {t("subscription.loadingSubscription")}
                     </p>
                   </div>
@@ -552,9 +530,9 @@ const isMobileLandscape = isMobile && isLandscape;
                   </button>
                 )}
 
-               <p style={styles.footNote}>
-                No interruption. Cancel anytime.
-              </p>
+                <p style={styles.footNote}>
+                  No interruption. Cancel anytime.
+                </p>
               </div>
             </div>
           </div>
@@ -572,14 +550,14 @@ const isMobileLandscape = isMobile && isLandscape;
               toggle={() => setIsModalOpen(false)}
               style={styles.modalHeader}
             >
-              <span style={{ color: "#fff", fontWeight: 600 }}>
+              <span style={{ color: "#fff", fontWeight: 600, fontSize: "clamp(0.95rem, 4vw, 1.1rem)" }}>
                 {t("subscription.choosePaymentMethod")}
               </span>
             </ModalHeader>
 
             <ModalBody style={styles.modalBody}>
-              <Row className="g-3">
-                <Col md={6}>
+              <Row className="g-2 g-sm-3">
+                <Col xs={12} md={6}>
                   <button
                     style={styles.payBtn(
                       "linear-gradient(135deg,#3b82f6 0%,#1d4ed8 100%)",
@@ -589,12 +567,12 @@ const isMobileLandscape = isMobile && isLandscape;
                     onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 22px rgba(59,130,246,0.55)"}
                     onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(59,130,246,0.3)"}
                   >
-                    <FaCreditCard size={19} />
+                    <FaCreditCard size={18} />
                     {t("subscription.payWithCard")}
                   </button>
                 </Col>
 
-                <Col md={6}>
+                <Col xs={12} md={6}>
                   <PayPalScriptProvider
                     options={{
                       "client-id": getPaypalClientId(),
@@ -651,7 +629,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           {loading ? (
                             <><span className="spinner-border spinner-border-sm" /> {t("subscription.processing")}</>
                           ) : (
-                            <><FaPaypal size={19} /> {t("subscription.payWithPaypal")}</>
+                            <><FaPaypal size={18} /> {t("subscription.payWithPaypal")}</>
                           )}
                         </button>
                       );
@@ -683,7 +661,9 @@ const isMobileLandscape = isMobile && isLandscape;
               toggle={() => setShowConfirmModal(false)}
               style={styles.modalHeader}
             >
-              <span style={{ color: "#fff" }}>{t("subscription.confirmUnsubscribe")}</span>
+              <span style={{ color: "#fff", fontSize: "clamp(0.95rem, 4vw, 1.1rem)" }}>
+                {t("subscription.confirmUnsubscribe")}
+              </span>
             </ModalHeader>
             <ModalBody style={styles.confirmModalBody}>
               {t("subscription.unsubscribeMessage")}

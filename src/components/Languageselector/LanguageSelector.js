@@ -94,7 +94,7 @@ return (
       backgroundColor: "#5e72e4",
       borderColor: "#5e72e4",
       color: "#ffffff",
-      padding: isMobile ? "6px 10px" : "7px 14px",
+      padding: isMobile ? "6px 10px" : "2px 14px",
       borderRadius: "6px",
       fontSize: isMobile ? "12px" : "13px",
       fontWeight: "500",

@@ -208,9 +208,8 @@ function Users() {
         <title>Users - Mesob Finance</title>
       </Helmet>
 
-      <PanelHeader size="sm" />
       <NotificationAlert ref={notificationAlertRef} />
-      <div className="content">
+      <div className="content" style={{marginTop:80}}>
         <Row>
           <Col xs={12} style={{ paddingInline: 0 }}>
             <Card>

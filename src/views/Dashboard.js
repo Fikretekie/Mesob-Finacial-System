@@ -14,7 +14,6 @@ import {
   PopoverBody,
   Spinner,
 } from "reactstrap";
-// import { Line } from "react-chartjs-2";
 import ReactApexChart from "react-apexcharts";
 import {
   Chart as ChartJS,
@@ -28,7 +27,7 @@ import {
 } from "chart.js";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
-import Select from "react-select"; // Import react-select
+import Select from "react-select";
 import { Helmet } from "react-helmet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -36,6 +35,7 @@ import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 import DownloadReportModal from "components/DownloadReportModal";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -62,7 +62,6 @@ function Dashboard() {
   const [users, setUsers] = useState([]);
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
-  // Loading states for different API calls
   const [loadingFinancialData, setLoadingFinancialData] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingCompanyName, setLoadingCompanyName] = useState(false);
@@ -70,29 +69,26 @@ function Dashboard() {
   const persistedUserId = localStorage.getItem("selectedUserId");
   const userRole = parseInt(localStorage.getItem("role"));
   const { t } = useTranslation();
-  const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null); // ✅ renamed local state variable
+  const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null);
   const navigate = useNavigate();
   const [companyName, setCompanyName] = useState("");
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
-  // Fix: make isLandscape reactive with state
-const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-useEffect(() => {
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768);
-    setIsLandscape(window.innerWidth > window.innerHeight);
-  };
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+  const isMobileLandscape = isMobile && isLandscape;
 
-const isMobileLandscape = isMobile && isLandscape;
-
-  // Redirect based on user role
   useEffect(() => {
     if (userRole === "0" && !location.pathname.includes("/admin")) {
       navigate("/admin/dashboard", { replace: true });
@@ -101,61 +97,7 @@ const isMobileLandscape = isMobile && isLandscape;
     }
   }, [userRole, location.pathname, navigate]);
 
-  const handleUserSelect = (selectedOption) => {
-    if (!selectedOption) {
-      setSelectedUserId(null);
-      localStorage.removeItem("selectedUserId");
-      fetchFinancialData(null); // or fetchFinancialData(userId) for default
-      return;
-    }
-    const userId = selectedOption.value;
-    setSelectedUserId(userId);
-    localStorage.setItem("selectedUserId", userId);
-    fetchFinancialData(userId); // Pass userId directly!
-  };
-
-  useEffect(() => {
-    const persistedUserId = localStorage.getItem("selectedUserId");
-    if (persistedUserId) {
-      setSelectedUserId(persistedUserId);
-      fetchFinancialData(persistedUserId);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (selectedUserId) {
-      fetchFinancialData(selectedUserId);
-    }
-  }, [selectedUserId]);
-
-  // Add CSS styling for ApexCharts menu items
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      .apexcharts-menu-item {
-        color: #000000 !important;
-      }
-      .apexcharts-menu-item:hover {
-        color: #000000 !important;
-      }
-      .apexcharts-menu-item:active {
-        color: #000000 !important;
-      }
-      .apexcharts-menu-item:focus {
-        color: #000000 !important;
-      }
-    `;
-    document.head.appendChild(style);
-
-    return () => {
-      if (document.head.contains(style)) {
-        document.head.removeChild(style);
-      }
-    };
-  }, []);
-
   const handleAddTransactionClick = () => {
-    // Use navigate to go to the MesobFinancial2 page
     navigate("/customer/financial-report", {
       state: { openTransactionModal: true },
     });
@@ -303,12 +245,12 @@ const isMobileLandscape = isMobile && isLandscape;
         tickAmount: 8,
         min: 0,
         max: function (max) {
-          return max > 0 ? max * 1.1 : 100; // Add 10% padding or default to 100
+          return max > 0 ? max * 1.1 : 100;
         },
       },
       stroke: {
-        curve: "smooth", // Changed to smooth for better line appearance
-        width: 3, // Thicker line for better visibility
+        curve: "smooth",
+        width: 3,
         lineCap: "round",
       },
       fill: {
@@ -386,33 +328,32 @@ const isMobileLandscape = isMobile && isLandscape;
     });
   };
 
-  // Update chart data to use daily data
   const cashOnHandChartData = getChartOptions(
-      t('dashboard.totalCashOnHandChart'),
+    t('dashboard.totalCashOnHandChart'),
     monthlySales.map((item) => item.cashOnHand),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#41926f" // Green color
+    "#41926f"
   );
 
   const revenueChartData = getChartOptions(
     t('dashboard.revenueChart'),
     monthlySales.map((item) => item.revenue),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#2b427d" // Blue color
+    "#2b427d"
   );
 
   const payableChartData = getChartOptions(
     t('dashboard.totalPayableChart'),
     monthlySales.map((item) => item.payable),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#c7ae4f" // Yellow color
+    "#c7ae4f"
   );
 
   const expensesChartData = getChartOptions(
     t('dashboard.totalExpensesChart'),
     monthlySales.map((item) => item.expenses),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#a7565d" // Red color
+    "#a7565d"
   );
 
   const fetchFinancialData = async (uid = null) => {
@@ -432,7 +373,6 @@ const isMobileLandscape = isMobile && isLandscape;
         targetUserId = uid || localStorage.getItem("userId");
       }
 
-      // Fetch user initial data
       const userResponse = await axios.get(
         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
       );
@@ -448,7 +388,6 @@ const isMobileLandscape = isMobile && isLandscape;
       setoutstandingDebt(outstandingDebt);
       setvalueableItems(valuableItems);
 
-      // Fetch transactions
       const response = await axios.get(
         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
       );
@@ -459,22 +398,20 @@ const isMobileLandscape = isMobile && isLandscape;
       let expenses = 0;
       let newItem = 0;
       let revenue = 0;
-      let payable = outstandingDebt; // ✅ Start with initial outstanding debt
+      let payable = outstandingDebt;
 
-      // ✅ Changed to daily tracking
       const dailyData = {
         Initial: {
           date: "Initial Balance",
           cashOnHand: initialCashBalance,
           revenue: 0,
-          payable: outstandingDebt, // ✅ Initial payable
+          payable: outstandingDebt,
           expenses: 0,
           newItem: 0,
           paidPayables: 0,
         },
       };
 
-      // ✅ Sort transactions by date first
       const sortedTransactions = [...transactions].sort(
         (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
       );
@@ -491,7 +428,7 @@ const isMobileLandscape = isMobile && isLandscape;
             date: dateKey,
             cashOnHand: cashOnHand,
             revenue: 0,
-            payable: payable, // ✅ Carry forward current payable
+            payable: payable,
             expenses: 0,
             newItem: 0,
             paidPayables: 0,
@@ -507,7 +444,6 @@ const isMobileLandscape = isMobile && isLandscape;
           cashOnHand -= amount;
           dailyData[dateKey].expenses += amount;
 
-          // ✅ If paying off a payable, reduce the payable amount
           if (transaction.payableId) {
             payable -= amount;
             dailyData[dateKey].paidPayables += amount;
@@ -525,22 +461,18 @@ const isMobileLandscape = isMobile && isLandscape;
           (transaction.status === "Payable" ||
             transaction.status === "Partially Paid")
         ) {
-          // ✅ Add new payables to the total
           payable += amount;
         }
 
-        // ✅ Update the daily payable to reflect current state
         dailyData[dateKey].payable = payable;
         dailyData[dateKey].cashOnHand = cashOnHand;
       });
 
-      // Set final totals
       setTotalCashOnHand(cashOnHand);
       setTotalExpenses(expenses);
       settotalRevenue(revenue);
       setTotalPayable(payable);
 
-      // ✅ Sort daily data with Initial Balance first
       const sortedDailyData = Object.values(dailyData).sort((a, b) => {
         if (a.date === "Initial Balance") return -1;
         if (b.date === "Initial Balance") return 1;
@@ -562,7 +494,6 @@ const isMobileLandscape = isMobile && isLandscape;
     return new Date() < trialEndDate && scheduleCount < 4;
   };
 
-  // Calculate percentage change vs last month
   const calculatePercentageChange = (currentValue, previousValue) => {
     if (!previousValue || previousValue === 0) {
       if (currentValue === 0) return { text: "— No change", value: 0, isPositive: null };
@@ -581,7 +512,6 @@ const isMobileLandscape = isMobile && isLandscape;
     };
   };
 
-  // Get previous month values for comparison
   const getPreviousMonthValues = () => {
     if (!monthlySales || monthlySales.length < 2) {
       return {
@@ -592,7 +522,6 @@ const isMobileLandscape = isMobile && isLandscape;
       };
     }
 
-    // Get values from second-to-last entry (previous period)
     const previousIndex = monthlySales.length - 2;
     const previous = monthlySales[previousIndex];
 
@@ -625,7 +554,6 @@ const isMobileLandscape = isMobile && isLandscape;
 
   useEffect(() => {
     if (userRole === 0) {
-      // Admin role
       fetchUsers();
     } else {
       fetchFinancialData();
@@ -646,14 +574,13 @@ const isMobileLandscape = isMobile && isLandscape;
         const response = await axios.get(
           `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
         );
-        // Only set subscription if user exists
         if (response.data && response.data.user) {
           setUserSubscription(response.data.user.subscription);
           setTrialEndDate(new Date(response.data.user?.trialEndDate));
           console.log("=>>>>>", response.data.user.subscription);
           setScheduleCount(response.data.user.scheduleCount || 1);
         } else {
-          setUserSubscription(false); // or null, or a sensible default
+          setUserSubscription(false);
           setScheduleCount(1);
         }
       } catch (error) {
@@ -667,7 +594,6 @@ const isMobileLandscape = isMobile && isLandscape;
     fetchSubscription();
   }, []);
 
-  // Loading overlay component
   const LoadingOverlay = ({ loading, text = "Loading..." }) => {
     if (!loading) return null;
 
@@ -695,12 +621,63 @@ const isMobileLandscape = isMobile && isLandscape;
     );
   };
 
-useEffect(() => {
-  const handleResize = () => setIsMobile(window.innerWidth < 768);
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+  const handleUserSelect = (selectedOption) => {
+    if (!selectedOption) {
+      setSelectedUserId(null);
+      localStorage.removeItem("selectedUserId");
+      fetchFinancialData(null);
+      return;
+    }
+    const userId = selectedOption.value;
+    setSelectedUserId(userId);
+    localStorage.setItem("selectedUserId", userId);
+    fetchFinancialData(userId);
+  };
 
+  useEffect(() => {
+    const persistedUserId = localStorage.getItem("selectedUserId");
+    if (persistedUserId) {
+      setSelectedUserId(persistedUserId);
+      fetchFinancialData(persistedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedUserId) {
+      fetchFinancialData(selectedUserId);
+    }
+  }, [selectedUserId]);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .apexcharts-menu-item {
+        color: #000000 !important;
+      }
+      .apexcharts-menu-item:hover {
+        color: #000000 !important;
+      }
+      .apexcharts-menu-item:active {
+        color: #000000 !important;
+      }
+      .apexcharts-menu-item:focus {
+        color: #000000 !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <>
@@ -708,74 +685,34 @@ useEffect(() => {
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
       <PanelHeader
-      size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
-      content={
-        <>
-          {/* Desktop Layout */}
-          {!isMobile && (
-            <div style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
-              display: "flex",
-              width:'90%',
-              alignItems: "center",
-              marginTop: isMobileLandscape ? 0 : -45,
-              padding: "0 20px",
-            }}>
-              <div style={{ flexShrink: 0, marginLeft: isMobileLandscape && isMobile ? 0 : 30}}>
-                <LanguageSelector />
-              </div>
-
+        size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+        content={
+          <>
+            {/* Desktop Layout */}
+            {!isMobile && (
               <div style={{
                 position: "absolute",
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}>
-                <h3 style={{
-                  color: "white",
-                  margin: 0,
-                  fontSize: "clamp(14px, 2vw, 20px)",
-                  whiteSpace: "nowrap",
-                }}>
-                  {companyName}
-                </h3>
-              </div>
-
-              <div style={{
-                marginLeft: "auto",
+                top: 0, left: 0, right: 0, bottom: 0,
                 display: "flex",
+                width:'90%',
                 alignItems: "center",
-                gap: "8px",
-                flexShrink: 0,
+                marginTop: isMobileLandscape ? 0 : -45,
+                padding: "0 20px",
               }}>
-                <Button
-                  onClick={() => setShowDownloadReportModal(true)}
-                  disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                  style={{
-                    backgroundColor: "#2b427d",
-                    borderColor: "#2b427d",
-                    color: "#ffffff",
-                    height: "36px",
-                    borderRadius: "4px",
-                    padding: "0 14px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    fontSize: "13px",
-                    whiteSpace: "nowrap",
-                    margin: 0,
-                  }}
-                >
-                  <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
-                  {t('financialReport.downloadReport')}
-                </Button>
-
-                {userRole !== 0 && (
+              
+                <div style={{
+                  marginLeft: "auto",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flexShrink: 0,
+                }}>
                   <Button
-                    onClick={handleAddTransactionClick}
+                    onClick={() => setShowDownloadReportModal(true)}
                     disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
                     style={{
-                      backgroundColor: "#41926f",
-                      borderColor: "#41926f",
+                      backgroundColor: "#2b427d",
+                      borderColor: "#2b427d",
                       color: "#ffffff",
                       height: "36px",
                       borderRadius: "4px",
@@ -787,121 +724,99 @@ useEffect(() => {
                       margin: 0,
                     }}
                   >
-                    <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
-                    {t('dashboard.addTransaction')}
+                    <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
+                    {t('financialReport.downloadReport')}
                   </Button>
-                )}
+
+                  {userRole !== 0 && (
+                    <Button
+                      onClick={handleAddTransactionClick}
+                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                      style={{
+                        backgroundColor: "#41926f",
+                        borderColor: "#41926f",
+                        color: "#ffffff",
+                        height: "36px",
+                        borderRadius: "4px",
+                        padding: "0 14px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                        margin: 0,
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
+                      {t('dashboard.addTransaction')}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Mobile Layout (portrait + landscape) */}
+            {/* Mobile Layout (portrait + landscape) */}
           {isMobile && (
-            <div style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              padding: "4px 8px",
-              pointerEvents: "none",
-            }}>
-
-              {/* Row 1: EN + Company Name */}
-              <div style={{
-                position: "relative",
+          <div style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0,
+            display: "flex",
+            marginTop: 60,
+            paddingLeft: 16,
+            paddingRight: 16,
+            gap: "10px",
+          }}>
+            <Button
+              onClick={() => setShowDownloadReportModal(true)}
+              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+              style={{
+                backgroundColor: "#2b427d",
+                borderColor: "#2b427d",
+                color: "#ffffff",
+                height: "44px",
+                borderRadius: "10px",
+                width: "100%",
                 display: "flex",
                 alignItems: "center",
-                height: "36px",
-                marginTop:-12,
-                pointerEvents: "none",
-              }}>
-                {/* EN next to hamburger */}
-                <div style={{
-                  position: "absolute",
-                  left: isMobileLandscape ? "70px" : "44px",
-                  zIndex: 9999,
-                  pointerEvents: "all",
-                }}>
-                  <LanguageSelector />
-                </div>
+                justifyContent: "center",
+                fontSize: "15px",
+                fontWeight: "600",
+                whiteSpace: "nowrap",
+                margin: 0,
+              }}
+            >
+              <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
+              {t('financialReport.downloadReport')}
+            </Button>
 
-                {/* Company name centered */}
-                <h3 style={{
-                  position: "absolute",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  color: "white",
-                  margin: 0,
-                  fontSize: "clamp(12px, 3.5vw, 16px)",
+            {userRole !== 0 && (
+              <Button
+                onClick={handleAddTransactionClick}
+                disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                style={{
+                  backgroundColor: "#41926f",
+                  borderColor: "#41926f",
+                  color: "#ffffff",
+                  height: "44px",
+                  borderRadius: "10px",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "15px",
+                  fontWeight: "600",
                   whiteSpace: "nowrap",
-                  pointerEvents: "none",
-                }}>
-                  {companyName}
-                </h3>
-              </div>
-
-              {/* Row 2: Buttons — shown in BOTH portrait and landscape */}
-              <div style={{
-                display: "flex",
-                gap: "6px",
-                marginTop: "6px",
-                width: "100%",
-                pointerEvents: "all",
-              }}>
-                <Button
-                  onClick={() => setShowDownloadReportModal(true)}
-                  disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                  style={{
-                    backgroundColor: "#2b427d",
-                    borderColor: "#2b427d",
-                    color: "#ffffff",
-                    height: "28px",
-                    borderRadius: "4px",
-                    padding: "0 6px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "10px",
-                    whiteSpace: "nowrap",
-                    flex: 1,
-                    margin: 0,
-                  }}
-                >
-                  <FontAwesomeIcon icon={faDownload} style={{ marginRight: "3px" }} />
-                  {t('financialReport.downloadReport')}
-                </Button>
-
-                {userRole !== 0 && (
-                  <Button
-                    onClick={handleAddTransactionClick}
-                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                    style={{
-                      backgroundColor: "#41926f",
-                      borderColor: "#41926f",
-                      color: "#ffffff",
-                      height: "28px",
-                      borderRadius: "4px",
-                      padding: "0 6px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "10px",
-                      whiteSpace: "nowrap",
-                      flex: 1,
-                      margin: 0,
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faPlus} style={{ marginRight: "3px" }} />
-                    {t('dashboard.addTransaction')}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      }
-    />
+                  margin: 0,
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
+                {t('dashboard.addTransaction')}
+              </Button>
+            )}
+          </div>
+)}
+          </>
+        }
+      />
       {userRole === 0 && (
         <div
           className="content "
@@ -1000,7 +915,7 @@ useEffect(() => {
         </div>
       )}
 
-      <div className="content" style={{ position: "relative" }}>
+      <div className="content" style={{ position: "relative", marginTop:5 }}>
         <LoadingOverlay
           loading={loadingFinancialData}
           text="Loading financial data..."
@@ -1269,22 +1184,22 @@ useEffect(() => {
         </Row>
       </div>
       <DownloadReportModal
-  isOpen={showDownloadReportModal}
-  toggle={() => setShowDownloadReportModal(false)}
-  companyName={companyName}
-  items={items || []}
-  revenues={{}}
-  expenses={{}}
-  initialBalance={initialBalance}
-  initialvalueableItems={initialvalueableItems}
-  initialoutstandingDebt={initialoutstandingDebt}
-  calculateTotalCash={calculateTotalCash}
-  calculateTotalRevenue={() => totalrevenue.toFixed(2)}
-  calculateTotalExpenses={() => totalExpenses.toFixed(2)}
-  calculateTotalPayable={() => totalPayable.toFixed(2)}
-  calculateTotalInventory={() => initialvalueableItems.toFixed(2)}
-  searchedDates={null}
-/>
+        isOpen={showDownloadReportModal}
+        toggle={() => setShowDownloadReportModal(false)}
+        companyName={companyName}
+        items={items || []}
+        revenues={{}}
+        expenses={{}}
+        initialBalance={initialBalance}
+        initialvalueableItems={initialvalueableItems}
+        initialoutstandingDebt={initialoutstandingDebt}
+        calculateTotalCash={calculateTotalCash}
+        calculateTotalRevenue={() => totalrevenue.toFixed(2)}
+        calculateTotalExpenses={() => totalExpenses.toFixed(2)}
+        calculateTotalPayable={() => totalPayable.toFixed(2)}
+        calculateTotalInventory={() => initialvalueableItems.toFixed(2)}
+        searchedDates={null}
+      />
     </>
   );
 }

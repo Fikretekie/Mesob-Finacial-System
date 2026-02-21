@@ -319,24 +319,6 @@ const Receipts = ({ selectedUser }) => {
       <Helmet>
         <title>{t('receipts.title')} - Mesob Finance</title>
       </Helmet>
-       <PanelHeader
-        size="sm"
-        content={
-          <Row className="w-100">
-            <Col
-              xs={12}
-              md={6}
-              className="d-flex justify-content-center justify-content-md-start"
-              style={{
-                paddingLeft: isMobileLandscape ? "80px" : isMobile ? "70px" : "25px",
-                marginTop: isMobileLandscape ? -20 : -20,
-              }}
-            >
-              <LanguageSelector />
-            </Col>
-          </Row>
-        }
-      />
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         
@@ -427,7 +409,7 @@ const Receipts = ({ selectedUser }) => {
           </Row>
         )}
 
-        <Row>
+        <Row style={{marginTop:80}}>
           <Col xs={12}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
