@@ -13,15 +13,33 @@ const LanguageSelector = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
+  // const languages = [
+  //   { code: "en", name: "ENGLISH", flag: "🇺🇸" },
+  //   { code: "am", name: "አማርኛ", flag: "🇪🇹" },
+  //   { code: "ti", name: "ትግርኛ", flag: "🇪🇷" },
+  //   { code: "ar", name: "العربية", flag: "🇸🇦" },
+  //   { code: "es", name: "ESPAÑOL", flag: "🇪🇸" },
+  //   { code: "fr", name: "FRANÇAIS", flag: "🇫🇷" },
+  //   { code: "so", name: "SOOMAALI", flag: "🇸🇴" },
+  // ];
+
   const languages = [
-    { code: "en", name: "ENGLISH", flag: "🇺🇸" },
-    { code: "am", name: "አማርኛ", flag: "🇪🇹" },
-    { code: "ti", name: "ትግርኛ", flag: "🇪🇷" },
-    { code: "ar", name: "العربية", flag: "🇸🇦" },
-    { code: "es", name: "ESPAÑOL", flag: "🇪🇸" },
-    { code: "fr", name: "FRANÇAIS", flag: "🇫🇷" },
-    { code: "so", name: "SOOMAALI", flag: "🇸🇴" },
-  ];
+  { code: "en", name: "ENGLISH", short: "EN", flag: "🇺🇸" },
+  { code: "am", name: "አማርኛ", short: "አማ", flag: "🇪🇹" },
+  { code: "ti", name: "ትግርኛ", short: "ትግ", flag: "🇪🇷" },
+  { code: "ar", name: "العربية", short: "AR", flag: "🇸🇦" },
+  { code: "es", name: "ESPAÑOL", short: "ES", flag: "🇪🇸" },
+  { code: "fr", name: "FRANÇAIS", short: "FR", flag: "🇫🇷" },
+  { code: "so", name: "SOOMAALI", short: "SO", flag: "🇸🇴" },
+];
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem("selectedLanguage") || "en";
@@ -51,29 +69,28 @@ const LanguageSelector = () => {
 
 
 return (
-  <div className="language-selector-wrapper">
+  <div className="language-selector-wrapper" >
     <Dropdown isOpen={dropdownOpen} toggle={toggle}>
-      <DropdownToggle
-        caret
-        className="language-toggle"
-        style={{
-          backgroundColor: "#5e72e4",
-          borderColor: "#5e72e4",
-          color: "#ffffff",
-          padding: "7px 14px",
-          borderRadius: "6px",
-          fontSize: "13px",
-          fontWeight: "500",
-          display: "flex",
-          alignItems: "center",
-          gap: "7px",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <span>{currentLanguage.flag}</span>
-        <span>{currentLanguage.name}</span>
-      </DropdownToggle>
-
+ <DropdownToggle
+  caret
+  className="language-toggle"
+  style={{
+    backgroundColor: "#5e72e4",
+    borderColor: "#5e72e4",
+    color: "#ffffff",
+    padding: isMobile ? "6px 10px" : "7px 14px",  // ← smaller on mobile
+    borderRadius: "6px",
+    fontSize: isMobile ? "12px" : "13px",           // ← smaller on mobile
+    fontWeight: "500",
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    whiteSpace: "nowrap",
+  }}
+>
+  <span>{currentLanguage.flag}</span>
+  <span>{isMobile ? currentLanguage.short : currentLanguage.name}</span>
+</DropdownToggle>
       <DropdownMenu
         container="body"
         strategy="fixed"

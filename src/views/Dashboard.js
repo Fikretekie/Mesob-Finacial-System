@@ -679,146 +679,124 @@ function Dashboard() {
     );
   };
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
   return (
     <>
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
-     
-{/* <PanelHeader
-  size="sm"
-  content={
-    <Row>
-      <Col xs={12} md={4} lg={4}>
-        <LanguageSelector />
-      </Col>
-      <Col xs={12} md={4} lg={4}>
-        <h3
-          style={{
-            color: "white",
-            justifyContent: "center",
-            alignItems: "center",
-            display: "flex",
-            marginBottom: -3,
-          }}
-        >
-          {loadingCompanyName ? (
-            <Spinner size="sm" color="light" />
-          ) : (
-            companyName
-          )}
-        </h3>
-      </Col>
-      <Col xs={12} md={4} lg={4}>
-        {userRole !== 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "10px",
-              marginBottom: "30px",
-            }}
-          >
-            <Button
-              style={{
-                marginRight: "2rem",
-                padding: "0.5rem 1rem",
-                fontSize: "1rem",
-                minWidth: "120px",
-                display: "inline-flex",
-                alignItems: "center",
-                marginBottom: "2rem",
-                backgroundColor: "#41926f",
-                borderColor: "#41926f",
-                color: "#ffffff",
-              }}
-              onClick={handleAddTransactionClick}
-              disabled={
-                userRole === 1
-                  ? false
-                  : !userSubscription && !isTrialActive()
-              }
-            >
-              <FontAwesomeIcon
-                icon={faPlus}
-                style={{ marginRight: "0.5rem", fontSize: "0.9rem" }}
-              />
-              {t('dashboard.addTransaction')}
-            </Button>
-          </div>
-        )}
-      </Col>
-    </Row>
-  }
-/> */}
 <PanelHeader
   size="sm"
   content={
-    <Row style={{ alignItems: "center", width: "100%", margin: 0 }}>
-      <Col xs={6} md={4} style={{ padding: "0 8px" }}>
+    <>
+      {/* Row 1: Language + Company inline with hamburger & profile */}
+      <div style={{
+        position: "absolute",
+        top: isMobile ? "-45px" : "0px",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: isMobile ? "space-between" : "flex-start",
+        padding: isMobile ? "0 60px 0 50px" : "0 80px 0 20px",
+      }}>
         <LanguageSelector />
-      </Col>
-      <Col xs={6} md={4} style={{ padding: "0 8px" }}>
-        <h3 style={{
-          color: "white",
-          justifyContent: "center",
-          alignItems: "center",
-          display: "flex",
-          margin: 0,
-          fontSize: "clamp(14px, 2vw, 20px)",
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-        }}>
-          {companyName}
-        </h3>
-      </Col>
-      <Col xs={12} md={4} style={{ padding: "4px 8px 0", display: "flex", justifyContent: "flex-end", gap: "8px", flexWrap: "wrap" }}>
-        <Button
-          onClick={() => setShowDownloadReportModal(true)}
-          disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-          style={{
-            backgroundColor: "#2b427d",
-            borderColor: "#2b427d",
-            color: "#ffffff",
-            height: "36px",
-            borderRadius: "4px",
-            padding: "0 14px",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "13px",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
-          {t('financialReport.downloadReport')}
-        </Button>
 
-        {userRole !== 0 && (
+        {isMobile ? (
+          <h3 style={{
+            color: "white",
+            margin: 0,
+            fontSize: "clamp(12px, 2vw, 18px)",
+            whiteSpace: "nowrap",
+            overflow: "visible",
+            textOverflow: "clip",
+            marginRight: "45px",
+          }}>
+            {companyName}
+          </h3>
+        ) : (
+          <h3 style={{
+            color: "white",
+            margin: 0,
+            fontSize: "clamp(12px, 2vw, 18px)",
+            whiteSpace: "nowrap",
+            position: "absolute",  // ← centered on desktop
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}>
+            {companyName}
+          </h3>
+        )}
+      </div>
+
+      {/* Row 2: Buttons below - mobile only */}
+      {isMobile && (
+        <div style={{
+          position: "absolute",
+          bottom: "-46px",
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          gap: "8px",
+          padding: "0 8px",
+        }}>
           <Button
-            onClick={handleAddTransactionClick}
+            onClick={() => setShowDownloadReportModal(true)}
             disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
             style={{
-              backgroundColor: "#41926f",
-              borderColor: "#41926f",
+              backgroundColor: "#2b427d",
+              borderColor: "#2b427d",
               color: "#ffffff",
               height: "36px",
               borderRadius: "4px",
-              padding: "0 14px",
+              padding: "0 12px",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "13px",
+              fontSize: "12px",
               whiteSpace: "nowrap",
+              width: "47%",
             }}
           >
-            <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
-            {t('dashboard.addTransaction')}
+            <FontAwesomeIcon icon={faDownload} style={{ marginRight: "5px" }} />
+            {t('financialReport.downloadReport')}
           </Button>
-        )}
-      </Col>
-    </Row>
+
+          {userRole !== 0 && (
+            <Button
+              onClick={handleAddTransactionClick}
+              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+              style={{
+                backgroundColor: "#41926f",
+                borderColor: "#41926f",
+                color: "#ffffff",
+                height: "36px",
+                borderRadius: "4px",
+                padding: "0 12px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "12px",
+                whiteSpace: "nowrap",
+                width: "47%",
+              }}
+            >
+              <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
+              {t('dashboard.addTransaction')}
+            </Button>
+          )}
+        </div>
+      )}
+    </>
   }
 />
       {userRole === 0 && (

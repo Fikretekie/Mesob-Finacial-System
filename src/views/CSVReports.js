@@ -72,19 +72,26 @@ const CSVReports = () => {
 
   return (
     <>
-      <PanelHeader size="sm" />
+<PanelHeader
+  size="sm"
+  content={
+    <Row className="w-100">
+      <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-start">
+        <LanguageSelector />
+      </Col>
+    </Row>
+  }
+/>
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         <Row>
-          <Col xs={12} md={4} lg={4}>
-            <LanguageSelector />
-          </Col>
+        
           <Col xs={12} style={{ paddingInline: 0 }}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
                 <div
                   style={{
                     display: "flex",
-                    marginTop: "30px",
+                    marginTop: "5px",
                     justifyContent: "space-between",
                     alignItems: "center",
                   }}

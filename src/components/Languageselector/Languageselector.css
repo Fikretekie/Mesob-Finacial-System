@@ -1,9 +1,23 @@
 .language-selector-wrapper {
   position: relative;
   z-index: 1000;
-  display: flex;
+  display: "flex";
   align-items: center;
   padding: 6px 0 6px 12px;
+}
+
+@media (max-width: 768px) {
+  .language-selector-wrapper {
+    padding: 6px 0 6px 4px;
+    width: auto;
+  }
+
+  .language-toggle {
+    width: auto !important;
+    min-width: unset !important;
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+  }
 }
 
 

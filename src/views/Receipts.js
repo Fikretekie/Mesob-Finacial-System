@@ -316,14 +316,19 @@ const Receipts = ({ selectedUser }) => {
       <Helmet>
         <title>{t('receipts.title')} - Mesob Finance</title>
       </Helmet>
-      <PanelHeader size="sm" />
+<PanelHeader
+  size="sm"
+  content={
+    <Row className="w-100">
+      <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-start">
+        <LanguageSelector />
+      </Col>
+    </Row>
+  }
+/>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
-        <Row>
-          <Col xs={12} md={4} lg={4}>
-            <LanguageSelector />
-          </Col>
-        </Row>
+        
 
         {userRole === 0 && (
           <Row style={{ margin: "0", paddingInline: 0 }}>

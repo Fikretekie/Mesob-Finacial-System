@@ -419,13 +419,22 @@ const SubscriptionPlans = () => {
       <Helmet>
         <title>{t("subscription.title")} - Mesob Finance</title>
       </Helmet>
-      <PanelHeader size="sm" />
+<PanelHeader
+  size="sm"
+  content={
+    <Row className="w-100">
+      <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-start">
+        <LanguageSelector />
+      </Col>
+    </Row>
+  }
+/>
       <div className="content">
-        <Row>
+        {/* <Row>
           <Col xs={12} md={4} lg={4}>
             <LanguageSelector />
           </Col>
-        </Row>
+        </Row> */}
 
         <div style={styles.page}>
           <div style={styles.wrapper}>

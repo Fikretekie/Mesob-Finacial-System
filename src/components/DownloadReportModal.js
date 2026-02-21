@@ -789,261 +789,265 @@ for (let i = startPage; i <= endPage; i++) {
     }
   };
 
-  const generateFinancialReportPageStandalone = (doc, pageWidth, pageHeight) => {
-    doc.setFillColor(16, 25, 38);
-    doc.rect(0, 0, pageWidth, 25, "F");
+  // const generateFinancialReportPageStandalone = (doc, pageWidth, pageHeight) => {
+  //   doc.setFillColor(16, 25, 38);
+  //   doc.rect(0, 0, pageWidth, 25, "F");
     
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("FINANCIAL AUDIT DETAIL", pageWidth / 2, 12, { align: "center" });
+  //   doc.setTextColor(255, 255, 255);
+  //   doc.setFontSize(14);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("FINANCIAL AUDIT DETAIL", pageWidth / 2, 12, { align: "center" });
     
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text("INTERNAL LEDGER | VERIFIED", pageWidth / 2, 20, { align: "center" });
+  //   doc.setFontSize(8);
+  //   doc.setFont("helvetica", "normal");
+  //   doc.text("INTERNAL LEDGER | VERIFIED", pageWidth / 2, 20, { align: "center" });
     
-    let yPos = 35;
+  //   let yPos = 35;
     
-    const totalCash = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
-    const totalRevenue = parseFloat(calculateTotalRevenue()) || 0;
-    const totalExpenses = parseFloat(calculateTotalExpenses()) || 0;
-    const totalPayable = parseFloat(calculateTotalPayable()) || 0;
-    const totalInventory = parseFloat(calculateTotalInventory()) || 0;
-    const netIncome = totalRevenue - totalExpenses;
-    const ownerEquity = totalCash - totalPayable;
+  //   const totalCash = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
+  //   const totalRevenue = parseFloat(calculateTotalRevenue()) || 0;
+  //   const totalExpenses = parseFloat(calculateTotalExpenses()) || 0;
+  //   const totalPayable = parseFloat(calculateTotalPayable()) || 0;
+  //   const totalInventory = parseFloat(calculateTotalInventory()) || 0;
+  //   const netIncome = totalRevenue - totalExpenses;
+  //   const ownerEquity = totalCash - totalPayable;
     
-    doc.setDrawColor(66, 133, 244);
-    doc.setLineWidth(3);
-    doc.line(15, yPos, 15, yPos + 8);
+  //   doc.setDrawColor(66, 133, 244);
+  //   doc.setLineWidth(3);
+  //   doc.line(15, yPos, 15, yPos + 8);
     
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("BALANCE SHEET DETAILS", 21, yPos + 6);
+  //   doc.setTextColor(33, 33, 33);
+  //   doc.setFontSize(10);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("BALANCE SHEET DETAILS", 21, yPos + 6);
     
-    yPos += 10;
+  //   yPos += 10;
     
-    const balanceSheetData = [
-      ["Account Detail", "Current Value"],
-      ["Total Assets (Cash & Cash Equivalents)", `$${formatCurrency(totalCash + totalInventory)}`],
-      ["Current Liabilities (Short-Term Payables)", `($${formatCurrency(totalPayable)})`],
-      ["TOTAL OWNER EQUITY", `$${formatCurrency(ownerEquity)}`],
-    ];
+  //   const balanceSheetData = [
+  //     ["Account Detail", "Current Value"],
+  //     ["Total Assets (Cash & Cash Equivalents)", `$${formatCurrency(totalCash + totalInventory)}`],
+  //     ["Current Liabilities (Short-Term Payables)", `($${formatCurrency(totalPayable)})`],
+  //     ["TOTAL OWNER EQUITY", `$${formatCurrency(ownerEquity)}`],
+  //   ];
     
-    autoTable(doc, {
-      startY: yPos,
-      head: [balanceSheetData[0]],
-      body: balanceSheetData.slice(1),
-      theme: "plain",
-      headStyles: {
-        fillColor: [240, 240, 240],
-        textColor: [60, 60, 60],
-        fontStyle: "bold",
-        fontSize: 9,
-        lineColor: [220, 220, 220],
-        lineWidth: 0.1,
-      },
-      styles: {
-        fontSize: 9,
-        cellPadding: 3.5,
-        lineColor: [220, 220, 220],
-        lineWidth: 0.1,
-      },
-      columnStyles: {
-        0: { cellWidth: (pageWidth - 30) * 0.6 },
-        1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" },
-      },
-      margin: { left: 15, right: 15 },
-      didParseCell: function(data) {
-        if (data.row.index === 2 && data.section === "body") {
-          data.cell.styles.fontStyle = "bold";
-          data.cell.styles.fillColor = [245, 245, 245];
-        }
-        if (data.row.index === 1 && data.section === "body" && data.column.index === 1) {
-          data.cell.styles.textColor = [167, 86, 93];
-        }
-      },
-    });
+  //   autoTable(doc, {
+  //     startY: yPos,
+  //     head: [balanceSheetData[0]],
+  //     body: balanceSheetData.slice(1),
+  //     theme: "plain",
+  //     headStyles: {
+  //       fillColor: [240, 240, 240],
+  //       textColor: [60, 60, 60],
+  //       fontStyle: "bold",
+  //       fontSize: 9,
+  //       lineColor: [220, 220, 220],
+  //       lineWidth: 0.1,
+  //     },
+  //     styles: {
+  //       fontSize: 9,
+  //       cellPadding: 3.5,
+  //       lineColor: [220, 220, 220],
+  //       lineWidth: 0.1,
+  //     },
+  //     columnStyles: {
+  //       0: { cellWidth: (pageWidth - 30) * 0.6 },
+  //       1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" },
+  //     },
+  //     margin: { left: 15, right: 15 },
+  //     didParseCell: function(data) {
+  //       if (data.row.index === 2 && data.section === "body") {
+  //         data.cell.styles.fontStyle = "bold";
+  //         data.cell.styles.fillColor = [245, 245, 245];
+  //       }
+  //       if (data.row.index === 1 && data.section === "body" && data.column.index === 1) {
+  //         data.cell.styles.textColor = [167, 86, 93];
+  //       }
+  //     },
+  //   });
     
-    yPos = doc.lastAutoTable.finalY + 15;
+  //   yPos = doc.lastAutoTable.finalY + 15;
     
-    doc.setDrawColor(66, 133, 244);
-    doc.setLineWidth(3);
-    doc.line(15, yPos, 15, yPos + 8);
+  //   doc.setDrawColor(66, 133, 244);
+  //   doc.setLineWidth(3);
+  //   doc.line(15, yPos, 15, yPos + 8);
     
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("INCOME STATEMENT SUMMARY", 21, yPos + 6);
+  //   doc.setTextColor(33, 33, 33);
+  //   doc.setFontSize(10);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("INCOME STATEMENT SUMMARY", 21, yPos + 6);
     
-    yPos += 10;
+  //   yPos += 10;
     
-    const incomeStatementData = [["Category", "Amount"]];
+  //   const incomeStatementData = [["Category", "Amount"]];
     
-    incomeStatementData.push(["Revenue", `$${formatCurrency(totalRevenue)}`]);
+  //   incomeStatementData.push(["Revenue", `$${formatCurrency(totalRevenue)}`]);
     
-    if (revenues && Object.keys(revenues).length > 0) {
-      Object.entries(revenues).forEach(([purpose, amount]) => {
-        incomeStatementData.push([`    ${purpose}`, `$${formatCurrency(amount)}`]);
-      });
-    } else {
-      incomeStatementData.push(["    Freight Revenue / Manual Sales", `$${formatCurrency(totalRevenue)}`]);
-    }
+  //   if (revenues && Object.keys(revenues).length > 0) {
+  //     Object.entries(revenues).forEach(([purpose, amount]) => {
+  //       incomeStatementData.push([`    ${purpose}`, `$${formatCurrency(amount)}`]);
+  //     });
+  //   } else {
+  //     incomeStatementData.push(["    Freight Revenue / Manual Sales", `$${formatCurrency(totalRevenue)}`]);
+  //   }
     
-    incomeStatementData.push(["Expenses", `($${formatCurrency(totalExpenses)})`]);
+  //   incomeStatementData.push(["Expenses", `($${formatCurrency(totalExpenses)})`]);
     
-    if (expenses && Object.keys(expenses).length > 0) {
-      Object.entries(expenses).forEach(([purpose, amount]) => {
-        incomeStatementData.push([`    ${purpose}`, `($${formatCurrency(amount)})`]);
-      });
-    }
+  //   if (expenses && Object.keys(expenses).length > 0) {
+  //     Object.entries(expenses).forEach(([purpose, amount]) => {
+  //       incomeStatementData.push([`    ${purpose}`, `($${formatCurrency(amount)})`]);
+  //     });
+  //   }
     
-    incomeStatementData.push(["NET INCOME", `$${formatCurrency(netIncome)}`]);
+  //   incomeStatementData.push(["NET INCOME", `$${formatCurrency(netIncome)}`]);
     
-    autoTable(doc, {
-      startY: yPos,
-      head: [incomeStatementData[0]],
-      body: incomeStatementData.slice(1),
-      theme: "plain",
-      headStyles: {
-        fillColor: [240, 240, 240],
-        textColor: [60, 60, 60],
-        fontStyle: "bold",
-        fontSize: 9,
-        lineColor: [220, 220, 220],
-        lineWidth: 0.1,
-      },
-      styles: {
-        fontSize: 9,
-        cellPadding: 3,
-        lineColor: [220, 220, 220],
-        lineWidth: 0.1,
-      },
-      columnStyles: {
-        0: { cellWidth: (pageWidth - 30) * 0.6 },
-        1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" },
-      },
-      margin: { left: 15, right: 15 },
-      didParseCell: function(data) {
-        if (data.section === "body") {
-          const cellText = data.cell.text[0] || "";
-          if (cellText === "Revenue" || cellText === "Expenses") {
-            data.cell.styles.fontStyle = "bold";
-            data.cell.styles.textColor = [33, 33, 33];
-          } else if (cellText === "NET INCOME") {
-            data.cell.styles.fontStyle = "bold";
-            data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.textColor = [33, 33, 33];
-          } else if (cellText.startsWith("    ")) {
-            data.cell.styles.textColor = [100, 100, 100];
-            data.cell.styles.font = "times";
-            data.cell.styles.fontStyle = "italic";
-          }
+  //   autoTable(doc, {
+  //     startY: yPos,
+  //     head: [incomeStatementData[0]],
+  //     body: incomeStatementData.slice(1),
+  //     theme: "plain",
+  //     headStyles: {
+  //       fillColor: [240, 240, 240],
+  //       textColor: [60, 60, 60],
+  //       fontStyle: "bold",
+  //       fontSize: 9,
+  //       lineColor: [220, 220, 220],
+  //       lineWidth: 0.1,
+  //     },
+  //     styles: {
+  //       fontSize: 9,
+  //       cellPadding: 3,
+  //       lineColor: [220, 220, 220],
+  //       lineWidth: 0.1,
+  //     },
+  //     columnStyles: {
+  //       0: { cellWidth: (pageWidth - 30) * 0.6 },
+  //       1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" },
+  //     },
+  //     margin: { left: 15, right: 15 },
+  //     didParseCell: function(data) {
+  //       if (data.section === "body") {
+  //         const cellText = data.cell.text[0] || "";
+  //         if (cellText === "Revenue" || cellText === "Expenses") {
+  //           data.cell.styles.fontStyle = "bold";
+  //           data.cell.styles.textColor = [33, 33, 33];
+  //         } else if (cellText === "NET INCOME") {
+  //           data.cell.styles.fontStyle = "bold";
+  //           data.cell.styles.fillColor = [245, 245, 245];
+  //           data.cell.styles.textColor = [33, 33, 33];
+  //         } else if (cellText.startsWith("    ")) {
+  //           data.cell.styles.textColor = [100, 100, 100];
+  //           data.cell.styles.font = "times";
+  //           data.cell.styles.fontStyle = "italic";
+  //         }
           
-          if (data.column.index === 1 && cellText.startsWith("$") && 
-              data.row.index > 0 && data.row.index < incomeStatementData.length - 2) {
-            const categoryText = incomeStatementData[data.row.index][0];
-            if (categoryText.startsWith("    ")) {
-              data.cell.styles.font = "times";
-              data.cell.styles.fontStyle = "italic";
-            }
-          }
+  //         if (data.column.index === 1 && cellText.startsWith("$") && 
+  //             data.row.index > 0 && data.row.index < incomeStatementData.length - 2) {
+  //           const categoryText = incomeStatementData[data.row.index][0];
+  //           if (categoryText.startsWith("    ")) {
+  //             data.cell.styles.font = "times";
+  //             data.cell.styles.fontStyle = "italic";
+  //           }
+  //         }
           
-          if (data.row.index === incomeStatementData.length - 2 && data.column.index === 1) {
-            data.cell.styles.textColor = [65, 146, 111];
-          }
-        }
-      },
-    });
+  //         if (data.row.index === incomeStatementData.length - 2 && data.column.index === 1) {
+  //           data.cell.styles.textColor = [65, 146, 111];
+  //         }
+  //       }
+  //     },
+  //   });
     
-    yPos = doc.lastAutoTable.finalY + 15;
+  //   yPos = doc.lastAutoTable.finalY + 15;
     
-    doc.setDrawColor(66, 133, 244);
-    doc.setLineWidth(3);
-    doc.line(15, yPos, 15, yPos + 8);
+  //   doc.setDrawColor(66, 133, 244);
+  //   doc.setLineWidth(3);
+  //   doc.line(15, yPos, 15, yPos + 8);
     
-    doc.setTextColor(33, 33, 33);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("VERIFIED JOURNAL ENTRIES", 21, yPos + 6);
+  //   doc.setTextColor(33, 33, 33);
+  //   doc.setFontSize(10);
+  //   doc.setFont("helvetica", "bold");
+  //   doc.text("VERIFIED JOURNAL ENTRIES", 21, yPos + 6);
     
-    yPos += 10;
+  //   yPos += 10;
     
-    const filteredItems = (items || [])
-      .filter((item) => item.transactionPurpose !== "Initial Cash Balance")
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  //   const filteredItems = (items || [])
+  //     .filter((item) => item.transactionPurpose !== "Initial Cash Balance")
+  //     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
-    const journalData = [["Date", "Description", "Debit", "Credit"]];
+  //   const journalData = [["Date", "Description", "Debit", "Credit"]];
     
-    filteredItems.forEach((item) => {
-      const debit = item.transactionType === "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
-      const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
-      const description = item.transactionType === "Receive" 
-        ? `${item.transactionPurpose || "Income Entry"}`
-        : `${item.transactionPurpose || "Expense Entry"}`;
+  //   filteredItems.forEach((item) => {
+  //     const debit = item.transactionType === "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
+  //     const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
+  //     const description = item.transactionType === "Receive" 
+  //       ? `${item.transactionPurpose || "Income Entry"}`
+  //       : `${item.transactionPurpose || "Expense Entry"}`;
       
-      journalData.push([
-        formatDate(item.createdAt),
-        description,
-        debit,
-        credit,
-      ]);
-    });
+  //     journalData.push([
+  //       formatDate(item.createdAt),
+  //       description,
+  //       debit,
+  //       credit,
+  //     ]);
+  //   });
     
-    let currentPage = 1;
+  //   let currentPage = 1;
     
-    if (journalData.length > 1) {
-      autoTable(doc, {
-        startY: yPos,
-        head: [journalData[0]],
-        body: journalData.slice(1),
-        theme: "plain",
-        headStyles: {
-          fillColor: [240, 240, 240],
-          textColor: [60, 60, 60],
-          fontStyle: "bold",
-          fontSize: 8,
-          lineColor: [220, 220, 220],
-          lineWidth: 0.1,
-        },
-        styles: {
-          fontSize: 8,
-          cellPadding: 3,
-          lineColor: [220, 220, 220],
-          lineWidth: 0.1,
-        },
-        columnStyles: {
-          0: { cellWidth: 35 },
-          1: { cellWidth: (pageWidth - 30) - 125 },
-          2: { cellWidth: 45, halign: "right" },
-          3: { cellWidth: 45, halign: "right" },
-        },
-        margin: { left: 15, right: 15, bottom: 30 },
-        didParseCell: function(data) {
-          if (data.section === "body") {
-            if (data.column.index === 2 && data.cell.text[0] !== "-") {
-              data.cell.styles.textColor = [65, 146, 111];
-            }
-            if (data.column.index === 3 && data.cell.text[0] !== "-") {
-              data.cell.styles.textColor = [199, 174, 79];
-            }
-          }
-        },
-        didDrawPage: function(data) {
-          const totalPagesCount = doc.internal.getNumberOfPages();
-          if (data.pageNumber > 1) {
-            addFooter(doc, pageWidth, pageHeight, data.pageNumber, totalPagesCount, true);
-          }
-          currentPage = data.pageNumber;
-        }
-      });
-    }
+  //   if (journalData.length > 1) {
+  //     autoTable(doc, {
+  //       startY: yPos,
+  //       head: [journalData[0]],
+  //       body: journalData.slice(1),
+  //       theme: "plain",
+  //       headStyles: {
+  //         fillColor: [240, 240, 240],
+  //         textColor: [60, 60, 60],
+  //         fontStyle: "bold",
+  //         fontSize: 8,
+  //         lineColor: [220, 220, 220],
+  //         lineWidth: 0.1,
+  //       },
+  //       styles: {
+  //         fontSize: 8,
+  //         cellPadding: 3,
+  //         lineColor: [220, 220, 220],
+  //         lineWidth: 0.1,
+  //       },
+  //       columnStyles: {
+  //         0: { cellWidth: 35 },
+  //         1: { cellWidth: (pageWidth - 30) - 125 },
+  //         2: { cellWidth: 45, halign: "right" },
+  //         3: { cellWidth: 45, halign: "right" },
+  //       },
+  //       margin: { left: 15, right: 15, bottom: 30 },
+  //       didParseCell: function(data) {
+  //         if (data.section === "body") {
+  //           if (data.column.index === 2 && data.cell.text[0] !== "-") {
+  //             data.cell.styles.textColor = [65, 146, 111];
+  //           }
+  //           if (data.column.index === 3 && data.cell.text[0] !== "-") {
+  //             data.cell.styles.textColor = [199, 174, 79];
+  //           }
+  //         }
+  //       },
+  //       didDrawPage: function(data) {
+  //         const totalPagesCount = doc.internal.getNumberOfPages();
+  //         if (data.pageNumber > 1) {
+  //           addFooter(doc, pageWidth, pageHeight, data.pageNumber, totalPagesCount, true);
+  //         }
+  //         currentPage = data.pageNumber;
+  //       }
+  //     });
+  //   }
     
-    // Add footer to the first page
-    const totalPagesCount = doc.internal.getNumberOfPages();
-    doc.setPage(1);
-    addFooter(doc, pageWidth, pageHeight, 1, totalPagesCount, true);
-  };
+  //   // Add footer to the first page
+  //   const totalPagesCount = doc.internal.getNumberOfPages();
+  //   doc.setPage(1);
+  //   addFooter(doc, pageWidth, pageHeight, 1, totalPagesCount, true);
+  // };
+
+  
+
+
 
 //   const generatePDF = async (type) => {
 //     setIsGenerating(true);
@@ -1104,6 +1108,7 @@ for (let i = startPage; i <= endPage; i++) {
 //       setIsGenerating(false);
 //     }
 //   };
+
 const generatePDF = async (type) => {
   setIsGenerating(true);
 

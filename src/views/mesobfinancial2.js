@@ -1547,23 +1547,62 @@ const getBusinessPurposes = (type) => {
       hasShownNotifyRef.current = false;
     }
   }, [selectedUserId]);
+
+  // Expose PDF download trigger to window so Sidebar can call it from any page
 useEffect(() => {
-    const handleSidebarReset = () => {
-      confirmDeleteandsave(); // saves CSV to S3 + downloads + deletes all
-    };
-    const handleSidebarDownload = () => {
-      downloadCSVOnly(); // just downloads CSV directly, no modal
-    };
+  window.__mesobOpenDownloadReport = () => {
+    setShowDownloadReportModal(true);
+  };
+  return () => {
+    delete window.__mesobOpenDownloadReport;
+  };
+}, []);
 
-    window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
-    window.addEventListener("mesob:downloadReport", handleSidebarDownload);
+useEffect(() => {
+  if (location.state?.openDownloadModal) {
+    // Small delay to let the page fully mount
+    setTimeout(() => {
+      setShowDownloadReportModal(true);
+    }, 300);
+    navigate(location.pathname, { replace: true }); // clear state
+  }
+}, [location.state]);
+// useEffect(() => {
+//     const handleSidebarReset = () => {
+//       confirmDeleteandsave(); // saves CSV to S3 + downloads + deletes all
+//     };
+//     const handleSidebarDownload = () => {
+//       downloadCSVOnly(); // just downloads CSV directly, no modal
+//     };
 
-    return () => {
-      window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
-      window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
-    };
+//     window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
+//     window.addEventListener("mesob:downloadReport", handleSidebarDownload);
+
+//     return () => {
+//       window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
+//       window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
+//     };
   
-  }, [items]);
+//   }, [items]);
+
+
+  useEffect(() => {
+  const handleSidebarReset = () => {
+    confirmDeleteandsave();
+  };
+  const handleSidebarDownload = () => {
+    setShowDownloadReportModal(true); // ← open PDF modal instead of CSV
+  };
+
+  window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
+  window.addEventListener("mesob:downloadReport", handleSidebarDownload);
+
+  return () => {
+    window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
+    window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
+  };
+}, [items]);
+  
   useEffect(() => {
   const handleResize = () => setIsMobile(window.innerWidth < 768);
   window.addEventListener('resize', handleResize);
@@ -1845,29 +1884,51 @@ const downloadCSVOnly = () => {
         <title>Mesob Financial - Mesob Finance</title>
       </Helmet>
 
-   <PanelHeader
+     <PanelHeader
   size="sm"
   content={
-    <Row>
-      <Col xs={12} md={6}>
-        <LanguageSelector />
-      </Col>
-      <Col xs={12} md={6}>
-        <h3
-        style={{
-  color: "white",
-  alignItems: "center",
-  display: "flex",
-  justifyContent: isMobile ? "center" : "flex-start",
-}}
-      >
-        {companyName}
-      </h3>
-      </Col>
-    </Row>
-  }
-/>
+    <div style={{
+      position: "absolute",
+      top: isMobile ? "-45px" : "0px",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: isMobile ? "space-between" : "flex-start",
+      padding: isMobile ? "0 60px 0 50px" : "0 80px 0 20px",
+    }}>
+      <LanguageSelector />
 
+      {/* On desktop: absolutely centered. On mobile: space-between pushes it right */}
+      {isMobile ? (
+        <h3 style={{
+          color: "white",
+          margin: 0,
+          fontSize: "clamp(14px, 2vw, 18px)",
+          whiteSpace: "nowrap",
+          overflow: "visible",
+          textOverflow: "clip",
+          marginRight: "45px",
+        }}>
+          {companyName}
+        </h3>
+      ) : (
+        <h3 style={{
+          color: "white",
+          margin: 0,
+          fontSize: "clamp(14px, 2vw, 18px)",
+          whiteSpace: "nowrap",
+          position: "absolute",   // ← absolute center on desktop
+          left: "50%",
+          transform: "translateX(-50%)",
+        }}>
+          {companyName}
+        </h3>
+      )}
+    </div>
+  }
+/>     
       <NotificationAlert ref={notificationAlertRef} />
 
       {userRole === 0 && (
