@@ -1896,6 +1896,9 @@ const downloadCSVOnly = () => {
       calculateFinancials(items);
     }
   }, [items, selectedTimeRange, searchTerm]);
+
+  const isLandscape = window.innerWidth > window.innerHeight;
+const isMobileLandscape = isMobile && isLandscape;
   return (
     <>
       <Helmet>
@@ -1908,7 +1911,7 @@ const downloadCSVOnly = () => {
     <div style={{
       position: "absolute",
       top: isMobile ? "-45px" : "0px",
-      left: 0,
+      left: isMobileLandscape ? 0:30,
       right: 0,
       bottom: 0,
       display: "flex",
@@ -1923,6 +1926,7 @@ const downloadCSVOnly = () => {
         <h3 style={{
           color: "white",
           margin: 0,
+        
           fontSize: "clamp(14px, 2vw, 18px)",
           whiteSpace: "nowrap",
           overflow: "visible",

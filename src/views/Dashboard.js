@@ -687,6 +687,8 @@ useEffect(() => {
   return () => window.removeEventListener("resize", handleResize);
 }, []);
 
+  const isLandscape = window.innerWidth > window.innerHeight;
+const isMobileLandscape = isMobile && isLandscape;
   return (
     <>
       <Helmet>
@@ -700,7 +702,7 @@ useEffect(() => {
       <div style={{
         position: "absolute",
         top: isMobile ? "-45px" : "0px",
-        left: 0,
+        left: isLandscape ? (isMobile ? "20px" : "30px") : "0px",
         right: 0,
         bottom: 0,
         display: "flex",
