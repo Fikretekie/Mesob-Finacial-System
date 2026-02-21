@@ -268,9 +268,9 @@ function DemoNavbar(props) {
   const toggleHelpModal = () => setHelpModalOpen(!helpModalOpen); // NEW: Toggle help modal
 {/* Define outside or above the return */}
 const socialLinks = [
-  { href: "https://facebook.com/yourpage", icon: "fab fa-facebook", color: "#1877F2", glow: "rgba(24,119,242,0.35)" },
-  { href: "https://www.tiktok.com/@yourprofile", icon: "fab fa-tiktok", color: "#ffffff", glow: "rgba(255,255,255,0.15)" },
-  { href: "https://instagram.com/yourprofile", icon: "fab fa-instagram", color: "#E4405F", glow: "rgba(228,64,95,0.35)" },
+  { href: "https://www.facebook.com/profile.php?id=61579534023491", icon: "fab fa-facebook", color: "#1877F2", glow: "rgba(24,119,242,0.35)" },
+  { href: "https://www.tiktok.com/@mesob85?_t=ZT-8yzttOuwr1r&_r=1", icon: "fab fa-tiktok", color: "#ffffff", glow: "rgba(255,255,255,0.15)" },
+  { href: "https://www.instagram.com/mesobfinancial?igsh=eWNoNWNoaG45cHI0", icon: "fab fa-instagram", color: "#E4405F", glow: "rgba(228,64,95,0.35)" },
 ];
   const handleLogout = async () => {
     try {
@@ -464,7 +464,7 @@ const socialLinks = [
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "1.75rem" }}>
 
       {/* Phone */}
-      <a href="tel:+1234567890" style={{ textDecoration: "none" }}>
+      <a href="tel:+16149665005" style={{ textDecoration: "none" }}>
         <div
           style={{
             display: "flex",
@@ -497,13 +497,13 @@ const socialLinks = [
           </div>
           <div>
             <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>Phone</p>
-            <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>+1 (234) 567-890</p>
+            <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>+1 (614) 966-5005</p>
           </div>
         </div>
       </a>
 
       {/* Email */}
-      <a href="mailto:support@mesobfinancial.com" style={{ textDecoration: "none" }}>
+      <a href="mailto:info@mesobfinancial.com" style={{ textDecoration: "none" }}>
         <div
           style={{
             display: "flex",
@@ -536,7 +536,7 @@ const socialLinks = [
           </div>
           <div>
             <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>Email</p>
-            <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>support@mesobfinancial.com</p>
+            <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>info@mesobfinancial.com</p>
           </div>
         </div>
       </a>
