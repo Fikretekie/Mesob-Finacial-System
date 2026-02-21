@@ -123,7 +123,7 @@ const handleConfirmReset = async () => {
     window.location.reload();
   } catch (err) {
     console.error("Reset failed:", err);
-    alert("Reset failed. Please try again.");
+    alert("Reset failed. Please try again.", err);
   } finally {
     setIsWorking(false);
   }
