@@ -1705,8 +1705,8 @@ const downloadCSVOnly = () => {
           alignItems: "flex-end", 
           justifyContent: "flex-start",
           flexWrap: "wrap",
-          gap: "20px",
-          paddingBottom: "10px",
+          gap: "10px",
+         
         }}
       >
         <div
@@ -1792,81 +1792,99 @@ const downloadCSVOnly = () => {
             />
           </FormGroup>
         </div>
-        <div
-          className="buttonn"
-          style={{
+       <div
+        className="buttonn"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "15px",
+          height: "38px",
+          minHeight: "38px",
+        }}
+      >
+        <Button
+          onClick={handleRun}
+          disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
+          style={{ 
+            height: "38px", 
+            backgroundColor: "#3d83f1", 
+            borderColor: "#3d83f1", 
+            color: "#ffffff",
+            borderRadius: "4px",
+            padding: "0 10px",
             display: "flex",
             alignItems: "center",
-            gap: "15px",
-            height: "38px",
-            minHeight: "38px",
+            justifyContent: "center"
           }}
         >
-          <Button
-            onClick={handleRun}
-            disabled={
-              userRole === 1
-                ? false
-                : !userSubscription && (!isTrialActive() || scheduleCount >= 4)
-            }
-            style={{ 
-              height: "38px", 
-              backgroundColor: "#3d83f1", 
-              borderColor: "#3d83f1", 
-              color: "#ffffff",
-              borderRadius: "4px",
-              padding: "0 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
           {t('financialReport.run')}
-          </Button>
-          <Button
-            onClick={handleClear}
-            disabled={
-              userRole === 1
-                ? false
-                : !userSubscription && (!isTrialActive() || scheduleCount >= 4)
-            }
-            style={{ 
-              height: "38px", 
-              backgroundColor: "#888888", 
-              borderColor: "#888888", 
-              color: "#ffffff",
-              borderRadius: "4px",
-              padding: "0 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-           {t('financialReport.clearFilters')}
-          </Button>
-          {/* <Button
-            color="danger"
-            onClick={handleDeleteAllRecords}
-            disabled={
-              userRole === 1
-                ? false
-                : !userSubscription && (!isTrialActive() || scheduleCount >= 4)
-            }
-            style={{ 
-              height: "38px",
-              backgroundColor: "#e10d05",
-              borderColor: "#e10d05",
-              color: "#ffffff",
-              borderRadius: "4px",
-              padding: "0 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-           {t('financialReport.close')}
-          </Button> */}
-        </div>
+        </Button>
+        <Button
+          onClick={handleClear}
+          disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
+          style={{ 
+            height: "38px", 
+            backgroundColor: "#888888", 
+            borderColor: "#888888", 
+            color: "#ffffff",
+            borderRadius: "4px",
+            padding: "0 10px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+        >
+          {t('financialReport.clearFilters')}
+        </Button>
+
+        {/* Search moved here - inline with Run/Clear */}
+        {showSearchInput ? (
+          <div style={{ position: "relative", width: "180px" }}>
+            <Input
+              type="text"
+              placeholder={t("financialReport.searchJournal")}
+              value={searchTerm}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchTerm(value);
+                if (value.trim() === "") {
+                  setSearchTerm("");
+                  setShowSearchInput(false);
+                }
+              }}
+              onBlur={() => {
+                if (searchTerm.trim() === "") setShowSearchInput(false);
+              }}
+              style={{ 
+                height: "38px", 
+                borderRadius: "4px",
+                backgroundColor: "#202a3a",
+                color: "#ffffff",
+                border: "1px solid #3a4555",
+                padding: "6px 12px",
+                paddingRight: "35px"
+              }}
+            />
+            <button
+              style={{
+                position: "absolute", right: "8px", top: "50%",
+                transform: "translateY(-50%)", background: "none",
+                border: "none", color: "#ffffff", cursor: "pointer",
+                padding: "0", display: "flex", alignItems: "center",
+              }}
+              onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
+            >
+              <FaTimesCircle size={18} />
+            </button>
+          </div>
+        ) : (
+          <Search
+            size={18}
+            onClick={() => setShowSearchInput(true)}
+            style={{ cursor: "pointer", color: "#ffffff" }}
+          />
+        )}
+      </div>
       </div>
     );
   };
@@ -2035,13 +2053,14 @@ const downloadCSVOnly = () => {
         <Container fluid style={{ paddingInline: 0 }}>
           <Row>
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
-              <Card style={{ backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
+              <Card style={{ backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)",paddingBottom:8, borderRadius: "8px" }}>
                 <CardHeader
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     paddingInline: 20,
+                    
                     backgroundColor: "#1a273a",
                     flexWrap: "wrap",
                     gap: "15px",
@@ -2055,69 +2074,7 @@ const downloadCSVOnly = () => {
                     />
 
                     {/* Search */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "38px", minHeight: "38px" }}>
-                      {showSearchInput ? (
-                        <div style={{ position: "relative", width: "250px" }}>
-                          <Input
-                            type="text"
-                            placeholder={t("financialReport.searchJournal")}
-                            value={searchTerm}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setSearchTerm(value);
-                              if (value.trim() === "") {
-                                setSearchTerm("");
-                                setShowSearchInput(false);
-                              }
-                            }}
-                            onBlur={() => {
-                              if (searchTerm.trim() === "") {
-                                setShowSearchInput(false);
-                              }
-                            }}
-                            style={{ 
-                              height: "38px", 
-                              borderRadius: "4px",
-                              backgroundColor: "#202a3a",
-                              color: "#ffffff",
-                              border: "1px solid #3a4555",
-                              padding: "6px 12px",
-                              paddingRight: "35px"
-                            }}
-                          />
-                          <button
-                            style={{
-                              position: "absolute",
-                              right: "8px",
-                              top: "50%",
-                              transform: "translateY(-50%)",
-                              background: "none",
-                              border: "none",
-                              color: "#ffffff",
-                              cursor: "pointer",
-                              padding: "0",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center"
-                            }}
-                            onClick={() => {
-                              setSearchTerm("");
-                              setShowSearchInput(false);
-                            }}
-                          >
-                            <FaTimesCircle size={18} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "38px", width: "38px" }}>
-                          <Search
-                            size={18}
-                            onClick={() => setShowSearchInput(true)}
-                            style={{ cursor: "pointer", color: "#ffffff" }}
-                          />
-                        </div>
-                      )}
-                    </div>
+                
                   </div>
 
                   {/* Right Section: Add Transaction + Subscription Info */}
