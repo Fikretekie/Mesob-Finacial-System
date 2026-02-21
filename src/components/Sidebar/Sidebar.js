@@ -96,34 +96,100 @@ const handleDownloadReport = async () => {
   }
 };
 
+// const handleConfirmReset = async () => {
+//   if (resetConfirmText !== "RESET") return;
+
+//   try {
+//     setIsWorking(true);
+//     const userId = localStorage.getItem("userId");
+//     const items = await fetchTransactionsForExport();
+
+//     // Download CSV backup locally
+//     if (items.length) {
+//       const csvData = generateCSV(items);
+//       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
+//       saveAs(blob, "transactions_backup.csv");
+//       await uploadCSVToS3(csvData);
+//     }
+
+//     // Delete all transactions
+//     await axios.delete(
+//       `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`
+//     );
+
+//     setShowResetModal(false);
+//     setResetConfirmText("");
+//     navigate("/customer/financial-report");
+//     window.location.reload();
+//   } catch (err) {
+//     console.error("Reset failed:", err);
+//     alert("Reset failed. Please try again.", err);
+//   } finally {
+//     setIsWorking(false);
+//   }
+// };
+
 const handleConfirmReset = async () => {
   if (resetConfirmText !== "RESET") return;
 
   try {
     setIsWorking(true);
     const userId = localStorage.getItem("userId");
-    const items = await fetchTransactionsForExport();
 
-    // Download CSV backup locally
+    // Step 1: Fetch
+    console.log("Step 1: Fetching transactions...");
+    const items = await fetchTransactionsForExport();
+    console.log("Step 1 done:", items.length, "items");
+
+    // Step 2: Local CSV download
     if (items.length) {
       const csvData = generateCSV(items);
-      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
-      saveAs(blob, "transactions_backup.csv");
-      await uploadCSVToS3(csvData);
+      
+      try {
+        console.log("Step 2: Downloading CSV...");
+        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
+        saveAs(blob, "transactions_backup.csv");
+        console.log("Step 2 done");
+      } catch (saveErr) {
+        console.warn("Step 2 FAILED (non-fatal):", saveErr.message);
+        // Don't block — continue to next step
+      }
+
+      // Step 3: S3 upload
+      try {
+        console.log("Step 3: Uploading to S3...");
+        await uploadCSVToS3(csvData);
+        console.log("Step 3 done");
+      } catch (s3Err) {
+        console.warn("Step 3 FAILED (non-fatal):", s3Err.message);
+        // Don't block — S3 backup is optional
+      }
     }
 
-    // Delete all transactions
-    await axios.delete(
-      `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`
-    );
+    // Step 4: Delete all transactions
+    try {
+      console.log("Step 4: Deleting transactions...");
+      await axios.delete(
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
+        { timeout: 30000 }
+      );
+      console.log("Step 4 done");
+    } catch (deleteErr) {
+      console.error("Step 4 FAILED:", deleteErr.message, deleteErr?.response?.status);
+      alert(`Delete failed: ${deleteErr?.response?.status} - ${deleteErr?.response?.data?.message || deleteErr?.message}`);
+      setIsWorking(false);
+      return; // Stop here, don't navigate
+    }
 
+    // Step 5: Done
     setShowResetModal(false);
     setResetConfirmText("");
     navigate("/customer/financial-report");
     window.location.reload();
+
   } catch (err) {
-    console.error("Reset failed:", err);
-    alert("Reset failed. Please try again.", err);
+    console.error("Unexpected error:", err.message);
+    alert(`Reset failed: ${err?.response?.data?.message || err?.message}`);
   } finally {
     setIsWorking(false);
   }
