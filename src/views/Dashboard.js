@@ -76,6 +76,22 @@ function Dashboard() {
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
 
+
+  // Fix: make isLandscape reactive with state
+const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768);
+    setIsLandscape(window.innerWidth > window.innerHeight);
+  };
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+const isMobileLandscape = isMobile && isLandscape;
+
   // Redirect based on user role
   useEffect(() => {
     if (userRole === "0" && !location.pathname.includes("/admin")) {
@@ -679,128 +695,213 @@ function Dashboard() {
     );
   };
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
 useEffect(() => {
   const handleResize = () => setIsMobile(window.innerWidth < 768);
   window.addEventListener("resize", handleResize);
   return () => window.removeEventListener("resize", handleResize);
 }, []);
 
-  const isLandscape = window.innerWidth > window.innerHeight;
-const isMobileLandscape = isMobile && isLandscape;
+
   return (
     <>
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
-<PanelHeader
-  size="sm"
-  content={
-    <>
-      {/* Row 1: Language + Company inline with hamburger & profile */}
-      <div style={{
-        position: "absolute",
-        top: isMobile ? "-45px" : "0px",
-        left: isLandscape ? (isMobile ? "20px" : "30px") : "0px",
-        right: 0,
-        bottom: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: isMobile ? "space-between" : "flex-start",
-        padding: isMobile ? "0 60px 0 50px" : "0 80px 0 20px",
-      }}>
-        <LanguageSelector />
-
-        {isMobile ? (
-          <h3 style={{
-            color: "white",
-            margin: 0,
-            fontSize: "clamp(12px, 2vw, 18px)",
-            whiteSpace: "nowrap",
-            overflow: "visible",
-            textOverflow: "clip",
-            marginRight: "45px",
-          }}>
-            {companyName}
-          </h3>
-        ) : (
-          <h3 style={{
-            color: "white",
-            margin: 0,
-            fontSize: "clamp(12px, 2vw, 18px)",
-            whiteSpace: "nowrap",
-            position: "absolute",  // ← centered on desktop
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}>
-            {companyName}
-          </h3>
-        )}
-      </div>
-
-      {/* Row 2: Buttons below - mobile only */}
-      {isMobile && (
-        <div style={{
-          position: "absolute",
-          bottom: "-46px",
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "0 8px",
-        }}>
-          <Button
-            onClick={() => setShowDownloadReportModal(true)}
-            disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-            style={{
-              backgroundColor: "#2b427d",
-              borderColor: "#2b427d",
-              color: "#ffffff",
-              height: "36px",
-              borderRadius: "4px",
-              padding: "0 12px",
-              display: "inline-flex",
+      <PanelHeader
+      size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+      content={
+        <>
+          {/* Desktop Layout */}
+          {!isMobile && (
+            <div style={{
+              position: "absolute",
+              top: 0, left: 0, right: 0, bottom: 0,
+              display: "flex",
+              width:'90%',
               alignItems: "center",
-              justifyContent: "center",
-              fontSize: "12px",
-              whiteSpace: "nowrap",
-              width: "47%",
-            }}
-          >
-            <FontAwesomeIcon icon={faDownload} style={{ marginRight: "5px" }} />
-            {t('financialReport.downloadReport')}
-          </Button>
+              marginTop: isMobileLandscape ? 0 : -45,
+              padding: "0 20px",
+            }}>
+              <div style={{ flexShrink: 0, marginLeft: isMobileLandscape && isMobile ? 0 : 30}}>
+                <LanguageSelector />
+              </div>
 
-          {userRole !== 0 && (
-            <Button
-              onClick={handleAddTransactionClick}
-              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-              style={{
-                backgroundColor: "#41926f",
-                borderColor: "#41926f",
-                color: "#ffffff",
-                height: "36px",
-                borderRadius: "4px",
-                padding: "0 12px",
-                display: "inline-flex",
+              <div style={{
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}>
+                <h3 style={{
+                  color: "white",
+                  margin: 0,
+                  fontSize: "clamp(14px, 2vw, 20px)",
+                  whiteSpace: "nowrap",
+                }}>
+                  {companyName}
+                </h3>
+              </div>
+
+              <div style={{
+                marginLeft: "auto",
+                display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                whiteSpace: "nowrap",
-                width: "47%",
-              }}
-            >
-              <FontAwesomeIcon icon={faPlus} style={{ marginRight: "5px" }} />
-              {t('dashboard.addTransaction')}
-            </Button>
+                gap: "8px",
+                flexShrink: 0,
+              }}>
+                <Button
+                  onClick={() => setShowDownloadReportModal(true)}
+                  disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                  style={{
+                    backgroundColor: "#2b427d",
+                    borderColor: "#2b427d",
+                    color: "#ffffff",
+                    height: "36px",
+                    borderRadius: "4px",
+                    padding: "0 14px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    fontSize: "13px",
+                    whiteSpace: "nowrap",
+                    margin: 0,
+                  }}
+                >
+                  <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
+                  {t('financialReport.downloadReport')}
+                </Button>
+
+                {userRole !== 0 && (
+                  <Button
+                    onClick={handleAddTransactionClick}
+                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                    style={{
+                      backgroundColor: "#41926f",
+                      borderColor: "#41926f",
+                      color: "#ffffff",
+                      height: "36px",
+                      borderRadius: "4px",
+                      padding: "0 14px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      fontSize: "13px",
+                      whiteSpace: "nowrap",
+                      margin: 0,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
+                    {t('dashboard.addTransaction')}
+                  </Button>
+                )}
+              </div>
+            </div>
           )}
-        </div>
-      )}
-    </>
-  }
-/>
+
+          {/* Mobile Layout (portrait + landscape) */}
+          {isMobile && (
+            <div style={{
+              position: "absolute",
+              top: 0, left: 0, right: 0, bottom: 0,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              padding: "4px 8px",
+              pointerEvents: "none",
+            }}>
+
+              {/* Row 1: EN + Company Name */}
+              <div style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                height: "36px",
+                marginTop:-12,
+                pointerEvents: "none",
+              }}>
+                {/* EN next to hamburger */}
+                <div style={{
+                  position: "absolute",
+                  left: isMobileLandscape ? "70px" : "44px",
+                  zIndex: 9999,
+                  pointerEvents: "all",
+                }}>
+                  <LanguageSelector />
+                </div>
+
+                {/* Company name centered */}
+                <h3 style={{
+                  position: "absolute",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  color: "white",
+                  margin: 0,
+                  fontSize: "clamp(12px, 3.5vw, 16px)",
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                }}>
+                  {companyName}
+                </h3>
+              </div>
+
+              {/* Row 2: Buttons — shown in BOTH portrait and landscape */}
+              <div style={{
+                display: "flex",
+                gap: "6px",
+                marginTop: "6px",
+                width: "100%",
+                pointerEvents: "all",
+              }}>
+                <Button
+                  onClick={() => setShowDownloadReportModal(true)}
+                  disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                  style={{
+                    backgroundColor: "#2b427d",
+                    borderColor: "#2b427d",
+                    color: "#ffffff",
+                    height: "28px",
+                    borderRadius: "4px",
+                    padding: "0 6px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    whiteSpace: "nowrap",
+                    flex: 1,
+                    margin: 0,
+                  }}
+                >
+                  <FontAwesomeIcon icon={faDownload} style={{ marginRight: "3px" }} />
+                  {t('financialReport.downloadReport')}
+                </Button>
+
+                {userRole !== 0 && (
+                  <Button
+                    onClick={handleAddTransactionClick}
+                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                    style={{
+                      backgroundColor: "#41926f",
+                      borderColor: "#41926f",
+                      color: "#ffffff",
+                      height: "28px",
+                      borderRadius: "4px",
+                      padding: "0 6px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "10px",
+                      whiteSpace: "nowrap",
+                      flex: 1,
+                      margin: 0,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faPlus} style={{ marginRight: "3px" }} />
+                    {t('dashboard.addTransaction')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      }
+    />
       {userRole === 0 && (
         <div
           className="content "

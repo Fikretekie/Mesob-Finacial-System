@@ -47,7 +47,17 @@ useEffect(() => {
     i18n.changeLanguage(savedLanguage);
   }, [i18n]);
 
-  const toggle = () => setDropdownOpen(prev => !prev);
+// const toggle = (e) => {
+//   console.log("🔵 toggle fired", e?.type);
+//   if (e) {
+//     e.stopPropagation();
+//     e.preventDefault();
+//   }
+//   setDropdownOpen(prev => !prev);
+// };
+
+const toggle = () => setDropdownOpen(prev => !prev);
+
 
   const handleLanguageChange = (langCode, e) => {
     // Stop event propagation to prevent toggle from firing
@@ -71,26 +81,37 @@ useEffect(() => {
 return (
   <div className="language-selector-wrapper" >
     <Dropdown isOpen={dropdownOpen} toggle={toggle}>
- <DropdownToggle
-  caret
-  className="language-toggle"
-  style={{
-    backgroundColor: "#5e72e4",
-    borderColor: "#5e72e4",
-    color: "#ffffff",
-    padding: isMobile ? "6px 10px" : "7px 14px",  // ← smaller on mobile
-    borderRadius: "6px",
-    fontSize: isMobile ? "12px" : "13px",           // ← smaller on mobile
-    fontWeight: "500",
-    display: "flex",
-    alignItems: "center",
-    gap: "5px",
-    whiteSpace: "nowrap",
-  }}
->
-  <span>{currentLanguage.flag}</span>
-  <span>{isMobile ? currentLanguage.short : currentLanguage.name}</span>
-</DropdownToggle>
+<DropdownToggle
+    caret
+    className="language-toggle"
+    tag="button"
+    onTouchStart={(e) => {
+      e.stopPropagation();
+      e.preventDefault();  // prevents the click from also firing on mobile
+      setDropdownOpen(prev => !prev);
+    }}
+    style={{
+      backgroundColor: "#5e72e4",
+      borderColor: "#5e72e4",
+      color: "#ffffff",
+      padding: isMobile ? "6px 10px" : "7px 14px",
+      borderRadius: "6px",
+      fontSize: isMobile ? "12px" : "13px",
+      fontWeight: "500",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+      whiteSpace: "nowrap",
+      cursor: "pointer",
+      touchAction: "manipulation",
+      WebkitTapHighlightColor: "transparent",
+      userSelect: "none",
+      WebkitUserSelect: "none",
+    }}
+  >
+    <span>{currentLanguage.flag}</span>
+    <span>{isMobile ? currentLanguage.short : currentLanguage.name}</span>
+  </DropdownToggle>
       <DropdownMenu
         container="body"
         strategy="fixed"

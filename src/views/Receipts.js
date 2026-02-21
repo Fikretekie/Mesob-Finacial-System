@@ -45,6 +45,9 @@ const Receipts = ({ selectedUser }) => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState([]);
   const userRole = parseInt(localStorage.getItem("role") || 1);
+ const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const isMobileLandscape = isMobile && isLandscape;
 
   useEffect(() => {
     if (userRole === 0 && !selectedUserId) return;
@@ -316,16 +319,24 @@ const Receipts = ({ selectedUser }) => {
       <Helmet>
         <title>{t('receipts.title')} - Mesob Finance</title>
       </Helmet>
-<PanelHeader
-  size="sm"
-  content={
-    <Row className="w-100">
-      <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-start">
-        <LanguageSelector />
-      </Col>
-    </Row>
-  }
-/>
+       <PanelHeader
+        size="sm"
+        content={
+          <Row className="w-100">
+            <Col
+              xs={12}
+              md={6}
+              className="d-flex justify-content-center justify-content-md-start"
+              style={{
+                paddingLeft: isMobileLandscape ? "80px" : isMobile ? "70px" : "25px",
+                marginTop: isMobileLandscape ? -20 : -20,
+              }}
+            >
+              <LanguageSelector />
+            </Col>
+          </Row>
+        }
+      />
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         

@@ -1905,52 +1905,84 @@ const isMobileLandscape = isMobile && isLandscape;
         <title>Mesob Financial - Mesob Finance</title>
       </Helmet>
 
-     <PanelHeader
+         <PanelHeader
   size="sm"
   content={
-    <div style={{
-      position: "absolute",
-      top: isMobile ? "-45px" : "0px",
-      left: isMobileLandscape ? 0:30,
-      right: 0,
-      bottom: 0,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: isMobile ? "space-between" : "flex-start",
-      padding: isMobile ? "0 60px 0 50px" : "0 80px 0 20px",
-    }}>
-      <LanguageSelector />
+    <>
+      {/* Desktop Layout */}
+      {!isMobile && (
+        <div style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0, bottom: 0,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 20px",
+          marginTop: isMobileLandscape ? 0 : -45, // add top margin in landscape to prevent overlap with header
+          left: isMobileLandscape ? "70px" : "44px",  // ← bigger gap in landscape
 
-      {/* On desktop: absolutely centered. On mobile: space-between pushes it right */}
-      {isMobile ? (
-        <h3 style={{
-          color: "white",
-          margin: 0,
-        
-          fontSize: "clamp(14px, 2vw, 18px)",
-          whiteSpace: "nowrap",
-          overflow: "visible",
-          textOverflow: "clip",
-          marginRight: "45px",
         }}>
-          {companyName}
-        </h3>
-      ) : (
-        <h3 style={{
-          color: "white",
-          margin: 0,
-          fontSize: "clamp(14px, 2vw, 18px)",
-          whiteSpace: "nowrap",
-          position: "absolute",   // ← absolute center on desktop
-          left: "50%",
-          transform: "translateX(-50%)",
-        }}>
-          {companyName}
-        </h3>
+          <div style={{ flexShrink: 0 }}>
+            <LanguageSelector />
+          </div>
+
+          <div style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(-50%)",
+          }}>
+            <h3 style={{
+              color: "white",
+              margin: 0,
+              fontSize: "clamp(14px, 2vw, 20px)",
+              whiteSpace: "nowrap",
+            }}>
+              {companyName}
+            </h3>
+          </div>
+
+         
+        </div>
       )}
-    </div>
+
+      {/* Mobile Layout - TWO ROWS inside header */}
+      {isMobile && (
+        <div style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0, bottom: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "4px 8px 4px 8px",
+        }}>
+          {/* Row 1: Hamburger space → EN → Company Name → Profile space */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            marginTop: -50,
+            paddingLeft: "44px",  // space for hamburger
+            paddingRight: "44px", // space for profile icon
+          }}>
+            <LanguageSelector />
+            <h3 style={{
+              color: "white",
+              margin: 0,
+              fontSize: "clamp(11px, 3.5vw, 15px)",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              flex: 1,
+              textAlign: "center",
+            }}>
+              {companyName}
+            </h3>
+          </div>
+
+         
+        </div>
+      )}
+    </>
   }
-/>     
+/>  
       <NotificationAlert ref={notificationAlertRef} />
 
       {userRole === 0 && (

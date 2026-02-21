@@ -411,7 +411,26 @@ const SubscriptionPlans = () => {
     ["localhost", "127.0.0.1"].includes(window.location.hostname)
       ? "AfyldJzeR-e8NQP2M24ocwWHWPfwRAH8XrUa7W70nwSfDYXmHjMOUgdpiEuv8RTV5RT6-GcR_hOMbG6A"
       : "AVuPk0EljwS6RR9n8GU5Rb2MOQADzQ6T3qSj8YoAsNaHGYwdqko9GOilnxq7vCFDn2iH9hQ8xDoaPL3u";
+const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+useEffect(() => {
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768);
+    setIsLandscape(window.innerWidth > window.innerHeight);
+  };
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+const isMobileLandscape = isMobile && isLandscape;
   const currentPriceId = plans[0].priceId[billingCycle];
 
   return (
@@ -419,23 +438,25 @@ const SubscriptionPlans = () => {
       <Helmet>
         <title>{t("subscription.title")} - Mesob Finance</title>
       </Helmet>
-<PanelHeader
+    <PanelHeader
   size="sm"
   content={
-    <Row className="w-100">
-      <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-start">
+    <Row className="w-100"  style={{ 
+          paddingLeft: isMobileLandscape ? "80px" : isMobile ? "60px" : "50px" ,marginTop:-20
+        }}>
+      <Col 
+        xs={12} 
+        md={6} 
+        className="d-flex justify-content-center justify-content-md-start"
+       
+      >
         <LanguageSelector />
       </Col>
     </Row>
   }
 />
       <div className="content">
-        {/* <Row>
-          <Col xs={12} md={4} lg={4}>
-            <LanguageSelector />
-          </Col>
-        </Row> */}
-
+       
         <div style={styles.page}>
           <div style={styles.wrapper}>
             {justSubscribed && (

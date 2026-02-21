@@ -101,7 +101,7 @@
 @media (max-width: 768px) {
  .language-selector-wrapper {
     /* padding: 8px 0 4px 12px; */
-    margin-left: 4rem;
+    margin-left: 0.7rem;
     width: auto;
   }
 
@@ -109,4 +109,20 @@
     width: auto !important;
     min-width: 160px;
   }
+}
+
+.language-selector-wrapper {
+  position: relative;
+  z-index: 9999;
+  pointer-events: all !important;
+  touch-action: manipulation;
+}
+
+.language-toggle {
+  touch-action: manipulation !important;
+  pointer-events: all !important;
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }

@@ -20,6 +20,9 @@ const CSVReports = () => {
   const [csvData, setCsvData] = useState(null);
   const [backupUrls, setBackupUrls] = useState([]);
   const [disabled, setDisabled] = useState(false);
+ const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const isMobileLandscape = isMobile && isLandscape;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -72,16 +75,24 @@ const CSVReports = () => {
 
   return (
     <>
-<PanelHeader
-  size="sm"
-  content={
-    <Row className="w-100">
-      <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-start">
-        <LanguageSelector />
-      </Col>
-    </Row>
-  }
-/>
+  <PanelHeader
+        size="sm"
+        content={
+          <Row className="w-100">
+            <Col
+              xs={12}
+              md={6}
+              className="d-flex justify-content-center justify-content-md-start"
+              style={{
+                paddingLeft: isMobileLandscape ? "80px" : isMobile ? "70px" : "25px",
+                marginTop: isMobileLandscape ? -20 : -20,
+              }}
+            >
+              <LanguageSelector />
+            </Col>
+          </Row>
+        }
+      />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
         <Row>
         
