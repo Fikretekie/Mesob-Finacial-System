@@ -187,6 +187,24 @@ const handleDownloadReport = async () => {
   }
 };
 
+
+// Reusable fetch with retry — add this helper near the top of your component
+const fetchWithRetry = async (url, options = {}, retries = 2, delayMs = 800) => {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch (err) {
+      console.warn(`[iOS Retry] Attempt ${attempt + 1} failed:`, err.message);
+      if (attempt === retries) throw err;
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+};
 const handleConfirmReset = async () => {
   if (resetConfirmText !== "RESET") return;
 
@@ -196,7 +214,16 @@ const handleConfirmReset = async () => {
     const deviceType = isIOSDevice() ? "iOS" : "Desktop";
 
     // Step 1: Fetch
-    const items = await fetchTransactionsForExport();
+
+     const items  =  fetchTransactionsForExport = async () => {
+  const userId = localStorage.getItem("userId");
+  const res = await fetchWithRetry(
+    `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+  );
+  const data = await res.json();
+  return data || [];
+};
+    // const items = await fetchTransactionsForExport();
 
     // Step 2 & 3: Backup (non-blocking) - SKIP ON iOS IF IT FAILS
     if (items.length) {
@@ -230,23 +257,22 @@ const handleConfirmReset = async () => {
         }
     }
  // ✅ CRITICAL: Wait a tiny bit before DELETE (gives browser time to settle)
-    console.log(`[${deviceType}] Waiting 500ms before DELETE...`);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // console.log(`[${deviceType}] Waiting 500ms before DELETE...`);
+    // await new Promise(resolve => setTimeout(resolve, 500));
 
     // Step 4: DELETE - CRITICAL
     try {
       console.log(`[${deviceType}] Step 4: Deleting transactions...`);
       
       // Increase timeout for iOS, add error context
-      const response = await axios.delete(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
-        { 
-          timeout: isIOSDevice() ? 60000 : 30000, // 60s for iOS
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+    const response = await fetchWithRetry(
+  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
+  {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  }
+);
+console.log(`[${deviceType}] Step 4 done:`, res.status);
       
       console.log(`[${deviceType}] Step 4 done:`, response.status);
     } catch (deleteErr) {
