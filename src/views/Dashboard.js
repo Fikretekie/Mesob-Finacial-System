@@ -684,13 +684,13 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
-      
+      {isMobile ?
       <PanelHeader
         size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
         content={
           <>
             {/* Desktop Layout */}
-            {!isMobile && (
+            {/* {!isMobile && (
               <div style={{
                 position: "absolute",
                 top: 0, left: 0, right: 0, bottom: 0,
@@ -752,7 +752,7 @@ function Dashboard() {
                   )}
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Mobile Layout (portrait + landscape) */}
             {isMobile && (
@@ -818,6 +818,7 @@ function Dashboard() {
           </>
         }
       />
+      :null}
       {userRole === 0 && (
         <div
           className="content "
@@ -916,7 +917,7 @@ function Dashboard() {
         </div>
       )}
 
-      <div className="content" style={{ position: "relative", marginTop:0 }}>
+      <div className="content" style={{ position: "relative", marginTop:isMobile ? 0:80 }}>
         <LoadingOverlay
           loading={loadingFinancialData}
           text="Loading financial data..."
