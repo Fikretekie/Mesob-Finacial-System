@@ -229,6 +229,9 @@ const handleConfirmReset = async () => {
           console.warn(`[${deviceType}] S3 upload FAILED (non-critical):`, s3Err.message);
         }
     }
+ // ✅ CRITICAL: Wait a tiny bit before DELETE (gives browser time to settle)
+    console.log(`[${deviceType}] Waiting 500ms before DELETE...`);
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Step 4: DELETE - CRITICAL
     try {
