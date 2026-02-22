@@ -114,21 +114,17 @@ function Sidebar(props) {
   // };
 
 
-  const uploadCSVToS3 = async (csvData) => {
+const uploadCSVToS3 = async (csvData) => {
   const userId = localStorage.getItem("userId");
   const deviceType = isIOSDevice() ? "iOS" : "Desktop";
   const fileName = `transactions_${new Date().toISOString()}.csv`;
   const s3Key = `backups/${userId}${fileName}`;
   
-  console.log(`[${deviceType}] S3 Upload - Step 1: Starting upload...`);
-  console.log(`[${deviceType}] S3 Upload - userId:`, userId);
-  console.log(`[${deviceType}] S3 Upload - fileName:`, fileName);
-  console.log(`[${deviceType}] S3 Upload - s3Key:`, s3Key);
+  console.log(`[${deviceType}] S3 Upload - Starting...`);
 
   try {
     const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
-    console.log(`[${deviceType}] S3 Upload - Step 2: Base64 encoded, length:`, base64CsvData.length);
-
+    
     const payload = {
       bucketName: "app.mesobfinancial.com",
       key: s3Key,
@@ -138,41 +134,38 @@ function Sidebar(props) {
       type: "text/csv;charset=utf-8",
     };
     
-    console.log(`[${deviceType}] S3 Upload - Step 3: Payload prepared, size:`, JSON.stringify(payload).length, "bytes");
+    console.log(`[${deviceType}] S3 Upload - Sending with fetch...`);
 
-    const config = {
-      timeout: deviceType === "iOS" ? 60000 : 30000,
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    };
-    
-    console.log(`[${deviceType}] S3 Upload - Step 4: Sending POST request...`);
-    console.log(`[${deviceType}] S3 Upload - Config:`, JSON.stringify(config));
-
-    const response = await axios.post(
+    // ✅ Use fetch instead of axios for iOS compatibility
+    const response = await fetch(
       "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
-      payload,
-      config
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        timeout: deviceType === "iOS" ? 60000 : 30000,
+      }
     );
 
-    console.log(`[${deviceType}] S3 Upload - Step 5: SUCCESS! Status:`, response.status);
-    console.log(`[${deviceType}] S3 Upload - Response data:`, response.data);
-    return response.data;
+    console.log(`[${deviceType}] S3 Upload - Response status:`, response.status);
+    console.log(`[${deviceType}] S3 Upload - Response headers:`, response.headers);
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error(`[${deviceType}] S3 Upload - Server error:`, errorData);
+      throw new Error(`HTTP ${response.status}: ${errorData}`);
+    }
+
+    const data = await response.json();
+    console.log(`[${deviceType}] S3 Upload - SUCCESS!`, data);
+    return data;
 
   } catch (error) {
     console.error(`[${deviceType}] S3 Upload - FAILED!`);
-    console.error(`[${deviceType}] Error type:`, error.constructor.name);
     console.error(`[${deviceType}] Error message:`, error.message);
-    console.error(`[${deviceType}] Error code:`, error.code);
-    console.error(`[${deviceType}] HTTP Status:`, error?.response?.status);
-    console.error(`[${deviceType}] Response headers:`, error?.response?.headers);
-    console.error(`[${deviceType}] Response data:`, error?.response?.data);
-    console.error(`[${deviceType}] Request URL:`, error?.config?.url);
-    console.error(`[${deviceType}] Request headers:`, error?.config?.headers);
-    console.error(`[${deviceType}] Full error object:`, JSON.stringify(error, null, 2));
-
-    // Don't throw - let it fail silently (non-critical)
+    console.error(`[${deviceType}] Error stack:`, error.stack);
     throw error;
   }
 };
