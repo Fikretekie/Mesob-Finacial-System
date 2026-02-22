@@ -272,7 +272,7 @@ const handleConfirmReset = async () => {
     headers: { "Content-Type": "application/json" },
   }
 );
-console.log(`[${deviceType}] Step 4 done:`, res.status);
+console.log(`[${deviceType}] Step 4 done:`, response.status);
       
       console.log(`[${deviceType}] Step 4 done:`, response.status);
     } catch (deleteErr) {
