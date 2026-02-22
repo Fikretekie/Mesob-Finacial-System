@@ -695,28 +695,32 @@ function Sidebar(props) {
           .slice(0, 10)}.csv`;
 
         // ✅ Download CSV (works on both iOS and Desktop now)
-        try {
-          console.log(`[${deviceType}] Step 2: Downloading CSV...`);
-          downloadCSV(csvData, fileName);
-        } catch (backupErr) {
-          console.warn(
-            `[${deviceType}] CSV download FAILED (non-critical):`,
-            backupErr.message
-          );
-        }
+       // Step 2: Download CSV
+try {
+  console.log(`[${deviceType}] Step 2: Downloading CSV...`);
+  if (isIOSDevice()) {
+    // ✅ iOS: Fire the download dialog but DON'T await it
+    // User can tap Download, View, or close (×) — we proceed regardless
+    downloadCSV(csvData, fileName);
+    // Small pause to let Safari register the download trigger
+    await new Promise((r) => setTimeout(r, 500));
+  } else {
+    // Desktop: normal silent download
+    downloadCSV(csvData, fileName);
+  }
+} catch (backupErr) {
+  console.warn(`[${deviceType}] CSV download FAILED (non-critical):`, backupErr.message);
+}
 
-        // ✅ S3 upload — now enabled for iOS too
-        try {
-          console.log(`[${deviceType}] Step 3: Uploading to S3...`);
-          await uploadCSVToS3(csvData);
-          console.log(`[${deviceType}] Step 3: S3 upload successful`);
-        } catch (s3Err) {
-          console.warn(
-            `[${deviceType}] S3 upload FAILED (non-critical):`,
-            s3Err.message
-          );
-          // Non-critical — continue to delete even if S3 fails
-        }
+// Step 3: S3 upload (runs for all devices)
+try {
+  console.log(`[${deviceType}] Step 3: Uploading to S3...`);
+  await uploadCSVToS3(csvData);
+} catch (s3Err) {
+  console.warn(`[${deviceType}] S3 upload FAILED (non-critical):`, s3Err.message);
+}
+
+// Step 4: DELETE — runs no matter what the user tapped on the dialog
       } else {
         console.log(`[${deviceType}] No transactions to back up, skipping steps 2-3`);
       }
