@@ -697,7 +697,6 @@ function Dashboard() {
                 display: "flex",
                 width:'90%',
                 alignItems: "center",
-                marginTop: isMobileLandscape ? 0 : -45,
                 padding: "0 20px",
               }}>
               
@@ -756,7 +755,7 @@ function Dashboard() {
             )}
 
             {/* Mobile Layout (portrait + landscape) */}
-          {isMobile && (
+            {isMobile && (
           <div style={{
             position: "absolute",
             top: 0, left: 0, right: 0,
@@ -815,7 +814,7 @@ function Dashboard() {
               </Button>
             )}
           </div>
-)}
+            )}
           </>
         }
       />
