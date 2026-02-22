@@ -216,12 +216,18 @@ const handleConfirmReset = async () => {
       }
 
       // S3 upload separately with better error handling
-      try {
-        await uploadCSVToS3(csvData);
-        console.log(`[${deviceType}] S3 upload successful`);
-      } catch (s3Err) {
-        console.warn(`[${deviceType}] S3 upload FAILED (non-critical):`, s3Err.message);
-      }
+     try {
+  // ✅ Only upload to S3 on Desktop, skip on iOS
+          if (!isIOSDevice()) {
+            console.log(`[${deviceType}] S3 upload starting...`);
+            await uploadCSVToS3(csvData);
+            console.log(`[${deviceType}] S3 upload successful`);
+          } else {
+            console.log(`[${deviceType}] S3 upload skipped (iOS device)`);
+          }
+        } catch (s3Err) {
+          console.warn(`[${deviceType}] S3 upload FAILED (non-critical):`, s3Err.message);
+        }
     }
 
     // Step 4: DELETE - CRITICAL
