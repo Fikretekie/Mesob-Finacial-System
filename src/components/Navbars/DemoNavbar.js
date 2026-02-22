@@ -599,8 +599,7 @@ function DemoNavbar(props) {
   const isLandscapeMobile = isMobile && isLandscape;
   // Show action buttons in navbar on desktop OR landscape mobile
   const isDashboardPage =
-    location.pathname.includes("/dashboard") ||
-    location.pathname.includes("/financial-report");
+    location.pathname.includes("/dashboard");
   const showNavbarActionButtons = (!isMobile || isLandscapeMobile) && isDashboardPage;
 
   const isTrialActive = () =>
