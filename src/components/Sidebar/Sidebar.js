@@ -94,25 +94,88 @@ function Sidebar(props) {
     }
   };
 
+  // const uploadCSVToS3 = async (csvData) => {
+  //   const userId = localStorage.getItem("userId");
+  //   const fileName = `transactions_${new Date().toISOString()}.csv`;
+  //   const s3Key = `backups/${userId}${fileName}`;
+  //   const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
+
+  //   await axios.post(
+  //     "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
+  //     {
+  //       bucketName: "app.mesobfinancial.com",
+  //       key: s3Key,
+  //       filename: fileName,
+  //       userId,
+  //       fileContent: base64CsvData,
+  //       type: "text/csv;charset=utf-8",
+  //     }
+  //   );
+  // };
+
+
   const uploadCSVToS3 = async (csvData) => {
-    const userId = localStorage.getItem("userId");
-    const fileName = `transactions_${new Date().toISOString()}.csv`;
-    const s3Key = `backups/${userId}${fileName}`;
+  const userId = localStorage.getItem("userId");
+  const deviceType = isIOSDevice() ? "iOS" : "Desktop";
+  const fileName = `transactions_${new Date().toISOString()}.csv`;
+  const s3Key = `backups/${userId}${fileName}`;
+  
+  console.log(`[${deviceType}] S3 Upload - Step 1: Starting upload...`);
+  console.log(`[${deviceType}] S3 Upload - userId:`, userId);
+  console.log(`[${deviceType}] S3 Upload - fileName:`, fileName);
+  console.log(`[${deviceType}] S3 Upload - s3Key:`, s3Key);
+
+  try {
     const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
+    console.log(`[${deviceType}] S3 Upload - Step 2: Base64 encoded, length:`, base64CsvData.length);
 
-    await axios.post(
-      "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
-      {
-        bucketName: "app.mesobfinancial.com",
-        key: s3Key,
-        filename: fileName,
-        userId,
-        fileContent: base64CsvData,
-        type: "text/csv;charset=utf-8",
+    const payload = {
+      bucketName: "app.mesobfinancial.com",
+      key: s3Key,
+      filename: fileName,
+      userId,
+      fileContent: base64CsvData,
+      type: "text/csv;charset=utf-8",
+    };
+    
+    console.log(`[${deviceType}] S3 Upload - Step 3: Payload prepared, size:`, JSON.stringify(payload).length, "bytes");
+
+    const config = {
+      timeout: deviceType === "iOS" ? 60000 : 30000,
+      headers: {
+        'Content-Type': 'application/json',
       }
-    );
-  };
+    };
+    
+    console.log(`[${deviceType}] S3 Upload - Step 4: Sending POST request...`);
+    console.log(`[${deviceType}] S3 Upload - Config:`, JSON.stringify(config));
 
+    const response = await axios.post(
+      "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
+      payload,
+      config
+    );
+
+    console.log(`[${deviceType}] S3 Upload - Step 5: SUCCESS! Status:`, response.status);
+    console.log(`[${deviceType}] S3 Upload - Response data:`, response.data);
+    return response.data;
+
+  } catch (error) {
+    console.error(`[${deviceType}] S3 Upload - FAILED!`);
+    console.error(`[${deviceType}] Error type:`, error.constructor.name);
+    console.error(`[${deviceType}] Error message:`, error.message);
+    console.error(`[${deviceType}] Error code:`, error.code);
+    console.error(`[${deviceType}] HTTP Status:`, error?.response?.status);
+    console.error(`[${deviceType}] Response headers:`, error?.response?.headers);
+    console.error(`[${deviceType}] Response data:`, error?.response?.data);
+    console.error(`[${deviceType}] Request URL:`, error?.config?.url);
+    console.error(`[${deviceType}] Request headers:`, error?.config?.headers);
+    console.error(`[${deviceType}] Full error object:`, JSON.stringify(error, null, 2));
+
+    // Don't throw - let it fail silently (non-critical)
+    throw error;
+  }
+};
  
   const handleOpenResetModal = () => {
     setResetConfirmText("");
@@ -140,9 +203,7 @@ const handleConfirmReset = async () => {
     const deviceType = isIOSDevice() ? "iOS" : "Desktop";
 
     // Step 1: Fetch
-    console.log(`[${deviceType}] Step 1: Fetching transactions...`);
     const items = await fetchTransactionsForExport();
-    console.log(`[${deviceType}] Step 1 done:`, items.length, "items");
 
     // Step 2 & 3: Backup (non-blocking) - SKIP ON iOS IF IT FAILS
     if (items.length) {
