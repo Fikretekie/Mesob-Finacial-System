@@ -684,6 +684,7 @@ function Dashboard() {
       <Helmet>
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
+      
       <PanelHeader
         size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
         content={
@@ -704,7 +705,7 @@ function Dashboard() {
                   marginLeft: "auto",
                   display: "flex",
                   alignItems: "center",
-                  gap: "8px",
+                  gap: "6px",
                   flexShrink: 0,
                 }}>
                   <Button
@@ -716,7 +717,7 @@ function Dashboard() {
                       color: "#ffffff",
                       height: "36px",
                       borderRadius: "4px",
-                      padding: "0 14px",
+                      padding: "0 5px",
                       display: "inline-flex",
                       alignItems: "center",
                       fontSize: "13px",
@@ -738,7 +739,7 @@ function Dashboard() {
                         color: "#ffffff",
                         height: "36px",
                         borderRadius: "4px",
-                        padding: "0 14px",
+                        padding: "0 5px",
                         display: "inline-flex",
                         alignItems: "center",
                         fontSize: "13px",
@@ -760,9 +761,10 @@ function Dashboard() {
             position: "absolute",
             top: 0, left: 0, right: 0,
             display: "flex",
-            marginTop: 60,
-            paddingLeft: 16,
-            paddingRight: 16,
+            marginTop: 70,
+            justifyContent:'center',
+            paddingLeft: 5,
+            paddingRight: 5,
             gap: "10px",
           }}>
             <Button
@@ -774,11 +776,11 @@ function Dashboard() {
                 color: "#ffffff",
                 height: "44px",
                 borderRadius: "10px",
-                width: "100%",
+                width: "45%",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "15px",
+                fontSize: "13px",
                 fontWeight: "600",
                 whiteSpace: "nowrap",
                 margin: 0,
@@ -798,11 +800,11 @@ function Dashboard() {
                   color: "#ffffff",
                   height: "44px",
                   borderRadius: "10px",
-                  width: "100%",
+                  width: "45%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "15px",
+                  fontSize: "13px",
                   fontWeight: "600",
                   whiteSpace: "nowrap",
                   margin: 0,
@@ -915,7 +917,7 @@ function Dashboard() {
         </div>
       )}
 
-      <div className="content" style={{ position: "relative", marginTop:5 }}>
+      <div className="content" style={{ position: "relative", marginTop:0 }}>
         <LoadingOverlay
           loading={loadingFinancialData}
           text="Loading financial data..."

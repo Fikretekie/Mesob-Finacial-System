@@ -1047,9 +1047,7 @@ function DemoNavbar(props) {
   }, [location]);
 
   // Check if should show company name
-  const showCompanyName =
-    location.pathname.includes("/dashboard") ||
-    location.pathname.includes("/financial-report");
+
 
   return (
     <>
@@ -1141,7 +1139,7 @@ function DemoNavbar(props) {
           </div>
 
           {/* CENTER: Company Name (only on Dashboard & Financial Report) */}
-          {showCompanyName && companyName && (
+          {companyName && (
             <div
               style={{
                 position: "absolute",
