@@ -2366,7 +2366,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.totalRevenue')}</strong>
                           </td>
@@ -2691,7 +2691,7 @@ const isMobileLandscape = isMobile && isLandscape;
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
@@ -2814,7 +2814,7 @@ const isMobileLandscape = isMobile && isLandscape;
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
@@ -3464,7 +3464,7 @@ const isMobileLandscape = isMobile && isLandscape;
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
@@ -3587,7 +3587,7 @@ const isMobileLandscape = isMobile && isLandscape;
                         </tr>
                         <tr>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
                           >
                             <strong>{t('financialReport.totalLiabilitiesEquity')}</strong>
                           </td>
