@@ -2122,7 +2122,7 @@ const isMobileLandscape = isMobile && isLandscape;
             >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle style={{ fontWeight: 600, color: "#2b427d" }} tag="h4">
+                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
                 {t('financialReport.summary')}
                   </CardTitle>
                 </CardHeader>
@@ -2321,7 +2321,7 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee"  }}>
                    {t('financialReport.incomeStatement')}
                   </CardTitle>
                 </CardHeader>
@@ -2529,7 +2529,7 @@ const isMobileLandscape = isMobile && isLandscape;
             >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle style={{ fontWeight: 600, color: "#2b427d" }} tag="h4">
+                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee"  }} tag="h4">
               {t('financialReport.journalEntry')}
                   </CardTitle>
                 </CardHeader>
@@ -2574,7 +2574,7 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
               {t('financialReport.balanceSheet')}
                   </CardTitle>
                 </CardHeader>
@@ -3124,7 +3124,7 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee"   }}>
                {t('financialReport.incomeStatement')}
                   </CardTitle>
                 </CardHeader>
@@ -3347,7 +3347,7 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#2b427d" }}>
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee"  }}>
                  {t('financialReport.balanceSheet')}
                   </CardTitle>
                 </CardHeader>
