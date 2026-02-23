@@ -2898,7 +2898,7 @@ const isMobileLandscape = isMobile && isLandscape;
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle style={{ fontWeight: 600, color: "#2b427d" }} tag="h4">
+                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
                    {t('financialReport.summary')}
                   </CardTitle>
                 </CardHeader>
