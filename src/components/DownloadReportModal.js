@@ -7,6 +7,7 @@ import {
   Spinner,
 } from "reactstrap";
 import i18n from "../i18n";
+import { translatePurpose } from "../utils/translatedBusinessTypes";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -480,13 +481,17 @@ const captureChartAsImage = async (chartElementId) => {
     const incomeStatementData = [[pt("category"), pt("amount")]];
     incomeStatementData.push([pt("revenue"), `$${formatCurrency(totalRevenue)}`]);
     if (revenues && Object.keys(revenues).length > 0) {
-      Object.entries(revenues).forEach(([purpose, amount]) => incomeStatementData.push([`    ${purpose}`, `$${formatCurrency(amount)}`]));
+      Object.entries(revenues).forEach(([purpose, amount]) =>
+        incomeStatementData.push([`    ${translatePurpose(purpose)}`, `$${formatCurrency(amount)}`])
+      );
     } else {
       incomeStatementData.push([`    ${pt("freightRevenue")}`, `$${formatCurrency(totalRevenue)}`]);
     }
     incomeStatementData.push([pt("expenses"), `($${formatCurrency(totalExpenses)})`]);
     if (expenses && Object.keys(expenses).length > 0) {
-      Object.entries(expenses).forEach(([purpose, amount]) => incomeStatementData.push([`    ${purpose}`, `($${formatCurrency(amount)})`]));
+      Object.entries(expenses).forEach(([purpose, amount]) =>
+        incomeStatementData.push([`    ${translatePurpose(purpose)}`, `($${formatCurrency(amount)})`])
+      );
     }
     incomeStatementData.push([pt("netIncome"), `$${formatCurrency(netIncome)}`]);
 
@@ -549,9 +554,9 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
     const debit = item.transactionType === "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
     const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
     const purpose = String(item.transactionPurpose || item.purpose || item.description || "").trim();
-    const description =
-      purpose ||
-      (item.transactionType === "Receive" ? pt("incomeEntry") : pt("expenseEntry"));
+    const description = purpose
+      ? translatePurpose(purpose)
+      : (item.transactionType === "Receive" ? pt("incomeEntry") : pt("expenseEntry"));
     journalData.push([formatDate(item.createdAt), description, debit, credit]);
   });
 
