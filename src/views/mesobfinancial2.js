@@ -47,6 +47,7 @@ import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import i18n from "../i18n";
 import { getTranslatedBusinessPurposes, translatePurpose } from "utils/translatedBusinessTypes";
+
 const MesobFinancial2 = () => {
   const location = useLocation();
   const [items, setItems] = useState([]);
@@ -135,34 +136,6 @@ const currentLanguage = i18n.language; // already imported at top
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [scheduleCount, setScheduleCount] = useState(1);
 
-  // Loading Overlay Component
-  const LoadingOverlay = ({ loading, text = "Loading..." }) => {
-    if (!loading) return null;
-
-    return (
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 1000,
-          borderRadius: "inherit",
-        }}
-      >
-        <div className="text-center">
-          <Spinner color="primary" />
-          <p className="mt-2">{text}</p>
-        </div>
-      </div>
-    );
-  };
-
   // Add method to save new purposes
   const handleAddPurpose = () => {
     if (newPurpose.trim()) {
@@ -181,24 +154,6 @@ const currentLanguage = i18n.language; // already imported at top
     }
   };
 
-  // business type
-  // const getBusinessPurposes = (type) => {
-  //   if (type === "Other") {
-  //     return {
-  //       income: manualIncomePurposes,
-  //       expenses: manualExpensePurposes,
-  //       payables: manualPayablePurposes,
-  //     };
-  //   } else if (businessTypes[type]) {
-  //     return businessTypes[type];
-  //   } else {
-  //     return {
-  //       income: [],
-  //       expenses: [],
-  //       payables: [],
-  //     };
-  //   }
-  // };
 const getBusinessPurposes = (type) => {
   if (type === "Other") {
     return {
@@ -216,12 +171,6 @@ const getBusinessPurposes = (type) => {
     value: user.id,
     label: user.email,
   }));
-
-  // installment
-  const handlePayableSelection = (transaction) => {
-    setSelectedUnpaidTransaction(transaction);
-    setShowInstallmentModal(true);
-  };
 
   const handleFullPayment = () => {
     handleUpdateTransaction(selectedUnpaidTransaction);
@@ -323,12 +272,6 @@ const getBusinessPurposes = (type) => {
     }
   };
 
-  // CSV
-  const handleGenerateCSV = () => {
-    navigate("/customer/csv");
-  };
-
-  const [financialData, setFinancialData] = useState(null);
 
   const fetchFinancialData = async (userId) => {
     setLoadingTransactions(true);
@@ -965,14 +908,6 @@ const getBusinessPurposes = (type) => {
     }
   };
 
-  // useEffect(() => {
-  //   console.log("Selected Business Type: ????", selectedBusinessType);
-  //   const purposes = getBusinessPurposes(selectedBusinessType);
-  //   console.log("Business Purposes:", purposes);
-  //   setIncomePurposes(purposes.income || []);
-  //   setExpensePurposes(purposes.expenses || []);
-  //   setPayablePurposes(purposes.payables || []);
-  // }, [selectedBusinessType]);
   useEffect(() => {
   console.log("Selected Business Type: ????", selectedBusinessType);
   const purposes = getBusinessPurposes(selectedBusinessType);
@@ -1083,8 +1018,6 @@ const getBusinessPurposes = (type) => {
     return new Date() < trialEndDate && scheduleCount < 4;
   };
 
-  
-
   const calculateFinancials = (transactions) => {
     const newRevenues = {};
     const newExpenses = {};
@@ -1150,8 +1083,6 @@ const getBusinessPurposes = (type) => {
     return totalInventory.toFixed(2);
   };
 
-
-
   const calculateTotalExpenses = () => {
     const filteredItems = getFilteredItems();
     return filteredItems
@@ -1170,7 +1101,6 @@ const getBusinessPurposes = (type) => {
       .toFixed(2);
   };
 
-  
   const calculateTotalCash = () => {
     const filteredItems = getFilteredItems();
 
@@ -1200,8 +1130,6 @@ const getBusinessPurposes = (type) => {
       initialBalance + totalReceived - totalExpenses - New_ItemReceived;
     return totalCash.toFixed(2);
   };
-
-  
 
   const calculateTotalPayable = () => {
     const filteredItems = getFilteredItems();
@@ -1270,7 +1198,6 @@ const getBusinessPurposes = (type) => {
         setLoadingTransactions(false);
       });
   };
-
   
   const fetchUnpaidTransactions = () => {
     setLoadingUnpaidTransactions(true);
@@ -1385,7 +1312,6 @@ const getBusinessPurposes = (type) => {
     }
   };
 
-
   const handleOutstandingDebtDeletion = async (transaction) => {
     // When deleting an outstanding debt payment, we DON'T need to update the user table
     // because we're calculating it dynamically from transactions
@@ -1413,43 +1339,6 @@ const getBusinessPurposes = (type) => {
         updatedTransaction,
         { headers: { "Content-Type": "application/json" } }
       );
-    }
-  };
-
-  const handleDeleteAllRecords = () => {
-    setShowDeleteConfirmation(true);
-  };
-
-  const confirmDelete = async () => {
-    setLoadingDeleteAll(true);
-    const userId = localStorage.getItem("userId");
-
-    try {
-      const response = await axios.delete(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setItems([]);
-        setTotalCashOnHand(0);
-        setTotalExpenses(0);
-        setRevenues({});
-        setExpenses({});
-        setAccountsPayable({});
-        notify("tr", "All records deleted successfully", "success");
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Error deleting all records:", error);
-      notify("tr", t("financialReport.deleteAllError"), "danger");
-    } finally {
-      setLoadingDeleteAll(false);
-      setShowDeleteConfirmation(false);
     }
   };
 
@@ -1568,24 +1457,6 @@ useEffect(() => {
     navigate(location.pathname, { replace: true }); // clear state
   }
 }, [location.state]);
-// useEffect(() => {
-//     const handleSidebarReset = () => {
-//       confirmDeleteandsave(); // saves CSV to S3 + downloads + deletes all
-//     };
-//     const handleSidebarDownload = () => {
-//       downloadCSVOnly(); // just downloads CSV directly, no modal
-//     };
-
-//     window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
-//     window.addEventListener("mesob:downloadReport", handleSidebarDownload);
-
-//     return () => {
-//       window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
-//       window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
-//     };
-  
-//   }, [items]);
-
 
   useEffect(() => {
   const handleSidebarReset = () => {
@@ -1609,6 +1480,7 @@ useEffect(() => {
   window.addEventListener('resize', handleResize);
   return () => window.removeEventListener('resize', handleResize);
 }, []);
+
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
       setSelectedUserId(null);
@@ -1671,15 +1543,7 @@ useEffect(() => {
       setShowDeleteConfirmation(false);
     }
   };
-const downloadCSVOnly = () => {
-    const csvData = generateCSV(items);
-    if (csvData) {
-      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
-      saveAs(blob, "transactions.csv");
-    } else {
-      notify("tr", "No transactions to download", "warning");
-    }
-  };
+
   const RunButtons = ({ onSelectRange, onClearFilters }) => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
@@ -1889,9 +1753,11 @@ const downloadCSVOnly = () => {
       </div>
     );
   };
+
   const getFilteredItems = () => {
     return filterItemsByTimeRange(items, selectedTimeRange, searchTerm);
   };
+
   useEffect(() => {
     if (items && items.length > 0) {
       calculateFinancials(items);

@@ -1,4 +1,1221 @@
-import React, { useEffect, useState, useRef } from "react";
+// import React, { useEffect, useState, useRef } from "react";
+// import {
+//   Card,
+//   CardHeader,
+//   CardBody,
+//   CardTitle,
+//   Row,
+//   Col,
+//   FormGroup,
+//   Label,
+//   Input,
+//   Button,
+//   Popover,
+//   PopoverBody,
+//   Spinner,
+// } from "reactstrap";
+// import ReactApexChart from "react-apexcharts";
+// import {
+//   Chart as ChartJS,
+//   CategoryScale,
+//   LinearScale,
+//   PointElement,
+//   LineElement,
+//   Title,
+//   Tooltip,
+//   Legend,
+// } from "chart.js";
+// import PanelHeader from "components/PanelHeader/PanelHeader.js";
+// import axios from "axios";
+// import Select from "react-select";
+// import { Helmet } from "react-helmet";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { useNavigate, useLocation } from "react-router-dom";
+// import { useTranslation } from "react-i18next";
+// import LanguageSelector from "components/Languageselector/LanguageSelector";
+// import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+// import DownloadReportModal from "components/DownloadReportModal";
+
+// ChartJS.register(
+//   CategoryScale,
+//   LinearScale,
+//   PointElement,
+//   LineElement,
+//   Title,
+//   Tooltip,
+//   Legend
+// );
+
+// function Dashboard() {
+//   const userId = localStorage.getItem("userId");
+//   const location = useLocation();
+//   const [loading, setLoading] = useState(true);
+//   const [items, setItems] = useState();
+//   const [totalCashOnHand, setTotalCashOnHand] = useState(0);
+//   const [totalrevenue, settotalRevenue] = useState(0);
+//   const [totalExpenses, setTotalExpenses] = useState(0);
+//   const [initialBalance, setInitialBalance] = useState(0);
+//   const [initialvalueableItems, setvalueableItems] = useState(0);
+//   const [initialoutstandingDebt, setoutstandingDebt] = useState(0);
+//   const [totalPayable, setTotalPayable] = useState(0);
+//   const [monthlySales, setMonthlySales] = useState([]);
+//   const [users, setUsers] = useState([]);
+//   const [trialEndDate, setTrialEndDate] = useState(null);
+//   const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
+//   const [loadingFinancialData, setLoadingFinancialData] = useState(false);
+//   const [loadingUsers, setLoadingUsers] = useState(false);
+//   const [loadingCompanyName, setLoadingCompanyName] = useState(false);
+//   const [loadingSubscription, setLoadingSubscription] = useState(false);
+//   const persistedUserId = localStorage.getItem("selectedUserId");
+//   const userRole = parseInt(localStorage.getItem("role"));
+//   const { t } = useTranslation();
+//   const [selectedUserId, setSelectedUserId] = useState(persistedUserId || null);
+//   const navigate = useNavigate();
+//   const [companyName, setCompanyName] = useState("");
+//   const [userSubscription, setUserSubscription] = useState(false);
+//   const [scheduleCount, setScheduleCount] = useState(0);
+
+//   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+//   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setIsMobile(window.innerWidth < 768);
+//       setIsLandscape(window.innerWidth > window.innerHeight);
+//     };
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   const isMobileLandscape = isMobile && isLandscape;
+
+//   useEffect(() => {
+//     if (userRole === "0" && !location.pathname.includes("/admin")) {
+//       navigate("/admin/dashboard", { replace: true });
+//     } else if (userRole === "2" && !location.pathname.includes("/customer")) {
+//       navigate("/customer/dashboard", { replace: true });
+//     }
+//   }, [userRole, location.pathname, navigate]);
+
+//   const handleAddTransactionClick = () => {
+//     navigate("/customer/financial-report", {
+//       state: { openTransactionModal: true },
+//     });
+//   };
+
+//   const userOptions = users.map((user) => ({
+//     value: user.id,
+//     label: user.email,
+//   }));
+
+// const calculateTotalCash = () => {
+//   console.group('calculateTotalCash');
+
+//   console.log('initialBalance:', initialBalance);
+//   console.log('items count:', items?.length || 0);
+
+//   const totalReceived = items?.reduce((sum, item) => 
+//     sum + (item.transactionType === "Receive" ? (item.transactionAmount || 0) : 0), 0) ?? 0;
+
+//   const newItemReceived = items?.reduce((sum, item) => 
+//     sum + (item.transactionType === "New_Item" ? (item.transactionAmount || 0) : 0), 0) ?? 0;
+
+//   const totalExpenses = items?.reduce((sum, item) => 
+//     sum + (item.transactionType === "Pay" ? (item.transactionAmount || 0) : 0), 0) ?? 0;
+
+//   const totalCash = initialBalance + totalReceived - totalExpenses - newItemReceived;
+
+//   console.table({
+//     initialBalance,
+//     totalReceived,
+//     newItemReceived,
+//     totalExpenses,
+//     totalCash,
+//     formatted: totalCash.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+//   });
+
+//   console.groupEnd();
+
+//   return totalCash.toLocaleString(undefined, {
+//     minimumFractionDigits: 2,
+//     maximumFractionDigits: 2,
+//   });
+// };
+
+//   const fetchUsers = async () => {
+//     setLoadingUsers(true);
+//     try {
+//       const response = await axios.get(
+//         "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+//       );
+//       if (response.data) {
+//         setUsers(response.data);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching users:", error);
+//     } finally {
+//       setLoadingUsers(false);
+//     }
+//   };
+
+//   const getChartOptions = (title, data, labels, color = "#007BFF") => {
+//     return {
+//       chart: {
+//         type: "area",
+//         toolbar: {
+//           show: true,
+//           tools: {
+//             download: true,
+//             zoom: true,
+//             zoomin: true,
+//             zoomout: true,
+//             pan: true,
+//             reset: true,
+//           },
+//         },
+//         zoom: {
+//           enabled: true,
+//           type: "x",
+//           autoScaleYaxis: true,
+//         },
+//         animations: {
+//           enabled: true,
+//           easing: "easeinout",
+//           speed: 800,
+//         },
+//       },
+//       title: {
+//         text: title,
+//         align: window.innerWidth < 576 ? "left" : "center",
+//         style: {
+//           fontSize: "16px",
+//           fontWeight: 600,
+//           color: "#ffffff",
+//         },
+//       },
+//       series: [
+//         {
+//           name: title,
+//           data: data,
+//         },
+//       ],
+//       xaxis: {
+//         categories: labels,
+//         labels: {
+//           rotate: -45,
+//           rotateAlways: false,
+//           style: {
+//             fontSize: "11px",
+//             colors: "#ffffff",
+//           },
+//         },
+//         title: {
+//           text: "Date",
+//           style: {
+//             fontSize: "12px",
+//             fontWeight: 500,
+//             color: "#ffffff",
+//           },
+//         },
+//       },
+//       yaxis: {
+//         title: {
+//           text: t('dashboard.amount'),
+//           style: {
+//             fontSize: "12px",
+//             fontWeight: 500,
+//             color: "#ffffff",
+//           },
+//         },
+//         labels: {
+//           style: {
+//             colors: "#ffffff",
+//           },
+//         },
+//         labels: {
+//           formatter: function (value) {
+//             if (!value) return "$0";
+//             return (
+//               "$" +
+//               value.toLocaleString(undefined, {
+//                 minimumFractionDigits: 0,
+//                 maximumFractionDigits: 0,
+//               })
+//             );
+//           },
+//           style: {
+//             colors: "#ffffff",
+//           },
+//         },
+//         tickAmount: 8,
+//         min: 0,
+//         max: function (max) {
+//           return max > 0 ? max * 1.1 : 100;
+//         },
+//       },
+//       stroke: {
+//         curve: "smooth",
+//         width: 3,
+//         lineCap: "round",
+//       },
+//       fill: {
+//         type: "solid",
+//         opacity: 0.5,
+//       },
+//       colors: [color],
+//       markers: {
+//         size: 5,
+//         colors: [color],
+//         strokeColors: "#ffffff",
+//         strokeWidth: 2,
+//         hover: {
+//           size: 7,
+//           sizeOffset: 3,
+//         },
+//       },
+//       grid: {
+//         show: true,
+//         borderColor: "#817646",
+//         strokeDashArray: 3,
+//         row: {
+//           colors: ["transparent", "transparent"],
+//           opacity: 0,
+//         },
+//         padding: {
+//           top: 0,
+//           right: 10,
+//           bottom: 0,
+//           left: 10,
+//         },
+//       },
+//       tooltip: {
+//         enabled: true,
+//         shared: true,
+//         intersect: false,
+//         theme: "dark",
+//         style: {
+//           fontSize: "12px",
+//         },
+//         y: {
+//           formatter: function (value) {
+//             return (
+//               "$" +
+//               value.toLocaleString(undefined, {
+//                 minimumFractionDigits: 2,
+//                 maximumFractionDigits: 2,
+//               })
+//             );
+//           },
+//         },
+//       },
+//       dataLabels: {
+//         enabled: false,
+//       },
+//       legend: {
+//         show: true,
+//         position: "top",
+//         horizontalAlign: "right",
+//         labels: {
+//           colors: "#ffffff",
+//         },
+//       },
+//     };
+//   };
+
+//   const formatDateLabel = (dateStr) => {
+//     if (dateStr === "Initial Balance") return "Initial";
+
+//     const date = new Date(dateStr);
+//     return date.toLocaleDateString("en-US", {
+//       month: "short",
+//       day: "numeric",
+//       year: "numeric",
+//     });
+//   };
+
+//   const cashOnHandChartData = getChartOptions(
+//     t('dashboard.totalCashOnHandChart'),
+//     monthlySales.map((item) => item.cashOnHand),
+//     monthlySales.map((item) => formatDateLabel(item.date)),
+//     "#41926f"
+//   );
+
+//   const revenueChartData = getChartOptions(
+//     t('dashboard.revenueChart'),
+//     monthlySales.map((item) => item.revenue),
+//     monthlySales.map((item) => formatDateLabel(item.date)),
+//     "#2b427d"
+//   );
+
+//   const payableChartData = getChartOptions(
+//     t('dashboard.totalPayableChart'),
+//     monthlySales.map((item) => item.payable),
+//     monthlySales.map((item) => formatDateLabel(item.date)),
+//     "#c7ae4f"
+//   );
+
+//   const expensesChartData = getChartOptions(
+//     t('dashboard.totalExpensesChart'),
+//     monthlySales.map((item) => item.expenses),
+//     monthlySales.map((item) => formatDateLabel(item.date)),
+//     "#a7565d"
+//   );
+
+//   const fetchFinancialData = async (uid = null) => {
+//     setLoadingFinancialData(true);
+//     const targetUserId =
+//       uid ||
+//       localStorage.getItem("selectedUserId") ||
+//       localStorage.getItem("userId");
+//     console.log("Fetching financial data for user:", targetUserId);
+
+//     try {
+//       let targetUserId;
+//       if (selectedUserId) {
+//         console.log("Using selectedUserId:", selectedUserId);
+//         targetUserId = selectedUserId;
+//       } else {
+//         targetUserId = uid || localStorage.getItem("userId");
+//       }
+
+//       const userResponse = await axios.get(
+//         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+//       );
+
+//       const initialCashBalance =
+//         parseFloat(userResponse.data?.user?.cashBalance) || 0;
+//       const outstandingDebt =
+//         parseFloat(userResponse.data?.user?.outstandingDebt) || 0;
+//       const valuableItems =
+//         parseFloat(userResponse.data?.user?.valueableItems) || 0;
+
+//       setInitialBalance(initialCashBalance);
+//       setoutstandingDebt(outstandingDebt);
+//       setvalueableItems(valuableItems);
+
+//       const response = await axios.get(
+//         `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
+//       );
+//       const transactions = response.data;
+//       setItems(transactions);
+
+//       let cashOnHand = initialCashBalance;
+//       let expenses = 0;
+//       let newItem = 0;
+//       let revenue = 0;
+//       let payable = outstandingDebt;
+
+//       const dailyData = {
+//         Initial: {
+//           date: "Initial Balance",
+//           cashOnHand: initialCashBalance,
+//           revenue: 0,
+//           payable: outstandingDebt,
+//           expenses: 0,
+//           newItem: 0,
+//           paidPayables: 0,
+//         },
+//       };
+
+//       const sortedTransactions = [...transactions].sort(
+//         (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+//       );
+
+//       sortedTransactions.forEach((transaction) => {
+//         const amount = parseFloat(transaction.transactionAmount);
+//         const date = new Date(transaction.createdAt);
+//         const dateKey = `${date.getFullYear()}-${String(
+//           date.getMonth() + 1
+//         ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+//         if (!dailyData[dateKey]) {
+//           dailyData[dateKey] = {
+//             date: dateKey,
+//             cashOnHand: cashOnHand,
+//             revenue: 0,
+//             payable: payable,
+//             expenses: 0,
+//             newItem: 0,
+//             paidPayables: 0,
+//           };
+//         }
+
+//         if (transaction.transactionType === "Receive") {
+//           cashOnHand += amount;
+//           revenue += amount;
+//           dailyData[dateKey].revenue += amount;
+//         } else if (transaction.transactionType === "Pay") {
+//           expenses += amount;
+//           cashOnHand -= amount;
+//           dailyData[dateKey].expenses += amount;
+
+//           if (transaction.payableId) {
+//             payable -= amount;
+//             dailyData[dateKey].paidPayables += amount;
+//           }
+//         } else if (
+//           transaction.transactionType === "Pay" &&
+//           transaction.subType === "New_Item"
+//         ) {
+//           newItem += amount;
+//           cashOnHand -= amount;
+//           dailyData[dateKey].expenses += amount;
+//           dailyData[dateKey].newItem += amount;
+//         } else if (
+//           transaction.transactionType === "Payable" &&
+//           (transaction.status === "Payable" ||
+//             transaction.status === "Partially Paid")
+//         ) {
+//           payable += amount;
+//         }
+
+//         dailyData[dateKey].payable = payable;
+//         dailyData[dateKey].cashOnHand = cashOnHand;
+//       });
+
+//       setTotalCashOnHand(cashOnHand);
+//       setTotalExpenses(expenses);
+//       settotalRevenue(revenue);
+//       setTotalPayable(payable);
+
+//       const sortedDailyData = Object.values(dailyData).sort((a, b) => {
+//         if (a.date === "Initial Balance") return -1;
+//         if (b.date === "Initial Balance") return 1;
+//         return new Date(a.date) - new Date(b.date);
+//       });
+
+//       setMonthlySales(sortedDailyData);
+
+//       setLoading(false);
+//     } catch (error) {
+//       console.error("Error fetching financial data:", error);
+//       setLoading(false);
+//     } finally {
+//       setLoadingFinancialData(false);
+//     }
+//   };
+
+//   const isTrialActive = () => {
+//     return new Date() < trialEndDate && scheduleCount < 4;
+//   };
+
+//   const calculatePercentageChange = (currentValue, previousValue) => {
+//     if (!previousValue || previousValue === 0) {
+//       if (currentValue === 0) return { text: "— No change", value: 0, isPositive: null };
+//       return { text: "+100% vs last month", value: 100, isPositive: true };
+//     }
+//     const change = ((currentValue - previousValue) / previousValue) * 100;
+//     const roundedChange = Math.round(change);
+//     if (roundedChange === 0) {
+//       return { text: "— No change", value: 0, isPositive: null };
+//     }
+//     const sign = roundedChange > 0 ? "+" : "";
+//     return {
+//       text: `${sign}${roundedChange}% vs last month`,
+//       value: roundedChange,
+//       isPositive: roundedChange > 0,
+//     };
+//   };
+
+//   const getPreviousMonthValues = () => {
+//     if (!monthlySales || monthlySales.length < 2) {
+//       return {
+//         cashOnHand: 0,
+//         expenses: 0,
+//         payable: 0,
+//         revenue: 0,
+//       };
+//     }
+
+//     const previousIndex = monthlySales.length - 2;
+//     const previous = monthlySales[previousIndex];
+
+//     return {
+//       cashOnHand: previous?.cashOnHand || 0,
+//       expenses: previous?.expenses || 0,
+//       payable: previous?.payable || 0,
+//       revenue: previous?.revenue || 0,
+//     };
+//   };
+
+//   useEffect(() => {
+//     const fetchCompanyName = async () => {
+//       setLoadingCompanyName(true);
+//       try {
+//         const targetUserId = selectedUserId || localStorage.getItem("userId");
+//         const userResponse = await axios.get(
+//           `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+//         );
+//         setCompanyName(userResponse.data?.user?.companyName || "");
+//       } catch (error) {
+//         console.error("Error fetching company name:", error);
+//       } finally {
+//         setLoadingCompanyName(false);
+//       }
+//     };
+
+//     fetchCompanyName();
+//   }, [selectedUserId]);
+
+//   useEffect(() => {
+//     if (userRole === 0) {
+//       fetchUsers();
+//     } else {
+//       fetchFinancialData();
+//     }
+//   }, [userRole]);
+
+//   useEffect(() => {
+//     fetchUsers().then(() => {
+//       console.log("Users fetched:", users);
+//     });
+//   }, []);
+
+//   useEffect(() => {
+//     const fetchSubscription = async () => {
+//       setLoadingSubscription(true);
+//       const userId = localStorage.getItem("userId");
+//       try {
+//         const response = await axios.get(
+//           `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+//         );
+//         if (response.data && response.data.user) {
+//           setUserSubscription(response.data.user.subscription);
+//           setTrialEndDate(new Date(response.data.user?.trialEndDate));
+//           console.log("=>>>>>", response.data.user.subscription);
+//           setScheduleCount(response.data.user.scheduleCount || 1);
+//         } else {
+//           setUserSubscription(false);
+//           setScheduleCount(1);
+//         }
+//       } catch (error) {
+//         console.error("Error fetching subscription:", error);
+//         setUserSubscription(false);
+//         setScheduleCount(1);
+//       } finally {
+//         setLoadingSubscription(false);
+//       }
+//     };
+//     fetchSubscription();
+//   }, []);
+
+//   const LoadingOverlay = ({ loading, text = "Loading..." }) => {
+//     if (!loading) return null;
+
+//     return (
+//       <div
+//         style={{
+//           position: "absolute",
+//           top: 0,
+//           left: 0,
+//           right: 0,
+//           bottom: 0,
+//           backgroundColor: "rgba(255, 255, 255, 0.8)",
+//           display: "flex",
+//           justifyContent: "center",
+//           alignItems: "center",
+//           zIndex: 1000,
+//           borderRadius: "inherit",
+//         }}
+//       >
+//         <div className="text-center">
+//           <Spinner color="primary" />
+//           <p className="mt-2">{text}</p>
+//         </div>
+//       </div>
+//     );
+//   };
+
+//   const handleUserSelect = (selectedOption) => {
+//     if (!selectedOption) {
+//       setSelectedUserId(null);
+//       localStorage.removeItem("selectedUserId");
+//       fetchFinancialData(null);
+//       return;
+//     }
+//     const userId = selectedOption.value;
+//     setSelectedUserId(userId);
+//     localStorage.setItem("selectedUserId", userId);
+//     fetchFinancialData(userId);
+//   };
+
+//   useEffect(() => {
+//     const persistedUserId = localStorage.getItem("selectedUserId");
+//     if (persistedUserId) {
+//       setSelectedUserId(persistedUserId);
+//       fetchFinancialData(persistedUserId);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     if (selectedUserId) {
+//       fetchFinancialData(selectedUserId);
+//     }
+//   }, [selectedUserId]);
+
+//   useEffect(() => {
+//     const style = document.createElement('style');
+//     style.textContent = `
+//       .apexcharts-menu-item {
+//         color: #000000 !important;
+//       }
+//       .apexcharts-menu-item:hover {
+//         color: #000000 !important;
+//       }
+//       .apexcharts-menu-item:active {
+//         color: #000000 !important;
+//       }
+//       .apexcharts-menu-item:focus {
+//         color: #000000 !important;
+//       }
+//     `;
+//     document.head.appendChild(style);
+
+//     return () => {
+//       if (document.head.contains(style)) {
+//         document.head.removeChild(style);
+//       }
+//     };
+//   }, []);
+
+//   useEffect(() => {
+//     const handleResize = () => setIsMobile(window.innerWidth < 768);
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   return (
+//     <>
+//       <Helmet>
+//         <title>Dashboard - Mesob Finance </title>
+//       </Helmet>
+//       {isMobile ?
+//       <PanelHeader
+//         size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+//         content={
+//           <>
+//             {/* Desktop Layout */}
+//             {/* {!isMobile && (
+//               <div style={{
+//                 position: "absolute",
+//                 top: 0, left: 0, right: 0, bottom: 0,
+//                 display: "flex",
+//                 width:'90%',
+//                 alignItems: "center",
+//                 padding: "0 20px",
+//               }}>
+              
+//                 <div style={{
+//                   marginLeft: "auto",
+//                   display: "flex",
+//                   alignItems: "center",
+//                   gap: "6px",
+//                   flexShrink: 0,
+//                 }}>
+//                   <Button
+//                     onClick={() => setShowDownloadReportModal(true)}
+//                     disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+//                     style={{
+//                       backgroundColor: "#2b427d",
+//                       borderColor: "#2b427d",
+//                       color: "#ffffff",
+//                       height: "36px",
+//                       borderRadius: "4px",
+//                       padding: "0 5px",
+//                       display: "inline-flex",
+//                       alignItems: "center",
+//                       fontSize: "13px",
+//                       whiteSpace: "nowrap",
+//                       margin: 0,
+//                     }}
+//                   >
+//                     <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
+//                     {t('financialReport.downloadReport')}
+//                   </Button>
+
+//                   {userRole !== 0 && (
+//                     <Button
+//                       onClick={handleAddTransactionClick}
+//                       disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+//                       style={{
+//                         backgroundColor: "#41926f",
+//                         borderColor: "#41926f",
+//                         color: "#ffffff",
+//                         height: "36px",
+//                         borderRadius: "4px",
+//                         padding: "0 5px",
+//                         display: "inline-flex",
+//                         alignItems: "center",
+//                         fontSize: "13px",
+//                         whiteSpace: "nowrap",
+//                         margin: 0,
+//                       }}
+//                     >
+//                       <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
+//                       {t('dashboard.addTransaction')}
+//                     </Button>
+//                   )}
+//                 </div>
+//               </div>
+//             )} */}
+
+//             {/* Mobile Layout (portrait + landscape) */}
+//             {isMobile && (
+//           <div style={{
+//             position: "absolute",
+//             top: 0, left: 0, right: 0,
+//             display: "flex",
+//             marginTop: 70,
+//             justifyContent:'center',
+//             paddingLeft: 5,
+//             paddingRight: 5,
+//             gap: "10px",
+//           }}>
+//             <Button
+//               onClick={() => setShowDownloadReportModal(true)}
+//               disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+//               style={{
+//                 backgroundColor: "#2b427d",
+//                 borderColor: "#2b427d",
+//                 color: "#ffffff",
+//                 height: "44px",
+//                 borderRadius: "10px",
+//                 width: "45%",
+//                 display: "flex",
+//                 alignItems: "center",
+//                 justifyContent: "center",
+//                 fontSize: "13px",
+//                 fontWeight: "600",
+//                 whiteSpace: "nowrap",
+//                 margin: 0,
+//               }}
+//             >
+//               <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
+//               {t('financialReport.downloadReport')}
+//             </Button>
+
+//             {userRole !== 0 && (
+//               <Button
+//                 onClick={handleAddTransactionClick}
+//                 disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+//                 style={{
+//                   backgroundColor: "#41926f",
+//                   borderColor: "#41926f",
+//                   color: "#ffffff",
+//                   height: "44px",
+//                   borderRadius: "10px",
+//                   width: "45%",
+//                   display: "flex",
+//                   alignItems: "center",
+//                   justifyContent: "center",
+//                   fontSize: "13px",
+//                   fontWeight: "600",
+//                   whiteSpace: "nowrap",
+//                   margin: 0,
+//                 }}
+//               >
+//                 <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
+//                 {t('dashboard.addTransaction')}
+//               </Button>
+//             )}
+//           </div>
+//             )}
+//           </>
+//         }
+//       />
+//       :null}
+//       {userRole === 0 && (
+//         <div
+//           className="content "
+//           style={{ marginBottom: "5px", minHeight: "100px", paddingInline: 15 }}
+//         >
+//           <Row style={{ marginTop: "34px" }}>
+//             <Col xs={12}>
+//               <Card style={{ backgroundColor: "#101926" }}>
+//                 <CardHeader>
+//                   <CardTitle style={{ marginBottom: 0, color: "#ffffff" }} tag="h4">
+//                     {t('dashboard.selectUser')}
+//                   </CardTitle>
+//                 </CardHeader>
+//                 <CardBody style={{ position: "relative" }}>
+//                   <LoadingOverlay
+//                     loading={loadingUsers}
+//                     text="Loading users..."
+//                   />
+                
+//                   <FormGroup>
+//                     <Label>{t('dashboard.selectUserToView')}</Label>
+//                     <Select
+//                       options={userOptions}
+//                       value={userOptions.find(
+//                         (option) => option.value === selectedUserId
+//                       )}
+//                       onChange={handleUserSelect}
+//                       placeholder="Search or select a user..."
+//                       isClearable
+//                       isSearchable
+//                       styles={{
+//                         control: (provided, state) => ({
+//                           ...provided,
+//                           minHeight: "38px",
+//                           height: "38px",
+//                           backgroundColor: "#101926",
+//                           color: "#ffffff",
+//                           borderColor: state.isFocused ? "#ffffff" : "#ffffff",
+//                           boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
+//                           "&:hover": {
+//                             borderColor: "#817646",
+//                           },
+//                         }),
+//                         valueContainer: (provided) => ({
+//                           ...provided,
+//                           height: "38px",
+//                           padding: "0 6px",
+//                         }),
+//                         input: (provided) => ({
+//                           ...provided,
+//                           margin: "0px",
+//                           color: "#ffffff",
+//                         }),
+//                         singleValue: (provided) => ({
+//                           ...provided,
+//                           color: "#ffffff",
+//                         }),
+//                         placeholder: (provided) => ({
+//                           ...provided,
+//                           color: "#ffffff",
+//                           opacity: 0.7,
+//                         }),
+//                         indicatorsContainer: (provided) => ({
+//                           ...provided,
+//                           height: "38px",
+//                         }),
+//                         menu: (provided) => ({
+//                           ...provided,
+//                           backgroundColor: "#101926",
+//                           border: "1px solid #ffffff",
+//                         }),
+//                         menuList: (provided) => ({
+//                           ...provided,
+//                           backgroundColor: "#101926",
+//                         }),
+//                         option: (provided, state) => ({
+//                           ...provided,
+//                           backgroundColor: state.isSelected
+//                             ? "#2b427d"
+//                             : state.isFocused
+//                               ? "#1a2332"
+//                               : "#101926",
+//                           color: "#ffffff",
+//                           cursor: "pointer",
+//                           "&:active": {
+//                             backgroundColor: "#2b427d",
+//                           },
+//                         }),
+//                       }}
+//                     />
+//                   </FormGroup>
+//                 </CardBody>
+//               </Card>
+//             </Col>
+//           </Row>
+//         </div>
+//       )}
+
+//       <div className="content" style={{ position: "relative", marginTop:isMobile ? 0:80 }}>
+//         <LoadingOverlay
+//           loading={loadingFinancialData}
+//           text="Loading financial data..."
+//         />
+
+//         <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
+//           <Col
+//             lg="3"
+//             md="6"
+//             xs="12"
+//             style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
+//           >
+//             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #41926f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading..."
+//               />
+//               <CardBody>
+//                 <Row>
+//                   <Col xs="8">
+//                     <div className="numbers">
+//                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
+//                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+//                         {loadingFinancialData ? (
+//                           <Spinner size="sm" />
+//                         ) : (
+//                           `$${calculateTotalCash()}`
+//                         )}
+//                       </CardTitle>
+//                       {!loadingFinancialData && (
+//                         <p style={{ color: "#41926f", fontSize: "0.75rem", margin: 0 }}>
+//                           {calculatePercentageChange(
+//                             parseFloat(calculateTotalCash().replace(/,/g, "")),
+//                             getPreviousMonthValues().cashOnHand
+//                           ).text}
+//                         </p>
+//                       )}
+//                     </div>
+//                   </Col>
+//                   <Col xs="4">
+//                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+//                       <i className="fas fa-dollar-sign" style={{ color: "#41926f", fontSize: "2rem" }} />
+//                     </div>
+//                   </Col>
+//                 </Row>
+//               </CardBody>
+//             </Card>
+//           </Col>
+
+//           <Col
+//             lg="3"
+//             md="6"
+//             xs="12"
+//             style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
+//           >
+//             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #a7565d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading..."
+//               />
+//               <CardBody>
+//                 <Row>
+//                   <Col xs="8">
+//                     <div className="numbers">
+//                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalExpenses')}</p>
+//                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+//                         {loadingFinancialData ? (
+//                           <Spinner size="sm" />
+//                         ) : (
+//                           `$${totalExpenses.toLocaleString(undefined, {
+//                             minimumFractionDigits: 2,
+//                             maximumFractionDigits: 2,
+//                           })}`
+//                         )}
+//                       </CardTitle>
+//                       {!loadingFinancialData && (
+//                         <p style={{ color: "#a7565d", fontSize: "0.75rem", margin: 0 }}>
+//                           {calculatePercentageChange(
+//                             totalExpenses,
+//                             getPreviousMonthValues().expenses
+//                           ).text}
+//                         </p>
+//                       )}
+//                     </div>
+//                   </Col>
+//                   <Col xs="4">
+//                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+//                       <i className="fas fa-chart-line" style={{ color: "#a7565d", fontSize: "2rem" }} />
+//                     </div>
+//                   </Col>
+//                 </Row>
+//               </CardBody>
+//             </Card>
+//           </Col>
+
+//           <Col
+//             lg="3"
+//             md="6"
+//             xs="12"
+//             style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
+//           >
+//             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #c7ae4f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading..."
+//               />
+//               <CardBody>
+//                 <Row>
+//                   <Col xs="8">
+//                     <div className="numbers">
+//                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalPayable')}</p>
+//                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+//                         {loadingFinancialData ? (
+//                           <Spinner size="sm" />
+//                         ) : (
+//                           `$${totalPayable.toLocaleString(undefined, {
+//                             minimumFractionDigits: 2,
+//                             maximumFractionDigits: 2,
+//                           })}`
+//                         )}
+//                       </CardTitle>
+//                       {!loadingFinancialData && (
+//                         <p style={{ color: "#c7ae4f", fontSize: "0.75rem", margin: 0 }}>
+//                           {calculatePercentageChange(
+//                             totalPayable,
+//                             getPreviousMonthValues().payable
+//                           ).text}
+//                         </p>
+//                       )}
+//                     </div>
+//                   </Col>
+//                   <Col xs="4">
+//                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+//                       <i className="fas fa-credit-card" style={{ color: "#c7ae4f", fontSize: "2rem" }} />
+//                     </div>
+//                   </Col>
+//                 </Row>
+//               </CardBody>
+//             </Card>
+//           </Col>
+
+//           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+//             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #2b427d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading..."
+//               />
+//               <CardBody>
+//                 <Row>
+//                   <Col xs="8">
+//                     <div className="numbers">
+//                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.revenue')}</p>
+//                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+//                         {loadingFinancialData ? (
+//                           <Spinner size="sm" />
+//                         ) : (
+//                           `$${totalrevenue.toLocaleString(undefined, {
+//                             minimumFractionDigits: 2,
+//                             maximumFractionDigits: 2,
+//                           })}`
+//                         )}
+//                       </CardTitle>
+//                       {!loadingFinancialData && (
+//                         <p style={{ color: "#2b427d", fontSize: "0.75rem", margin: 0 }}>
+//                           {calculatePercentageChange(
+//                             totalrevenue,
+//                             getPreviousMonthValues().revenue
+//                           ).text}
+//                         </p>
+//                       )}
+//                     </div>
+//                   </Col>
+//                   <Col xs="4">
+//                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+//                       <i className="fas fa-chart-line" style={{ color: "#2b427d", fontSize: "2rem" }} />
+//                     </div>
+//                   </Col>
+//                 </Row>
+//               </CardBody>
+//             </Card>
+//           </Col>
+//         </Row>
+
+//         <Row style={{ backgroundColor: "#101926" }}>
+//           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
+//             <Card  style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading chart..."
+//               />
+//               <CardBody>
+//                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
+//                 <h4 className="text-center mb-3"></h4>
+//                 <div id="cashFlowChart">
+//                   <ReactApexChart
+//                     options={cashOnHandChartData}
+//                     series={cashOnHandChartData.series}
+//                     type="area"
+//                     height={300}
+//                   />
+//                 </div>
+//               </CardBody>
+//             </Card>
+//           </Col>
+//           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
+//             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading chart..."
+//               />
+//               <CardBody>
+//                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
+//                 <h4 className="text-center mb-3"></h4>
+//                 <div id="revenueChart">
+//                 <ReactApexChart
+//                   options={revenueChartData}
+//                   series={revenueChartData.series}
+//                   type="area"
+//                   height={300}
+//                 />
+//                 </div>
+//               </CardBody>
+//             </Card>
+//           </Col>
+
+//           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
+//             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading chart..."
+//               />
+//               <CardBody>
+//                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
+//                 <h4 className="text-center mb-3"></h4>
+//                 <div id="payableChart">
+//                 <ReactApexChart
+//                   options={payableChartData}
+//                   series={payableChartData.series}
+//                   type="area"
+//                   height={300}
+//                 />
+//                 </div>
+//               </CardBody>
+//             </Card>
+//           </Col>
+//           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
+//             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+//               <LoadingOverlay
+//                 loading={loadingFinancialData}
+//                 text="Loading chart..."
+//               />
+//               <CardBody>
+//                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
+//                 <h4 className="text-center mb-3"></h4>
+//                 <div id="expensesChart">
+//                 <ReactApexChart
+//                   options={expensesChartData}
+//                   series={expensesChartData.series}
+//                   type="area"
+//                   height={300}
+//                 />
+//                 </div>
+//               </CardBody>
+//             </Card>
+//           </Col>
+//         </Row>
+//       </div>
+//       <DownloadReportModal
+//         isOpen={showDownloadReportModal}
+//         toggle={() => setShowDownloadReportModal(false)}
+//         companyName={companyName}
+//         items={items || []}
+//         revenues={{}}
+//         expenses={{}}
+//         initialBalance={initialBalance}
+//         initialvalueableItems={initialvalueableItems}
+//         initialoutstandingDebt={initialoutstandingDebt}
+//         calculateTotalCash={calculateTotalCash()}
+//         calculateTotalRevenue={() => totalrevenue.toFixed(2)}
+//         calculateTotalExpenses={() => totalExpenses.toFixed(2)}
+//         calculateTotalPayable={() => totalPayable.toFixed(2)}
+//         calculateTotalInventory={() => initialvalueableItems.toFixed(2)}
+//         searchedDates={null}
+//       />
+//     </>
+//   );
+// }
+
+// export default Dashboard;
+
+
+
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   Card,
   CardHeader,
@@ -32,6 +1249,7 @@ import { Helmet } from "react-helmet";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 import DownloadReportModal from "components/DownloadReportModal";
@@ -50,7 +1268,7 @@ function Dashboard() {
   const userId = localStorage.getItem("userId");
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState();
+  const [items, setItems] = useState([]);
   const [totalCashOnHand, setTotalCashOnHand] = useState(0);
   const [totalrevenue, settotalRevenue] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
@@ -77,6 +1295,45 @@ function Dashboard() {
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+  // ── Refs so PDF modal always gets fresh values regardless of closure timing ─
+  const itemsRef = useRef([]);
+  const initialBalanceRef = useRef(0);
+  const initialvalueableItemsRef = useRef(0);
+  const initialoutstandingDebtRef = useRef(0);
+  const totalrevenueRef = useRef(0);
+  const totalExpensesRef = useRef(0);
+  const totalPayableRef = useRef(0);
+
+  // Keep refs in sync with state
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => { initialBalanceRef.current = initialBalance; }, [initialBalance]);
+  useEffect(() => { initialvalueableItemsRef.current = initialvalueableItems; }, [initialvalueableItems]);
+  useEffect(() => { initialoutstandingDebtRef.current = initialoutstandingDebt; }, [initialoutstandingDebt]);
+  useEffect(() => { totalrevenueRef.current = totalrevenue; }, [totalrevenue]);
+  useEffect(() => { totalExpensesRef.current = totalExpenses; }, [totalExpenses]);
+  useEffect(() => { totalPayableRef.current = totalPayable; }, [totalPayable]);
+
+  // Derive revenues/expenses by purpose for PDF report (same shape as financial-report page)
+  const { revenues, expenses } = useMemo(() => {
+    const rev = {};
+    const exp = {};
+    const list = Array.isArray(items) ? items : [];
+    list.forEach((transaction) => {
+      const amount = parseFloat(transaction.transactionAmount) || 0;
+      const purpose = transaction.transactionPurpose || "";
+      if (transaction.transactionType === "Receive") {
+        rev[purpose] = (rev[purpose] || 0) + amount;
+      } else if (
+        (transaction.transactionType === "Pay" || transaction.transactionType === "Payable") &&
+        transaction.payableId !== "outstanding-debt" &&
+        !String(purpose).includes("Outstanding Debt")
+      ) {
+        exp[purpose] = (exp[purpose] || 0) + amount;
+      }
+    });
+    return { revenues: rev, expenses: exp };
+  }, [items]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -108,33 +1365,46 @@ function Dashboard() {
     label: user.email,
   }));
 
+  // ── Calculate functions using REFS ─────────────────────────────────────────
+  // These are passed as callbacks to DownloadReportModal and called at PDF
+  // generation time (not at render time), so they MUST read from refs to avoid
+  // stale closure issues. All return plain "0.00" decimal strings — same format
+  // as MesobFinancial2 — so DownloadReportModal's parseFloat() always works.
+
   const calculateTotalCash = () => {
-    const totalReceived = items?.reduce((sum, item) => {
-      return (
-        sum +
-        (item.transactionType === "Receive" ? item.transactionAmount || 0 : 0)
-      );
+    const safeItems = itemsRef.current || [];
+    const balance = initialBalanceRef.current || 0;
+
+    const totalReceived = safeItems.reduce((sum, item) => {
+      return sum + (item.transactionType === "Receive" ? parseFloat(item.transactionAmount || 0) : 0);
     }, 0);
 
-    const New_ItemReceived = items?.reduce((sum, item) => {
-      return (
-        sum +
-        (item.transactionType === "New_Item" ? item.transactionAmount || 0 : 0)
-      );
+    const newItemReceived = safeItems.reduce((sum, item) => {
+      return sum + (item.transactionType === "New_Item" ? parseFloat(item.transactionAmount || 0) : 0);
     }, 0);
 
-    const totalExpenses = items?.reduce((sum, item) => {
-      return (
-        sum + (item.transactionType === "Pay" ? item.transactionAmount || 0 : 0)
-      );
+    const totalPaid = safeItems.reduce((sum, item) => {
+      return sum + (item.transactionType === "Pay" ? parseFloat(item.transactionAmount || 0) : 0);
     }, 0);
 
-    const totalCash =
-      initialBalance + totalReceived - totalExpenses - New_ItemReceived;
-    return totalCash.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    const totalCash = balance + totalReceived - totalPaid - newItemReceived;
+    return totalCash.toFixed(2); // plain decimal string, no commas
+  };
+
+  const calculateTotalRevenue = () => {
+    return (totalrevenueRef.current || 0).toFixed(2);
+  };
+
+  const calculateTotalExpenses = () => {
+    return (totalExpensesRef.current || 0).toFixed(2);
+  };
+
+  const calculateTotalPayable = () => {
+    return (totalPayableRef.current || 0).toFixed(2);
+  };
+
+  const calculateTotalInventory = () => {
+    return (initialvalueableItemsRef.current || 0).toFixed(2);
   };
 
   const fetchUsers = async () => {
@@ -220,11 +1490,6 @@ function Dashboard() {
             fontSize: "12px",
             fontWeight: 500,
             color: "#ffffff",
-          },
-        },
-        labels: {
-          style: {
-            colors: "#ffffff",
           },
         },
         labels: {
@@ -358,23 +1623,17 @@ function Dashboard() {
 
   const fetchFinancialData = async (uid = null) => {
     setLoadingFinancialData(true);
-    const targetUserId =
-      uid ||
-      localStorage.getItem("selectedUserId") ||
-      localStorage.getItem("userId");
-    console.log("Fetching financial data for user:", targetUserId);
 
     try {
-      let targetUserId;
+      let resolvedUserId;
       if (selectedUserId) {
-        console.log("Using selectedUserId:", selectedUserId);
-        targetUserId = selectedUserId;
+        resolvedUserId = selectedUserId;
       } else {
-        targetUserId = uid || localStorage.getItem("userId");
+        resolvedUserId = uid || localStorage.getItem("userId");
       }
 
       const userResponse = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${resolvedUserId}`
       );
 
       const initialCashBalance =
@@ -388,11 +1647,21 @@ function Dashboard() {
       setoutstandingDebt(outstandingDebt);
       setvalueableItems(valuableItems);
 
+      // Sync refs immediately so PDF modal callbacks read correct values
+      initialBalanceRef.current = initialCashBalance;
+      initialoutstandingDebtRef.current = outstandingDebt;
+      initialvalueableItemsRef.current = valuableItems;
+
       const response = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
+        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${resolvedUserId}`
       );
-      const transactions = response.data;
+      // Ensure we always have an array (API may return array or { data/transactions: [...] })
+      const raw = response.data;
+      const transactions = Array.isArray(raw)
+        ? raw
+        : (raw?.transactions || raw?.data || []);
       setItems(transactions);
+      itemsRef.current = transactions; // sync ref immediately
 
       let cashOnHand = initialCashBalance;
       let expenses = 0;
@@ -473,6 +1742,11 @@ function Dashboard() {
       settotalRevenue(revenue);
       setTotalPayable(payable);
 
+      // Sync computed totals to refs immediately
+      totalrevenueRef.current = revenue;
+      totalExpensesRef.current = expenses;
+      totalPayableRef.current = payable;
+
       const sortedDailyData = Object.values(dailyData).sort((a, b) => {
         if (a.date === "Initial Balance") return -1;
         if (b.date === "Initial Balance") return 1;
@@ -480,7 +1754,6 @@ function Dashboard() {
       });
 
       setMonthlySales(sortedDailyData);
-
       setLoading(false);
     } catch (error) {
       console.error("Error fetching financial data:", error);
@@ -514,17 +1787,10 @@ function Dashboard() {
 
   const getPreviousMonthValues = () => {
     if (!monthlySales || monthlySales.length < 2) {
-      return {
-        cashOnHand: 0,
-        expenses: 0,
-        payable: 0,
-        revenue: 0,
-      };
+      return { cashOnHand: 0, expenses: 0, payable: 0, revenue: 0 };
     }
-
     const previousIndex = monthlySales.length - 2;
     const previous = monthlySales[previousIndex];
-
     return {
       cashOnHand: previous?.cashOnHand || 0,
       expenses: previous?.expenses || 0,
@@ -548,7 +1814,6 @@ function Dashboard() {
         setLoadingCompanyName(false);
       }
     };
-
     fetchCompanyName();
   }, [selectedUserId]);
 
@@ -577,7 +1842,6 @@ function Dashboard() {
         if (response.data && response.data.user) {
           setUserSubscription(response.data.user.subscription);
           setTrialEndDate(new Date(response.data.user?.trialEndDate));
-          console.log("=>>>>>", response.data.user.subscription);
           setScheduleCount(response.data.user.scheduleCount || 1);
         } else {
           setUserSubscription(false);
@@ -594,17 +1858,20 @@ function Dashboard() {
     fetchSubscription();
   }, []);
 
+  // When user clicks "Download Report" in the navbar while on dashboard, open this page's modal (with real data)
+  useEffect(() => {
+    const handleDashboardDownload = () => setShowDownloadReportModal(true);
+    window.addEventListener("dashboard:downloadReport", handleDashboardDownload);
+    return () => window.removeEventListener("dashboard:downloadReport", handleDashboardDownload);
+  }, []);
+
   const LoadingOverlay = ({ loading, text = "Loading..." }) => {
     if (!loading) return null;
-
     return (
       <div
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(255, 255, 255, 0.8)",
           display: "flex",
           justifyContent: "center",
@@ -628,10 +1895,10 @@ function Dashboard() {
       fetchFinancialData(null);
       return;
     }
-    const userId = selectedOption.value;
-    setSelectedUserId(userId);
-    localStorage.setItem("selectedUserId", userId);
-    fetchFinancialData(userId);
+    const uid = selectedOption.value;
+    setSelectedUserId(uid);
+    localStorage.setItem("selectedUserId", uid);
+    fetchFinancialData(uid);
   };
 
   useEffect(() => {
@@ -651,26 +1918,13 @@ function Dashboard() {
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      .apexcharts-menu-item {
-        color: #000000 !important;
-      }
-      .apexcharts-menu-item:hover {
-        color: #000000 !important;
-      }
-      .apexcharts-menu-item:active {
-        color: #000000 !important;
-      }
-      .apexcharts-menu-item:focus {
-        color: #000000 !important;
-      }
+      .apexcharts-menu-item { color: #000000 !important; }
+      .apexcharts-menu-item:hover { color: #000000 !important; }
+      .apexcharts-menu-item:active { color: #000000 !important; }
+      .apexcharts-menu-item:focus { color: #000000 !important; }
     `;
     document.head.appendChild(style);
-
-    return () => {
-      if (document.head.contains(style)) {
-        document.head.removeChild(style);
-      }
-    };
+    return () => { if (document.head.contains(style)) document.head.removeChild(style); };
   }, []);
 
   useEffect(() => {
@@ -689,72 +1943,6 @@ function Dashboard() {
         size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
         content={
           <>
-            {/* Desktop Layout */}
-            {/* {!isMobile && (
-              <div style={{
-                position: "absolute",
-                top: 0, left: 0, right: 0, bottom: 0,
-                display: "flex",
-                width:'90%',
-                alignItems: "center",
-                padding: "0 20px",
-              }}>
-              
-                <div style={{
-                  marginLeft: "auto",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  flexShrink: 0,
-                }}>
-                  <Button
-                    onClick={() => setShowDownloadReportModal(true)}
-                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                    style={{
-                      backgroundColor: "#2b427d",
-                      borderColor: "#2b427d",
-                      color: "#ffffff",
-                      height: "36px",
-                      borderRadius: "4px",
-                      padding: "0 5px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      fontSize: "13px",
-                      whiteSpace: "nowrap",
-                      margin: 0,
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faDownload} style={{ marginRight: "6px" }} />
-                    {t('financialReport.downloadReport')}
-                  </Button>
-
-                  {userRole !== 0 && (
-                    <Button
-                      onClick={handleAddTransactionClick}
-                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                      style={{
-                        backgroundColor: "#41926f",
-                        borderColor: "#41926f",
-                        color: "#ffffff",
-                        height: "36px",
-                        borderRadius: "4px",
-                        padding: "0 5px",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        fontSize: "13px",
-                        whiteSpace: "nowrap",
-                        margin: 0,
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faPlus} style={{ marginRight: "6px" }} />
-                      {t('dashboard.addTransaction')}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )} */}
-
-            {/* Mobile Layout (portrait + landscape) */}
             {isMobile && (
           <div style={{
             position: "absolute",
@@ -833,18 +2021,12 @@ function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ position: "relative" }}>
-                  <LoadingOverlay
-                    loading={loadingUsers}
-                    text="Loading users..."
-                  />
-                
+                  <LoadingOverlay loading={loadingUsers} text="Loading users..." />
                   <FormGroup>
                     <Label>{t('dashboard.selectUserToView')}</Label>
                     <Select
                       options={userOptions}
-                      value={userOptions.find(
-                        (option) => option.value === selectedUserId
-                      )}
+                      value={userOptions.find((option) => option.value === selectedUserId)}
                       onChange={handleUserSelect}
                       placeholder="Search or select a user..."
                       isClearable
@@ -858,54 +2040,21 @@ function Dashboard() {
                           color: "#ffffff",
                           borderColor: state.isFocused ? "#ffffff" : "#ffffff",
                           boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
-                          "&:hover": {
-                            borderColor: "#817646",
-                          },
+                          "&:hover": { borderColor: "#817646" },
                         }),
-                        valueContainer: (provided) => ({
-                          ...provided,
-                          height: "38px",
-                          padding: "0 6px",
-                        }),
-                        input: (provided) => ({
-                          ...provided,
-                          margin: "0px",
-                          color: "#ffffff",
-                        }),
-                        singleValue: (provided) => ({
-                          ...provided,
-                          color: "#ffffff",
-                        }),
-                        placeholder: (provided) => ({
-                          ...provided,
-                          color: "#ffffff",
-                          opacity: 0.7,
-                        }),
-                        indicatorsContainer: (provided) => ({
-                          ...provided,
-                          height: "38px",
-                        }),
-                        menu: (provided) => ({
-                          ...provided,
-                          backgroundColor: "#101926",
-                          border: "1px solid #ffffff",
-                        }),
-                        menuList: (provided) => ({
-                          ...provided,
-                          backgroundColor: "#101926",
-                        }),
+                        valueContainer: (provided) => ({ ...provided, height: "38px", padding: "0 6px" }),
+                        input: (provided) => ({ ...provided, margin: "0px", color: "#ffffff" }),
+                        singleValue: (provided) => ({ ...provided, color: "#ffffff" }),
+                        placeholder: (provided) => ({ ...provided, color: "#ffffff", opacity: 0.7 }),
+                        indicatorsContainer: (provided) => ({ ...provided, height: "38px" }),
+                        menu: (provided) => ({ ...provided, backgroundColor: "#101926", border: "1px solid #ffffff" }),
+                        menuList: (provided) => ({ ...provided, backgroundColor: "#101926" }),
                         option: (provided, state) => ({
                           ...provided,
-                          backgroundColor: state.isSelected
-                            ? "#2b427d"
-                            : state.isFocused
-                              ? "#1a2332"
-                              : "#101926",
+                          backgroundColor: state.isSelected ? "#2b427d" : state.isFocused ? "#1a2332" : "#101926",
                           color: "#ffffff",
                           cursor: "pointer",
-                          "&:active": {
-                            backgroundColor: "#2b427d",
-                          },
+                          "&:active": { backgroundColor: "#2b427d" },
                         }),
                       }}
                     />
@@ -918,41 +2067,25 @@ function Dashboard() {
       )}
 
       <div className="content" style={{ position: "relative", marginTop:isMobile ? 0:80 }}>
-        <LoadingOverlay
-          loading={loadingFinancialData}
-          text="Loading financial data..."
-        />
+        <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
 
         <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
-          <Col
-            lg="3"
-            md="6"
-            xs="12"
-            style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
-          >
+          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #41926f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          `$${calculateTotalCash()}`
+                        {loadingFinancialData ? <Spinner size="sm" /> : (
+                          `$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
                         <p style={{ color: "#41926f", fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(
-                            parseFloat(calculateTotalCash().replace(/,/g, "")),
-                            getPreviousMonthValues().cashOnHand
-                          ).text}
+                          {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
                         </p>
                       )}
                     </div>
@@ -967,38 +2100,22 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col
-            lg="3"
-            md="6"
-            xs="12"
-            style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
-          >
+          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #a7565d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalExpenses')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          `$${totalExpenses.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}`
+                        {loadingFinancialData ? <Spinner size="sm" /> : (
+                          `$${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
                         <p style={{ color: "#a7565d", fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(
-                            totalExpenses,
-                            getPreviousMonthValues().expenses
-                          ).text}
+                          {calculatePercentageChange(totalExpenses, getPreviousMonthValues().expenses).text}
                         </p>
                       )}
                     </div>
@@ -1013,38 +2130,22 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col
-            lg="3"
-            md="6"
-            xs="12"
-            style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}
-          >
+          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #c7ae4f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalPayable')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          `$${totalPayable.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}`
+                        {loadingFinancialData ? <Spinner size="sm" /> : (
+                          `$${totalPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
                         <p style={{ color: "#c7ae4f", fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(
-                            totalPayable,
-                            getPreviousMonthValues().payable
-                          ).text}
+                          {calculatePercentageChange(totalPayable, getPreviousMonthValues().payable).text}
                         </p>
                       )}
                     </div>
@@ -1061,31 +2162,20 @@ function Dashboard() {
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #2b427d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.revenue')}</p>
                       <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          `$${totalrevenue.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}`
+                        {loadingFinancialData ? <Spinner size="sm" /> : (
+                          `$${totalrevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
                         <p style={{ color: "#2b427d", fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(
-                            totalrevenue,
-                            getPreviousMonthValues().revenue
-                          ).text}
+                          {calculatePercentageChange(totalrevenue, getPreviousMonthValues().revenue).text}
                         </p>
                       )}
                     </div>
@@ -1103,104 +2193,74 @@ function Dashboard() {
 
         <Row style={{ backgroundColor: "#101926" }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card  style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading chart..."
-              />
+            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="cashFlowChart">
-                  <ReactApexChart
-                    options={cashOnHandChartData}
-                    series={cashOnHandChartData.series}
-                    type="area"
-                    height={300}
-                  />
+                  <ReactApexChart options={cashOnHandChartData} series={cashOnHandChartData.series} type="area" height={300} />
                 </div>
               </CardBody>
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading chart..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="revenueChart">
-                <ReactApexChart
-                  options={revenueChartData}
-                  series={revenueChartData.series}
-                  type="area"
-                  height={300}
-                />
+                  <ReactApexChart options={revenueChartData} series={revenueChartData.series} type="area" height={300} />
                 </div>
               </CardBody>
             </Card>
           </Col>
-
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading chart..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="payableChart">
-                <ReactApexChart
-                  options={payableChartData}
-                  series={payableChartData.series}
-                  type="area"
-                  height={300}
-                />
+                  <ReactApexChart options={payableChartData} series={payableChartData.series} type="area" height={300} />
                 </div>
               </CardBody>
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay
-                loading={loadingFinancialData}
-                text="Loading chart..."
-              />
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="expensesChart">
-                <ReactApexChart
-                  options={expensesChartData}
-                  series={expensesChartData.series}
-                  type="area"
-                  height={300}
-                />
+                  <ReactApexChart options={expensesChartData} series={expensesChartData.series} type="area" height={300} />
                 </div>
               </CardBody>
             </Card>
           </Col>
         </Row>
       </div>
+
+      {/* ── Download Report Modal ──────────────────────────────────────────── */}
       <DownloadReportModal
         isOpen={showDownloadReportModal}
         toggle={() => setShowDownloadReportModal(false)}
         companyName={companyName}
         items={items || []}
-        revenues={{}}
-        expenses={{}}
+        revenues={revenues}
+        expenses={expenses}
         initialBalance={initialBalance}
         initialvalueableItems={initialvalueableItems}
         initialoutstandingDebt={initialoutstandingDebt}
         calculateTotalCash={calculateTotalCash}
-        calculateTotalRevenue={() => totalrevenue.toFixed(2)}
-        calculateTotalExpenses={() => totalExpenses.toFixed(2)}
-        calculateTotalPayable={() => totalPayable.toFixed(2)}
-        calculateTotalInventory={() => initialvalueableItems.toFixed(2)}
+        calculateTotalRevenue={calculateTotalRevenue}
+        calculateTotalExpenses={calculateTotalExpenses}
+        calculateTotalPayable={calculateTotalPayable}
+        calculateTotalInventory={calculateTotalInventory}
         searchedDates={null}
+        currentLanguage={i18n.language}
       />
     </>
   );

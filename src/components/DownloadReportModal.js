@@ -13,6 +13,46 @@ import autoTable from "jspdf-autotable";
 import html2canvas from 'html2canvas';
 import ReactApexChart from "react-apexcharts";
 
+// English fallbacks when translation is missing (show English or key, never blank)
+const PDF_EN = {
+  financialExecutiveReport: "FINANCIAL EXECUTIVE REPORT",
+  statementSummary: "STATEMENT SUMMARY",
+  totalCashOnHand: "TOTAL CASH ON HAND",
+  grossRevenue: "GROSS REVENUE",
+  totalPayableUnpaid: "TOTAL PAYABLE (UNPAID)",
+  totalExpense: "TOTAL EXPENSE",
+  balanceSheetDetails: "BALANCE SHEET DETAILS",
+  accountDetail: "Account Detail",
+  currentValue: "Current Value",
+  totalAssets: "Total Assets (Cash & Cash Equivalents)",
+  currentLiabilities: "Current Liabilities (Short-Term Payables)",
+  totalOwnerEquity: "TOTAL OWNER EQUITY",
+  incomeStatementSummary: "INCOME STATEMENT SUMMARY",
+  category: "Category",
+  amount: "Amount",
+  revenue: "Revenue",
+  freightRevenue: "Freight Revenue / Manual Sales",
+  expenses: "Expenses",
+  netIncome: "NET INCOME",
+  verifiedJournalEntries: "VERIFIED JOURNAL ENTRIES",
+  date: "Date",
+  description: "Description",
+  debit: "Debit",
+  credit: "Credit",
+  cashFlowTrend: "CASH FLOW TREND",
+  revenueGrowth: "REVENUE GROWTH",
+  totalPayable: "TOTAL PAYABLE",
+  totalExpenses: "TOTAL EXPENSES",
+  termsTitle: "TERMS & RESPONSIBILITY",
+  termsText: "The user is fully responsible for the accuracy and completeness of information entered into the system. Mesob Financial is not responsible for inaccuracies in user-input data.",
+  financialReportingSystems: "Financial Reporting Systems",
+  confidential: "Confidential",
+  page: "Page",
+  of: "of",
+  incomeEntry: "Income Entry",
+  expenseEntry: "Expense Entry",
+};
+
 const DownloadReportModal = ({
   isOpen,
   toggle,
@@ -37,12 +77,23 @@ const DownloadReportModal = ({
   const [payableOptions, setPayableOptions] = useState(null);
   const [expensesOptions, setExpensesOptions] = useState(null);
 
-
-  const pt = (key) => i18n.t(`pdf.${key}`);
-  const dt = (key) => i18n.t(`downloadReport.${key}`);
+  // Translate PDF label: current language → English → key (never blank)
+  const pt = (key) => {
+    const fullKey = `pdf.${key}`;
+    const v = i18n.t(fullKey, { fallbackLng: "en" });
+    if (v && String(v).trim() && v !== fullKey) return v;
+    return PDF_EN[key] != null ? PDF_EN[key] : key.replace(/[._]/g, " ");
+  };
+  const dt = (key) => {
+    const fullKey = `downloadReport.${key}`;
+    const v = i18n.t(fullKey, { fallbackLng: "en" });
+    if (v && String(v).trim() && v !== fullKey) return v;
+    return key.replace(/[._]/g, " ");
+  };
 
   useEffect(() => {
-    if (!items) return;
+    const list = Array.isArray(items) ? items : [];
+    if (!list.length) return;
 
     let cashOnHand = initialBalance;
     let revenue = 0;
@@ -62,7 +113,7 @@ const DownloadReportModal = ({
       },
     };
 
-    const sortedItems = [...items].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const sortedItems = [...list].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     sortedItems.forEach((transaction) => {
       const amount = parseFloat(transaction.transactionAmount);
@@ -196,30 +247,33 @@ const captureChartAsImage = async (chartElementId) => {
     return `${companyAbbrev}-${year}-${month}`;
   };
 
+  // Use Helvetica for numbers/currency/dates so they render when Ethiopic font is used (am/ti)
+  const dataFont = (f) => (f === "NotoSansEthiopic" ? "helvetica" : f);
+
   // ── Shared: Company header banner ─────────────────────────────────────────
-  const addHeader = (doc, pageWidth) => {
+  const addHeader = (doc, pageWidth, fontName = "helvetica") => {
     doc.setFillColor(16, 25, 38);
     doc.rect(0, 0, pageWidth, 40, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontName, "bold");
     doc.text(`${companyName || "Company"} - ${pt("financialExecutiveReport")}`, pageWidth / 2, 20, { align: "center" });
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(dataFont(fontName), "normal");
     doc.setTextColor(200, 200, 200);
     doc.text(getDateRange(), pageWidth / 2, 32, { align: "center" });
   };
 
   // ── Shared: Footer ─────────────────────────────────────────────────────────
-  const addFooter = (doc, pageWidth, pageHeight, pageNum, totalPages, isVerified = false) => {
+  const addFooter = (doc, pageWidth, pageHeight, pageNum, totalPages, isVerified = false, fontName = "helvetica") => {
     const footerY = pageHeight - 15;
     doc.setFillColor(245, 245, 245);
     doc.rect(0, footerY - 10, pageWidth, pageHeight - (footerY - 10), "F");
     doc.setTextColor(80, 80, 80);
     doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontName, "bold");
     doc.text(pt("termsTitle"), 15, footerY - 5);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.setFontSize(6.5);
     doc.text(pt("termsText"), 15, footerY, { maxWidth: pageWidth - 30 });
     const footerLineY = pageHeight - 8;
@@ -228,12 +282,15 @@ const captureChartAsImage = async (chartElementId) => {
     doc.line(15, footerLineY - 2, pageWidth - 15, footerLineY - 2);
     doc.setTextColor(100, 100, 100);
     doc.setFontSize(7);
+    doc.setFont(isVerified ? dataFont(fontName) : fontName, "normal");
     doc.text(isVerified ? `Verification ID: ${generateVerificationId()}` : pt("financialReportingSystems"), 15, footerLineY);
+    doc.setFont(fontName, "normal");
     doc.text(`${companyName || "Company"} | ${pt("confidential")}`, pageWidth / 2, footerLineY, { align: "center" });
+    doc.setFont(dataFont(fontName), "normal");
     doc.text(`${pt("page")} ${pageNum} ${pt("of")} ${totalPages}`, pageWidth - 15, footerLineY, { align: "right" });
   };
 
-  const addStatementSummary = (doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable) => {
+  const addStatementSummary = (doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, fontName = "helvetica") => {
     const leftColX = 20;
     const rightColX = pageWidth / 2 + 10;
     const labelWidth = (pageWidth / 2) - 25;
@@ -245,27 +302,27 @@ const captureChartAsImage = async (chartElementId) => {
     doc.rect(15, yPos, 3, 8, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(fontName, "bold");
     doc.text(pt("statementSummary"), 23, yPos + 5.5);
     yPos += 13;
 
     // Row 1: Cash on Hand | Gross Revenue
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.text(pt("totalCashOnHand"), leftColX, yPos);
     doc.setTextColor(65, 146, 111);
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(dataFont(fontName), "bold");
     doc.text(`$${formatCurrency(totalCash)}`, leftColX + labelWidth, yPos, { align: "right" });
 
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.text(pt("grossRevenue"), rightColX, yPos);
     doc.setTextColor(43, 66, 125);
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(dataFont(fontName), "bold");
     doc.text(`$${formatCurrency(totalRevenue)}`, pageWidth - 20, yPos, { align: "right" });
 
     yPos += 10;
@@ -273,20 +330,20 @@ const captureChartAsImage = async (chartElementId) => {
     // Row 2: Total Payable | Total Expense
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.text(pt("totalPayableUnpaid"), leftColX, yPos);
     doc.setTextColor(167, 86, 93);
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(dataFont(fontName), "bold");
     doc.text(`$${formatCurrency(totalPayable)}`, leftColX + labelWidth, yPos, { align: "right" });
 
     doc.setTextColor(130, 130, 130);
     doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(fontName, "normal");
     doc.text(pt("totalExpense"), rightColX, yPos);
     doc.setTextColor(167, 86, 93);
     doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(dataFont(fontName), "bold");
     doc.text(`$${formatCurrency(totalExpenses)}`, pageWidth - 20, yPos, { align: "right" });
 
     yPos += 20;
@@ -294,7 +351,7 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: 4 summary tiles (Dashboard only) ──────────────────────────────
-  const addSummaryTiles = (doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable) => {
+  const addSummaryTiles = (doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, fontName = "helvetica") => {
     const totalWidth = pageWidth - 30;
     const gap = 5;
     const boxWidth = (totalWidth - (3 * gap)) / 4;
@@ -319,11 +376,11 @@ const captureChartAsImage = async (chartElementId) => {
       doc.roundedRect(boxX, yPos, boxWidth, boxHeight, 3, 3, "S");
       doc.setTextColor(130, 130, 130);
       doc.setFontSize(7.5);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(fontName, "bold");
       doc.text(item.label, boxX + boxWidth / 2, yPos + 13, { align: "center" });
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(13);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(dataFont(fontName), "bold");
       doc.text(`$${formatCurrency(item.value)}`, boxX + boxWidth / 2, yPos + 24, { align: "center" });
     });
 
@@ -331,12 +388,13 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: 2×2 chart grid ────────────────────────────────────────────────
-  const addCharts = (doc, pageWidth, yPos, chartImages) => {
+  const addCharts = (doc, pageWidth, yPos, chartImages, fontName = "helvetica") => {
     const chartWidth = (pageWidth - 45) / 2;
     const chartHeight = 60;
     const chartGap = 10;
     const { cashFlowImg, revenueImg, payableImg, expensesImg } = chartImages;
 
+    doc.setFont(fontName, "normal");
     // Row 1
     if (cashFlowImg) {
       doc.addImage(cashFlowImg, 'PNG', 15, yPos, chartWidth, chartHeight);
@@ -373,11 +431,11 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: Balance Sheet table ────────────────────────────────────────────
-  const addBalanceSheet = (doc, pageWidth, yPos, totalCash, totalInventory, totalPayable) => {
+  const addBalanceSheet = (doc, pageWidth, yPos, totalCash, totalInventory, totalPayable, fontName = "helvetica") => {
     const ownerEquity = totalCash - totalPayable;
     doc.setDrawColor(66, 133, 244); doc.setLineWidth(3);
     doc.line(15, yPos, 15, yPos + 8);
-    doc.setTextColor(33, 33, 33); doc.setFontSize(10); doc.setFont("helvetica", "bold");
+    doc.setTextColor(33, 33, 33); doc.setFontSize(10); doc.setFont(fontName, "bold");
     doc.text(pt("balanceSheetDetails"), 21, yPos + 6);
     yPos += 10;
 
@@ -393,11 +451,16 @@ const captureChartAsImage = async (chartElementId) => {
       head: [balanceSheetData[0]],
       body: balanceSheetData.slice(1),
       theme: "plain",
-      headStyles: { fillColor: [240,240,240], textColor: [60,60,60], fontStyle: "bold", fontSize: 9, lineColor: [220,220,220], lineWidth: 0.1 },
-      styles: { fontSize: 9, cellPadding: 3.5, lineColor: [220,220,220], lineWidth: 0.1 },
+      headStyles: { fillColor: [240,240,240], textColor: [60,60,60], fontStyle: "bold", fontSize: 9, font: fontName, lineColor: [220,220,220], lineWidth: 0.1 },
+      styles: { fontSize: 9, font: fontName, cellPadding: 3.5, lineColor: [220,220,220], lineWidth: 0.1 },
       columnStyles: { 0: { cellWidth: (pageWidth - 30) * 0.6 }, 1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" } },
       margin: { left: 15, right: 15 },
       didParseCell: (data) => {
+        if (fontName === "NotoSansEthiopic" && data.column.index === 1) data.cell.styles.font = "helvetica";
+        if (fontName === "NotoSansEthiopic" && data.column.index === 0) {
+          const cellText = String(data.cell.text[0] || "");
+          if (/^[\d\s\.,\$\(\)\-\/]+$/.test(cellText)) data.cell.styles.font = "helvetica";
+        }
         if (data.row.index === 2 && data.section === "body") { data.cell.styles.fontStyle = "bold"; data.cell.styles.fillColor = [245,245,245]; }
         if (data.row.index === 1 && data.section === "body" && data.column.index === 1) { data.cell.styles.textColor = [167,86,93]; }
       },
@@ -406,11 +469,11 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: Income Statement table ────────────────────────────────────────
-  const addIncomeStatement = (doc, pageWidth, yPos, totalRevenue, totalExpenses) => {
+  const addIncomeStatement = (doc, pageWidth, yPos, totalRevenue, totalExpenses, fontName = "helvetica") => {
     const netIncome = totalRevenue - totalExpenses;
     doc.setDrawColor(66, 133, 244); doc.setLineWidth(3);
     doc.line(15, yPos, 15, yPos + 8);
-    doc.setTextColor(33, 33, 33); doc.setFontSize(10); doc.setFont("helvetica", "bold");
+    doc.setTextColor(33, 33, 33); doc.setFontSize(10); doc.setFont(fontName, "bold");
     doc.text(pt("incomeStatementSummary"), 21, yPos + 6);
     yPos += 10;
 
@@ -432,23 +495,28 @@ const captureChartAsImage = async (chartElementId) => {
       head: [incomeStatementData[0]],
       body: incomeStatementData.slice(1),
       theme: "plain",
-      headStyles: { fillColor: [240,240,240], textColor: [60,60,60], fontStyle: "bold", fontSize: 9, lineColor: [220,220,220], lineWidth: 0.1 },
-      styles: { fontSize: 9, cellPadding: 3, lineColor: [220,220,220], lineWidth: 0.1 },
+      headStyles: { fillColor: [240,240,240], textColor: [60,60,60], fontStyle: "bold", fontSize: 9, font: fontName, lineColor: [220,220,220], lineWidth: 0.1 },
+      styles: { fontSize: 9, font: fontName, cellPadding: 3, lineColor: [220,220,220], lineWidth: 0.1 },
       columnStyles: { 0: { cellWidth: (pageWidth - 30) * 0.6 }, 1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" } },
       margin: { left: 15, right: 15, bottom: 35 },
         pageBreak: 'auto',
         rowPageBreak: 'avoid',
         didDrawPage: (data) => {
           if (data.pageNumber > 1) {
-            addHeader(doc, pageWidth);
+            addHeader(doc, pageWidth, fontName);
           }
         },
       didParseCell: (data) => {
+        if (fontName === "NotoSansEthiopic" && data.column.index === 1) data.cell.styles.font = "helvetica";
+        if (fontName === "NotoSansEthiopic" && data.column.index === 0) {
+          const cellText = String(data.cell.text[0] || "");
+          if (/^[\d\s\.,\$\(\)\-\/]+$/.test(cellText)) data.cell.styles.font = "helvetica";
+        }
         if (data.section === "body") {
           const cellText = data.cell.text[0] || "";
           if (cellText === pt("revenue") || cellText === pt("expenses")) { data.cell.styles.fontStyle = "bold"; data.cell.styles.textColor = [33,33,33]; }
           else if (cellText === pt("netIncome")) { data.cell.styles.fontStyle = "bold"; data.cell.styles.fillColor = [245,245,245]; data.cell.styles.textColor = [33,33,33]; }
-          else if (cellText.startsWith("    ")) { data.cell.styles.textColor = [100,100,100]; data.cell.styles.font = "helvetica"; data.cell.styles.fontStyle = "normal"; }
+          else if (cellText.startsWith("    ")) { data.cell.styles.textColor = [100,100,100]; data.cell.styles.font = fontName; data.cell.styles.fontStyle = "normal"; }
           if (data.row.index === incomeStatementData.length - 2 && data.column.index === 1) { data.cell.styles.textColor = [65,146,111]; }
         }
       },
@@ -457,31 +525,33 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: Journal Entries table ─────────────────────────────────────────
-const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
+const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helvetica") => {
   // ── If title would overlap footer, start fresh on a new page ──────────────
   if (yPos > pageHeight - 80) {
     doc.addPage();
-    addHeader(doc, pageWidth);
+    addHeader(doc, pageWidth, fontName);
     yPos = 50;
   }
 
   doc.setDrawColor(66, 133, 244); doc.setLineWidth(3);
   doc.line(15, yPos, 15, yPos + 8);
-  doc.setTextColor(33, 33, 33); doc.setFontSize(10); doc.setFont("helvetica", "bold");
+  doc.setTextColor(33, 33, 33); doc.setFontSize(10); doc.setFont(fontName, "bold");
   doc.text(pt("verifiedJournalEntries"), 21, yPos + 6);
   yPos += 10;
 
-  const filteredItems = (items || [])
-    .filter((item) => item.transactionPurpose !== "Initial Cash Balance")
+  const safeItems = Array.isArray(items) ? items : [];
+  const filteredItems = safeItems
+    .filter((item) => (item.transactionPurpose || item.purpose || "") !== "Initial Cash Balance")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const journalData = [[pt("date"), pt("description"), pt("debit"), pt("credit")]];
   filteredItems.forEach((item) => {
     const debit = item.transactionType === "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
     const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
-    const description = item.transactionType === "Receive"
-      ? `${item.transactionPurpose || pt("incomeEntry")}`
-      : `${item.transactionPurpose || pt("expenseEntry")}`;
+    const purpose = String(item.transactionPurpose || item.purpose || item.description || "").trim();
+    const description =
+      purpose ||
+      (item.transactionType === "Receive" ? pt("incomeEntry") : pt("expenseEntry"));
     journalData.push([formatDate(item.createdAt), description, debit, credit]);
   });
 
@@ -492,8 +562,8 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
       head: [journalData[0]],
       body: journalData.slice(1),
       theme: "plain",
-      headStyles: { fillColor: [240,240,240], textColor: [60,60,60], fontStyle: "bold", fontSize: 8, lineColor: [220,220,220], lineWidth: 0.1 },
-      styles: { fontSize: 8, cellPadding: 3, lineColor: [220,220,220], lineWidth: 0.1 },
+      headStyles: { fillColor: [240,240,240], textColor: [60,60,60], fontStyle: "bold", fontSize: 8, font: fontName, lineColor: [220,220,220], lineWidth: 0.1 },
+      styles: { fontSize: 8, font: fontName, cellPadding: 3, lineColor: [220,220,220], lineWidth: 0.1 },
       columnStyles: { 0: { cellWidth: 35 }, 1: { cellWidth: (pageWidth - 30) - 125 }, 2: { cellWidth: 45, halign: "right" }, 3: { cellWidth: 45, halign: "right" } },
       margin: { left: 15, right: 15, bottom: 35, top: 50 }, // ← top:50 keeps content below header on overflow pages
       pageBreak: 'auto',
@@ -501,10 +571,13 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
       didDrawPage: (data) => {
         if (data.pageNumber > 1) {
           // Only draw header on overflow pages (page 1 already has it)
-          addHeader(doc, pageWidth);
+          addHeader(doc, pageWidth, fontName);
         }
       },
       didParseCell: (data) => {
+        if (fontName === "NotoSansEthiopic") {
+          if (data.column.index === 0 || data.column.index === 2 || data.column.index === 3) data.cell.styles.font = "helvetica";
+        }
         if (data.section === "body") {
           if (data.column.index === 2 && data.cell.text[0] !== "-") { data.cell.styles.textColor = [65,146,111]; }
           if (data.column.index === 3 && data.cell.text[0] !== "-") { data.cell.styles.textColor = [199,174,79]; }
@@ -516,7 +589,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
     const endPage = doc.internal.getNumberOfPages();
     for (let i = startPage; i <= endPage; i++) {
       doc.setPage(i);
-      addFooter(doc, pageWidth, pageHeight, i, endPage, true);
+      addFooter(doc, pageWidth, pageHeight, i, endPage, true, fontName);
     }
   }
 };
@@ -526,31 +599,31 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
   // Page 1: header + statement summary + balance sheet + income statement
   // Page 2+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
-  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight) => {
+  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, pdfFont = "helvetica") => {
   const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
   const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
   const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
   const totalPayable   = parseFloat(calculateTotalPayable()) || 0;
   const totalInventory = parseFloat(calculateTotalInventory()) || 0;
 
-  addHeader(doc, pageWidth);
+  addHeader(doc, pageWidth, pdfFont);
   let yPos = 50;
-  yPos = addStatementSummary(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable);
-  yPos = addBalanceSheet(doc, pageWidth, yPos, totalCash, totalInventory, totalPayable);
-  yPos = addIncomeStatement(doc, pageWidth, yPos, totalRevenue, totalExpenses);
-  addJournalEntries(doc, pageWidth, pageHeight, yPos);
+  yPos = addStatementSummary(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
+  yPos = addBalanceSheet(doc, pageWidth, yPos, totalCash, totalInventory, totalPayable, pdfFont);
+  yPos = addIncomeStatement(doc, pageWidth, yPos, totalRevenue, totalExpenses, pdfFont);
+  addJournalEntries(doc, pageWidth, pageHeight, yPos, pdfFont);
 
   // ── Stamp page 1 footer LAST so totalPages is correct ─────────────────────
   const totalPages = doc.internal.getNumberOfPages();
   doc.setPage(1);
-  addFooter(doc, pageWidth, pageHeight, 1, totalPages, false); // page 1 = not verified
+  addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont); // page 1 = not verified
 };
 
   // ══════════════════════════════════════════════════════════════════════════
   // "Download Dashboard"
   // Page 1: header + 4 tiles + 2×2 charts + footer
   // ══════════════════════════════════════════════════════════════════════════
-  const generateDashboardOnlyPage = async (doc, pageWidth, pageHeight, chartImages) => {
+  const generateDashboardOnlyPage = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica") => {
      // 🔍 DEBUG LOGS
   const rawCash     = calculateTotalCash();
   const rawRevenue  = calculateTotalRevenue();
@@ -573,14 +646,14 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
   console.log("totalRevenue  →", totalRevenue);
   console.log("totalExpenses →", totalExpenses);
   console.log("totalPayable  →", totalPayable);
-    addHeader(doc, pageWidth);
+    addHeader(doc, pageWidth, pdfFont);
     let yPos = 50;
-    yPos = addSummaryTiles(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable);
+    yPos = addSummaryTiles(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     yPos += 15;
-    addCharts(doc, pageWidth, yPos, chartImages);
+    addCharts(doc, pageWidth, yPos, chartImages, pdfFont);
 
     const totalPages = doc.internal.getNumberOfPages();
-    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false);
+    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont);
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -589,7 +662,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
   // Page 2: header + statement summary + balance sheet + income statement
   // Page 3+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
-  const generateBothPages = async (doc, pageWidth, pageHeight, chartImages) => {
+  const generateBothPages = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica") => {
     const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
     const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
     const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
@@ -597,46 +670,71 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
     const totalInventory = parseFloat(calculateTotalInventory()) || 0;
 
     // ── Page 1: Dashboard — tiles + charts ──────────────────────────────────
-    addHeader(doc, pageWidth);
+    addHeader(doc, pageWidth, pdfFont);
     let dashYPos = 50; // ← own variable, never shared with Page 2
-    dashYPos = addSummaryTiles(doc, pageWidth, dashYPos, totalCash, totalRevenue, totalExpenses, totalPayable);
+    dashYPos = addSummaryTiles(doc, pageWidth, dashYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     dashYPos += 15;
-    addCharts(doc, pageWidth, dashYPos, chartImages);
+    addCharts(doc, pageWidth, dashYPos, chartImages, pdfFont);
     // footer stamped at end once totalPages is known
 
     // ── Page 2: Financial Summary ────────────────────────────────────────────
     doc.addPage();
-    addHeader(doc, pageWidth);
+    addHeader(doc, pageWidth, pdfFont);
     let finYPos = 50; // ← own variable, fresh start at top of page 2
-    finYPos = addStatementSummary(doc, pageWidth, finYPos, totalCash, totalRevenue, totalExpenses, totalPayable);
-    finYPos = addBalanceSheet(doc, pageWidth, finYPos, totalCash, totalInventory, totalPayable);
-    finYPos = addIncomeStatement(doc, pageWidth, finYPos, totalRevenue, totalExpenses);
+    finYPos = addStatementSummary(doc, pageWidth, finYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
+    finYPos = addBalanceSheet(doc, pageWidth, finYPos, totalCash, totalInventory, totalPayable, pdfFont);
+    finYPos = addIncomeStatement(doc, pageWidth, finYPos, totalRevenue, totalExpenses, pdfFont);
     // footer stamped at end once totalPages is known
 
     
     // ── Page 3+: Journal Entries ─────────────────────────────────────────────
-   addJournalEntries(doc, pageWidth, pageHeight, finYPos); // ← pass finYPos directly
+   addJournalEntries(doc, pageWidth, pageHeight, finYPos, pdfFont); // ← pass finYPos directly
 
     // addJournalEntries stamps its own footers, but totalPages will be wrong — fixed below
 
     // Fix all footers now that we know the real total page count
     const totalPages = doc.internal.getNumberOfPages();
     doc.setPage(1);
-    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false);
+    addFooter(doc, pageWidth, pageHeight, 1, totalPages, false, pdfFont);
     doc.setPage(2);
-    addFooter(doc, pageWidth, pageHeight, 2, totalPages, false);
+    addFooter(doc, pageWidth, pageHeight, 2, totalPages, false, pdfFont);
     for (let i = 3; i <= totalPages; i++) {
       doc.setPage(i);
-      addFooter(doc, pageWidth, pageHeight, i, totalPages, true);
+      addFooter(doc, pageWidth, pageHeight, i, totalPages, true, pdfFont);
     }
   };
 
+  // Load Ethiopic (Amharic/Tigrinya) font for jsPDF. Requires NotoSansEthiopic-Regular.ttf in public/fonts/
+  const loadEthiopicFont = async () => {
+    try {
+      const response = await fetch('/fonts/NotoSansEthiopic-Regular.ttf');
+      if (!response.ok) return null;
+      const buffer = await response.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    } catch (e) {
+      console.warn('Ethiopic font load failed:', e);
+      return null;
+    }
+  };
+
+  // Load Arabic font for jsPDF. Requires Amiri-Regular.ttf in public/fonts/
   const loadArabicFont = async () => {
-  const response = await fetch('/fonts/Amiri-Regular.ttf'); // put font in /public/fonts/
-  const buffer = await response.arrayBuffer();
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-  return base64;
-};
+    try {
+      const response = await fetch('/fonts/Amiri-Regular.ttf');
+      if (!response.ok) return null;
+      const buffer = await response.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    } catch (e) {
+      console.warn('Arabic font load failed:', e);
+      return null;
+    }
+  };
   // ══════════════════════════════════════════════════════════════════════════
   // Main PDF generator
   // ══════════════════════════════════════════════════════════════════════════
@@ -671,12 +769,45 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos) => {
     const pageWidth  = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
+    // Use script-specific fonts so non-Latin text (Arabic, Amharic, Tigrinya) renders correctly
+    const lang = currentLanguage || i18n.language || "en";
+    let pdfFont = "helvetica";
+    if (lang === "am" || lang === "ti") {
+      const ethiopicBase64 = await loadEthiopicFont();
+      if (ethiopicBase64) {
+        try {
+          doc.addFileToVFS("NotoSansEthiopic-Regular.ttf", ethiopicBase64);
+          doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
+          doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
+          pdfFont = "NotoSansEthiopic";
+        } catch (e) {
+          console.warn("Could not register Ethiopic font:", e);
+        }
+      } else {
+        console.warn("Add NotoSansEthiopic-Regular.ttf to public/fonts/ for Amharic/Tigrinya PDF support.");
+      }
+    } else if (lang === "ar") {
+      const arabicBase64 = await loadArabicFont();
+      if (arabicBase64) {
+        try {
+          doc.addFileToVFS("Amiri-Regular.ttf", arabicBase64);
+          doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+          doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
+          pdfFont = "Amiri";
+        } catch (e) {
+          console.warn("Could not register Arabic font:", e);
+        }
+      } else {
+        console.warn("Add Amiri-Regular.ttf to public/fonts/ for Arabic PDF support.");
+      }
+    }
+
     if (type === "financial") {
-      generateFinancialOnlyPages(doc, pageWidth, pageHeight);
+      generateFinancialOnlyPages(doc, pageWidth, pageHeight, pdfFont);
     } else if (type === "dashboard") {
-      await generateDashboardOnlyPage(doc, pageWidth, pageHeight, chartImages);
+      await generateDashboardOnlyPage(doc, pageWidth, pageHeight, chartImages, pdfFont);
     } else if (type === "both") {
-      await generateBothPages(doc, pageWidth, pageHeight, chartImages);
+      await generateBothPages(doc, pageWidth, pageHeight, chartImages, pdfFont);
     }
 
     const dateStr = new Date().toISOString().split("T")[0];

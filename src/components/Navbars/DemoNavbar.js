@@ -565,10 +565,12 @@ import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { adminRoutes, customerRoutes } from "routes.js";
 import { setCurrency } from "store/currencySlice";
 import { signOut } from "aws-amplify/auth";
+import { useTranslation } from "react-i18next";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import DownloadReportModal from "components/DownloadReportModal";
 
 function DemoNavbar(props) {
+  const { t } = useTranslation();
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -695,10 +697,13 @@ function DemoNavbar(props) {
 
   const handleDownloadReportClick = () => {
     if (location.pathname.includes("financial-report")) {
-      // If already on financial-report, fire the existing event
+      // Financial-report page listens and opens its modal with full data
       window.dispatchEvent(new Event("mesob:downloadReport"));
+    } else if (location.pathname.includes("dashboard")) {
+      // Dashboard page listens and opens its modal with full data
+      window.dispatchEvent(new Event("dashboard:downloadReport"));
     } else {
-      // Otherwise open the modal directly from the navbar
+      // Other pages: open navbar modal (no report data available)
       setShowDownloadReportModal(true);
     }
   };
@@ -857,7 +862,7 @@ function DemoNavbar(props) {
                 <button
                   onClick={handleDownloadReportClick}
                   disabled={buttonsDisabled}
-                  title="Download Report"
+                  title={t("financialReport.downloadReport")}
                   style={{
                     backgroundColor: "#2b427d",
                     border: "1px solid #2b427d",
@@ -879,14 +884,14 @@ function DemoNavbar(props) {
                     icon={faDownload}
                     style={{ fontSize: "13px", marginRight: isLandscapeMobile ? 0 : "5px" }}
                   />
-                  {!isLandscapeMobile && "Download Report"}
+                  {!isLandscapeMobile && t("financialReport.downloadReport")}
                 </button>
 
                 {userRole !== 0 && (
                   <button
                     onClick={handleAddTransactionClick}
                     disabled={buttonsDisabled}
-                    title="Add Transaction"
+                    title={t("financialReport.addTransaction")}
                     style={{
                       backgroundColor: "#41926f",
                       border: "1px solid #41926f",
@@ -908,7 +913,7 @@ function DemoNavbar(props) {
                       icon={faPlus}
                       style={{ fontSize: "13px", marginRight: isLandscapeMobile ? 0 : "5px" }}
                     />
-                    {!isLandscapeMobile && "Add Transaction"}
+                    {!isLandscapeMobile && t("financialReport.addTransaction")}
                   </button>
                 )}
               </>
