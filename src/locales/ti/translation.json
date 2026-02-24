@@ -482,5 +482,12 @@
   "of": "ካብ",
   "incomeEntry": "ምእታው እቶት",
   "expenseEntry": "ምእታው ወጻኢ"
+},
+"downloadReport": {
+  "title": "ጸብጻብ ጫን",
+  "downloadFinancialReport": "ናይ ፋይናንስ ጸብጻብ ጫን",
+  "downloadDashboard": "ዳሽቦርድ ጫን",
+  "downloadBoth": "ክልቲኦም ጫን",
+  "pdfNote": "ጸብጻባት ከም PDF ፋይላት ኮይኖም ክጻዓኑ እዮም"
 }
 }

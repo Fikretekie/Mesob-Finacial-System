@@ -362,5 +362,12 @@
   "of": "من",
   "incomeEntry": "قيد الدخل",
   "expenseEntry": "قيد المصروف"
+},
+"downloadReport": {
+  "title": "تحميل التقرير",
+  "downloadFinancialReport": "تحميل التقرير المالي",
+  "downloadDashboard": "تحميل لوحة التحكم",
+  "downloadBoth": "تحميل الاثنين",
+  "pdfNote": "سيتم تحميل التقارير كملفات PDF"
 }
 }

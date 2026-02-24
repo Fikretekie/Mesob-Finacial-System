@@ -484,5 +484,13 @@
   "of": "ከ",
   "incomeEntry": "የገቢ ግቤት",
   "expenseEntry": "የወጪ ግቤት"
-}
+  },
+  "downloadReport": {
+      "title": "ሪፖርት ያውርዱ",    
+      "downloadFinancialReport": "የፋይናንስ ሪፖርት ያውርዱ",
+      "downloadDashboard": "ዳሽቦርድ ያውርዱ",
+      "downloadBoth": "ሁለቱንም ያውርዱ",
+      "pdfNote": "ሪፖርቶቹ እንደ PDF ፋይሎች ይወርዳሉ"
+    }
+
 }

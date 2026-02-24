@@ -342,5 +342,12 @@
   "of": "sur",
   "incomeEntry": "Entrée de Revenu",
   "expenseEntry": "Entrée de Dépense"
+},
+"downloadReport": {
+  "title": "Télécharger le Rapport",
+  "downloadFinancialReport": "Télécharger le Rapport Financier",
+  "downloadDashboard": "Télécharger le Tableau de Bord",
+  "downloadBoth": "Télécharger les Deux",
+  "pdfNote": "Les rapports seront téléchargés en fichiers PDF"
 }
 }

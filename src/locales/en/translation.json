@@ -486,5 +486,12 @@
   "of": "of",
   "incomeEntry": "Income Entry",
   "expenseEntry": "Expense Entry"
+  },
+  "downloadReport": {
+  "title": "Download Report",
+  "downloadFinancialReport": "Download Financial Report",
+  "downloadDashboard": "Download Dashboard",
+  "downloadBoth": "Download Both",
+  "pdfNote": "Reports will be downloaded as PDF files"
 }
 }

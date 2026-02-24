@@ -332,5 +332,12 @@
       "of": "ka",
       "incomeEntry": "Gelitaanka Dakhliga",
       "expenseEntry": "Gelitaanka Kharashka"
+    },
+    "downloadReport": {
+      "title": "Soo Dejiso Warbixinta",
+      "downloadFinancialReport": "Soo Dejiso Warbixinta Maaliyadeed",
+      "downloadDashboard": "Soo Dejiso Xaashida Xogta",
+      "downloadBoth": "Soo Dejiso Labadaba",
+      "pdfNote": "Warbixinnadu waxay soo dejisan doonaan faylasha PDF ahaan"
     }
 }

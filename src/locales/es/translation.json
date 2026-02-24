@@ -347,5 +347,12 @@
   "of": "de",
   "incomeEntry": "Entrada de Ingreso",
   "expenseEntry": "Entrada de Gasto"
-}
+},
+  "downloadReport": {
+    "title": "Descargar Informe",
+    "downloadFinancialReport": "Descargar Informe Financiero",
+    "downloadDashboard": "Descargar Panel de Control",
+    "downloadBoth": "Descargar Ambos",
+    "pdfNote": "Los informes se descargarán como archivos PDF"
+  }
 }
