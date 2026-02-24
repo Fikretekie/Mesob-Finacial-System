@@ -115,6 +115,7 @@ const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [loadingDeleteAll, setLoadingDeleteAll] = useState(false);
+const currentLanguage = i18n.language; // already imported at top
 
   // business types
   const [selectedBusinessType, setSelectedBusinessType] = useState(
@@ -4273,6 +4274,7 @@ const isMobileLandscape = isMobile && isLandscape;
           calculateTotalPayable={calculateTotalPayable}
           calculateTotalInventory={calculateTotalInventory}
           searchedDates={searchedDates}
+          currentLanguage={currentLanguage}
         />
       </div>
     </>
