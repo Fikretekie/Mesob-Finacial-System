@@ -7,7 +7,7 @@ import {
   Spinner,
 } from "reactstrap";
 import i18n from "../i18n";
-import { translatePurpose } from "../utils/translatedBusinessTypes";
+import { translatePurpose, translatePurposeToLanguage } from "../utils/translatedBusinessTypes";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -264,6 +264,16 @@ const captureChartAsImage = async (chartElementId) => {
   // Use Helvetica for numbers/currency/dates so they render when Ethiopic font is used (am/ti)
   const dataFont = (f) => (f === "NotoSansEthiopic" ? "helvetica" : f);
 
+  // Detect script in dynamic text (saved in DB) so we can pick the right font for PDF
+  const hasEthiopic = (s) => /[\u1200-\u137F\u1380-\u1399\u2D80-\u2DDF\uAB00-\uAB2F]/.test(String(s));
+  const hasArabic = (s) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(s));
+  const fontForDynamicText = (cellText, scriptFonts, defaultFont) => {
+    if (!scriptFonts) return defaultFont;
+    if (scriptFonts.ethiopic && hasEthiopic(cellText)) return scriptFonts.ethiopic;
+    if (scriptFonts.arabic && hasArabic(cellText)) return scriptFonts.arabic;
+    return defaultFont;
+  };
+
   // ── Shared: Company header banner ─────────────────────────────────────────
   const addHeader = (doc, pageWidth, fontName = "helvetica") => {
     doc.setFillColor(16, 25, 38);
@@ -513,7 +523,7 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: Income Statement table ────────────────────────────────────────
-  const addIncomeStatement = (doc, pageWidth, yPos, totalRevenue, totalExpenses, fontName = "helvetica") => {
+  const addIncomeStatement = (doc, pageWidth, yPos, totalRevenue, totalExpenses, fontName = "helvetica", scriptFonts = null, pdfLanguage = null) => {
     const netIncome = totalRevenue - totalExpenses;
     doc.setDrawColor(66, 133, 244); doc.setLineWidth(3);
     doc.line(15, yPos, 15, yPos + 8);
@@ -523,9 +533,10 @@ const captureChartAsImage = async (chartElementId) => {
 
     const incomeStatementData = [[pt("category"), pt("amount")]];
     incomeStatementData.push([pt("revenue"), `$${formatCurrency(totalRevenue)}`]);
+    const purposeToPdf = (p) => (pdfLanguage ? translatePurposeToLanguage(p, pdfLanguage) : translatePurpose(p));
     if (revenues && Object.keys(revenues).length > 0) {
       Object.entries(revenues).forEach(([purpose, amount]) =>
-        incomeStatementData.push([`    ${translatePurpose(purpose)}`, `$${formatCurrency(amount)}`])
+        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `$${formatCurrency(amount)}`])
       );
     } else {
       incomeStatementData.push([`    ${pt("freightRevenue")}`, `$${formatCurrency(totalRevenue)}`]);
@@ -533,7 +544,7 @@ const captureChartAsImage = async (chartElementId) => {
     incomeStatementData.push([pt("expenses"), `($${formatCurrency(totalExpenses)})`]);
     if (expenses && Object.keys(expenses).length > 0) {
       Object.entries(expenses).forEach(([purpose, amount]) =>
-        incomeStatementData.push([`    ${translatePurpose(purpose)}`, `($${formatCurrency(amount)})`])
+        incomeStatementData.push([`    ${purposeToPdf(purpose)}`, `($${formatCurrency(amount)})`])
       );
     }
     incomeStatementData.push([pt("netIncome"), `$${formatCurrency(netIncome)}`]);
@@ -563,10 +574,14 @@ const captureChartAsImage = async (chartElementId) => {
           }
         }
         if (data.section === "body") {
-          const cellText = data.cell.text[0] || "";
+          const cellText = String(data.cell.text[0] || "");
           if (cellText === pt("revenue") || cellText === pt("expenses")) { data.cell.styles.fontStyle = "bold"; data.cell.styles.textColor = [33,33,33]; }
           else if (cellText === pt("netIncome")) { data.cell.styles.fontStyle = "bold"; data.cell.styles.fillColor = [245,245,245]; data.cell.styles.textColor = [33,33,33]; }
-          else if (cellText.startsWith("    ")) { data.cell.styles.textColor = [100,100,100]; data.cell.styles.font = fontName; data.cell.styles.fontStyle = "normal"; }
+          else if (cellText.startsWith("    ")) {
+            data.cell.styles.textColor = [100,100,100];
+            data.cell.styles.font = fontForDynamicText(cellText, scriptFonts, fontName);
+            data.cell.styles.fontStyle = "normal";
+          }
           if (data.row.index === incomeStatementData.length - 2 && data.column.index === 1) { data.cell.styles.textColor = [65,146,111]; }
         }
       },
@@ -575,7 +590,7 @@ const captureChartAsImage = async (chartElementId) => {
   };
 
   // ── Shared: Journal Entries table ─────────────────────────────────────────
-const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helvetica") => {
+const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helvetica", scriptFonts = null, pdfLanguage = null) => {
   // ── If title would overlap footer, start fresh on a new page ──────────────
   if (yPos > pageHeight - 80) {
     doc.addPage();
@@ -600,7 +615,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
     const credit = item.transactionType !== "Receive" ? `$${formatCurrency(item.transactionAmount)}` : "-";
     const purpose = String(item.transactionPurpose || item.purpose || item.description || "").trim();
     const description = purpose
-      ? translatePurpose(purpose)
+      ? (pdfLanguage ? translatePurposeToLanguage(purpose, pdfLanguage) : translatePurpose(purpose))
       : (item.transactionType === "Receive" ? pt("incomeEntry") : pt("expenseEntry"));
     journalData.push([formatDate(item.createdAt), description, debit, credit]);
   });
@@ -628,6 +643,10 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
         if (data.section === "body" && fontName === "NotoSansEthiopic") {
           if (data.column.index === 0 || data.column.index === 2 || data.column.index === 3) data.cell.styles.font = "helvetica";
         }
+        if (data.section === "body" && data.column.index === 1) {
+          const cellText = String(data.cell.text[0] || "");
+          data.cell.styles.font = fontForDynamicText(cellText, scriptFonts, fontName);
+        }
         if (data.section === "body") {
           if (data.column.index === 2 && data.cell.text[0] !== "-") { data.cell.styles.textColor = [65,146,111]; }
           if (data.column.index === 3 && data.cell.text[0] !== "-") { data.cell.styles.textColor = [199,174,79]; }
@@ -649,7 +668,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Page 1: header + statement summary + balance sheet + income statement
   // Page 2+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
-  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, pdfFont = "helvetica") => {
+  const generateFinancialOnlyPages = (doc, pageWidth, pageHeight, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
   const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
   const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
   const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
@@ -660,8 +679,8 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   let yPos = 50;
   yPos = addStatementSummary(doc, pageWidth, yPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
   yPos = addBalanceSheet(doc, pageWidth, yPos, totalCash, totalInventory, totalPayable, pdfFont);
-  yPos = addIncomeStatement(doc, pageWidth, yPos, totalRevenue, totalExpenses, pdfFont);
-  addJournalEntries(doc, pageWidth, pageHeight, yPos, pdfFont);
+  yPos = addIncomeStatement(doc, pageWidth, yPos, totalRevenue, totalExpenses, pdfFont, scriptFonts, pdfLanguage);
+  addJournalEntries(doc, pageWidth, pageHeight, yPos, pdfFont, scriptFonts, pdfLanguage);
 
   // ── Stamp page 1 footer LAST so totalPages is correct ─────────────────────
   const totalPages = doc.internal.getNumberOfPages();
@@ -712,7 +731,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
   // Page 2: header + statement summary + balance sheet + income statement
   // Page 3+: header + journal entries
   // ══════════════════════════════════════════════════════════════════════════
-  const generateBothPages = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica") => {
+  const generateBothPages = async (doc, pageWidth, pageHeight, chartImages, pdfFont = "helvetica", scriptFonts = null, pdfLanguage = null) => {
     const totalCash      = parseFloat(calculateTotalCash().replace(/,/g, "")) || 0;
     const totalRevenue   = parseFloat(calculateTotalRevenue()) || 0;
     const totalExpenses  = parseFloat(calculateTotalExpenses()) || 0;
@@ -733,12 +752,12 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
     let finYPos = 50; // ← own variable, fresh start at top of page 2
     finYPos = addStatementSummary(doc, pageWidth, finYPos, totalCash, totalRevenue, totalExpenses, totalPayable, pdfFont);
     finYPos = addBalanceSheet(doc, pageWidth, finYPos, totalCash, totalInventory, totalPayable, pdfFont);
-    finYPos = addIncomeStatement(doc, pageWidth, finYPos, totalRevenue, totalExpenses, pdfFont);
+    finYPos = addIncomeStatement(doc, pageWidth, finYPos, totalRevenue, totalExpenses, pdfFont, scriptFonts, pdfLanguage);
     // footer stamped at end once totalPages is known
 
     
     // ── Page 3+: Journal Entries ─────────────────────────────────────────────
-   addJournalEntries(doc, pageWidth, pageHeight, finYPos, pdfFont); // ← pass finYPos directly
+   addJournalEntries(doc, pageWidth, pageHeight, finYPos, pdfFont, scriptFonts, pdfLanguage); // ← pass finYPos directly
 
     // addJournalEntries stamps its own footers, but totalPages will be wrong — fixed below
 
@@ -824,6 +843,8 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
     // Use script-specific fonts so non-Latin text (Arabic, Amharic, Tigrinya) renders correctly
     const lang = currentLanguage || i18n.language || "en";
     let pdfFont = "helvetica";
+    const scriptFonts = { ethiopic: null, arabic: null };
+
     if (lang === "am" || lang === "ti") {
       const ethiopicBase64 = await loadEthiopicFont();
       if (ethiopicBase64) {
@@ -832,6 +853,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
           doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
           doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
           pdfFont = "NotoSansEthiopic";
+          scriptFonts.ethiopic = "NotoSansEthiopic";
         } catch (e) {
           console.warn("Could not register Ethiopic font:", e);
         }
@@ -846,6 +868,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
           doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
           doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
           pdfFont = "Amiri";
+          scriptFonts.arabic = "Amiri";
         } catch (e) {
           console.warn("Could not register Arabic font:", e);
         }
@@ -854,12 +877,38 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
       }
     }
 
+    // For financial/both reports, load Ethiopic and Arabic so dynamic content (e.g. descriptions saved in am/ar) renders correctly in any PDF language
+    if (type === "financial" || type === "both") {
+      if (!scriptFonts.ethiopic) {
+        const ethiopicBase64 = await loadEthiopicFont();
+        if (ethiopicBase64) {
+          try {
+            doc.addFileToVFS("NotoSansEthiopic-Regular.ttf", ethiopicBase64);
+            doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "normal");
+            doc.addFont("NotoSansEthiopic-Regular.ttf", "NotoSansEthiopic", "bold");
+            scriptFonts.ethiopic = "NotoSansEthiopic";
+          } catch (e) { /* already added or failed */ }
+        }
+      }
+      if (!scriptFonts.arabic) {
+        const arabicBase64 = await loadArabicFont();
+        if (arabicBase64) {
+          try {
+            doc.addFileToVFS("Amiri-Regular.ttf", arabicBase64);
+            doc.addFont("Amiri-Regular.ttf", "Amiri", "normal");
+            doc.addFont("Amiri-Regular.ttf", "Amiri", "bold");
+            scriptFonts.arabic = "Amiri";
+          } catch (e) { /* already added or failed */ }
+        }
+      }
+    }
+
     if (type === "financial") {
-      generateFinancialOnlyPages(doc, pageWidth, pageHeight, pdfFont);
+      generateFinancialOnlyPages(doc, pageWidth, pageHeight, pdfFont, scriptFonts, lang);
     } else if (type === "dashboard") {
       await generateDashboardOnlyPage(doc, pageWidth, pageHeight, chartImages, pdfFont);
     } else if (type === "both") {
-      await generateBothPages(doc, pageWidth, pageHeight, chartImages, pdfFont);
+      await generateBothPages(doc, pageWidth, pageHeight, chartImages, pdfFont, scriptFonts, lang);
     }
 
     const dateStr = new Date().toISOString().split("T")[0];

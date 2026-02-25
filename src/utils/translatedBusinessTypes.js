@@ -314,6 +314,219 @@ export const getTranslatedBusinessPurposes = (businessType) => {
 
   return businessTypeMapping[businessType] || { income: [], expenses: [], payables: [] };
 };
+/** Supported languages for purpose reverse-lookup (label in any lang → key) */
+const PURPOSE_LANGS = ['en', 'am', 'ti', 'ar', 'es', 'fr', 'so'];
+
+/** Map: English purpose label → i18n key (for translating to PDF language) */
+const ENGLISH_TO_PURPOSE_KEY = {
+  "Freight Income": "businessTypes.income.freightIncome",
+  "Lease Income": "businessTypes.income.leaseIncome",
+  "Fuel Surcharge": "businessTypes.income.fuelSurcharge",
+  "Fuel Expense": "businessTypes.expenses.fuel",
+  "Truck Repairs and Maintenance": "businessTypes.expenses.truckRepairs",
+  "Driver Salaries/Wages": "businessTypes.expenses.driverSalaries",
+  "Insurance Premiums": "businessTypes.expenses.insurance",
+  "Toll Charges": "businessTypes.expenses.tollCharges",
+  "Loan Payment": "businessTypes.expenses.loanPayment",
+  "Accounts Payable": "businessTypes.expenses.accountsPayable",
+  "Fares from Passengers": "businessTypes.income.farePassengers",
+  "Bonuses and Incentives": "businessTypes.income.bonuses",
+  "Uber Eats or Lyft Delivery": "businessTypes.income.delivery",
+  "Vehicle Maintenance and Repairs": "businessTypes.expenses.vehicleMaintenance",
+  "Car Insurance": "businessTypes.expenses.carInsurance",
+  "Vehicle Depreciation": "businessTypes.expenses.vehicleDepreciation",
+  "Rideshare Platform Fees": "businessTypes.expenses.rideshareFees",
+  "Taxes": "businessTypes.expenses.taxes",
+  "Loan Payments (if applicable)": "businessTypes.expenses.loanPayments",
+  "Miscellaneous": "businessTypes.expenses.miscellaneous",
+  "Salary/Wages": "businessTypes.income.salary",
+  "Bonuses/Commissions": "businessTypes.income.commission",
+  "Self-Employment/Side Gigs": "businessTypes.income.selfEmployment",
+  "Investment Income": "businessTypes.income.investment",
+  "Rental Income": "businessTypes.income.rental",
+  "Government Assistance": "businessTypes.income.government",
+  "Pension or Retirement Funds": "businessTypes.income.pension",
+  "Alimony/Child Support": "businessTypes.income.alimony",
+  "Other Income": "businessTypes.income.otherIncome",
+  "Housing": "businessTypes.expenses.housing",
+  "Transportation": "businessTypes.expenses.transportation",
+  "Food and Groceries": "businessTypes.expenses.foodGroceries",
+  "Healthcare": "businessTypes.expenses.healthcare",
+  "Debt Payments": "businessTypes.expenses.debtPayments",
+  "Savings and Investments": "businessTypes.expenses.savingsInvestments",
+  "Entertainment and Recreation": "businessTypes.expenses.entertainment",
+  "Childcare and Education": "businessTypes.expenses.childcare",
+  "Insurance": "businessTypes.expenses.insurance",
+  "Gross Sales": "businessTypes.income.grossSales",
+  "Delivery Fees": "businessTypes.income.deliveryFees",
+  "Service Fees": "businessTypes.income.serviceFees",
+  "Cost of Goods Sold (COGS)": "businessTypes.expenses.cogs",
+  "Labor Costs": "businessTypes.expenses.laborCosts",
+  "Rent/Lease": "businessTypes.expenses.rentLease",
+  "Utilities": "businessTypes.expenses.utilities",
+  "Marketing and Advertising": "businessTypes.expenses.marketingAdvertising",
+  "Supplies": "businessTypes.expenses.supplies",
+  "Maintenance and Repairs": "businessTypes.expenses.maintenanceRepairs",
+  "Licensing and Permits": "businessTypes.expenses.licensingPermits",
+  "Shipping and Delivery": "businessTypes.expenses.shippingDelivery",
+  "Depreciation": "businessTypes.expenses.depreciation",
+  "Bank Fees and Interest": "businessTypes.expenses.bankFees",
+  "Professional Services": "businessTypes.expenses.professionalServices",
+  "Food Sales": "businessTypes.income.foodSales",
+  "Beverage Sales": "businessTypes.income.beverageSales",
+  "Dessert Sales": "businessTypes.income.dessertSales",
+  "Takeout Sales": "businessTypes.income.takeoutSales",
+  "Catering or Event Revenue": "businessTypes.income.catering",
+  "Gift Cards or Vouchers": "businessTypes.income.giftCards",
+  "Food Costs": "businessTypes.expenses.foodCosts",
+  "Beverage Costs": "businessTypes.expenses.beverageCosts",
+  "Packaging": "businessTypes.expenses.packaging",
+  "Food Preparation Supplies": "businessTypes.expenses.preparationSupplies",
+  "Cleaning and Maintenance": "businessTypes.expenses.cleaningMaintenance",
+  "Equipment and Supplies": "businessTypes.expenses.equipmentSupplies",
+  "Credit Card Processing Fees": "businessTypes.expenses.creditCardFees",
+  "Delivery Costs": "businessTypes.expenses.deliveryCosts",
+  "Interest": "businessTypes.expenses.interest",
+  "Bad Debt": "businessTypes.expenses.badDebt",
+  "Recurring Residential Cleaning Contracts": "businessTypes.income.residentialCleaning",
+  "One-Time Deep Cleaning Services": "businessTypes.income.deepCleaning",
+  "Move-In/Move-Out Cleaning": "businessTypes.income.moveInOut",
+  "Commercial Office Cleaning Contracts": "businessTypes.income.commercialCleaning",
+  "Airbnb Turnover Services": "businessTypes.income.airbnbTurnover",
+  "Cleaning Supplies (detergents, disinfectants, vacuums)": "businessTypes.expenses.cleaningSupplies",
+  "Employee Wages": "businessTypes.expenses.employeeWages",
+  "Fuel and Transportation": "businessTypes.expenses.fuelTransportation",
+  "Uniforms": "businessTypes.expenses.uniforms",
+  "Advertising (flyers, Google/local ads)": "businessTypes.expenses.advertising",
+  "Equipment Maintenance and Replacements": "businessTypes.expenses.equipmentMaintenance",
+  "Liability Insurance": "businessTypes.expenses.liabilityInsurance",
+  "Haircuts and Styling": "businessTypes.income.haircuts",
+  "Hair Coloring and Treatments": "businessTypes.income.hairColoring",
+  "Beard Trims and Shaves": "businessTypes.income.beardTrims",
+  "Manicures and Pedicures": "businessTypes.income.manicures",
+  "Product Retail (shampoos, conditioners, gels)": "businessTypes.income.productRetail",
+  "Special Packages (weddings, events)": "businessTypes.income.specialPackages",
+  "Hair and Beauty Products": "businessTypes.expenses.beautyProducts",
+  "Tools and Equipment (clippers, scissors, dryers)": "businessTypes.expenses.toolsEquipment",
+  "Rent and Utilities": "businessTypes.expenses.rentUtilities",
+  "Employee Wages or Booth Rent": "businessTypes.expenses.wagesBooth",
+  "Salon Software (scheduling, POS)": "businessTypes.expenses.salonSoftware",
+  "Sterilization Supplies (barbicide, gloves)": "businessTypes.expenses.sterilization",
+  "Towel and Laundry Service": "businessTypes.expenses.laundry",
+  "Business Licenses and Inspections": "businessTypes.expenses.licenses",
+  "Online Product Sales": "businessTypes.income.onlineProductSales",
+  "Bulk/Wholesale Orders": "businessTypes.income.bulkOrders",
+  "Custom Orders": "businessTypes.income.customOrders",
+  "Subscription Boxes": "businessTypes.income.subscriptionBoxes",
+  "Affiliate Income": "businessTypes.income.affiliateIncome",
+  "Digital Product Sales (e-books, downloads)": "businessTypes.income.digitalProducts",
+  "Product Sourcing and Inventory": "businessTypes.expenses.productSourcing",
+  "Packaging and Shipping Materials": "businessTypes.expenses.packagingShipping",
+  "Platform Fees (Shopify, Amazon seller fees)": "businessTypes.expenses.platformFees",
+  "Payment Transaction Fees": "businessTypes.expenses.transactionFees",
+  "Online Advertising (Meta, Google, SEO)": "businessTypes.expenses.onlineAdvertising",
+  "Web Hosting/Domain": "businessTypes.expenses.webHosting",
+  "Software Subscriptions (Canva, QuickBooks)": "businessTypes.expenses.softwareSubscriptions",
+  "Warehouse or Storage Rental": "businessTypes.expenses.warehouseRental",
+  "Service Calls and Labor Charges": "businessTypes.income.serviceCalls",
+  "Repair and Installation Jobs": "businessTypes.income.repairInstallation",
+  "Home Improvement and Remodeling Contracts": "businessTypes.income.remodeling",
+  "Emergency Calls": "businessTypes.income.emergencyCalls",
+  "Subcontracting Projects": "businessTypes.income.subcontracting",
+  "Consulting and Design Services": "businessTypes.income.consulting",
+  "Tools and Equipment (drills, ladders, PPE)": "businessTypes.expenses.constructionTools",
+  "Materials (pipes, wires, paint)": "businessTypes.expenses.constructionMaterials",
+  "Subcontractor Wages": "businessTypes.expenses.subcontractorWages",
+  "Vehicle Fuel and Maintenance": "businessTypes.expenses.vehicleFuel",
+  "Business and Liability Insurance": "businessTypes.expenses.businessInsurance",
+  "Permits and Licensing Costs": "businessTypes.expenses.permitsCosts",
+  "Workplace Safety Training": "businessTypes.expenses.safetyTraining",
+  "Ad Revenue (YouTube, Facebook, etc.)": "businessTypes.income.adRevenue",
+  "Sponsorship Deals": "businessTypes.income.sponsorship",
+  "Affiliate Commissions": "businessTypes.income.affiliateCommissions",
+  "Merchandise Sales": "businessTypes.income.merchandiseSales",
+  "Digital Product Sales (e.g., presets, courses)": "businessTypes.income.digitalProductSales",
+  "Client Work (if freelancing)": "businessTypes.income.clientWork",
+  "Tips or Donations (e.g., Patreon, Ko-fi)": "businessTypes.income.tips",
+  "Equipment Purchases or Rentals (cameras, microphones, lights)": "businessTypes.expenses.equipmentPurchases",
+  "Software Subscriptions (editing tools, cloud storage)": "businessTypes.expenses.softwareSubs",
+  "Internet and Utilities": "businessTypes.expenses.internetUtilities",
+  "Office or Studio Rent": "businessTypes.expenses.officeRent",
+  "Marketing and Promotion": "businessTypes.expenses.marketingPromotion",
+  "Travel and Lodging (for content shoots)": "businessTypes.expenses.travelLodging",
+  "Contractors or Freelancers (editors, voice actors, designers)": "businessTypes.expenses.contractors",
+  "Supplier Payments (Expense) / Owed to Suppliers (Expense)": "businessTypes.payables.providerPayments",
+  "Freight Costs (Expense)": "businessTypes.payables.freightCosts",
+  "Wages (Expense)": "businessTypes.payables.wages",
+  "Utilities (Expense)": "businessTypes.payables.utilitiesExpense",
+  "Taxes (Expense)": "businessTypes.payables.taxesExpense",
+  "Rent (Expense)": "businessTypes.payables.rentExpense",
+  "Insurance (Expense)": "businessTypes.payables.insuranceExpense",
+  "Fuel Costs (Expense)": "businessTypes.payables.fuelCosts",
+  "Vehicle Maintenance (Expense)": "businessTypes.payables.vehicleMaintenanceExpense",
+  "Oil Changes (Expense)": "businessTypes.payables.oilChanges",
+  "Miscellaneous (Expense)": "businessTypes.payables.miscExpense",
+  "Bills (Expense)": "businessTypes.payables.bills",
+  "Inventory Purchases (Expense)": "businessTypes.payables.inventoryPurchases",
+  "Inventory Adjustments (Expense)": "businessTypes.payables.inventoryAdjustments",
+  "Food Costs (Expense)": "businessTypes.payables.foodCostsExpense",
+  "Beverage Costs (Expense)": "businessTypes.payables.beverageCostsExpense",
+  "Supplies (Expense)": "businessTypes.payables.suppliesExpense",
+  "Fuel (Expense)": "businessTypes.payables.fuelExpense",
+  "Advertising (Expense)": "businessTypes.payables.advertisingExpense",
+  "Uniforms (Expense)": "businessTypes.payables.uniformsExpense",
+  "Equipment Maintenance (Expense)": "businessTypes.payables.equipmentMaintenanceExpense",
+  "Product Supplies (Expense)": "businessTypes.payables.productSupplies",
+  "Software Subscriptions (Expense)": "businessTypes.payables.softwareSubscriptionsExpense",
+  "Licenses (Expense)": "businessTypes.payables.licensesExpense",
+  "Laundry and Cleaning (Expense)": "businessTypes.payables.laundryCleaning",
+  "Shipping Materials (Expense)": "businessTypes.payables.shippingMaterials",
+  "Software/Platform Fees (Expense)": "businessTypes.payables.softwarePlatformFees",
+  "Warehouse Rent (Expense)": "businessTypes.payables.warehouseRentExpense",
+  "Tools and Materials (Expense)": "businessTypes.payables.toolsMaterials",
+  "Subcontractor Payments (Expense)": "businessTypes.payables.subcontractorPayments",
+  "Permits (Expense)": "businessTypes.payables.permitsExpense",
+  "Training Costs (Expense)": "businessTypes.payables.trainingCosts",
+  "Outstanding Invoices to Suppliers": "businessTypes.payables.outstandingInvoices",
+  "Scheduled Payments to Freelancers or Agencies": "businessTypes.payables.scheduledPayments",
+  "Equipment Leases": "businessTypes.payables.equipmentLeases",
+};
+
+/**
+ * Find i18n key for a purpose label (may be stored in any language).
+ * @param {string} label - Purpose/description as stored (e.g. Amharic, English)
+ * @returns {string|null} - i18n key or null
+ */
+export const getPurposeKeyFromLabel = (label) => {
+  if (!label || typeof label !== 'string') return null;
+  const trimmed = label.trim();
+  if (ENGLISH_TO_PURPOSE_KEY[trimmed]) return ENGLISH_TO_PURPOSE_KEY[trimmed];
+  for (const key of Object.values(ENGLISH_TO_PURPOSE_KEY)) {
+    for (const lng of PURPOSE_LANGS) {
+      try {
+        const translated = i18n.t(key, { lng, fallbackLng: 'en' });
+        if (translated && String(translated).trim() === trimmed) return key;
+      } catch (_) {}
+    }
+  }
+  return null;
+};
+
+/**
+ * Translate a purpose/description to a target language (e.g. PDF language).
+ * If the label matches a known purpose in any language, returns translation for targetLng; otherwise returns original.
+ * @param {string} purpose - Purpose as stored in DB (any language)
+ * @param {string} targetLng - Target language code (e.g. 'en', 'am', 'ti')
+ * @returns {string} - Translated label or original
+ */
+export const translatePurposeToLanguage = (purpose, targetLng) => {
+  if (!purpose || !targetLng) return purpose || '';
+  const key = getPurposeKeyFromLabel(purpose);
+  if (!key) return purpose;
+  const translated = i18n.t(key, { lng: targetLng, fallbackLng: 'en' });
+  return (translated && translated !== key) ? translated : purpose;
+};
+
 /**
  * Translates a transaction purpose from English to the current language
  * @param {string} purpose - The English purpose string from database
