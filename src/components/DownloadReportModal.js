@@ -94,20 +94,21 @@ const DownloadReportModal = ({
 
   useEffect(() => {
     const list = Array.isArray(items) ? items : [];
-    if (!list.length) return;
+    const bal = Number(initialBalance) || 0;
+    const debt = Number(initialoutstandingDebt) || 0;
 
-    let cashOnHand = initialBalance;
+    let cashOnHand = bal;
     let revenue = 0;
-    let payable = initialoutstandingDebt;
+    let payable = debt;
     let expenses = 0;
     let newItem = 0;
 
     const dailyData = {
       Initial: {
         date: "Initial Balance",
-        cashOnHand: initialBalance,
+        cashOnHand: bal,
         revenue: 0,
-        payable: initialoutstandingDebt,
+        payable: debt,
         expenses: 0,
         newItem: 0,
         paidPayables: 0,
@@ -191,6 +192,18 @@ const DownloadReportModal = ({
     setExpensesOptions(getChartOptions(pt("totalExpenses"), sortedDailyData.map((i) => i.expenses), sortedDailyData.map((i) => formatDateLabel(i.date)), "#a7565d"));
   }, [items, initialBalance, initialoutstandingDebt]);
 
+  // Wait for hidden chart divs to be in the DOM (so dashboard-only PDF can capture them)
+  const waitForChartElements = (ids, timeoutMs = 6000, intervalMs = 100) =>
+    new Promise((resolve) => {
+      const start = Date.now();
+      const check = () => {
+        const allPresent = ids.every((id) => document.querySelector(`#${id}`));
+        if (allPresent || Date.now() - start >= timeoutMs) return resolve(allPresent);
+        setTimeout(check, intervalMs);
+      };
+      check();
+    });
+
 const captureChartAsImage = async (chartElementId) => {
   try {
     const chartElement = document.querySelector(`#${chartElementId}`);
@@ -257,8 +270,22 @@ const captureChartAsImage = async (chartElementId) => {
     doc.rect(0, 0, pageWidth, 40, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(20);
-    doc.setFont(fontName, "bold");
-    doc.text(`${companyName || "Company"} - ${pt("financialExecutiveReport")}`, pageWidth / 2, 20, { align: "center" });
+    const companyPart = String(companyName || "Company").trim();
+    const titlePart = " - " + pt("financialExecutiveReport");
+    if (fontName === "NotoSansEthiopic" && companyPart) {
+      doc.setFont(dataFont(fontName), "bold");
+      const w1 = doc.getTextWidth(companyPart);
+      doc.setFont(fontName, "bold");
+      const w2 = doc.getTextWidth(titlePart);
+      const startX = (pageWidth - (w1 + w2)) / 2;
+      doc.setFont(dataFont(fontName), "bold");
+      doc.text(companyPart, startX, 20);
+      doc.setFont(fontName, "bold");
+      doc.text(titlePart, startX + w1, 20);
+    } else {
+      doc.setFont(fontName, "bold");
+      doc.text(`${companyPart}${titlePart}`, pageWidth / 2, 20, { align: "center" });
+    }
     doc.setFontSize(10);
     doc.setFont(dataFont(fontName), "normal");
     doc.setTextColor(200, 200, 200);
@@ -285,8 +312,22 @@ const captureChartAsImage = async (chartElementId) => {
     doc.setFontSize(7);
     doc.setFont(isVerified ? dataFont(fontName) : fontName, "normal");
     doc.text(isVerified ? `Verification ID: ${generateVerificationId()}` : pt("financialReportingSystems"), 15, footerLineY);
-    doc.setFont(fontName, "normal");
-    doc.text(`${companyName || "Company"} | ${pt("confidential")}`, pageWidth / 2, footerLineY, { align: "center" });
+    const footerCompany = String(companyName || "Company").trim();
+    const footerConfidential = " | " + pt("confidential");
+    if (fontName === "NotoSansEthiopic" && footerCompany) {
+      doc.setFont(dataFont(fontName), "normal");
+      const fw1 = doc.getTextWidth(footerCompany);
+      doc.setFont(fontName, "normal");
+      const fw2 = doc.getTextWidth(footerConfidential);
+      const startFx = (pageWidth - (fw1 + fw2)) / 2;
+      doc.setFont(dataFont(fontName), "normal");
+      doc.text(footerCompany, startFx, footerLineY);
+      doc.setFont(fontName, "normal");
+      doc.text(footerConfidential, startFx + fw1, footerLineY);
+    } else {
+      doc.setFont(fontName, "normal");
+      doc.text(`${footerCompany}${footerConfidential}`, pageWidth / 2, footerLineY, { align: "center" });
+    }
     doc.setFont(dataFont(fontName), "normal");
     doc.text(`${pt("page")} ${pageNum} ${pt("of")} ${totalPages}`, pageWidth - 15, footerLineY, { align: "right" });
   };
@@ -457,10 +498,12 @@ const captureChartAsImage = async (chartElementId) => {
       columnStyles: { 0: { cellWidth: (pageWidth - 30) * 0.6 }, 1: { cellWidth: (pageWidth - 30) * 0.4, halign: "right" } },
       margin: { left: 15, right: 15 },
       didParseCell: (data) => {
-        if (fontName === "NotoSansEthiopic" && data.column.index === 1) data.cell.styles.font = "helvetica";
-        if (fontName === "NotoSansEthiopic" && data.column.index === 0) {
-          const cellText = String(data.cell.text[0] || "");
-          if (/^[\d\s\.,\$\(\)\-\/]+$/.test(cellText)) data.cell.styles.font = "helvetica";
+        if (data.section === "body" && fontName === "NotoSansEthiopic") {
+          if (data.column.index === 1) data.cell.styles.font = "helvetica";
+          if (data.column.index === 0) {
+            const cellText = String(data.cell.text[0] || "");
+            if (/^[\d\s\.,\$\(\)\-\/]+$/.test(cellText)) data.cell.styles.font = "helvetica";
+          }
         }
         if (data.row.index === 2 && data.section === "body") { data.cell.styles.fontStyle = "bold"; data.cell.styles.fillColor = [245,245,245]; }
         if (data.row.index === 1 && data.section === "body" && data.column.index === 1) { data.cell.styles.textColor = [167,86,93]; }
@@ -512,10 +555,12 @@ const captureChartAsImage = async (chartElementId) => {
           }
         },
       didParseCell: (data) => {
-        if (fontName === "NotoSansEthiopic" && data.column.index === 1) data.cell.styles.font = "helvetica";
-        if (fontName === "NotoSansEthiopic" && data.column.index === 0) {
-          const cellText = String(data.cell.text[0] || "");
-          if (/^[\d\s\.,\$\(\)\-\/]+$/.test(cellText)) data.cell.styles.font = "helvetica";
+        if (data.section === "body" && fontName === "NotoSansEthiopic") {
+          if (data.column.index === 1) data.cell.styles.font = "helvetica";
+          if (data.column.index === 0) {
+            const cellText = String(data.cell.text[0] || "");
+            if (/^[\d\s\.,\$\(\)\-\/]+$/.test(cellText)) data.cell.styles.font = "helvetica";
+          }
         }
         if (data.section === "body") {
           const cellText = data.cell.text[0] || "";
@@ -580,7 +625,7 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
         }
       },
       didParseCell: (data) => {
-        if (fontName === "NotoSansEthiopic") {
+        if (data.section === "body" && fontName === "NotoSansEthiopic") {
           if (data.column.index === 0 || data.column.index === 2 || data.column.index === 3) data.cell.styles.font = "helvetica";
         }
         if (data.section === "body") {
@@ -749,8 +794,10 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
     let chartImages = {};
 
     if (type === "dashboard" || type === "both") {
-      // Wait for charts to render in the hidden divs
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      const chartIds = ["cashFlowChart", "revenueChart", "payableChart", "expensesChart"];
+      await waitForChartElements(chartIds);
+      // Wait for ApexCharts to paint inside the hidden divs
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Capture all 4 charts in parallel instead of sequentially
       const [cashFlowImg, revenueImg, payableImg, expensesImg] = await Promise.all([
