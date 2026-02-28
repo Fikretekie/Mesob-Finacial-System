@@ -704,7 +704,7 @@
 //                 alignItems: "center",
 //                 padding: "0 20px",
 //               }}>
-              
+
 //                 <div style={{
 //                   marginLeft: "auto",
 //                   display: "flex",
@@ -842,7 +842,7 @@
 //                     loading={loadingUsers}
 //                     text="Loading users..."
 //                   />
-                
+
 //                   <FormGroup>
 //                     <Label>{t('dashboard.selectUserToView')}</Label>
 //                     <Select
@@ -1939,74 +1939,74 @@ function Dashboard() {
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
       {isMobile ?
-      <PanelHeader
-        size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
-        content={
-          <>
-            {isMobile && (
-          <div style={{
-            position: "absolute",
-            top: 0, left: 0, right: 0,
-            display: "flex",
-            marginTop: 70,
-            justifyContent:'center',
-            paddingLeft: 5,
-            paddingRight: 5,
-            gap: "10px",
-          }}>
-            <Button
-              onClick={() => setShowDownloadReportModal(true)}
-              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-              style={{
-                backgroundColor: "#2b427d",
-                borderColor: "#2b427d",
-                color: "#ffffff",
-                height: "44px",
-                borderRadius: "10px",
-                width: "45%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "13px",
-                fontWeight: "600",
-                whiteSpace: "nowrap",
-                margin: 0,
-              }}
-            >
-              <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
-              {t('financialReport.downloadReport')}
-            </Button>
-
-            {userRole !== 0 && (
-              <Button
-                onClick={handleAddTransactionClick}
-                disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                style={{
-                  backgroundColor: "#41926f",
-                  borderColor: "#41926f",
-                  color: "#ffffff",
-                  height: "44px",
-                  borderRadius: "10px",
-                  width: "45%",
+        <PanelHeader
+          size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+          content={
+            <>
+              {isMobile && (
+                <div style={{
+                  position: "absolute",
+                  top: 0, left: 0, right: 0,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  whiteSpace: "nowrap",
-                  margin: 0,
-                }}
-              >
-                <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
-                {t('dashboard.addTransaction')}
-              </Button>
-            )}
-          </div>
-            )}
-          </>
-        }
-      />
-      :null}
+                  marginTop: 70,
+                  justifyContent: 'center',
+                  paddingLeft: 5,
+                  paddingRight: 5,
+                  gap: "10px",
+                }}>
+                  <Button
+                    onClick={() => setShowDownloadReportModal(true)}
+                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                    style={{
+                      backgroundColor: "#2b427d",
+                      borderColor: "#2b427d",
+                      color: "#ffffff",
+                      height: "44px",
+                      borderRadius: "10px",
+                      width: "45%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      whiteSpace: "nowrap",
+                      margin: 0,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
+                    {t('financialReport.downloadReport')}
+                  </Button>
+
+                  {userRole !== 0 && (
+                    <Button
+                      onClick={handleAddTransactionClick}
+                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                      style={{
+                        backgroundColor: "#41926f",
+                        borderColor: "#41926f",
+                        color: "#ffffff",
+                        height: "44px",
+                        borderRadius: "10px",
+                        width: "45%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                        margin: 0,
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
+                      {t('dashboard.addTransaction')}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          }
+        />
+        : null}
       {userRole === 0 && (
         <div
           className="content "
@@ -2066,12 +2066,12 @@ function Dashboard() {
         </div>
       )}
 
-      <div className="content" style={{ position: "relative", marginTop:isMobile ? 0:80 }}>
+      <div className="content" style={{ position: "relative", marginTop: isMobile ? 0 : 80 }}>
         <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
 
         <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #41926f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
@@ -2092,10 +2092,44 @@ function Dashboard() {
                   </Col>
                   <Col xs="4">
                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-dollar-sign" style={{ color: "#41926f", fontSize: "2rem" }} />
+                      <i className="fas fa-dollar-sign" style={{ color: "#41926f", fontSize: isMobile ? "1.5rem" : "2rem" }} />
                     </div>
                   </Col>
                 </Row>
+                {!loadingFinancialData && (
+                  <div style={{ marginLeft: "-1.25rem", marginRight: "-1.25rem", marginTop: "10px", width: "calc(100% + 2.5rem)" }}>
+                    <div
+                      style={{
+                        width: "98%",
+                        height: "3px",
+                        backgroundColor: "#41926f",
+                        marginBottom: "8px",
+                        borderRadius: "2px",
+                      }}
+                      aria-hidden
+                    />
+                    <div
+                      style={{
+                        width: "100%",
+                        border: "1px solid #41926f",
+                        borderRadius: "6px",
+                        padding: isMobile ? "6px 1.25rem" : "8px 1.25rem",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: "4px",
+                      }}
+                    >
+                      <span style={{ color: "white", fontSize: isMobile ? "0.7rem" : "0.75rem", fontWeight: 600 }}>
+                        {t('dashboard.taxEstimation', 'Tax Estimation')}
+                      </span>
+                      <span style={{ color: "white", fontSize: isMobile ? "0.85rem" : "0.95rem", fontWeight: 600 }}>
+                        ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </CardBody>
             </Card>
           </Col>
@@ -2241,12 +2275,13 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
-      </div>
+      </div >
 
       {/* ── Download Report Modal ──────────────────────────────────────────── */}
-      <DownloadReportModal
+      < DownloadReportModal
         isOpen={showDownloadReportModal}
-        toggle={() => setShowDownloadReportModal(false)}
+        toggle={() => setShowDownloadReportModal(false)
+        }
         companyName={companyName}
         items={items || []}
         revenues={revenues}
