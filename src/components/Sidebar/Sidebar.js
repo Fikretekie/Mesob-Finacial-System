@@ -4,7 +4,7 @@ import { Nav, Modal, ModalHeader, ModalBody, Button, Input } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import { apiUrl, ROUTES } from "../../config/api";
+import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../../config/api";
 import { saveAs } from "file-saver";
 
 const logo = "/logo2.png";
@@ -128,7 +128,7 @@ function Sidebar(props) {
       const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
 
       const payload = {
-        bucketName: "app.mesobfinancial.com",
+        bucketName: S3_BUCKET_NAME,
         key: s3Key,
         filename: fileName,
         userId,
@@ -162,7 +162,7 @@ function Sidebar(props) {
     // 🔥 Warm up the connection while user reads the modal
     fetch(
       apiUrl(`${ROUTES.TRANSACTION}?userId=ping`)
-    ).catch(() => {}); // silent warm-up — don't care about response
+    ).catch(() => { }); // silent warm-up — don't care about response
   };
 
   const handleDownloadReport = async () => {
@@ -196,32 +196,32 @@ function Sidebar(props) {
           .slice(0, 10)}.csv`;
 
         // ✅ Download CSV (works on both iOS and Desktop now)
-       // Step 2: Download CSV
-try {
-  console.log(`[${deviceType}] Step 2: Downloading CSV...`);
-  if (isIOSDevice()) {
-    // ✅ iOS: Fire the download dialog but DON'T await it
-    // User can tap Download, View, or close (×) — we proceed regardless
-    downloadCSV(csvData, fileName);
-    // Small pause to let Safari register the download trigger
-    await new Promise((r) => setTimeout(r, 500));
-  } else {
-    // Desktop: normal silent download
-    downloadCSV(csvData, fileName);
-  }
-} catch (backupErr) {
-  console.warn(`[${deviceType}] CSV download FAILED (non-critical):`, backupErr.message);
-}
+        // Step 2: Download CSV
+        try {
+          console.log(`[${deviceType}] Step 2: Downloading CSV...`);
+          if (isIOSDevice()) {
+            // ✅ iOS: Fire the download dialog but DON'T await it
+            // User can tap Download, View, or close (×) — we proceed regardless
+            downloadCSV(csvData, fileName);
+            // Small pause to let Safari register the download trigger
+            await new Promise((r) => setTimeout(r, 500));
+          } else {
+            // Desktop: normal silent download
+            downloadCSV(csvData, fileName);
+          }
+        } catch (backupErr) {
+          console.warn(`[${deviceType}] CSV download FAILED (non-critical):`, backupErr.message);
+        }
 
-// Step 3: S3 upload (runs for all devices)
-try {
-  console.log(`[${deviceType}] Step 3: Uploading to S3...`);
-  await uploadCSVToS3(csvData);
-} catch (s3Err) {
-  console.warn(`[${deviceType}] S3 upload FAILED (non-critical):`, s3Err.message);
-}
+        // Step 3: S3 upload (runs for all devices)
+        try {
+          console.log(`[${deviceType}] Step 3: Uploading to S3...`);
+          await uploadCSVToS3(csvData);
+        } catch (s3Err) {
+          console.warn(`[${deviceType}] S3 upload FAILED (non-critical):`, s3Err.message);
+        }
 
-// Step 4: DELETE — runs no matter what the user tapped on the dialog
+        // Step 4: DELETE — runs no matter what the user tapped on the dialog
       } else {
         console.log(`[${deviceType}] No transactions to back up, skipping steps 2-3`);
       }

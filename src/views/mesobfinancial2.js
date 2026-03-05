@@ -25,7 +25,7 @@ import imageCompression from "browser-image-compression";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
-import { apiUrl, ROUTES } from "../config/api";
+import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -295,10 +295,7 @@ const MesobFinancial2 = () => {
   };
 
   const handlePreview = (receiptUrl) => {
-    const modifiedUrl = receiptUrl.replace(
-      "app.mesobfinancial.com.s3.amazonaws.com",
-      "s3.amazonaws.com/app.mesobfinancial.com"
-    );
+    const modifiedUrl = normalizeReceiptUrl(receiptUrl);
     setSelectedReceipt({ receiptUrl: modifiedUrl });
     setPreviewModal(true);
   };
@@ -1356,7 +1353,7 @@ const MesobFinancial2 = () => {
     try {
       const userId = localStorage.getItem("userId");
       const fileName = `transactions_${new Date().toISOString()}.csv`;
-      const bucketName = "app.mesobfinancial.com";
+      const bucketName = S3_BUCKET_NAME;
       const folderPath = "backups/" + userId;
       const s3Key = `${folderPath}${fileName}`;
 

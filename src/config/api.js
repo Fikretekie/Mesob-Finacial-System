@@ -10,6 +10,28 @@ export const API_BASE_URL =
 export const STAGING_API_URL =
   "https://axv5d700vg.execute-api.us-east-1.amazonaws.com/staging";
 
+
+export const S3_BUCKET_NAME = "staging.mesobfinancial.com";
+
+/**
+ * Normalize S3 receipt URL from virtual-hosted to path-style so it works for preview/download.
+ * Handles both app (production) and staging buckets.
+ * @param {string} rawUrl - Receipt URL (e.g. https://bucket.s3.amazonaws.com/key)
+ * @returns {string} Path-style URL (e.g. https://s3.amazonaws.com/bucket/key)
+ */
+export function normalizeReceiptUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== "string") return rawUrl;
+  return rawUrl
+    .replace(
+      "app.mesobfinancial.com.s3.amazonaws.com",
+      "s3.amazonaws.com/app.mesobfinancial.com"
+    )
+    .replace(
+      "staging.mesobfinancial.com.s3.amazonaws.com",
+      "s3.amazonaws.com/staging.mesobfinancial.com"
+    );
+}
+
 /** Route path segments (no leading slash; append to API_BASE_URL). */
 export const ROUTES = {
   USERS: "Users",

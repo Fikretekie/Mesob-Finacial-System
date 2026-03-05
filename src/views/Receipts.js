@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { apiUrl, ROUTES } from "../config/api";
+import { apiUrl, ROUTES, normalizeReceiptUrl } from "../config/api";
 import {
   Card,
   CardHeader,
@@ -159,10 +159,7 @@ const Receipts = ({ selectedUser }) => {
   };
 
   const handlePreview = (receipt) => {
-    const modifiedUrl = receipt.receiptUrl.replace(
-      "app.mesobfinancial.com.s3.amazonaws.com",
-      "s3.amazonaws.com/app.mesobfinancial.com"
-    );
+    const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
     setSelectedReceipt({ receiptUrl: modifiedUrl });
     setPreviewModal(true);
   };
@@ -173,10 +170,7 @@ const Receipts = ({ selectedUser }) => {
         throw new Error("Invalid receipt or missing URL");
       }
 
-      const url = receipt.receiptUrl.replace(
-        "app.mesobfinancial.com.s3.amazonaws.com",
-        "s3.amazonaws.com/app.mesobfinancial.com"
-      );
+      const url = normalizeReceiptUrl(receipt.receiptUrl);
 
       const response = await fetch(url);
       if (!response.ok)
@@ -249,10 +243,7 @@ const Receipts = ({ selectedUser }) => {
       const downloadPromises = receipts.map((receipt, index) =>
         (async () => {
           try {
-            const url = receipt.receiptUrl.replace(
-              "app.mesobfinancial.com.s3.amazonaws.com",
-              "s3.amazonaws.com/app.mesobfinancial.com"
-            );
+            const url = normalizeReceiptUrl(receipt.receiptUrl);
             const response = await fetch(url, { mode: "cors" });
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
