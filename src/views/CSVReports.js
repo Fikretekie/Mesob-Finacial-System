@@ -12,6 +12,7 @@ import {
 import { FaDownload } from "react-icons/fa";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import { apiUrl, ROUTES } from "../config/api";
 
 const CSVReports = () => {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ const CSVReports = () => {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+          apiUrl(`${ROUTES.USERS}/${userId}`)
         );
         if (response.data.user && response.data.user.lastBackupUrls) {
           setBackupUrls(response.data.user.lastBackupUrls);
@@ -50,7 +51,7 @@ const CSVReports = () => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       const { subscription, scheduleCount, userRole } = res.data.user;
       setDisabled(!(subscription || userRole === 1) && scheduleCount >= 4);

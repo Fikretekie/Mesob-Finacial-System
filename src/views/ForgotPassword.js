@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiUrl, ROUTES } from "../config/api";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import { Spinner } from "reactstrap";
@@ -35,9 +36,7 @@ const ForgotPassword = () => {
   const checkEmailExists = async (email) => {
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
-          email
-        )}`,
+        apiUrl(`${ROUTES.EXISTING_USER_CHECK}?email=${encodeURIComponent(email)}`),
         {
           method: "GET",
           headers: {

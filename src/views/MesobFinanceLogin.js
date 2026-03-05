@@ -7,6 +7,7 @@ const logo = "/logo.png";
 import { Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { apiUrl, ROUTES } from "../config/api";
 
 const MesobFinanceAuth = () => {
   const [activeTab, setActiveTab] = useState("login");
@@ -46,7 +47,7 @@ const MesobFinanceAuth = () => {
 
     try {
       const response = await fetch(
-        "https://9k4d3mwmtg.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Signin",
+        apiUrl(ROUTES.SIGNIN),
         {
           method: "POST",
           headers: {
@@ -82,7 +83,7 @@ const MesobFinanceAuth = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://9k4d3mwmtg.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/SignUp",
+        apiUrl(ROUTES.SIGN_UP),
         {
           method: "POST",
           headers: {

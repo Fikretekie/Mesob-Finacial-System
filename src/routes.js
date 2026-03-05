@@ -1,7 +1,5 @@
 import Dashboard from "views/Dashboard.js";
 import Users from "views/Users.js";
-import OrderDetails from "views/OrderDetails";
-import EditOrder from "views/EditOrder";
 
 import Receipts from "views/Receipts";
 import UserPage from "views/UserPage";
@@ -28,20 +26,8 @@ const adminRoutes = [
     component: <Users />,
     layout: "/admin",
   },
-  {
-    path: "/order/details/:id",
-    name: "Order Details",
-    component: <OrderDetails />,
-    layout: "/admin",
-    invisible: true,
-  },
-  {
-    path: "/order/edit/:id",
-    name: "Edit Order",
-    component: <EditOrder />,
-    layout: "/admin",
-    invisible: true,
-  },
+  
+  
   {
     path: "/MesobFinancial2",
     name: "Financial Report",
@@ -87,13 +73,7 @@ const customerRoutes = [
     component: <MesobFinancial2 />,
     layout: "/customer",
   },
-  {
-    path: "/order/details/:id",
-    name: "Order Details",
-    component: <OrderDetails />,
-    layout: "/customer",
-    invisible: true,
-  },
+  
   {
     path: "/receipts",
     name: "Receipts",

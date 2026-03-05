@@ -4,6 +4,7 @@ import { Nav, Modal, ModalHeader, ModalBody, Button, Input } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { apiUrl, ROUTES } from "../../config/api";
 import { saveAs } from "file-saver";
 
 const logo = "/logo2.png";
@@ -66,7 +67,7 @@ function Sidebar(props) {
   const fetchTransactionsForExport = async () => {
     const userId = localStorage.getItem("userId");
     const res = await fetchWithRetry(
-      `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+      apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
     );
     const data = await res.json();
     return data || [];
@@ -137,7 +138,7 @@ function Sidebar(props) {
 
       // Use fetchWithRetry for iOS cold-start resilience
       const response = await fetchWithRetry(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
+        apiUrl(ROUTES.BACKUP),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -160,7 +161,7 @@ function Sidebar(props) {
 
     // 🔥 Warm up the connection while user reads the modal
     fetch(
-      "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=ping"
+      apiUrl(`${ROUTES.TRANSACTION}?userId=ping`)
     ).catch(() => {}); // silent warm-up — don't care about response
   };
 
@@ -229,7 +230,7 @@ try {
       try {
         console.log(`[${deviceType}] Step 4: Deleting all transactions...`);
         const response = await fetchWithRetry(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
+          apiUrl(`${ROUTES.TRANSACTION}/deleteAll?userId=${userId}`),
           {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },

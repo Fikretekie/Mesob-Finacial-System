@@ -14,6 +14,7 @@ import {
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
+import { apiUrl, ROUTES } from "../config/api";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
@@ -125,7 +126,7 @@ function Users() {
       try {
         setLoading(true);
         const response = await axios.get(
-          "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users",
+          apiUrl(ROUTES.USERS),
           {
             headers: {
               "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import { confirmSignUp, resendSignUpCode, signIn } from "aws-amplify/auth";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import axios from "axios";
+import { apiUrl, ROUTES, STAGING_API_URL } from "../config/api";
 
 const Confirm = () => {
   const [code, setCode] = useState("");
@@ -85,14 +86,14 @@ const Confirm = () => {
       // Send welcome email (handle failure gracefully)
       try {
         await axios.post(
-          `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
+          STAGING_API_URL,
           emailData
         );
         console.log("Welcome email sent successfully");
         console.log("location id on confirm", location.state.id);
 
         const response = await fetch(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${location.state.id}`,
+          apiUrl(`${ROUTES.USERS}/${location.state.id}`),
           {
             method: "GET",
             headers: {
@@ -124,7 +125,7 @@ const Confirm = () => {
 
         try {
           const response = await fetch(
-            "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/createevent",
+            apiUrl(ROUTES.CREATE_EVENT),
 
             {
               method: "POST",

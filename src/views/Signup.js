@@ -7,6 +7,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { deleteUser, signUp } from "aws-amplify/auth";
 import axios from "axios";
+import { apiUrl, ROUTES, STAGING_API_URL } from "../config/api";
 import { businessTypes } from "./BusinessTypes";
 import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
@@ -79,6 +80,7 @@ const SignupPage = () => {
       }
     );
   };
+
   useEffect(() => {
     if (selectedBusinessType) {
       if (selectedBusinessType === "Other") {
@@ -106,6 +108,7 @@ const SignupPage = () => {
       navigate("/admin/dashboard");
     }
   }, [isSignupSuccessful, navigate]);
+
   useEffect(() => {
     if ((provider === "Google" || provider === "Apple") && socialEmail) {
       setEmail(socialEmail);
@@ -113,6 +116,7 @@ const SignupPage = () => {
       if (socialName) setName(socialName);
     }
   }, [provider, socialEmail, socialName]);
+  
   const showNotification = (type, message) => {
     const options = {
       place: "tr",
@@ -315,7 +319,7 @@ const handleAppleSignUp = async () => {
         // For Google users, we don't need Cognito signup since they're already authenticated
         // Just save to backend database
         const response = await axios.put(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${socialUserId}`,
+          apiUrl(`${ROUTES.USERS}/${socialUserId}`),
           data
         );
 
@@ -377,7 +381,7 @@ const handleAppleSignUp = async () => {
 
           try {
             await axios.post(
-              `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
+              STAGING_API_URL,
               emailData
             );
             console.log("Welcome email sent successfully");
@@ -447,7 +451,7 @@ const handleAppleSignUp = async () => {
       try {
         // Database Update for email/password users
         const response = await axios.put(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${res.userId}`,
+          apiUrl(`${ROUTES.USERS}/${res.userId}`),
           data
         );
 
@@ -532,9 +536,7 @@ const handleAppleSignUp = async () => {
   const checkEmailExists = async (email) => {
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
-          email
-        )}`,
+        apiUrl(`${ROUTES.EXISTING_USER_CHECK}?email=${encodeURIComponent(email)}`),
         {
           method: "GET",
           headers: {

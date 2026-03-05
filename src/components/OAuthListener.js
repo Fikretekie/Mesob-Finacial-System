@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { apiUrl, ROUTES } from "../config/api";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 
@@ -123,9 +124,7 @@ const OAuthListener = () => {
               console.log("🔍 Checking user in DynamoDB...");
               try {
                 const checkResponse = await fetch(
-                  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
-                    email
-                  )}`,
+                  apiUrl(`${ROUTES.EXISTING_USER_CHECK}?email=${encodeURIComponent(email)}`),
                   {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },

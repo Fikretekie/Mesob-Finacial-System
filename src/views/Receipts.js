@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { apiUrl, ROUTES } from "../config/api";
 import {
   Card,
   CardHeader,
@@ -45,7 +46,7 @@ const Receipts = ({ selectedUser }) => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState([]);
   const userRole = parseInt(localStorage.getItem("role") || 1);
- const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const isMobileLandscape = isMobile && isLandscape;
 
@@ -79,7 +80,7 @@ const Receipts = ({ selectedUser }) => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       setDisabled(
         userRole !== 1 &&
@@ -95,7 +96,7 @@ const Receipts = ({ selectedUser }) => {
       const fetchUsers = async () => {
         try {
           const response = await axios.get(
-            "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+            apiUrl(ROUTES.USERS)
           );
           setUsers(response.data || []);
         } catch (error) {
@@ -122,7 +123,7 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const response = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
       );
 
       let receiptsData = response.data.filter(
@@ -321,7 +322,7 @@ const Receipts = ({ selectedUser }) => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
-        
+
 
         {userRole === 0 && (
           <Row style={{ margin: "0", paddingInline: 0 }}>
@@ -409,7 +410,7 @@ const Receipts = ({ selectedUser }) => {
           </Row>
         )}
 
-        <Row style={{marginTop:80}}>
+        <Row style={{ marginTop: 80 }}>
           <Col xs={12}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
@@ -673,8 +674,8 @@ const Receipts = ({ selectedUser }) => {
         <ModalHeader toggle={() => setPreviewModal(false)}>
           {t('receipts.receiptPreview')}
         </ModalHeader>
-       <ModalBody>
-/           {selectedReceipt && selectedReceipt.receiptUrl && (
+        <ModalBody>
+                    {selectedReceipt && selectedReceipt.receiptUrl && (
             <>
               {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
                 <object

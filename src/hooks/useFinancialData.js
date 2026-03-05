@@ -7,8 +7,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-
-const API = "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
+import { apiUrl, ROUTES } from "../config/api";
 
 const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) => {
   // ── Raw data ───────────────────────────────────────────────────────────────
@@ -41,7 +40,7 @@ const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) 
     setLoadingUserInitialBalance(true);
     try {
       const targetUserId = uid || resolveUserId();
-      const response = await axios.get(`${API}/Users/${targetUserId}`);
+      const response = await axios.get(apiUrl(`${ROUTES.USERS}/${targetUserId}`));
 
       if (response.data?.user) {
         const user = response.data.user;
@@ -130,7 +129,7 @@ const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) 
     setLoadingTransactions(true);
     try {
       const targetUserId = uid || resolveUserId();
-      const response = await axios.get(`${API}/Transaction?userId=${targetUserId}`);
+      const response = await axios.get(apiUrl(`${ROUTES.TRANSACTION}?userId=${targetUserId}`));
 
       if (response.data) {
         // Mirror MesobFinancial2's installment mapping
