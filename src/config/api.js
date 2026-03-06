@@ -2,13 +2,14 @@
  * Mesob Financial System – API base URL and route definitions.
  * Use API_BASE_URL + ROUTES.* (or apiUrl helper) for all backend calls.
  */
-
+const ENV = process.env.REACT_APP_ENV ;
+console.log("ENV is:", ENV);
 export const API_BASE_URL =
-  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/staging/MesobFinancialSystem`;
+  `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/${ENV}/MesobFinancialSystem`;
 
 /** Staging / welcome-email (or other staging) API base URL. */
 export const STAGING_API_URL =
-  "https://axv5d700vg.execute-api.us-east-1.amazonaws.com/staging";
+  `https://axv5d700vg.execute-api.us-east-1.amazonaws.com/${ENV}`;
 
 /** Route path segments (no leading slash; append to API_BASE_URL). */
 export const ROUTES = {
