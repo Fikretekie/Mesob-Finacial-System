@@ -36,6 +36,7 @@ const CSVReports = () => {
         const response = await axios.get(
           apiUrl(`${ROUTES.USERS}/${userId}`)
         );
+        console.log("User data response:", response.data);
         if (response.data.user && response.data.user.lastBackupUrls) {
           setBackupUrls(response.data.user.lastBackupUrls);
         }
@@ -59,24 +60,37 @@ const CSVReports = () => {
     checkSubscription();
   }, []);
 
-  const handleDownload = async (url) => {
-    try {
-      // Replace virtual-hosted style URL with path-style URL
-      const updatedUrl = url.replace(
-        /https:\/\/(.+?)\.s3\.amazonaws\.com\//,
-        "https://s3.amazonaws.com/$1/"
-      );
+  // const handleDownload = async (url) => {
+  //   try {
+  //     // Replace virtual-hosted style URL with path-style URL
+  //     const updatedUrl = url.replace(
+  //       /https:\/\/(.+?)\.s3\.amazonaws\.com\//,
+  //       "https://s3.amazonaws.com/$1/"
+  //     );
 
-      const response = await axios.get(updatedUrl, { responseType: "blob" });
-      const blob = new Blob([response.data], { type: "text/csv" });
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.download = updatedUrl.split("/").pop();
-      link.click();
-    } catch (error) {
-      console.error("Error downloading CSV:", error);
-    }
-  };
+  //     const response = await axios.get(updatedUrl, { responseType: "blob" });
+  //     const blob = new Blob([response.data], { type: "text/csv" });
+  //     const link = document.createElement("a");
+  //     link.href = window.URL.createObjectURL(blob);
+  //     link.download = updatedUrl.split("/").pop();
+  //     link.click();
+  //   } catch (error) {
+  //     console.error("Error downloading CSV:", error);
+  //   }
+  // };
+  const handleDownload = async (url) => {
+  try {
+    // ✅ Keep virtual-hosted style, don't convert to path-style
+    const response = await axios.get(url, { responseType: "blob" });
+    const blob = new Blob([response.data], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = url.split("/").pop();
+    link.click();
+  } catch (error) {
+    console.error("Error downloading CSV:", error);
+  }
+};
 
   // Mobile Card Component
   const MobileBackupCard = ({ url, index }) => {

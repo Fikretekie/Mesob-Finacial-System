@@ -158,11 +158,16 @@ const Receipts = ({ selectedUser }) => {
     }
   };
 
-  const handlePreview = (receipt) => {
-    const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
-    setSelectedReceipt({ receiptUrl: modifiedUrl });
-    setPreviewModal(true);
-  };
+ const handlePreview = (receipt) => {
+  console.log("🧾 Raw receipt object:", receipt);
+  console.log("🔗 Raw receiptUrl:", receipt.receiptUrl);
+
+  const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
+  console.log("✅ Normalized URL:", modifiedUrl);
+
+  setSelectedReceipt({ receiptUrl: modifiedUrl });
+  setPreviewModal(true);
+};
 
   const handleDownload = async (receipt) => {
     try {
@@ -668,6 +673,8 @@ const Receipts = ({ selectedUser }) => {
         <ModalBody>
                     {selectedReceipt && selectedReceipt.receiptUrl && (
             <>
+                {console.log("🖼️ Rendering preview for URL:", selectedReceipt.receiptUrl)}
+
               {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
                 <object
                   data={selectedReceipt.receiptUrl}
@@ -690,6 +697,8 @@ const Receipts = ({ selectedUser }) => {
                 <img
                   src={selectedReceipt.receiptUrl}
                   alt="Receipt"
+                  onLoad={() => console.log("✅ Image loaded successfully:", selectedReceipt.receiptUrl)}
+                  onError={(e) => console.error("❌ Image failed to load:", selectedReceipt.receiptUrl, e)}
                   style={{
                     maxWidth: "100%",
                     height: "auto",
