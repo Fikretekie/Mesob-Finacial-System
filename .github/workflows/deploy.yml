@@ -3,7 +3,7 @@ name: Deploy to Amazon S3
 on:
   push:
     branches:
-      - production
+      - main
       - staging
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Create .env file (Production)
-        if: github.ref == 'refs/heads/production'
+        if: github.ref == 'refs/heads/main'
         run: |
           cat > .env << EOF
           REACT_APP_API_URL=${{ secrets.PROD_API_URL }}
