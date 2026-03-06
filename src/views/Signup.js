@@ -7,6 +7,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { deleteUser, signUp } from "aws-amplify/auth";
 import axios from "axios";
+import { apiUrl, ROUTES, STAGING_API_URL } from "../config/api";
 import { businessTypes } from "./BusinessTypes";
 import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
@@ -79,6 +80,7 @@ const SignupPage = () => {
       }
     );
   };
+
   useEffect(() => {
     if (selectedBusinessType) {
       if (selectedBusinessType === "Other") {
@@ -106,6 +108,7 @@ const SignupPage = () => {
       navigate("/admin/dashboard");
     }
   }, [isSignupSuccessful, navigate]);
+
   useEffect(() => {
     if ((provider === "Google" || provider === "Apple") && socialEmail) {
       setEmail(socialEmail);
@@ -113,6 +116,7 @@ const SignupPage = () => {
       if (socialName) setName(socialName);
     }
   }, [provider, socialEmail, socialName]);
+
   const showNotification = (type, message) => {
     const options = {
       place: "tr",
@@ -170,25 +174,25 @@ const SignupPage = () => {
   //   setErrors(newErrors);
   //   return Object.keys(newErrors).length === 0;
   // };
-const validateStep1 = () => {
-  const newErrors = {};
-  if (!email) newErrors.email = "Email is required.";
-  else if (!/\S+@\S+\.\S+/.test(email))
-    newErrors.email = "Please enter a valid email address.";
-  
-  // Only validate password if not Google/Apple
-  if (provider !== "Google" && provider !== "Apple") {
-    if (!password) newErrors.password = "Password is required.";
-    else {
-      const passwordError = validatePassword(password);
-      if (passwordError) {
-        newErrors.password = passwordError;
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!email) newErrors.email = "Email is required.";
+    else if (!/\S+@\S+\.\S+/.test(email))
+      newErrors.email = "Please enter a valid email address.";
+
+    // Only validate password if not Google/Apple
+    if (provider !== "Google" && provider !== "Apple") {
+      if (!password) newErrors.password = "Password is required.";
+      else {
+        const passwordError = validatePassword(password);
+        if (passwordError) {
+          newErrors.password = passwordError;
+        }
       }
     }
-  }
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   // const validateStep2 = () => {
   //   const newErrors = {};
   //   if (!selectedBusinessType) {
@@ -206,23 +210,23 @@ const validateStep1 = () => {
   //   setErrors(newErrors);
   //   return Object.keys(newErrors).length === 0;
   // };
-const validateStep2 = () => {
-  const newErrors = {};
-  if (!name) newErrors.name = "Name is required.";
-  if (!companyName) newErrors.companyName = "Company name is required.";
-  if (!phone) newErrors.phone = "Phone number is required.";
-  if (!selectedBusinessType) {
-    newErrors.businessType = "Business type is required.";
-  }
-  if (selectedBusinessType === "Other" && !otherBusinessType.trim()) {
-    newErrors.otherBusinessType = "Please specify your business type.";
-  }
-  if (!selectedCurrency) {
-    newErrors.currency = "Currency is required.";
-  }
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+  const validateStep2 = () => {
+    const newErrors = {};
+    if (!name) newErrors.name = "Name is required.";
+    if (!companyName) newErrors.companyName = "Company name is required.";
+    if (!phone) newErrors.phone = "Phone number is required.";
+    if (!selectedBusinessType) {
+      newErrors.businessType = "Business type is required.";
+    }
+    if (selectedBusinessType === "Other" && !otherBusinessType.trim()) {
+      newErrors.otherBusinessType = "Please specify your business type.";
+    }
+    if (!selectedCurrency) {
+      newErrors.currency = "Currency is required.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const validateStep3 = () => {
     const newErrors = {};
     if (!cashBalance) newErrors.cashBalance = "Cash balance is required.";
@@ -235,36 +239,36 @@ const validateStep2 = () => {
 
   // ADD these two functions BEFORE the handleSignup function
 
-const handleGoogleSignUp = async () => {
-  try {
-    setLoading(true);
-    setSocialAuth("google");
-    await signOut();
-    await signInWithRedirect({
-      provider: "Google",
-      customState: "google_signup",
-    });
-    localStorage.setItem("provider", "Google");
-  } catch (error) {
-    console.error("Google sign-up error:", error);
-    setLoading(false);
-    setSocialAuth("");
-  }
-};
+  const handleGoogleSignUp = async () => {
+    try {
+      setLoading(true);
+      setSocialAuth("google");
+      await signOut();
+      await signInWithRedirect({
+        provider: "Google",
+        customState: "google_signup",
+      });
+      localStorage.setItem("provider", "Google");
+    } catch (error) {
+      console.error("Google sign-up error:", error);
+      setLoading(false);
+      setSocialAuth("");
+    }
+  };
 
-const handleAppleSignUp = async () => {
-  try {
-    setLoading(true);
-    setSocialAuth("apple");
-    await signOut();
-    await signInWithRedirect({ provider: "SignInWithApple" });
-    localStorage.setItem("provider", "Apple");
-  } catch (error) {
-    console.error("Apple sign-up error:", error);
-    setLoading(false);
-    setSocialAuth("");
-  }
-};
+  const handleAppleSignUp = async () => {
+    try {
+      setLoading(true);
+      setSocialAuth("apple");
+      await signOut();
+      await signInWithRedirect({ provider: "SignInWithApple" });
+      localStorage.setItem("provider", "Apple");
+    } catch (error) {
+      console.error("Apple sign-up error:", error);
+      setLoading(false);
+      setSocialAuth("");
+    }
+  };
 
   const handleSignup = async (e, type) => {
     if (isSubmitting) return;
@@ -315,7 +319,7 @@ const handleAppleSignUp = async () => {
         // For Google users, we don't need Cognito signup since they're already authenticated
         // Just save to backend database
         const response = await axios.put(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${socialUserId}`,
+          apiUrl(`${ROUTES.USERS}/${socialUserId}`),
           data
         );
 
@@ -377,7 +381,7 @@ const handleAppleSignUp = async () => {
 
           try {
             await axios.post(
-              `https://q0v1vrhy5g.execute-api.us-east-1.amazonaws.com/staging`,
+              STAGING_API_URL,
               emailData
             );
             console.log("Welcome email sent successfully");
@@ -447,7 +451,7 @@ const handleAppleSignUp = async () => {
       try {
         // Database Update for email/password users
         const response = await axios.put(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${res.userId}`,
+          apiUrl(`${ROUTES.USERS}/${res.userId}`),
           data
         );
 
@@ -532,9 +536,7 @@ const handleAppleSignUp = async () => {
   const checkEmailExists = async (email) => {
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/existingusercheck?email=${encodeURIComponent(
-          email
-        )}`,
+        apiUrl(`${ROUTES.EXISTING_USER_CHECK}?email=${encodeURIComponent(email)}`),
         {
           method: "GET",
           headers: {
@@ -714,7 +716,7 @@ const handleAppleSignUp = async () => {
       //           provider === "Google" || provider === "Apple" ? true : false
       //         }
       //       />
-        
+
       //       {errors.email && <p style={styles.error}>{errors.email}</p>}
 
       //       <PhoneInput
@@ -787,439 +789,439 @@ const handleAppleSignUp = async () => {
       //           </div>
       //     </div>
       //   );
-    case 1:
-  return (
-    <div>
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
-      </div>
+      case 1:
+        return (
+          <div>
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+            </div>
 
-      <h2 style={{ fontSize: "28px", fontWeight: "600", marginBottom: "10px", textAlign: "center" }}>
-        Create Your Free Account
-      </h2>
-     
-      <p style={{ ...styles.subtext, textAlign: "center", fontSize: "14px", marginBottom: "25px" }}>
-        Take control of your business finances in under 60 seconds.
-      </p>
-      
-      <div className="login-input-group">
-        {/* Social Login Buttons FIRST */}
-        {!provider && (
-          <>
-            <button
-              onClick={handleGoogleSignUp}
-              className="social-login-btn google"
-              style={{
-                ...styles.socialButton,
-                border: "1.5px solid #4285f4",
-              }}
-              disabled={socialAuth === "google"}
-            >
-              {socialAuth === "google" ? (
+            <h2 style={{ fontSize: "28px", fontWeight: "600", marginBottom: "10px", textAlign: "center" }}>
+              Create Your Free Account
+            </h2>
+
+            <p style={{ ...styles.subtext, textAlign: "center", fontSize: "14px", marginBottom: "25px" }}>
+              Take control of your business finances in under 60 seconds.
+            </p>
+
+            <div className="login-input-group">
+              {/* Social Login Buttons FIRST */}
+              {!provider && (
                 <>
-                  <Spinner color="light" size="sm" /> Processing...
-                </>
-              ) : (
-                <>
-                  <img src="/googlelogo.png" alt="Google" style={styles.socialIcon} />
-                  Continue with Google
+                  <button
+                    onClick={handleGoogleSignUp}
+                    className="social-login-btn google"
+                    style={{
+                      ...styles.socialButton,
+                      border: "1.5px solid #4285f4",
+                    }}
+                    disabled={socialAuth === "google"}
+                  >
+                    {socialAuth === "google" ? (
+                      <>
+                        <Spinner color="light" size="sm" /> Processing...
+                      </>
+                    ) : (
+                      <>
+                        <img src="/googlelogo.png" alt="Google" style={styles.socialIcon} />
+                        Continue with Google
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleAppleSignUp}
+                    className="social-login-btn apple"
+                    style={{
+                      ...styles.socialButton,
+                      border: "1.5px solid #fff",
+                    }}
+                    disabled={socialAuth === "apple"}
+                  >
+                    {socialAuth === "apple" ? (
+                      <>
+                        <Spinner color="light" size="sm" /> Processing...
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon
+                          icon={faApple}
+                          style={{ marginRight: "8px", fontSize: "18px", color: "#ffffff" }}
+                        />
+                        Continue with Apple
+                      </>
+                    )}
+                  </button>
                 </>
               )}
-            </button>
 
-            <button
-              onClick={handleAppleSignUp}
-              className="social-login-btn apple"
-              style={{
-                ...styles.socialButton,
-                border: "1.5px solid #fff",
-              }}
-              disabled={socialAuth === "apple"}
-            >
-              {socialAuth === "apple" ? (
+              {/* OR Separator with lines */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                margin: "20px 0",
+              }}>
+                <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
+                <span style={{
+                  padding: "0 15px",
+                  color: "#9ca5b0",
+                  fontSize: "13px",
+                  fontWeight: "400"
+                }}>
+                  OR CONTINUE WITH EMAIL
+                </span>
+                <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
+              </div>
+
+              {/* Email input */}
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => {
+                  if (!provider) setEmail(e.target.value);
+                  setErrors((prev) => ({ ...prev, email: "" }));
+                }}
+                style={{
+                  ...styles.input,
+                  borderColor: errors.email ? "red" : "#4a5568",
+                  backgroundColor: "#2d3748",
+                }}
+              />
+              {errors.email && <p style={styles.error}>{errors.email}</p>}
+
+              {/* Password input */}
+              <div style={styles.inputContainer}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrors((prev) => ({ ...prev, password: "" }));
+                  }}
+                  style={{
+                    ...styles.input,
+                    borderColor: errors.password ? "red" : "#4a5568",
+                    backgroundColor: "#2d3748",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
+                </button>
+              </div>
+              {errors.password && <p style={styles.error}>{errors.password}</p>}
+
+              <p style={{
+                fontSize: "12px",
+                color: "#9ca5b0",
+                marginTop: "-5px",
+                marginBottom: "20px"
+              }}>
+                At least 8 characters
+              </p>
+
+              <button
+                onClick={handleNextStep}
+                style={{
+                  ...styles.button,
+                  backgroundColor: "#3b82f6",
+                  fontWeight: "600",
+                  fontSize: "15px",
+                  padding: "12px",
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = "#2563eb"}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "#3b82f6"}
+                disabled={isLoading}
+              >
+                {isLoading ? "Loading..." : "Create Free Account"}
+              </button>
+
+              <p style={{
+                fontSize: "12px",
+                textAlign: "center",
+                color: "#9ca5b0",
+                marginBottom: "15px",
+                lineHeight: "1.4"
+              }}>
+                No credit card required • Secure & encrypted • Cancel anytime
+              </p>
+
+              <p style={{
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#9ca5b0",
+                marginTop: "15px"
+              }}>
+                Already have an account?{" "}
+                <Link to="/login" style={styles.link}>
+                  Login
+                </Link>
+              </p>
+            </div>
+          </div>
+        );
+      //       case 2:
+      //         return (
+      //           <div>
+      //             <div style={{ textAlign: "center", marginBottom: "16px" }}>
+      //   <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+      // </div>
+      //             <h2>Select Business Type</h2>
+      //             <div className="login-input-group">
+      //             <select
+      //               value={selectedBusinessType}
+      //               onChange={(e) => {
+      //                 handleBusinessTypeChange(e.target.value);
+      //                 setErrors((prev) => ({ ...prev, businessType: "" }));
+      //               }}
+      //               style={{
+      //                 ...styles.input,
+      //                 borderColor: errors.businessType ? "red" : "#000",
+      //               }}
+      //             >
+      //               <option value="">Select Business Type</option>
+      //               <option value="Trucking">Trucking</option>
+      //               <option value="RIDESHARE DRIVERS/PARTNERS">
+      //                 RIDESHARE DRIVERS/PARTNERS
+      //               </option>
+      //               <option value="Groceries">Groceries</option>
+      //               <option value="Individual/Households">
+      //                 Individual/Households
+      //               </option>
+      //               <option value="Cafe">Resturant/Cafe</option>
+      //               <option value="Cleaning Services">Cleaning Services</option>
+      //               <option value="⁠Beauty & Grooming">
+      //                 ⁠Beauty & Grooming (Salons, Barbershops)
+      //               </option>
+      //               <option value="E-commerce Sellers">
+      //                 E-commerce Sellers (Shopify, Amazon, Etsy)
+      //               </option>
+      //               <option value="Construction Trades">
+      //                 Construction Trades (Plumbing, Electrical, Painting, etc.)
+      //               </option>
+      //               <option value="Content Creator">Content Creator</option>
+      //               <option value="Other">Other Businesses</option>
+      //             </select>
+      //             {errors.businessType && (
+      //               <p style={styles.error}>{errors.businessType}</p>
+      //             )}
+      //             {selectedBusinessType === "Other" && (
+      //               <>
+      //                 <input
+      //                   type="text"
+      //                   placeholder="Specify your business type"
+      //                   value={otherBusinessType}
+      //                   onChange={(e) => {
+      //                     setOtherBusinessType(e.target.value);
+      //                     setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
+      //                   }}
+      //                   style={{
+      //                     ...styles.input,
+      //                     borderColor: errors.otherBusinessType ? "red" : "#000",
+      //                   }}
+      //                 />
+      //                 {errors.otherBusinessType && (
+      //                   <p style={styles.error}>{errors.otherBusinessType}</p>
+      //                 )}
+      //               </>
+      //             )}
+      //             <select
+      //               value={selectedCurrency}
+      //               onChange={(e) => setSelectedCurrency(e.target.value)}
+      //               style={styles.input}
+      //             >
+      //               {Object.entries(currencies).map(([code, { symbol, name }]) => (
+      //                 <option key={code} value={code}>
+      //                   {symbol} {code} - {name}
+      //                 </option>
+      //               ))}
+      //             </select>
+
+      //             </div>
+      //             <button
+      //               onClick={handleNextStep}
+      //               style={{
+      //                 ...styles.button,
+      //                 backgroundColor: isHovered ? "blue" : "#3b82f6",
+      //               }}
+      //               onMouseOver={() => setIsHovered(true)}
+      //               onMouseLeave={() => setIsHovered(false)}
+      //               disabled={isLoading}
+      //             >
+      //               {isLoading ? "Loading..." : "Next"}
+      //             </button>
+      //           </div>
+      //         );
+      case 2:
+        return (
+
+          <div>
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+            </div>
+            <h2>Select Business Type</h2>
+            <p style={styles.subtext}>
+              Already have an account?
+              <Link to="/login" style={styles.link}>
+                {" "}Login
+              </Link>
+            </p>
+
+            <div className="login-input-group">
+              <input
+                type="text"
+                placeholder="Enter Your Name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setErrors((prev) => ({ ...prev, name: "" }));
+                }}
+                style={{
+                  ...styles.input,
+                  borderColor: errors.name ? "red" : "#000",
+                }}
+              />
+              {errors.name && <p style={styles.error}>{errors.name}</p>}
+
+              <input
+                type="text"
+                placeholder="Enter Your Company Name"
+                value={companyName}
+                onChange={(e) => {
+                  setCompanyName(e.target.value);
+                  setErrors((prev) => ({ ...prev, companyName: "" }));
+                }}
+                style={{
+                  ...styles.input,
+                  borderColor: errors.companyName ? "red" : "#000",
+                }}
+              />
+              {errors.companyName && (
+                <p style={styles.error}>{errors.companyName}</p>
+              )}
+
+              <PhoneInput
+                country={"us"}
+                value={phone}
+                onChange={handlePhoneChange}
+                inputStyle={{
+                  ...styles.input,
+                  width: "100%",
+                  height: "40px",
+                  backgroundColor: '#202a3a',
+                  fontSize: "16px",
+                  paddingLeft: "48px",
+                  borderColor: errors.phone ? "red" : "#000",
+                }}
+                containerStyle={{
+                  width: "100%",
+                  marginBottom: "10px",
+                }}
+                buttonStyle={{
+                  backgroundColor: "#202a3a",
+                  border: "none",
+                  padding: "0 5px",
+                }}
+              />
+              {errors.phone && <p style={styles.error}>{errors.phone}</p>}
+
+              <select
+                value={selectedBusinessType}
+                onChange={(e) => {
+                  handleBusinessTypeChange(e.target.value);
+                  setErrors((prev) => ({ ...prev, businessType: "" }));
+                }}
+                style={{
+                  ...styles.input,
+                  borderColor: errors.businessType ? "red" : "#000",
+                }}
+              >
+                <option value="">Select Business Type</option>
+                <option value="Trucking">Trucking</option>
+                <option value="RIDESHARE DRIVERS/PARTNERS">
+                  RIDESHARE DRIVERS/PARTNERS
+                </option>
+                <option value="Groceries">Groceries</option>
+                <option value="Individual/Households">
+                  Individual/Households
+                </option>
+                <option value="Cafe">Resturant/Cafe</option>
+                <option value="Cleaning Services">Cleaning Services</option>
+                <option value="⁠Beauty & Grooming">
+                  ⁠Beauty & Grooming (Salons, Barbershops)
+                </option>
+                <option value="E-commerce Sellers">
+                  E-commerce Sellers (Shopify, Amazon, Etsy)
+                </option>
+                <option value="Construction Trades">
+                  Construction Trades (Plumbing, Electrical, Painting, etc.)
+                </option>
+                <option value="Content Creator">Content Creator</option>
+                <option value="Other">Other Businesses</option>
+              </select>
+              {errors.businessType && (
+                <p style={styles.error}>{errors.businessType}</p>
+              )}
+
+              {selectedBusinessType === "Other" && (
                 <>
-                  <Spinner color="light" size="sm" /> Processing...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon
-                    icon={faApple}
-                    style={{ marginRight: "8px", fontSize: "18px", color: "#ffffff" }}
+                  <input
+                    type="text"
+                    placeholder="Specify your business type"
+                    value={otherBusinessType}
+                    onChange={(e) => {
+                      setOtherBusinessType(e.target.value);
+                      setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
+                    }}
+                    style={{
+                      ...styles.input,
+                      borderColor: errors.otherBusinessType ? "red" : "#000",
+                    }}
                   />
-                  Continue with Apple
+                  {errors.otherBusinessType && (
+                    <p style={styles.error}>{errors.otherBusinessType}</p>
+                  )}
                 </>
               )}
-            </button>
-          </>
-        )}
 
-        {/* OR Separator with lines */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          margin: "20px 0",
-        }}>
-          <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
-          <span style={{ 
-            padding: "0 15px", 
-            color: "#9ca5b0", 
-            fontSize: "13px",
-            fontWeight: "400"
-          }}>
-            OR CONTINUE WITH EMAIL
-          </span>
-          <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
-        </div>
+              <select
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value)}
+                style={styles.input}
+              >
+                {Object.entries(currencies).map(([code, { symbol, name }]) => (
+                  <option key={code} value={code}>
+                    {symbol} {code} - {name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Email input */}
-        <input
-          type="email"
-          placeholder="Email Address"
-          value={email}
-          onChange={(e) => {
-            if (!provider) setEmail(e.target.value);
-            setErrors((prev) => ({ ...prev, email: "" }));
-          }}
-          style={{
-            ...styles.input,
-            borderColor: errors.email ? "red" : "#4a5568",
-            backgroundColor: "#2d3748",
-          }}
-        />
-        {errors.email && <p style={styles.error}>{errors.email}</p>}
-
-        {/* Password input */}
-        <div style={styles.inputContainer}>
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setErrors((prev) => ({ ...prev, password: "" }));
-            }}
-            style={{
-              ...styles.input,
-              borderColor: errors.password ? "red" : "#4a5568",
-              backgroundColor: "#2d3748",
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          >
-            {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white"/>}
-          </button>
-        </div>
-        {errors.password && <p style={styles.error}>{errors.password}</p>}
-        
-        <p style={{ 
-          fontSize: "12px", 
-          color: "#9ca5b0", 
-          marginTop: "-5px", 
-          marginBottom: "20px" 
-        }}>
-          At least 8 characters
-        </p>
-
-        <button
-          onClick={handleNextStep}
-          style={{
-            ...styles.button,
-            backgroundColor: "#3b82f6",
-            fontWeight: "600",
-            fontSize: "15px",
-            padding: "12px",
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = "#2563eb"}
-          onMouseLeave={(e) => e.target.style.backgroundColor = "#3b82f6"}
-          disabled={isLoading}
-        >
-          {isLoading ? "Loading..." : "Create Free Account"}
-        </button>
-
-        <p style={{ 
-          fontSize: "12px", 
-          textAlign: "center", 
-          color: "#9ca5b0", 
-          marginBottom: "15px",
-          lineHeight: "1.4"
-        }}>
-          No credit card required • Secure & encrypted • Cancel anytime
-        </p>
-
-        <p style={{ 
-          textAlign: "center", 
-          fontSize: "14px",
-          color: "#9ca5b0",
-          marginTop: "15px" 
-        }}>
-          Already have an account?{" "}
-          <Link to="/login" style={styles.link}>
-            Login
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
-//       case 2:
-//         return (
-//           <div>
-//             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-//   <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
-// </div>
-//             <h2>Select Business Type</h2>
-//             <div className="login-input-group">
-//             <select
-//               value={selectedBusinessType}
-//               onChange={(e) => {
-//                 handleBusinessTypeChange(e.target.value);
-//                 setErrors((prev) => ({ ...prev, businessType: "" }));
-//               }}
-//               style={{
-//                 ...styles.input,
-//                 borderColor: errors.businessType ? "red" : "#000",
-//               }}
-//             >
-//               <option value="">Select Business Type</option>
-//               <option value="Trucking">Trucking</option>
-//               <option value="RIDESHARE DRIVERS/PARTNERS">
-//                 RIDESHARE DRIVERS/PARTNERS
-//               </option>
-//               <option value="Groceries">Groceries</option>
-//               <option value="Individual/Households">
-//                 Individual/Households
-//               </option>
-//               <option value="Cafe">Resturant/Cafe</option>
-//               <option value="Cleaning Services">Cleaning Services</option>
-//               <option value="⁠Beauty & Grooming">
-//                 ⁠Beauty & Grooming (Salons, Barbershops)
-//               </option>
-//               <option value="E-commerce Sellers">
-//                 E-commerce Sellers (Shopify, Amazon, Etsy)
-//               </option>
-//               <option value="Construction Trades">
-//                 Construction Trades (Plumbing, Electrical, Painting, etc.)
-//               </option>
-//               <option value="Content Creator">Content Creator</option>
-//               <option value="Other">Other Businesses</option>
-//             </select>
-//             {errors.businessType && (
-//               <p style={styles.error}>{errors.businessType}</p>
-//             )}
-//             {selectedBusinessType === "Other" && (
-//               <>
-//                 <input
-//                   type="text"
-//                   placeholder="Specify your business type"
-//                   value={otherBusinessType}
-//                   onChange={(e) => {
-//                     setOtherBusinessType(e.target.value);
-//                     setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
-//                   }}
-//                   style={{
-//                     ...styles.input,
-//                     borderColor: errors.otherBusinessType ? "red" : "#000",
-//                   }}
-//                 />
-//                 {errors.otherBusinessType && (
-//                   <p style={styles.error}>{errors.otherBusinessType}</p>
-//                 )}
-//               </>
-//             )}
-//             <select
-//               value={selectedCurrency}
-//               onChange={(e) => setSelectedCurrency(e.target.value)}
-//               style={styles.input}
-//             >
-//               {Object.entries(currencies).map(([code, { symbol, name }]) => (
-//                 <option key={code} value={code}>
-//                   {symbol} {code} - {name}
-//                 </option>
-//               ))}
-//             </select>
-
-//             </div>
-//             <button
-//               onClick={handleNextStep}
-//               style={{
-//                 ...styles.button,
-//                 backgroundColor: isHovered ? "blue" : "#3b82f6",
-//               }}
-//               onMouseOver={() => setIsHovered(true)}
-//               onMouseLeave={() => setIsHovered(false)}
-//               disabled={isLoading}
-//             >
-//               {isLoading ? "Loading..." : "Next"}
-//             </button>
-//           </div>
-//         );
-case 2:
-  return (
- 
-      <div>
-             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-   <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
-</div>
-      <h2>Select Business Type</h2>
-      <p style={styles.subtext}>
-        Already have an account?
-        <Link to="/login" style={styles.link}>
-          {" "}Login
-        </Link>
-      </p>
-     
-      <div className="login-input-group">
-        <input
-          type="text"
-          placeholder="Enter Your Name"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setErrors((prev) => ({ ...prev, name: "" }));
-          }}
-          style={{
-            ...styles.input,
-            borderColor: errors.name ? "red" : "#000",
-          }}
-        />
-        {errors.name && <p style={styles.error}>{errors.name}</p>}
-        
-        <input
-          type="text"
-          placeholder="Enter Your Company Name"
-          value={companyName}
-          onChange={(e) => {
-            setCompanyName(e.target.value);
-            setErrors((prev) => ({ ...prev, companyName: "" }));
-          }}
-          style={{
-            ...styles.input,
-            borderColor: errors.companyName ? "red" : "#000",
-          }}
-        />
-        {errors.companyName && (
-          <p style={styles.error}>{errors.companyName}</p>
-        )}
-
-        <PhoneInput
-          country={"us"}
-          value={phone}
-          onChange={handlePhoneChange}
-          inputStyle={{
-            ...styles.input,
-            width: "100%",
-            height: "40px",
-            backgroundColor:'#202a3a',
-            fontSize: "16px",
-            paddingLeft: "48px",
-            borderColor: errors.phone ? "red" : "#000",
-          }}
-          containerStyle={{
-            width: "100%",
-            marginBottom: "10px",
-          }}
-          buttonStyle={{
-            backgroundColor: "#202a3a",
-            border: "none",
-            padding: "0 5px",
-          }}
-        />
-        {errors.phone && <p style={styles.error}>{errors.phone}</p>}
-
-        <select
-          value={selectedBusinessType}
-          onChange={(e) => {
-            handleBusinessTypeChange(e.target.value);
-            setErrors((prev) => ({ ...prev, businessType: "" }));
-          }}
-          style={{
-            ...styles.input,
-            borderColor: errors.businessType ? "red" : "#000",
-          }}
-        >
-          <option value="">Select Business Type</option>
-          <option value="Trucking">Trucking</option>
-          <option value="RIDESHARE DRIVERS/PARTNERS">
-            RIDESHARE DRIVERS/PARTNERS
-          </option>
-          <option value="Groceries">Groceries</option>
-          <option value="Individual/Households">
-            Individual/Households
-          </option>
-          <option value="Cafe">Resturant/Cafe</option>
-          <option value="Cleaning Services">Cleaning Services</option>
-          <option value="⁠Beauty & Grooming">
-            ⁠Beauty & Grooming (Salons, Barbershops)
-          </option>
-          <option value="E-commerce Sellers">
-            E-commerce Sellers (Shopify, Amazon, Etsy)
-          </option>
-          <option value="Construction Trades">
-            Construction Trades (Plumbing, Electrical, Painting, etc.)
-          </option>
-          <option value="Content Creator">Content Creator</option>
-          <option value="Other">Other Businesses</option>
-        </select>
-        {errors.businessType && (
-          <p style={styles.error}>{errors.businessType}</p>
-        )}
-        
-        {selectedBusinessType === "Other" && (
-          <>
-            <input
-              type="text"
-              placeholder="Specify your business type"
-              value={otherBusinessType}
-              onChange={(e) => {
-                setOtherBusinessType(e.target.value);
-                setErrors((prev) => ({ ...prev, otherBusinessType: "" }));
-              }}
+            <button
+              onClick={handleNextStep}
               style={{
-                ...styles.input,
-                borderColor: errors.otherBusinessType ? "red" : "#000",
+                ...styles.button,
+                backgroundColor: isHovered ? "blue" : "#3b82f6",
               }}
-            />
-            {errors.otherBusinessType && (
-              <p style={styles.error}>{errors.otherBusinessType}</p>
-            )}
-          </>
-        )}
-        
-        <select
-          value={selectedCurrency}
-          onChange={(e) => setSelectedCurrency(e.target.value)}
-          style={styles.input}
-        >
-          {Object.entries(currencies).map(([code, { symbol, name }]) => (
-            <option key={code} value={code}>
-              {symbol} {code} - {name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <button
-        onClick={handleNextStep}
-        style={{
-          ...styles.button,
-          backgroundColor: isHovered ? "blue" : "#3b82f6",
-        }}
-        onMouseOver={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        disabled={isLoading}
-      >
-        {isLoading ? "Loading..." : "Next"}
-      </button>
-    </div>
-  );
+              onMouseOver={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              disabled={isLoading}
+            >
+              {isLoading ? "Loading..." : "Next"}
+            </button>
+          </div>
+        );
       case 3:
         return (
           <div>
             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-  <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
-</div>
+              <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+            </div>
             <h2>Financial Information</h2>
             <p style={styles.infoText}>
               To get started, we need to know where your business stands
@@ -1313,7 +1315,7 @@ case 2:
                 onChange={(e) => setTermsChecked(e.target.checked)}
                 style={{ marginRight: "5px" }}
               />
-              I agree to the{" "} 
+              I agree to the{" "}
               <Link
                 to="/terms-of-use"
                 target="_blank"
@@ -1390,9 +1392,9 @@ const styles = {
   },
   subtext: {
     marginBottom: "20px",
-    color:'rgb(156, 165, 176)',
-    
-    
+    color: 'rgb(156, 165, 176)',
+
+
   },
   link: {
     color: "#3b82f6",
@@ -1415,7 +1417,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     marginBottom: "10px",
-    color:'rgb(156, 165, 176)'
+    color: 'rgb(156, 165, 176)'
   },
   /* Style for the terms and conditions link */
   termsLink: {
@@ -1436,32 +1438,32 @@ const styles = {
     cursor: "pointer",
   },
   socialButton: {
-  width: "100%",
-  padding: "10px",
-  borderRadius: "5px",
-  border: "1px solid #333",
-  cursor: "pointer",
-  color: "#fff",
-  marginBottom: "10px",
-  fontSize: "14px",
-  fontWeight: "500",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "#202a3a",
-},
-socialIcon: {
-  width: "20px",
-  height: "20px",
-  marginRight: "8px",
-},
-separator: {
-  display: "flex",
-  alignItems: "center",
-  textAlign: "center",
-  margin: "15px 0",
-  color: "#9ca5b0",
-},
+    width: "100%",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #333",
+    cursor: "pointer",
+    color: "#fff",
+    marginBottom: "10px",
+    fontSize: "14px",
+    fontWeight: "500",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#202a3a",
+  },
+  socialIcon: {
+    width: "20px",
+    height: "20px",
+    marginRight: "8px",
+  },
+  separator: {
+    display: "flex",
+    alignItems: "center",
+    textAlign: "center",
+    margin: "15px 0",
+    color: "#9ca5b0",
+  },
 
 };
 

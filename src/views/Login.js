@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
+import { apiUrl, ROUTES } from "../config/api";
 const logo = "/logo2.png";
 
 const Login = () => {
@@ -88,7 +89,7 @@ const Login = () => {
         console.log("✅ Email sign-in successful");
         const user = await getUserInfo();
         const response = await fetch(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${user?.userId}`,
+          apiUrl(`${ROUTES.USERS}/${user?.userId}`),
           {
             method: "GET",
             headers: {

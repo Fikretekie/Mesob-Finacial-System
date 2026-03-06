@@ -17,6 +17,7 @@ import {
   Spinner,
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
+import { apiUrl, ROUTES } from "../config/api";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import IncomeStatement from "components/IncomeStatement";
@@ -47,7 +48,7 @@ const MesobFinancial = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
       );
       const data = await response.json();
       if (response.ok) {
@@ -117,7 +118,7 @@ const MesobFinancial = () => {
 
     try {
       const response = await fetch(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        apiUrl(ROUTES.TRANSACTION),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -160,7 +161,7 @@ const MesobFinancial = () => {
 
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${editingTransaction.id}`,
+        apiUrl(`${ROUTES.TRANSACTION}/${editingTransaction.id}`),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -188,7 +189,7 @@ const MesobFinancial = () => {
     setIsDeletingTransaction(true);
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transactionId}`,
+        apiUrl(`${ROUTES.TRANSACTION}/${transactionId}`),
         { method: "DELETE" }
       );
 

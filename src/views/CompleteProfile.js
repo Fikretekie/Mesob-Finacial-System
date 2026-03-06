@@ -6,6 +6,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { updateUserAttributes } from "aws-amplify/auth";
 import axios from "axios";
+import { apiUrl, ROUTES } from "../config/api";
 
 const CompleteProfile = () => {
   const [name, setName] = useState("");
@@ -62,9 +63,7 @@ const CompleteProfile = () => {
       const businessTypeValue =
         businessType === "Other" ? otherBusinessType : businessType;
       const response = await axios.put(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${localStorage.getItem(
-          "userId"
-        )}`,
+        apiUrl(`${ROUTES.USERS}/${localStorage.getItem("userId")}`),
         {
           name,
           companyName,

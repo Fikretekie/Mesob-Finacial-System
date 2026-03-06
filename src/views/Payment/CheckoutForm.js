@@ -8,6 +8,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Button, Input, Card } from "reactstrap";
 import axios from "axios";
+import { apiUrl, ROUTES } from "../../config/api";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 
@@ -66,7 +67,7 @@ const CheckoutForm = ({ priceId }) => {
 
       // Create subscription
       const createSubscriptionResponse = await axios.post(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
+        apiUrl(ROUTES.SUBSCRIPTION),
         {
           userId: formData.userId,
           createdAt: formData.createdAt,
@@ -136,7 +137,7 @@ const CheckoutForm = ({ priceId }) => {
       try {
         console.log("Fetching price details for priceId:", priceId);
         const response = await axios.get(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/price/${priceId}`
+          apiUrl(`${ROUTES.PRICE}/${priceId}`)
         );
 
         const { amount, currency } = response.data;
@@ -157,7 +158,7 @@ const CheckoutForm = ({ priceId }) => {
           console.log("Received paymentmethod event");
           try {
             const response = await axios.post(
-              "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Subscription",
+              apiUrl(ROUTES.SUBSCRIPTION),
               {
                 userId: formData.userId,
                 email: ev.payerEmail,

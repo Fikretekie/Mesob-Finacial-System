@@ -14,6 +14,7 @@ import {
   Alert,
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
+import { apiUrl, ROUTES } from "../config/api";
 
 function UserPage() {
   const [userData, setUserData] = useState({
@@ -42,7 +43,7 @@ function UserPage() {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+          apiUrl(`${ROUTES.USERS}/${userId}`)
         );
         console.log("api response", response);
         const user = response.data?.user;
@@ -72,7 +73,7 @@ function UserPage() {
     const fetchSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       // Use optional chaining and sensible defaults
       setEditDisabled(
@@ -108,7 +109,7 @@ function UserPage() {
         console.log("Payload:", updateFields);
 
         const response = await axios.put(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${id}`,
+          apiUrl(`${ROUTES.USERS}/${id}`),
           updateFields
         );
 
@@ -138,7 +139,7 @@ function UserPage() {
     try {
       const userId = localStorage.getItem("userId");
       await axios.delete(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       localStorage.clear(); // Clear user data
       alert("Account deleted successfully.");

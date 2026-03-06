@@ -4,21 +4,70 @@ on:
   push:
     branches:
       - main
+      - staging
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      - uses: actions/checkout@v3
 
-    - name: Build React App
-      run: npm install --legacy-peer-deps && npm run build
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    - name: Deploy app build to S3 bucket
-      run: aws s3 sync ./build/ s3://app.mesobfinancial.com
+      - name: Create .env file (Production)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cat > .env << EOF
+          REACT_APP_API_URL=${{ secrets.PROD_API_URL }}
+          REACT_APP_ENV=production
+          REACT_APP_S3_BUCKET=${{ secrets.PROD_S3_BUCKET }}
+          EOF
+
+      - name: Create .env file (Staging)
+        if: github.ref == 'refs/heads/staging'
+        run: |
+          cat > .env << EOF
+          REACT_APP_API_URL=${{ secrets.STAGING_API_URL }}
+          REACT_APP_ENV=staging
+          REACT_APP_S3_BUCKET=${{ secrets.STAGING_S3_BUCKET }}
+          EOF
+
+      - name: Build React App
+        run: npm install --legacy-peer-deps && npm run build
+
+      - name: Deploy to Production S3
+        if: github.ref == 'refs/heads/main'
+        run: aws s3 sync ./build/ s3://app.mesobfinancial.com
+
+      - name: Deploy to Staging S3
+        if: github.ref == 'refs/heads/staging'
+        run: aws s3 sync ./build/ s3://staging.mesobfinancial.com
+# name: Deploy to Amazon S3
+
+# on:
+#   push:
+#     branches:
+#       - staging
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v3
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v1
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Build React App
+#         run: npm install --legacy-peer-deps && npm run build
+
+#       - name: Deploy app build to S3 bucket
+#         run: aws s3 sync ./build/ s3://staging.mesobfinancial.com

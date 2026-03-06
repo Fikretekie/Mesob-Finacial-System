@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { apiUrl, ROUTES, normalizeReceiptUrl } from "../config/api";
 import {
   Card,
   CardHeader,
@@ -45,7 +46,7 @@ const Receipts = ({ selectedUser }) => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState([]);
   const userRole = parseInt(localStorage.getItem("role") || 1);
- const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const isMobileLandscape = isMobile && isLandscape;
 
@@ -79,7 +80,7 @@ const Receipts = ({ selectedUser }) => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       setDisabled(
         userRole !== 1 &&
@@ -95,7 +96,7 @@ const Receipts = ({ selectedUser }) => {
       const fetchUsers = async () => {
         try {
           const response = await axios.get(
-            "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+            apiUrl(ROUTES.USERS)
           );
           setUsers(response.data || []);
         } catch (error) {
@@ -122,7 +123,7 @@ const Receipts = ({ selectedUser }) => {
       }
 
       const response = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
       );
 
       let receiptsData = response.data.filter(
@@ -157,14 +158,16 @@ const Receipts = ({ selectedUser }) => {
     }
   };
 
-  const handlePreview = (receipt) => {
-    const modifiedUrl = receipt.receiptUrl.replace(
-      "app.mesobfinancial.com.s3.amazonaws.com",
-      "s3.amazonaws.com/app.mesobfinancial.com"
-    );
-    setSelectedReceipt({ receiptUrl: modifiedUrl });
-    setPreviewModal(true);
-  };
+ const handlePreview = (receipt) => {
+  console.log("🧾 Raw receipt object:", receipt);
+  console.log("🔗 Raw receiptUrl:", receipt.receiptUrl);
+
+  const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
+  console.log("✅ Normalized URL:", modifiedUrl);
+
+  setSelectedReceipt({ receiptUrl: modifiedUrl });
+  setPreviewModal(true);
+};
 
   const handleDownload = async (receipt) => {
     try {
@@ -172,10 +175,7 @@ const Receipts = ({ selectedUser }) => {
         throw new Error("Invalid receipt or missing URL");
       }
 
-      const url = receipt.receiptUrl.replace(
-        "app.mesobfinancial.com.s3.amazonaws.com",
-        "s3.amazonaws.com/app.mesobfinancial.com"
-      );
+      const url = normalizeReceiptUrl(receipt.receiptUrl);
 
       const response = await fetch(url);
       if (!response.ok)
@@ -248,10 +248,7 @@ const Receipts = ({ selectedUser }) => {
       const downloadPromises = receipts.map((receipt, index) =>
         (async () => {
           try {
-            const url = receipt.receiptUrl.replace(
-              "app.mesobfinancial.com.s3.amazonaws.com",
-              "s3.amazonaws.com/app.mesobfinancial.com"
-            );
+            const url = normalizeReceiptUrl(receipt.receiptUrl);
             const response = await fetch(url, { mode: "cors" });
             if (!response.ok) {
               throw new Error(`HTTP error! Status: ${response.status}`);
@@ -321,7 +318,7 @@ const Receipts = ({ selectedUser }) => {
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
-        
+
 
         {userRole === 0 && (
           <Row style={{ margin: "0", paddingInline: 0 }}>
@@ -409,7 +406,7 @@ const Receipts = ({ selectedUser }) => {
           </Row>
         )}
 
-        <Row style={{marginTop:80}}>
+        <Row style={{ marginTop: 80 }}>
           <Col xs={12}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
@@ -673,9 +670,11 @@ const Receipts = ({ selectedUser }) => {
         <ModalHeader toggle={() => setPreviewModal(false)}>
           {t('receipts.receiptPreview')}
         </ModalHeader>
-       <ModalBody>
-/           {selectedReceipt && selectedReceipt.receiptUrl && (
+        <ModalBody>
+                    {selectedReceipt && selectedReceipt.receiptUrl && (
             <>
+                {console.log("🖼️ Rendering preview for URL:", selectedReceipt.receiptUrl)}
+
               {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
                 <object
                   data={selectedReceipt.receiptUrl}
@@ -698,6 +697,8 @@ const Receipts = ({ selectedUser }) => {
                 <img
                   src={selectedReceipt.receiptUrl}
                   alt="Receipt"
+                  onLoad={() => console.log("✅ Image loaded successfully:", selectedReceipt.receiptUrl)}
+                  onError={(e) => console.error("❌ Image failed to load:", selectedReceipt.receiptUrl, e)}
                   style={{
                     maxWidth: "100%",
                     height: "auto",

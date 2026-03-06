@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 import {
   Row,
   Col,
@@ -288,7 +289,7 @@ const SubscriptionPlans = () => {
   const [ctaHover, setCtaHover] = useState(false);
 
   const backendBaseUrl =
-    "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem";
+    API_BASE_URL;
 
   const getUserId = () => localStorage.getItem("userId") || null;
 

@@ -24,27 +24,20 @@ import heic2any from "heic2any";
 import imageCompression from "browser-image-compression";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
-import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import axios from "axios";
+import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
 import { Helmet } from "react-helmet";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import TransactionTable from "./TransactionTable";
-import { AddExpenseButton } from "components/AddExpenseButton";
-import IncomeStatement from "components/IncomeStatement";
 import DownloadReportModal from "components/DownloadReportModal";
-import colors from "variables/colors";
-import { setSelectedUser, clearSelectedUser } from "../store/userSlice";
-import CSVReports from "./CSVReports";
+import { setSelectedUser } from "../store/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { Search } from "lucide-react";
 import { FaTimesCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
-import { businessTypes } from "./BusinessTypes";
-import getUserInfo from "utils/Getuser";
 import UserSubscriptionInfo from "./Payment/UserSubscriptionInfo";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "components/Languageselector/LanguageSelector";
 import i18n from "../i18n";
 import { getTranslatedBusinessPurposes, translatePurpose } from "utils/translatedBusinessTypes";
 
@@ -103,7 +96,7 @@ const MesobFinancial2 = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const firstLoadRef = useRef(true);
   const hasShownNotifyRef = useRef(false);
-const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   // Loading states for different API calls
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
@@ -116,7 +109,7 @@ const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [loadingReceipt, setLoadingReceipt] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
   const [loadingDeleteAll, setLoadingDeleteAll] = useState(false);
-const currentLanguage = i18n.language; // already imported at top
+  const currentLanguage = i18n.language; // already imported at top
 
   // business types
   const [selectedBusinessType, setSelectedBusinessType] = useState(
@@ -154,18 +147,18 @@ const currentLanguage = i18n.language; // already imported at top
     }
   };
 
-const getBusinessPurposes = (type) => {
-  if (type === "Other") {
-    return {
-      income: manualIncomePurposes,
-      expenses: manualExpensePurposes,
-      payables: manualPayablePurposes,
-    };
-  } else {
-    // Use translated business purposes instead of static ones
-    return getTranslatedBusinessPurposes(type);
-  }
-};
+  const getBusinessPurposes = (type) => {
+    if (type === "Other") {
+      return {
+        income: manualIncomePurposes,
+        expenses: manualExpensePurposes,
+        payables: manualPayablePurposes,
+      };
+    } else {
+      // Use translated business purposes instead of static ones
+      return getTranslatedBusinessPurposes(type);
+    }
+  };
   // Format users for react-select
   const userOptions = users.map((user) => ({
     value: user.id,
@@ -203,7 +196,7 @@ const getBusinessPurposes = (type) => {
     setLoadingInstallment(true);
     try {
       const response = await fetch(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${selectedUnpaidTransaction.id}`,
+        apiUrl(`${ROUTES.TRANSACTION}/${selectedUnpaidTransaction.id}`),
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -232,7 +225,7 @@ const getBusinessPurposes = (type) => {
 
       // Create a new transaction for the installment payment
       const newPaymentResponse = await fetch(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        apiUrl(ROUTES.TRANSACTION),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -281,7 +274,7 @@ const getBusinessPurposes = (type) => {
         userId
       );
       const response = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
       );
       console.log("MesobFinancial2: Fetched data", response.data);
       setItems(response.data);
@@ -302,10 +295,7 @@ const getBusinessPurposes = (type) => {
   };
 
   const handlePreview = (receiptUrl) => {
-    const modifiedUrl = receiptUrl.replace(
-      "app.mesobfinancial.com.s3.amazonaws.com",
-      "s3.amazonaws.com/app.mesobfinancial.com"
-    );
+    const modifiedUrl = normalizeReceiptUrl(receiptUrl);
     setSelectedReceipt({ receiptUrl: modifiedUrl });
     setPreviewModal(true);
   };
@@ -353,7 +343,7 @@ const getBusinessPurposes = (type) => {
     setLoadingUsers(true);
     try {
       const response = await axios.get(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users"
+        apiUrl(ROUTES.USERS)
       );
 
       if (response.data) {
@@ -428,29 +418,28 @@ const getBusinessPurposes = (type) => {
           transactionType === "receive"
             ? "Receive"
             : transactionType === "Payable"
-            ? "Payable"
-            : transactionType === "pay" && paymentMode === "boughtItem"
-            ? "New_Item"
-            : transactionType === "pay" && paymentMode !== "boughtItem"
-            ? "Pay"
-            : "New_Item",
-        transactionPurpose: `${transactionPurpose}${
-          manualPurpose ? ` ${manualPurpose}` : ""
-        }`,
+              ? "Payable"
+              : transactionType === "pay" && paymentMode === "boughtItem"
+                ? "New_Item"
+                : transactionType === "pay" && paymentMode !== "boughtItem"
+                  ? "Pay"
+                  : "New_Item",
+        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
+          }`,
         transactionAmount: parseFloat(transactionAmount),
         originalAmount: parseFloat(transactionAmount),
         subType:
           paymentMode === "boughtItem"
             ? "New_Item"
             : paymentMode === "new"
-            ? "Expense"
-            : subType,
+              ? "Expense"
+              : subType,
         receiptUrl: Url || "",
         status: transactionType === "Payable" ? "Unpaid" : "Paid",
       };
 
       const response = await axios.post(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        apiUrl(ROUTES.TRANSACTION),
         newTransaction
       );
 
@@ -487,7 +476,7 @@ const getBusinessPurposes = (type) => {
     }
   };
 
-  
+
   const uploadReceipt = async () => {
     if (!receipt) {
       notify("tr", "No receipt selected", "warning");
@@ -503,11 +492,11 @@ const getBusinessPurposes = (type) => {
       type: receipt.type,
       sizeMB: (receipt.size / (1024 * 1024)).toFixed(2) + " MB",
     });
- // Notify user if file is large
- const fileSizeMB = receipt.size / (1024 * 1024);
- if (fileSizeMB > 2.0) {
-   notify("tr", "Large file detected. Uploading may take a moment...", "info");
- }
+    // Notify user if file is large
+    const fileSizeMB = receipt.size / (1024 * 1024);
+    if (fileSizeMB > 2.0) {
+      notify("tr", "Large file detected. Uploading may take a moment...", "info");
+    }
     let fileToUpload = receipt;
 
     // Helper function to convert WEBP to JPEG (better compression than PNG)
@@ -522,7 +511,7 @@ const getBusinessPurposes = (type) => {
             canvas.height = img.height;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
-            
+
             // Use JPEG for better compression
             canvas.toBlob(
               (blob) => {
@@ -679,17 +668,17 @@ const getBusinessPurposes = (type) => {
         const furtherCompressed = await imageCompression(fileToUpload, options);
         fileToUpload = furtherCompressed;
         fileContent = await toBase64(fileToUpload);
-        
+
         payload = {
           fileName: fileToUpload.name,
           fileType: fileToUpload.type,
           fileContent,
           userId: localStorage.getItem("userId"),
         };
-        
+
         payloadSize = JSON.stringify(payload).length;
         payloadSizeMB = payloadSize / (1024 * 1024);
-        
+
         console.log("After further compression:", {
           fileSize: (fileToUpload.size / (1024 * 1024)).toFixed(2) + " MB",
           payloadSize: payloadSizeMB.toFixed(2) + " MB",
@@ -718,7 +707,7 @@ const getBusinessPurposes = (type) => {
 
     try {
       const response = await fetch(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Receipt",
+        apiUrl(ROUTES.RECEIPT),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -746,7 +735,7 @@ const getBusinessPurposes = (type) => {
       setLoadingReceipt(false);
     }
   };
-  
+
 
   const handleUpdateTransaction = async (transaction) => {
     console.log("Transaction ID:", transaction.id);
@@ -786,7 +775,7 @@ const getBusinessPurposes = (type) => {
         };
 
         const response = await fetch(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${transaction.id}`,
+          apiUrl(`${ROUTES.TRANSACTION}/${transaction.id}`),
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -813,8 +802,8 @@ const getBusinessPurposes = (type) => {
           transaction.id === "outstanding-debt"
             ? "Payment for Outstanding Debt"
             : paymentOption === "full"
-            ? `Full Payment for ${transaction.transactionPurpose}`
-            : `Partial Payment for ${transaction.transactionPurpose}`,
+              ? `Full Payment for ${transaction.transactionPurpose}`
+              : `Partial Payment for ${transaction.transactionPurpose}`,
         transactionAmount: paidAmount,
         receiptUrl: Url || "",
         payableId: transaction.id,
@@ -822,7 +811,7 @@ const getBusinessPurposes = (type) => {
       };
 
       const response2 = await axios.post(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction",
+        apiUrl(ROUTES.TRANSACTION),
         newPaidTransaction
       );
 
@@ -874,7 +863,7 @@ const getBusinessPurposes = (type) => {
     try {
       const targetUserId = uid || localStorage.getItem("userId");
       const response = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${targetUserId}`
+        apiUrl(`${ROUTES.USERS}/${targetUserId}`)
       );
       if (response.data?.user) {
         if (response.data.user.businessType) {
@@ -909,13 +898,13 @@ const getBusinessPurposes = (type) => {
   };
 
   useEffect(() => {
-  console.log("Selected Business Type: ????", selectedBusinessType);
-  const purposes = getBusinessPurposes(selectedBusinessType);
-  console.log("Business Purposes:", purposes);
-  setIncomePurposes(purposes.income || []);
-  setExpensePurposes(purposes.expenses || []);
-  setPayablePurposes(purposes.payables || []);
-}, [selectedBusinessType, i18n.language]); // ← ADD i18n.language dependency
+    console.log("Selected Business Type: ????", selectedBusinessType);
+    const purposes = getBusinessPurposes(selectedBusinessType);
+    console.log("Business Purposes:", purposes);
+    setIncomePurposes(purposes.income || []);
+    setExpensePurposes(purposes.expenses || []);
+    setPayablePurposes(purposes.payables || []);
+  }, [selectedBusinessType, i18n.language]); // ← ADD i18n.language dependency
 
   useEffect(() => {
     const savedIncome = JSON.parse(
@@ -993,7 +982,7 @@ const getBusinessPurposes = (type) => {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+          apiUrl(`${ROUTES.USERS}/${userId}`)
         );
 
         if (response.data?.user) {
@@ -1168,7 +1157,7 @@ const getBusinessPurposes = (type) => {
 
     axios
       .get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${targetUserId}`
+        apiUrl(`${ROUTES.TRANSACTION}?userId=${targetUserId}`)
       )
       .then((response) => {
         if (response.data) {
@@ -1198,12 +1187,12 @@ const getBusinessPurposes = (type) => {
         setLoadingTransactions(false);
       });
   };
-  
+
   const fetchUnpaidTransactions = () => {
     setLoadingUnpaidTransactions(true);
     axios
       .get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction?userId=${userId}`
+        apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`)
       )
       .then((response) => {
         const unpaidOrPartiallyPaid = response.data
@@ -1286,9 +1275,7 @@ const getBusinessPurposes = (type) => {
         }
 
         const deleteResponse = await axios.delete(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
-            transaction.id
-          )}`,
+          apiUrl(`${ROUTES.TRANSACTION}/${Number(transaction.id)}`),
           { headers: { "Content-Type": "application/json" } }
         );
 
@@ -1333,9 +1320,7 @@ const getBusinessPurposes = (type) => {
       };
 
       await axios.put(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/${Number(
-          transaction.payableId
-        )}`,
+        apiUrl(`${ROUTES.TRANSACTION}/${Number(transaction.payableId)}`),
         updatedTransaction,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -1368,14 +1353,14 @@ const getBusinessPurposes = (type) => {
     try {
       const userId = localStorage.getItem("userId");
       const fileName = `transactions_${new Date().toISOString()}.csv`;
-      const bucketName = "app.mesobfinancial.com";
+      const bucketName = S3_BUCKET_NAME;
       const folderPath = "backups/" + userId;
       const s3Key = `${folderPath}${fileName}`;
 
       const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
 
       const response = await axios.post(
-        "https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/backup",
+        apiUrl(ROUTES.BACKUP),
         {
           bucketName: bucketName,
           key: s3Key,
@@ -1439,47 +1424,47 @@ const getBusinessPurposes = (type) => {
   }, [selectedUserId]);
 
   // Expose PDF download trigger to window so Sidebar can call it from any page
-useEffect(() => {
-  window.__mesobOpenDownloadReport = () => {
-    setShowDownloadReportModal(true);
-  };
-  return () => {
-    delete window.__mesobOpenDownloadReport;
-  };
-}, []);
-
-useEffect(() => {
-  if (location.state?.openDownloadModal) {
-    // Small delay to let the page fully mount
-    setTimeout(() => {
+  useEffect(() => {
+    window.__mesobOpenDownloadReport = () => {
       setShowDownloadReportModal(true);
-    }, 300);
-    navigate(location.pathname, { replace: true }); // clear state
-  }
-}, [location.state]);
+    };
+    return () => {
+      delete window.__mesobOpenDownloadReport;
+    };
+  }, []);
 
   useEffect(() => {
-  const handleSidebarReset = () => {
-    confirmDeleteandsave();
-  };
-  const handleSidebarDownload = () => {
-    setShowDownloadReportModal(true); // ← open PDF modal instead of CSV
-  };
+    if (location.state?.openDownloadModal) {
+      // Small delay to let the page fully mount
+      setTimeout(() => {
+        setShowDownloadReportModal(true);
+      }, 300);
+      navigate(location.pathname, { replace: true }); // clear state
+    }
+  }, [location.state]);
 
-  window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
-  window.addEventListener("mesob:downloadReport", handleSidebarDownload);
-
-  return () => {
-    window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
-    window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
-  };
-}, [items]);
-  
   useEffect(() => {
-  const handleResize = () => setIsMobile(window.innerWidth < 768);
-  window.addEventListener('resize', handleResize);
-  return () => window.removeEventListener('resize', handleResize);
-}, []);
+    const handleSidebarReset = () => {
+      confirmDeleteandsave();
+    };
+    const handleSidebarDownload = () => {
+      setShowDownloadReportModal(true); // ← open PDF modal instead of CSV
+    };
+
+    window.addEventListener("mesob:resetAllTransactions", handleSidebarReset);
+    window.addEventListener("mesob:downloadReport", handleSidebarDownload);
+
+    return () => {
+      window.removeEventListener("mesob:resetAllTransactions", handleSidebarReset);
+      window.removeEventListener("mesob:downloadReport", handleSidebarDownload);
+    };
+  }, [items]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleUserSelect = (selectedOption) => {
     if (!selectedOption) {
@@ -1517,7 +1502,7 @@ useEffect(() => {
         return;
       }
       const response = await axios.delete(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Transaction/deleteAll?userId=${userId}`,
+        apiUrl(`${ROUTES.TRANSACTION}/deleteAll?userId=${userId}`),
         {
           headers: {
             "Content-Type": "application/json",
@@ -1567,11 +1552,11 @@ useEffect(() => {
       <div
         style={{
           display: "flex",
-          alignItems: "flex-end", 
+          alignItems: "flex-end",
           justifyContent: "flex-start",
           flexWrap: "wrap",
           gap: "10px",
-         
+
         }}
       >
         <div
@@ -1583,34 +1568,34 @@ useEffect(() => {
           }}
         >
           <FormGroup
-            style={{ 
-              marginBottom: 0, 
-              minWidth: "150px", 
+            style={{
+              marginBottom: 0,
+              minWidth: "150px",
               maxWidth: "200px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end"
             }}
           >
-            <Label 
-              for="fromDate" 
-              style={{ 
-                color: "#ffffff", 
-                marginBottom: "5px", 
+            <Label
+              for="fromDate"
+              style={{
+                color: "#ffffff",
+                marginBottom: "5px",
                 fontSize: "0.875rem",
                 lineHeight: "1.2"
               }}
             >
-         {t('financialReport.from')}
+              {t('financialReport.from')}
             </Label>
             <Input
               type="date"
               id="fromDate"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              style={{ 
-                backgroundColor: "#202a3a", 
-                color: "#ffffff", 
+              style={{
+                backgroundColor: "#202a3a",
+                color: "#ffffff",
                 border: "1px solid #3a4555",
                 borderRadius: "4px",
                 height: "38px",
@@ -1620,34 +1605,34 @@ useEffect(() => {
             />
           </FormGroup>
           <FormGroup
-            style={{ 
-              marginBottom: 0, 
-              minWidth: "150px", 
+            style={{
+              marginBottom: 0,
+              minWidth: "150px",
               maxWidth: "200px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-end"
             }}
           >
-            <Label 
-              for="toDate" 
-              style={{ 
-                color: "#ffffff", 
-                marginBottom: "5px", 
+            <Label
+              for="toDate"
+              style={{
+                color: "#ffffff",
+                marginBottom: "5px",
                 fontSize: "0.875rem",
                 lineHeight: "1.2"
               }}
             >
-            {t('financialReport.to')}
+              {t('financialReport.to')}
             </Label>
             <Input
               type="date"
               id="toDate"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              style={{ 
-                backgroundColor: "#202a3a", 
-                color: "#ffffff", 
+              style={{
+                backgroundColor: "#202a3a",
+                color: "#ffffff",
                 border: "1px solid #3a4555",
                 borderRadius: "4px",
                 height: "38px",
@@ -1657,99 +1642,99 @@ useEffect(() => {
             />
           </FormGroup>
         </div>
-       <div
-        className="buttonn"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "15px",
-          height: "38px",
-          minHeight: "38px",
-        }}
-      >
-        <Button
-          onClick={handleRun}
-          disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
-          style={{ 
-            height: "38px", 
-            backgroundColor: "#3d83f1", 
-            borderColor: "#3d83f1", 
-            color: "#ffffff",
-            borderRadius: "4px",
-            padding: "0 10px",
+        <div
+          className="buttonn"
+          style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            gap: "15px",
+            height: "38px",
+            minHeight: "38px",
           }}
         >
-          {t('financialReport.run')}
-        </Button>
-        <Button
-          onClick={handleClear}
-          disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
-          style={{ 
-            height: "38px", 
-            backgroundColor: "#888888", 
-            borderColor: "#888888", 
-            color: "#ffffff",
-            borderRadius: "4px",
-            padding: "0 10px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          {t('financialReport.clearFilters')}
-        </Button>
+          <Button
+            onClick={handleRun}
+            disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
+            style={{
+              height: "38px",
+              backgroundColor: "#3d83f1",
+              borderColor: "#3d83f1",
+              color: "#ffffff",
+              borderRadius: "4px",
+              padding: "0 10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            {t('financialReport.run')}
+          </Button>
+          <Button
+            onClick={handleClear}
+            disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
+            style={{
+              height: "38px",
+              backgroundColor: "#888888",
+              borderColor: "#888888",
+              color: "#ffffff",
+              borderRadius: "4px",
+              padding: "0 10px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            {t('financialReport.clearFilters')}
+          </Button>
 
-        {/* Search moved here - inline with Run/Clear */}
-        {showSearchInput ? (
-          <div style={{ position: "relative", width: "180px" }}>
-            <Input
-              type="text"
-              placeholder={t("financialReport.searchJournal")}
-              value={searchTerm}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSearchTerm(value);
-                if (value.trim() === "") {
-                  setSearchTerm("");
-                  setShowSearchInput(false);
-                }
-              }}
-              onBlur={() => {
-                if (searchTerm.trim() === "") setShowSearchInput(false);
-              }}
-              style={{ 
-                height: "38px", 
-                borderRadius: "4px",
-                backgroundColor: "#202a3a",
-                color: "#ffffff",
-                border: "1px solid #3a4555",
-                padding: "6px 12px",
-                paddingRight: "35px"
-              }}
+          {/* Search moved here - inline with Run/Clear */}
+          {showSearchInput ? (
+            <div style={{ position: "relative", width: "180px" }}>
+              <Input
+                type="text"
+                placeholder={t("financialReport.searchJournal")}
+                value={searchTerm}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchTerm(value);
+                  if (value.trim() === "") {
+                    setSearchTerm("");
+                    setShowSearchInput(false);
+                  }
+                }}
+                onBlur={() => {
+                  if (searchTerm.trim() === "") setShowSearchInput(false);
+                }}
+                style={{
+                  height: "38px",
+                  borderRadius: "4px",
+                  backgroundColor: "#202a3a",
+                  color: "#ffffff",
+                  border: "1px solid #3a4555",
+                  padding: "6px 12px",
+                  paddingRight: "35px"
+                }}
+              />
+              <button
+                style={{
+                  position: "absolute", right: "8px", top: "50%",
+                  transform: "translateY(-50%)", background: "none",
+                  border: "none", color: "#ffffff", cursor: "pointer",
+                  padding: "0", display: "flex", alignItems: "center",
+                }}
+                onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
+              >
+                <FaTimesCircle size={18} />
+              </button>
+            </div>
+          ) : (
+            <Search
+              size={18}
+              onClick={() => setShowSearchInput(true)}
+              style={{ cursor: "pointer", color: "#ffffff" }}
             />
-            <button
-              style={{
-                position: "absolute", right: "8px", top: "50%",
-                transform: "translateY(-50%)", background: "none",
-                border: "none", color: "#ffffff", cursor: "pointer",
-                padding: "0", display: "flex", alignItems: "center",
-              }}
-              onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
-            >
-              <FaTimesCircle size={18} />
-            </button>
-          </div>
-        ) : (
-          <Search
-            size={18}
-            onClick={() => setShowSearchInput(true)}
-            style={{ cursor: "pointer", color: "#ffffff" }}
-          />
-        )}
-      </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -1765,13 +1750,13 @@ useEffect(() => {
   }, [items, selectedTimeRange, searchTerm]);
 
   const isLandscape = window.innerWidth > window.innerHeight;
-const isMobileLandscape = isMobile && isLandscape;
+  const isMobileLandscape = isMobile && isLandscape;
   return (
     <>
       <Helmet>
         <title>Mesob Financial - Mesob Finance</title>
       </Helmet>
- 
+
       <NotificationAlert ref={notificationAlertRef} />
 
       {userRole === 0 && (
@@ -1788,7 +1773,7 @@ const isMobileLandscape = isMobile && isLandscape;
               <Card style={{ marginBottom: "5px" }}>
                 <CardHeader>
                   <CardTitle style={{ marginBottom: 0 }} tag="h4">
-         {t('financialReport.selectUser')}
+                    {t('financialReport.selectUser')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ paddingBottom: "5px" }}>
@@ -1802,7 +1787,7 @@ const isMobileLandscape = isMobile && isLandscape;
                         ) || null
                       }
                       onChange={handleUserSelect}
-               placeholder={t('financialReport.searchUser')}
+                      placeholder={t('financialReport.searchUser')}
                       isClearable
                       isSearchable
                       styles={{
@@ -1855,8 +1840,8 @@ const isMobileLandscape = isMobile && isLandscape;
                           backgroundColor: state.isSelected
                             ? "#2b427d"
                             : state.isFocused
-                            ? "#1a2332"
-                            : "#101926",
+                              ? "#1a2332"
+                              : "#101926",
                           color: "#ffffff",
                           cursor: "pointer",
                           "&:active": {
@@ -1873,19 +1858,19 @@ const isMobileLandscape = isMobile && isLandscape;
         </div>
       )}
 
-      <div className="content" style={{marginTop:80,  paddingTop: "0", backgroundColor: "#1a273a" }}>
+      <div className="content" style={{ marginTop: 80, paddingTop: "0", backgroundColor: "#1a273a" }}>
         {/* Transactions Table Section - First */}
         <Container fluid style={{ paddingInline: 0 }}>
           <Row>
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
-              <Card style={{ backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)",paddingBottom:8, borderRadius: "8px" }}>
+              <Card style={{ backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", paddingBottom: 8, borderRadius: "8px" }}>
                 <CardHeader
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     paddingInline: 20,
-                    
+
                     backgroundColor: "#1a273a",
                     flexWrap: "wrap",
                     gap: "15px",
@@ -1899,7 +1884,7 @@ const isMobileLandscape = isMobile && isLandscape;
                     />
 
                     {/* Search */}
-                
+
                   </div>
 
                   {/* Right Section: Add Transaction + Subscription Info */}
@@ -1912,16 +1897,42 @@ const isMobileLandscape = isMobile && isLandscape;
                       flexWrap: "wrap",
                     }}
                   >
+                    <Button
+                      onClick={() => setShowDownloadReportModal(true)}
+                      disabled={
+                        userRole === 1
+                          ? false
+                          : !userSubscription && !isTrialActive()
+                      }
+                      style={{
+                        backgroundColor: "#2b427d",
+                        borderColor: "#2b427d",
+                        color: "#ffffff",
+                        height: "38px",
+                        borderRadius: "4px",
+                        padding: "0 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faDownload}
+                        style={{ marginRight: "5px" }}
+                      />
+                      {t('financialReport.downloadReport')}
+                    </Button>
+                    {userRole !== 0 && (
                       <Button
-                        onClick={() => setShowDownloadReportModal(true)}
+                        onClick={() => setShowAddTransaction(true)}
                         disabled={
                           userRole === 1
                             ? false
                             : !userSubscription && !isTrialActive()
-                        }
-                        style={{ 
-                          backgroundColor: "#2b427d", 
-                          borderColor: "#2b427d", 
+                        } // Enable for role 1 even if not subscribed/trial
+                        style={{
+                          backgroundColor: "#11b981",
+                          borderColor: "#11b981",
                           color: "#ffffff",
                           height: "38px",
                           borderRadius: "4px",
@@ -1932,46 +1943,20 @@ const isMobileLandscape = isMobile && isLandscape;
                         }}
                       >
                         <FontAwesomeIcon
-                          icon={faDownload}
+                          icon={faPlus}
                           style={{ marginRight: "5px" }}
                         />
-                      {t('financialReport.downloadReport')}
+                        {t('financialReport.addTransaction')}
                       </Button>
-                      {userRole !== 0 && (
-                        <Button
-                          onClick={() => setShowAddTransaction(true)}
-                          disabled={
-                            userRole === 1
-                              ? false
-                              : !userSubscription && !isTrialActive()
-                          } // Enable for role 1 even if not subscribed/trial
-                        style={{ 
-                          backgroundColor: "#11b981", 
-                          borderColor: "#11b981", 
-                          color: "#ffffff",
-                          height: "38px",
-                          borderRadius: "4px",
-                          padding: "0 16px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center"
-                        }}
-                        >
-                          <FontAwesomeIcon
-                            icon={faPlus}
-                            style={{ marginRight: "5px" }}
-                          />
-                {t('financialReport.addTransaction')}
-                        </Button>
-                      )}
-                    
-                      {userRole === 2 && (
-                        <UserSubscriptionInfo
-                          userSubscription={userSubscription}
-                          trialEndDate={trialEndDate}
-                          scheduleCount={scheduleCount}
-                        />
-                      )}
+                    )}
+
+                    {userRole === 2 && (
+                      <UserSubscriptionInfo
+                        userSubscription={userSubscription}
+                        trialEndDate={trialEndDate}
+                        scheduleCount={scheduleCount}
+                      />
+                    )}
                   </div>
                 </CardHeader>
               </Card>
@@ -1990,7 +1975,7 @@ const isMobileLandscape = isMobile && isLandscape;
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
-                {t('financialReport.summary')}
+                    {t('financialReport.summary')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -2003,7 +1988,7 @@ const isMobileLandscape = isMobile && isLandscape;
                 >
                   <div>
                     <div
-                        style={{
+                      style={{
                         backgroundColor: "#1a2332",
                         padding: "12px 15px",
                         borderRadius: "6px",
@@ -2012,7 +1997,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                       {t('financialReport.totalCashOnHand')}:
+                        {t('financialReport.totalCashOnHand')}:
                       </div>
                       <div
                         style={{
@@ -2059,7 +2044,7 @@ const isMobileLandscape = isMobile && isLandscape;
                             maximumFractionDigits: 2,
                           }
                         )}
-                    </div>
+                      </div>
                     </div>
 
                     <div style={{ marginTop: "20px" }}>
@@ -2070,115 +2055,115 @@ const isMobileLandscape = isMobile && isLandscape;
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
                             {t('financialReport.revenue')}
-                      </span>
-                      <span
-                        style={{
+                          </span>
+                          <span
+                            style={{
                               color: "#41926f",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
-                        }}
-                      >
-                        $
-                        {parseFloat(calculateTotalRevenue()).toLocaleString(
-                          "en-US",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </span>
-                    </div>
+                            }}
+                          >
+                            $
+                            {parseFloat(calculateTotalRevenue()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
+                          </span>
+                        </div>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                       {t('financialReport.totalExpense')}
-                      </span>
-                      <span
-                        style={{
+                            {t('financialReport.totalExpense')}
+                          </span>
+                          <span
+                            style={{
                               color: "#a7565d",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
-                        }}
-                      >
-                        $
-                        {parseFloat(
-                          calculateTotalExpenses(true)
-                        ).toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
+                            }}
+                          >
+                            $
+                            {parseFloat(
+                              calculateTotalExpenses(true)
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
                         <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
-                      {Object.entries(expenses)
-                        .filter(([purpose, amount]) => {
-                          const filteredItems = getFilteredItems();
-                          return filteredItems.some(
-                            (item) =>
-                              item.transactionPurpose === purpose &&
-                              (item.transactionType === "Pay" ||
-                                (item.transactionType === "Payable" &&
-                                  item.status !== "Paid"))
-                          );
-                        })
-                        .map(([purpose, amount]) => {
-                          const filteredItems = getFilteredItems();
-                          const totalAmount = filteredItems.reduce(
-                            (sum, item) => {
-                              if (
-                                item.transactionPurpose === purpose &&
-                                (item.transactionType === "Pay" ||
-                                  (item.transactionType === "Payable" &&
-                                    item.status !== "Paid"))
-                              ) {
-                                return (
-                                  sum + parseFloat(item.transactionAmount || 0)
-                                );
-                              }
-                              return sum;
-                            },
-                            0
-                          );
+                          {Object.entries(expenses)
+                            .filter(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              return filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  (item.transactionType === "Pay" ||
+                                    (item.transactionType === "Payable" &&
+                                      item.status !== "Paid"))
+                              );
+                            })
+                            .map(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              const totalAmount = filteredItems.reduce(
+                                (sum, item) => {
+                                  if (
+                                    item.transactionPurpose === purpose &&
+                                    (item.transactionType === "Pay" ||
+                                      (item.transactionType === "Payable" &&
+                                        item.status !== "Paid"))
+                                  ) {
+                                    return (
+                                      sum + parseFloat(item.transactionAmount || 0)
+                                    );
+                                  }
+                                  return sum;
+                                },
+                                0
+                              );
 
-                          const isPaid = filteredItems.some(
-                            (item) =>
-                              item.transactionPurpose === purpose &&
-                              item.transactionType === "Payable" &&
-                              item.status === "Paid"
-                          );
+                              const isPaid = filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Payable" &&
+                                  item.status === "Paid"
+                              );
 
-                          return (
-                            <div
-                              key={purpose}
-                              style={{
+                              return (
+                                <div
+                                  key={purpose}
+                                  style={{
                                     marginBottom: "8px",
-                                display: "flex",
+                                    display: "flex",
                                     justifyContent: "space-between",
-                                alignItems: "center",
-                              }}
-                            >
+                                    alignItems: "center",
+                                  }}
+                                >
                                   <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                                  <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft:"10px" }}>
-                                   {translatePurpose(purpose)}:
-                                </span>
-                              </span>
-                              <span
-                                style={{
+                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                      {translatePurpose(purpose)}:
+                                    </span>
+                                  </span>
+                                  <span
+                                    style={{
                                       color: isPaid
                                         ? "#c7ae4f"
                                         : "#a7565d",
                                       fontWeight: "bold",
                                       fontSize: "0.9rem",
-                                }}
-                              >
-                                $
-                                {totalAmount.toLocaleString("en-US", {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </span>
-                            </div>
-                          );
-                        })}
+                                    }}
+                                  >
+                                    $
+                                    {totalAmount.toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     </div>
@@ -2188,8 +2173,8 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee"  }}>
-                   {t('financialReport.incomeStatement')}
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
+                    {t('financialReport.incomeStatement')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -2226,11 +2211,11 @@ const isMobileLandscape = isMobile && isLandscape;
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", textAlign: "right" }}
                           >
                             ${Object.values(revenues).reduce((sum, amt) => sum + parseFloat(amt || 0), 0).toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </td>
-                          </tr>
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
+                        </tr>
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
@@ -2357,11 +2342,11 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                           <strong>
-  {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
-    ? t('financialReport.netLoss')
-    : t('financialReport.netIncome')}
-</strong>
+                            <strong>
+                              {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
+                                ? t('financialReport.netLoss')
+                                : t('financialReport.netIncome')}
+                            </strong>
                           </td>
                           <td
                             style={{
@@ -2396,8 +2381,8 @@ const isMobileLandscape = isMobile && isLandscape;
             >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee"  }} tag="h4">
-              {t('financialReport.journalEntry')}
+                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
+                    {t('financialReport.journalEntry')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -2442,7 +2427,7 @@ const isMobileLandscape = isMobile && isLandscape;
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
-              {t('financialReport.balanceSheet')}
+                    {t('financialReport.balanceSheet')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -2507,7 +2492,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                          {t('financialReport.cash')}
+                            {t('financialReport.cash')}
                           </td>
                           <td
                             style={{
@@ -2534,7 +2519,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                          {t('financialReport.inventory')}
+                            {t('financialReport.inventory')}
                           </td>
                           <td
                             style={{
@@ -2601,7 +2586,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                      {t('financialReport.payable')}
+                            {t('financialReport.payable')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -2628,7 +2613,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                          {t('financialReport.beginningEquity')}
+                            {t('financialReport.beginningEquity')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -2656,7 +2641,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                          {t('financialReport.retainedEarnings')}
+                            {t('financialReport.retainedEarnings')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -2708,7 +2693,7 @@ const isMobileLandscape = isMobile && isLandscape;
                             })}
                           </td>
                         </tr>
-                       
+
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555" }}
@@ -2766,13 +2751,13 @@ const isMobileLandscape = isMobile && isLandscape;
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
-                   {t('financialReport.summary')}
+                    {t('financialReport.summary')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody style={{ overflowY: "auto", overflowX: "visible", backgroundColor: "#1a273a" }}>
                   <div>
                     <div
-                        style={{
+                      style={{
                         backgroundColor: "#1a2332",
                         padding: "12px 15px",
                         borderRadius: "6px",
@@ -2781,7 +2766,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                      {t('financialReport.totalCashOnHand')}
+                        {t('financialReport.totalCashOnHand')}
                       </div>
                       <div
                         style={{
@@ -2804,7 +2789,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                {t('financialReport.totalPayable')}
+                        {t('financialReport.totalPayable')}
                       </div>
                       <div
                         style={{
@@ -2821,124 +2806,124 @@ const isMobileLandscape = isMobile && isLandscape;
                             maximumFractionDigits: 2,
                           }
                         )}
-                    </div>
+                      </div>
                     </div>
 
                     <div style={{ marginTop: "20px" }}>
                       <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                       {t('financialReport.breakdown')}
+                        {t('financialReport.breakdown')}
                       </div>
                       <div style={{ marginTop: "8px" }}>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                           {t('financialReport.revenue')}
-                      </span>
-                      <span
-                        style={{
+                            {t('financialReport.revenue')}
+                          </span>
+                          <span
+                            style={{
                               color: "#41926f",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
-                        }}
-                      >
-                        $
-                        {parseFloat(calculateTotalRevenue()).toLocaleString(
-                          "en-US",
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          }
-                        )}
-                      </span>
-                    </div>
+                            }}
+                          >
+                            $
+                            {parseFloat(calculateTotalRevenue()).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
+                          </span>
+                        </div>
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                     {t('financialReport.totalExpense')}
-                      </span>
-                      <span
-                        style={{
+                            {t('financialReport.totalExpense')}
+                          </span>
+                          <span
+                            style={{
                               color: "#a7565d",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
-                        }}
-                      >
-                        $
-                        {parseFloat(
-                          calculateTotalExpenses(true)
-                        ).toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
+                            }}
+                          >
+                            $
+                            {parseFloat(
+                              calculateTotalExpenses(true)
+                            ).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
                         <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
-                      {Object.entries(expenses)
-                        .filter(([purpose, amount]) => {
-                          const filteredItems = getFilteredItems();
-                          return filteredItems.some(
-                            (item) =>
-                              item.transactionPurpose === purpose &&
-                              (item.transactionType === "Pay" ||
-                                (item.transactionType === "Payable" &&
-                                  item.status !== "Paid"))
-                          );
-                        })
-                        .map(([purpose, amount]) => {
-                          const filteredItems = getFilteredItems();
-                          const totalAmount = filteredItems.reduce(
-                            (sum, item) => {
-                              if (
-                                item.transactionPurpose === purpose &&
-                                (item.transactionType === "Pay" ||
-                                  (item.transactionType === "Payable" &&
-                                    item.status !== "Paid"))
-                              ) {
-                                return (
-                                  sum + parseFloat(item.transactionAmount || 0)
-                                );
-                              }
-                              return sum;
-                            },
-                            0
-                          );
+                          {Object.entries(expenses)
+                            .filter(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              return filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  (item.transactionType === "Pay" ||
+                                    (item.transactionType === "Payable" &&
+                                      item.status !== "Paid"))
+                              );
+                            })
+                            .map(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              const totalAmount = filteredItems.reduce(
+                                (sum, item) => {
+                                  if (
+                                    item.transactionPurpose === purpose &&
+                                    (item.transactionType === "Pay" ||
+                                      (item.transactionType === "Payable" &&
+                                        item.status !== "Paid"))
+                                  ) {
+                                    return (
+                                      sum + parseFloat(item.transactionAmount || 0)
+                                    );
+                                  }
+                                  return sum;
+                                },
+                                0
+                              );
 
-                          const isPaid = filteredItems.some(
-                            (item) =>
-                              item.transactionPurpose === purpose &&
-                              item.transactionType === "Payable" &&
-                              item.status === "Paid"
-                          );
+                              const isPaid = filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Payable" &&
+                                  item.status === "Paid"
+                              );
 
-                          return (
-                            <div
-                              key={purpose}
-                              style={{
+                              return (
+                                <div
+                                  key={purpose}
+                                  style={{
                                     marginBottom: "8px",
-                                display: "flex",
+                                    display: "flex",
                                     justifyContent: "space-between",
-                                alignItems: "center",
-                              }}
-                            >
+                                    alignItems: "center",
+                                  }}
+                                >
                                   <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
                                     {purpose}:
-                              </span>
-                              <span
-                                style={{
+                                  </span>
+                                  <span
+                                    style={{
                                       color: isPaid
                                         ? "#c7ae4f"
                                         : "#a7565d",
                                       fontWeight: "bold",
                                       fontSize: "0.9rem",
-                                }}
-                              >
-                                $
-                                {totalAmount.toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                                })}
-                              </span>
-                            </div>
-                          );
-                        })}
+                                    }}
+                                  >
+                                    $
+                                    {totalAmount.toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })}
                         </div>
                       </div>
                     </div>
@@ -2991,8 +2976,8 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee"   }}>
-               {t('financialReport.incomeStatement')}
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
+                    {t('financialReport.incomeStatement')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -3181,11 +3166,11 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}
                           >
-                          <strong>
-  {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
-    ? t('financialReport.netLoss')
-    : t('financialReport.netIncome')}
-</strong>
+                            <strong>
+                              {parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses()) < 0
+                                ? t('financialReport.netLoss')
+                                : t('financialReport.netIncome')}
+                            </strong>
                           </td>
                           <td
                             style={{
@@ -3214,8 +3199,8 @@ const isMobileLandscape = isMobile && isLandscape;
 
               <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee"  }}>
-                 {t('financialReport.balanceSheet')}
+                  <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
+                    {t('financialReport.balanceSheet')}
                   </CardTitle>
                 </CardHeader>
                 <CardBody
@@ -3307,7 +3292,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                          {t('financialReport.inventory')}
+                            {t('financialReport.inventory')}
                           </td>
                           <td
                             style={{
@@ -3401,7 +3386,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                           {t('financialReport.beginningEquity')}
+                            {t('financialReport.beginningEquity')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3429,7 +3414,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                           {t('financialReport.retainedEarnings')}
+                            {t('financialReport.retainedEarnings')}
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
@@ -3550,7 +3535,7 @@ const isMobileLandscape = isMobile && isLandscape;
                     setPaymentMode(null);
                   }}
                 >
-                 {t('financialReport.receivedCash')}
+                  {t('financialReport.receivedCash')}
                 </Button>
                 <Button
                   color={transactionType === "pay" ? "primary" : "secondary"}
@@ -3560,7 +3545,7 @@ const isMobileLandscape = isMobile && isLandscape;
                     setPaymentMode(null);
                   }}
                 >
-                {t('financialReport.paidCash')}
+                  {t('financialReport.paidCash')}
                 </Button>
                 <Button
                   color={
@@ -3595,7 +3580,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       setPaymentMode("recorded");
                     }}
                   >
-                   {t('financialReport.recordedEarlierAsPayable')}
+                    {t('financialReport.recordedEarlierAsPayable')}
                   </Button>
 
                   <Button
@@ -3606,7 +3591,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       setPaymentMode("new");
                     }}
                   >
-             {t('financialReport.newExpense')}
+                    {t('financialReport.newExpense')}
                   </Button>
                   <Button
                     color="warning"
@@ -3616,7 +3601,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       setPaymentMode("boughtItem");
                     }}
                   >
-                 {t('financialReport.boughtNewItem')}
+                    {t('financialReport.boughtNewItem')}
                   </Button>
                 </div>
               </FormGroup>
@@ -3629,7 +3614,7 @@ const isMobileLandscape = isMobile && isLandscape;
                   type="text"
                   value={newPurpose}
                   onChange={(e) => setNewPurpose(e.target.value)}
-                placeholder={t('financialReport.enterNewPurpose')}
+                  placeholder={t('financialReport.enterNewPurpose')}
                 />
                 <Input
                   type="select"
@@ -3646,7 +3631,7 @@ const isMobileLandscape = isMobile && isLandscape;
 
             {transactionType === "pay" && paymentMode === "recorded" && (
               <>
-                
+
                 <FormGroup>
                   <Label>{t('financialReport.selectUnpaidTransaction')}:</Label>
                   <Input
@@ -3695,7 +3680,7 @@ const isMobileLandscape = isMobile && isLandscape;
                           checked={paymentOption === "full"}
                           onChange={() => setPaymentOption("full")}
                         />{" "}
-                      {t('financialReport.fullPayment')}
+                        {t('financialReport.fullPayment')}
                       </Label>
                     </FormGroup>
                     <FormGroup check>
@@ -3707,13 +3692,13 @@ const isMobileLandscape = isMobile && isLandscape;
                           checked={paymentOption === "partial"}
                           onChange={() => setPaymentOption("partial")}
                         />{" "}
-                    {t('financialReport.partialPayment')}
+                        {t('financialReport.partialPayment')}
                       </Label>
                     </FormGroup>
                   </FormGroup>
                 )}
 
-               
+
                 {selectedUnpaidTransaction && paymentOption === "partial" && (
                   <FormGroup>
                     <Label>{t('financialReport.partialPaymentAmount')}:</Label>
@@ -3777,7 +3762,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       onClick={() => fileInputRef.current.click()}
                       style={{ marginBottom: "0" }}
                     >
-                     {receipt ? t('financialReport.changeReceipt') : t('financialReport.uploadReceipt')}
+                      {receipt ? t('financialReport.changeReceipt') : t('financialReport.uploadReceipt')}
                     </Button>
                     {receipt && (
                       <span style={{ color: "green" }}>✓ {receipt.name}</span>
@@ -3802,7 +3787,7 @@ const isMobileLandscape = isMobile && isLandscape;
                     (!remainingAmount ||
                       partialPaymentError ||
                       parseFloat(remainingAmount) >=
-                        selectedUnpaidTransaction.transactionAmount ||
+                      selectedUnpaidTransaction.transactionAmount ||
                       parseFloat(remainingAmount) <= 0)
                   }
                 >
@@ -3827,14 +3812,14 @@ const isMobileLandscape = isMobile && isLandscape;
                     <option value="manual">{t('financialReport.enterManually')}</option>
                   </Input>
 
-                 
+
 
                   {/* ----------  NEW VALIDATION FOR MANUAL DESCRIPTION ---------- */}
                   {isManual === "manual" && (
                     <FormGroup className="mt-2">
                       <Input
                         type="text"
-                       placeholder={t('financialReport.enterItemDescription')}
+                        placeholder={t('financialReport.enterItemDescription')}
                         value={manualPurpose}
                         onChange={(e) => {
                           setManualPurpose(e.target.value);
@@ -3877,7 +3862,7 @@ const isMobileLandscape = isMobile && isLandscape;
                       onClick={() => fileInputRef.current.click()}
                       style={{ marginBottom: "0" }}
                     >
-                {receipt ? t('financialReport.changeReceipt') : t('financialReport.uploadReceipt')}
+                      {receipt ? t('financialReport.changeReceipt') : t('financialReport.uploadReceipt')}
                     </Button>
                     {receipt && (
                       <span style={{ color: "green" }}>✓ {receipt.name}</span>
@@ -3891,7 +3876,7 @@ const isMobileLandscape = isMobile && isLandscape;
                     style={{ display: "none" }}
                   />
                 </FormGroup>
-               
+
                 <Button
                   color="success"
                   onClick={handleAddTransaction}
@@ -3908,122 +3893,122 @@ const isMobileLandscape = isMobile && isLandscape;
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
               transactionType === "Payable") && (
-              <>
-                <FormGroup>
-                  <Label>{t('financialReport.purpose')}:</Label>
-
-                  <Input
-                    type="select"
-                    value={transactionPurpose}
-                    onChange={(e) => setTransactionPurpose(e.target.value)}
-                  >
-             <option value="">{t('financialReport.selectPurpose')}</option>
-                    {transactionType === "receive" && (
-                      <>
-                        {incomePurposes.map((purpose, index) => (
-                          <option key={index} value={purpose}>
-                            {purpose}
-                          </option>
-                        ))}
-                        <option value="manual">{t('financialReport.enterManually')}</option>
-                      </>
-                    )}
-                    {transactionType === "pay" && paymentMode === "new" && (
-                      <>
-                        {expensePurposes.map((purpose, index) => (
-                          <option key={index} value={purpose}>
-                            {purpose}
-                          </option>
-                        ))}
-                        <option value="manual">{t('financialReport.enterManually')}</option>
-                      </>
-                    )}
-                    {transactionType === "Payable" && (
-                      <>
-                        {payablePurposes.map((purpose, index) => (
-                          <option key={index} value={purpose}>
-                            {purpose}
-                          </option>
-                        ))}
-                        <option value="manual">{t('financialReport.enterManually')}</option>
-                      </>
-                    )}
-                  </Input>
-                  {((transactionType === "receive" &&
-                    transactionPurpose === "manual") ||
-                    (transactionType === "pay" &&
-                      paymentMode === "new" &&
-                      transactionPurpose === "manual") ||
-                    (transactionType === "Payable" &&
-                      transactionPurpose === "manual")) && (
-                    <FormGroup>
-                      <Input
-                        type="text"
-                        placeholder="Enter purpose manually"
-                        value={manualPurpose}
-                        onChange={(e) => {
-                          setManualPurpose(e.target.value);
-                          setFormErrors({ ...formErrors, manualPurpose: "" });
-                        }}
-                        style={{ marginTop: "10px" }}
-                        invalid={!!formErrors.manualPurpose}
-                      />
-                      {formErrors.manualPurpose && (
-                        <div className="text-danger">
-                          {formErrors.manualPurpose}
-                        </div>
-                      )}
-                    </FormGroup>
-                  )}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>{t('financialReport.amount')}:</Label>
-                  <Input
-                    type="number"
-                    value={transactionAmount}
-                    onChange={(e) => setTransactionAmount(e.target.value)}
-                  />
-                </FormGroup>
-                {transactionType === "pay" && paymentMode === "new" && (
+                <>
                   <FormGroup>
-                    <Label>Receipt:</Label>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      <Button
-                        color="info"
-                        onClick={() => fileInputRef.current.click()}
-                        style={{ marginBottom: "0" }}
-                      >
-                        {receipt ? "Change Receipt" : "Upload Receipt"}
-                      </Button>
-                      {receipt && (
-                        <span style={{ color: "green" }}>✓ {receipt.name}</span>
-                      )}
-                    </div>
+                    <Label>{t('financialReport.purpose')}:</Label>
+
                     <Input
-                      type="file"
-                      innerRef={fileInputRef}
-                      onChange={handleReceiptUpload}
-                      accept="image/*,.pdf"
-                      style={{ display: "none" }}
+                      type="select"
+                      value={transactionPurpose}
+                      onChange={(e) => setTransactionPurpose(e.target.value)}
+                    >
+                      <option value="">{t('financialReport.selectPurpose')}</option>
+                      {transactionType === "receive" && (
+                        <>
+                          {incomePurposes.map((purpose, index) => (
+                            <option key={index} value={purpose}>
+                              {purpose}
+                            </option>
+                          ))}
+                          <option value="manual">{t('financialReport.enterManually')}</option>
+                        </>
+                      )}
+                      {transactionType === "pay" && paymentMode === "new" && (
+                        <>
+                          {expensePurposes.map((purpose, index) => (
+                            <option key={index} value={purpose}>
+                              {purpose}
+                            </option>
+                          ))}
+                          <option value="manual">{t('financialReport.enterManually')}</option>
+                        </>
+                      )}
+                      {transactionType === "Payable" && (
+                        <>
+                          {payablePurposes.map((purpose, index) => (
+                            <option key={index} value={purpose}>
+                              {purpose}
+                            </option>
+                          ))}
+                          <option value="manual">{t('financialReport.enterManually')}</option>
+                        </>
+                      )}
+                    </Input>
+                    {((transactionType === "receive" &&
+                      transactionPurpose === "manual") ||
+                      (transactionType === "pay" &&
+                        paymentMode === "new" &&
+                        transactionPurpose === "manual") ||
+                      (transactionType === "Payable" &&
+                        transactionPurpose === "manual")) && (
+                        <FormGroup>
+                          <Input
+                            type="text"
+                            placeholder="Enter purpose manually"
+                            value={manualPurpose}
+                            onChange={(e) => {
+                              setManualPurpose(e.target.value);
+                              setFormErrors({ ...formErrors, manualPurpose: "" });
+                            }}
+                            style={{ marginTop: "10px" }}
+                            invalid={!!formErrors.manualPurpose}
+                          />
+                          {formErrors.manualPurpose && (
+                            <div className="text-danger">
+                              {formErrors.manualPurpose}
+                            </div>
+                          )}
+                        </FormGroup>
+                      )}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>{t('financialReport.amount')}:</Label>
+                    <Input
+                      type="number"
+                      value={transactionAmount}
+                      onChange={(e) => setTransactionAmount(e.target.value)}
                     />
                   </FormGroup>
-                )}
-                <Button
-  color="success"
-  onClick={handleAddTransaction}
-  disabled={isAddingTransaction}
->
-  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
-</Button>
-              </>
-            )}
+                  {transactionType === "pay" && paymentMode === "new" && (
+                    <FormGroup>
+                      <Label>Receipt:</Label>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <Button
+                          color="info"
+                          onClick={() => fileInputRef.current.click()}
+                          style={{ marginBottom: "0" }}
+                        >
+                          {receipt ? "Change Receipt" : "Upload Receipt"}
+                        </Button>
+                        {receipt && (
+                          <span style={{ color: "green" }}>✓ {receipt.name}</span>
+                        )}
+                      </div>
+                      <Input
+                        type="file"
+                        innerRef={fileInputRef}
+                        onChange={handleReceiptUpload}
+                        accept="image/*,.pdf"
+                        style={{ display: "none" }}
+                      />
+                    </FormGroup>
+                  )}
+                  <Button
+                    color="success"
+                    onClick={handleAddTransaction}
+                    disabled={isAddingTransaction}
+                  >
+                    {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                  </Button>
+                </>
+              )}
           </ModalBody>
         </Modal>
         {/* Previe modal */}
@@ -4087,14 +4072,14 @@ const isMobileLandscape = isMobile && isLandscape;
               <Label>{t('financialReport.selectPaymentType')}:</Label>
               <div>
                 <Button color="primary" onClick={handleFullPayment}>
-                 {t('financialReport.payFullAmount')} ($
+                  {t('financialReport.payFullAmount')} ($
                   {selectedUnpaidTransaction?.transactionAmount})
                 </Button>
                 <Button
                   color="primary"
                   onClick={() => setShowInstallmentInput(true)}
                 >
-         {t('financialReport.payInstallment')}
+                  {t('financialReport.payInstallment')}
                 </Button>
               </div>
             </FormGroup>
@@ -4112,13 +4097,13 @@ const isMobileLandscape = isMobile && isLandscape;
           </ModalBody>
           <ModalFooter>
             <Button color="success" onClick={handleInstallmentPayment}>
-         {t('financialReport.pay2')}
+              {t('financialReport.pay2')}
             </Button>
             <Button
               color="secondary"
               onClick={() => setShowInstallmentModal(false)}
             >
-          {t('common.cancel')}
+              {t('common.cancel')}
             </Button>
           </ModalFooter>
         </Modal>

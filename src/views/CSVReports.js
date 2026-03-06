@@ -12,6 +12,7 @@ import {
 import { FaDownload } from "react-icons/fa";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
+import { apiUrl, ROUTES } from "../config/api";
 
 const CSVReports = () => {
   const { t } = useTranslation();
@@ -33,8 +34,9 @@ const CSVReports = () => {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+          apiUrl(`${ROUTES.USERS}/${userId}`)
         );
+        console.log("User data response:", response.data);
         if (response.data.user && response.data.user.lastBackupUrls) {
           setBackupUrls(response.data.user.lastBackupUrls);
         }
@@ -50,7 +52,7 @@ const CSVReports = () => {
     const checkSubscription = async () => {
       const userId = localStorage.getItem("userId");
       const res = await axios.get(
-        `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/dev/MesobFinancialSystem/Users/${userId}`
+        apiUrl(`${ROUTES.USERS}/${userId}`)
       );
       const { subscription, scheduleCount, userRole } = res.data.user;
       setDisabled(!(subscription || userRole === 1) && scheduleCount >= 4);
@@ -58,24 +60,37 @@ const CSVReports = () => {
     checkSubscription();
   }, []);
 
-  const handleDownload = async (url) => {
-    try {
-      // Replace virtual-hosted style URL with path-style URL
-      const updatedUrl = url.replace(
-        /https:\/\/(.+?)\.s3\.amazonaws\.com\//,
-        "https://s3.amazonaws.com/$1/"
-      );
+  // const handleDownload = async (url) => {
+  //   try {
+  //     // Replace virtual-hosted style URL with path-style URL
+  //     const updatedUrl = url.replace(
+  //       /https:\/\/(.+?)\.s3\.amazonaws\.com\//,
+  //       "https://s3.amazonaws.com/$1/"
+  //     );
 
-      const response = await axios.get(updatedUrl, { responseType: "blob" });
-      const blob = new Blob([response.data], { type: "text/csv" });
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(blob);
-      link.download = updatedUrl.split("/").pop();
-      link.click();
-    } catch (error) {
-      console.error("Error downloading CSV:", error);
-    }
-  };
+  //     const response = await axios.get(updatedUrl, { responseType: "blob" });
+  //     const blob = new Blob([response.data], { type: "text/csv" });
+  //     const link = document.createElement("a");
+  //     link.href = window.URL.createObjectURL(blob);
+  //     link.download = updatedUrl.split("/").pop();
+  //     link.click();
+  //   } catch (error) {
+  //     console.error("Error downloading CSV:", error);
+  //   }
+  // };
+  const handleDownload = async (url) => {
+  try {
+    // ✅ Keep virtual-hosted style, don't convert to path-style
+    const response = await axios.get(url, { responseType: "blob" });
+    const blob = new Blob([response.data], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = url.split("/").pop();
+    link.click();
+  } catch (error) {
+    console.error("Error downloading CSV:", error);
+  }
+};
 
   // Mobile Card Component
   const MobileBackupCard = ({ url, index }) => {
