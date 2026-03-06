@@ -101,7 +101,12 @@ const Login = () => {
 
         const result = await response.json();
         console.log("🔍 User data:", result);
-
+        if (!response.ok || !result.user) {
+                  await signOut();
+                  notify("danger", "Account not found. Please sign up or contact support.");
+                  setLoading(false);
+                  return;
+                }
         localStorage.clear();
         localStorage.setItem("provider", "Email");
         localStorage.setItem("userId", user.userId);
