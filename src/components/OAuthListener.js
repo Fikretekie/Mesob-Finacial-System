@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiUrl, ROUTES } from "../config/api";
+import { apiUrl, ROUTES, COGNITO_USERINFO_URL } from "../config/api";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 
@@ -15,14 +15,12 @@ const OAuthListener = () => {
       const accessToken = session.tokens?.accessToken?.toString();
       if (!accessToken) throw new Error("No access token available");
 
-      const response = await fetch(
-        "https://us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com/oauth2/userInfo",
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const url = COGNITO_USERINFO_URL || "https://us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com/oauth2/userInfo";
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       if (!response.ok)
         throw new Error(`UserInfo request failed: ${response.status}`);
       const userInfo = await response.json();

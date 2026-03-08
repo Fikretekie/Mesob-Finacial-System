@@ -2,14 +2,34 @@
  * Mesob Financial System – API base URL and route definitions.
  * Use API_BASE_URL + ROUTES.* (or apiUrl helper) for all backend calls.
  *
- * Environment: set REACT_APP_ENV in .env (e.g. "staging" or "production").
- * Create React App only exposes variables prefixed with REACT_APP_.
+ * Env is set at BUILD time (e.g. in GitHub Actions via .env from secrets).
+ * No .env on S3 – values are baked into the JS bundle when you run npm run build.
+ * Fallback: when env missing, derive from hostname so deployed app still works.
  */
 
-/** REACT_APP_ENV is read from .env at build/start time. Fallback to "staging" if missing. */
-const ENV = process.env.REACT_APP_ENV;
+function getEnv() {
+  const raw = process.env.REACT_APP_ENV;
+  if (raw) return String(raw).toLowerCase().trim();
+  if (typeof window !== "undefined" && window.location?.hostname) {
+    const h = window.location.hostname;
+    if (h === "app.mesobfinancial.com") return "production";
+    if (h === "staging.mesobfinancial.com") return "staging";
+  }
+  return process.env.NODE_ENV === "production" ? "production" : "staging";
+}
 
-console.log("Current environment:", ENV);
+const ENV = getEnv();
+export { getEnv };
+
+/** Cognito domain for current ENV (for OAuth userInfo URL). */
+const COGNITO_DOMAIN =
+  ENV === "production"
+    ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN || "us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com")
+    : (process.env.REACT_APP_STAGING_COGNITO_DOMAIN || "");
+export const COGNITO_USERINFO_URL = COGNITO_DOMAIN
+  ? `https://${COGNITO_DOMAIN}/oauth2/userInfo`
+  : "";
+
 export const API_BASE_URL =
   `https://iaqwrjhk4f.execute-api.us-east-1.amazonaws.com/${ENV}/MesobFinancialSystem`;
 
@@ -19,6 +39,9 @@ export const STAGING_API_URL =
 
 export const S3_BUCKET_NAME =
   ENV === "production" ? "app.mesobfinancial.com" : "staging.mesobfinancial.com";
+
+/** Base URL for backups/CSV (production: app.mesobfinancial.com, staging: staging.mesobfinancial.com). */
+export const BACKUP_BASE_URL = `https://${S3_BUCKET_NAME}`;
 
 /**
  * Normalize S3 receipt URL from virtual-hosted to path-style so it works for preview/download.

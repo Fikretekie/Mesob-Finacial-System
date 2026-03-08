@@ -12,7 +12,7 @@ import {
 import { FaDownload } from "react-icons/fa";
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-import { apiUrl, ROUTES } from "../config/api";
+import { apiUrl, ROUTES, BACKUP_BASE_URL } from "../config/api";
 
 const CSVReports = () => {
   const { t } = useTranslation();
@@ -78,15 +78,34 @@ const CSVReports = () => {
   //     console.error("Error downloading CSV:", error);
   //   }
   // };
-  const handleDownload = async (url) => {
+// Fix the S3 URL to use the correct domain for current env (production → app, staging → staging)
+const normalizeBackupUrl = (url) => {
+  if (!url) return url;
+  return url.replace(
+    /https:\/\/[^/]+\.s3\.amazonaws\.com/,
+    BACKUP_BASE_URL
+  );
+};
+
+const handleDownload = async (url) => {
   try {
-    // ✅ Keep virtual-hosted style, don't convert to path-style
-    const response = await axios.get(url, { responseType: "blob" });
-    const blob = new Blob([response.data], { type: "text/csv" });
+    const fixedUrl = normalizeBackupUrl(url);
+    console.log("Downloading from:", fixedUrl);
+
+    const response = await fetch(fixedUrl);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+    const blob = await response.blob();
+    const fileName = url.split("/").pop();
+    const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = url.split("/").pop();
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+
   } catch (error) {
     console.error("Error downloading CSV:", error);
   }

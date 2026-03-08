@@ -31,7 +31,9 @@ import Confirm from "views/Confirm";
 import OAuthListener from "components/OAuthListener";
 import TermsOfUse from "views/Terms";
 import CompleteProfile from "views/CompleteProfile";
-import "./i18n"; 
+import "./i18n";
+import { getEnv } from "./config/api";
+
 // Create Redux store
 const store = configureStore({
   reducer: {
@@ -39,46 +41,41 @@ const store = configureStore({
   },
 });
 
-const SubscriptionWithParams = () => {
-  const location = useLocation();
-  const priceId = location.state?.priceId || "";
-  return <SubscriptionPage priceId={priceId} />;
-};
+// ENV from getEnv() so deployed app works: hostname fallback when REACT_APP_ENV not in build
+const ENV = getEnv();
+const isProduction = ENV === "production";
 
-const isLocal =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const redirectUri = isLocal
-  ? "http://localhost:3000"
-  : "https://app.mesobfinancial.com";
+const cognitoUserPoolId = isProduction
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID || "us-east-1_avAIOjCOE")
+  : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID || "us-east-1_VpNtAU2i3");
+const cognitoClientId = isProduction
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID || "6iejj0l52i4qihmmojh88kmvie")
+  : process.env.REACT_APP_STAGING_COGNITO_CLIENT_ID;
+const cognitoDomain = isProduction
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN || "us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com")
+  : process.env.REACT_APP_STAGING_COGNITO_DOMAIN;
+
+const appOrigin = isProduction ? "https://app.mesobfinancial.com" : "https://staging.mesobfinancial.com";
+const googleClientId = isProduction
+  ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID || "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com")
+  : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID || "263314305713-9b0q8c6f2h3s1u7l1g5l7h5m3v0n5l.apps.googleusercontent.com");
 
 Amplify.configure({
   Auth: {
     Cognito: {
-      userPoolId: "us-east-1_avAIOjCOE",
-      userPoolClientId: "6iejj0l52i4qihmmojh88kmvie",
+      userPoolId: cognitoUserPoolId,
+      userPoolClientId: cognitoClientId,
       loginWith: {
         oauth: {
           region: "us-east-1",
-          domain: "us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com",
+          domain: cognitoDomain,
           scopes: ["openid", "email", "profile"],
-          redirectSignIn: [
-            "https://app.mesobfinancial.com/oauth-redirect",
-            "http://localhost:3000/oauth-redirect",
-          ],
-          redirectSignOut: ["https://app.mesobfinancial.com"],
+          redirectSignIn: [`${appOrigin}/oauth-redirect`, "http://localhost:3000/oauth-redirect"],
+          redirectSignOut: [appOrigin, "http://localhost:3000"],
           responseType: "code",
           providers: [
-            {
-              provider: "Google",
-              scopes: ["openid", "email", "profile"],
-              clientId:
-                "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com",
-            },
-            {
-              provider: "SignInWithApple",
-              clientId: "com.mesob.financial",
-            },
+            { provider: "Google", scopes: ["openid", "email", "profile"], clientId: googleClientId },
+            { provider: "SignInWithApple", clientId: isProduction ? "com.mesob.financial" : "com.mesob.financial.staging" },
           ],
         },
       },
@@ -109,7 +106,6 @@ root.render(
         <Route path="/customer/*" element={<CustomerLayout />} />
         {/* Subscription Routes */}
         <Route path="/subscription" element={<SubscriptionPlans />} />
-        {/* <Route path="/subscribe" element={<SubscriptionWithParams />} /> */}
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         {/* Redirect any unknown routes to /login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
