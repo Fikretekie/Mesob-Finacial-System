@@ -41,7 +41,7 @@ const store = configureStore({
   },
 });
 
-// ENV from getEnv() so deployed app works: hostname fallback when REACT_APP_ENV not in build
+// ENV from getEnv so deployed app works: hostname fallback when REACT_APP_ENV not in build
 const ENV = getEnv();
 const isProduction = ENV === "production";
 
