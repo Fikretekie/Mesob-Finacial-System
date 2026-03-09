@@ -53,7 +53,7 @@
     "receive": "Receive [Cash]",
     "pay": "Paid [Cash]",
     "payable": "Payable",
-    "expense": "[Expense]",
+    "expense": "Expense",
     "loadingTransactions": "Loading transactions...",
     "assets": "Assets",
     "cash": "Cash",
@@ -131,7 +131,18 @@
     "searchJournal": "Search Journal Entries",
     "paymentRecordedInstallment": "Installment payment recorded successfully",
     "installmentExceedError": "Installment amount cannot exceed the remaining amount of ${amount}",
-    "noUnpaidSelected": "Please select a transaction and enter an installment amount"
+    "noUnpaidSelected": "Please select a transaction and enter an installment amount",
+    "boughtNewItemPayable": "Bought new item (Payable)",
+    "assetType": "Asset Type",
+    "selectAssetType": "Select asset type",
+    "fixedAsset": "Fixed Asset",
+    "currentAsset": "Current Asset",
+    "itemName": "Item Name",
+    "selectItem": "Select item",
+    "enterItemName": "Enter item name",
+    "enterPurposeManually": "Enter purpose manually",
+    "payablesBreakdown": "Payables breakdown",
+    "totalPayableByPurpose": "Total Payable by purpose"
   },
   "receipts": {
     "title": "Receipts",

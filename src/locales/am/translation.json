@@ -127,7 +127,18 @@
     "searchJournal": "የጆርናል ግቤቶችን ይፈልጉ",
     "paymentRecordedInstallment": "የመክፈያ ክፍያ በተሳካ ሁኔታ ተመዝግቧል",
     "installmentExceedError": "የመክፈያ መጠን ከቀሪው መጠን ${amount} መብለጥ አይችልም",
-    "noUnpaidSelected": "እባክዎ ግብይት ይምረጡ እና የመክፈያ መጠን ያስገቡ"
+    "noUnpaidSelected": "እባክዎ ግብይት ይምረጡ እና የመክፈያ መጠን ያስገቡ",
+    "boughtNewItemPayable": "አዲስ እቃ ተገዝቷል (ክፍያ)",
+    "assetType": "የንብረት ዓይነት",
+    "selectAssetType": "የንብረት ዓይነት ይምረጡ",
+    "fixedAsset": "ቋሚ ንብረት",
+    "currentAsset": "ወቅታዊ ንብረት",
+    "itemName": "የእቃ ስም",
+    "selectItem": "እቃ ይምረጡ",
+    "enterItemName": "የእቃ ስም ያስገቡ",
+    "enterPurposeManually": "ዓላማ በእጅ ያስገቡ",
+    "payablesBreakdown": "የክፍያ ክፍፍል",
+    "totalPayableByPurpose": "ጠቅላላ ክፍያ በዓላማ"
   },
   "receipts": {
     "title": "ደረሰኞች",

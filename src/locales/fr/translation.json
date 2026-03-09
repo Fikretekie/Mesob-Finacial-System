@@ -126,7 +126,18 @@
     "searchJournal": "Rechercher dans les écritures de journal",
     "paymentRecordedInstallment": "Paiement échelonné enregistré avec succès",
     "installmentExceedError": "Le montant de l'échelonnement ne peut pas dépasser le montant restant de ${amount}",
-    "noUnpaidSelected": "Veuillez sélectionner une transaction et entrer un montant d'échelonnement"
+    "noUnpaidSelected": "Veuillez sélectionner une transaction et entrer un montant d'échelonnement",
+    "boughtNewItemPayable": "Article acheté (À payer)",
+    "assetType": "Type d'actif",
+    "selectAssetType": "Sélectionner le type d'actif",
+    "fixedAsset": "Actif immobilisé",
+    "currentAsset": "Actif circulant",
+    "itemName": "Nom de l'article",
+    "selectItem": "Sélectionner un article",
+    "enterItemName": "Entrer le nom de l'article",
+    "enterPurposeManually": "Entrer l'objectif manuellement",
+    "payablesBreakdown": "Détail des dettes",
+    "totalPayableByPurpose": "Total à payer par objectif"
   },
   "receipts": {
     "title": "Reçus",

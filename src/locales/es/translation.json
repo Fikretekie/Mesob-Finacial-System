@@ -126,7 +126,18 @@
     "searchJournal": "Buscar asientos contables",
     "paymentRecordedInstallment": "Pago a plazos registrado con éxito",
     "installmentExceedError": "El monto del pago a plazos no puede exceder el monto restante de ${amount}",
-    "noUnpaidSelected": "Por favor seleccione una transacción e ingrese un monto de pago a plazos"
+    "noUnpaidSelected": "Por favor seleccione una transacción e ingrese un monto de pago a plazos",
+    "boughtNewItemPayable": "Artículo comprado (Por pagar)",
+    "assetType": "Tipo de activo",
+    "selectAssetType": "Seleccionar tipo de activo",
+    "fixedAsset": "Activo fijo",
+    "currentAsset": "Activo corriente",
+    "itemName": "Nombre del artículo",
+    "selectItem": "Seleccionar artículo",
+    "enterItemName": "Introducir nombre del artículo",
+    "enterPurposeManually": "Introducir propósito manualmente",
+    "payablesBreakdown": "Desglose de cuentas por pagar",
+    "totalPayableByPurpose": "Total por pagar por propósito"
   },
   "receipts": {
     "title": "Recibos",

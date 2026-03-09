@@ -126,6 +126,10 @@ export const getTranslatedBusinessPurposes = (businessType) => {
         t('businessTypes.payables.insuranceExpense'),
         t('businessTypes.payables.rentExpense'),
         t('businessTypes.payables.miscExpense')
+      ],
+      boughtNewItemPurposes: [
+        t('businessTypes.payables.inventoryPurchases'),
+        t('businessTypes.payables.inventoryAdjustments')
       ]
     },
     "Cafe": {
@@ -312,7 +316,10 @@ export const getTranslatedBusinessPurposes = (businessType) => {
     }
   };
 
-  return businessTypeMapping[businessType] || { income: [], expenses: [], payables: [] };
+  const fallback = { income: [], expenses: [], payables: [], boughtNewItemPurposes: [] };
+  const result = businessTypeMapping[businessType] || fallback;
+  if (!result.boughtNewItemPurposes) result.boughtNewItemPurposes = [];
+  return result;
 };
 /** Supported languages for purpose reverse-lookup (label in any lang → key) */
 const PURPOSE_LANGS = ['en', 'am', 'ti', 'ar', 'es', 'fr', 'so'];

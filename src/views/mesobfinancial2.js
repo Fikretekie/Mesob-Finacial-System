@@ -128,7 +128,11 @@ const MesobFinancial2 = () => {
   const [userSubscription, setUserSubscription] = useState(false);
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [scheduleCount, setScheduleCount] = useState(1);
-
+const [payableSubMode, setPayableSubMode] = useState(null);   // "expense" | "boughtItem"
+const [assetType, setAssetType] = useState("");                // "fixed" | "current"
+const [assetName, setAssetName] = useState("");                // selected or manual name
+const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
+const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // Add method to save new purposes
   const handleAddPurpose = () => {
     if (newPurpose.trim()) {
@@ -386,68 +390,192 @@ const MesobFinancial2 = () => {
     });
   };
 
+  // const handleAddTransaction = async () => {
+  //   const errors = {};
+
+  //   if (transactionPurpose === "manual" && !manualPurpose.trim()) {
+  //     errors.manualPurpose = "Please enter a purpose manually";
+  //   }
+
+  //   if (Object.keys(errors).length > 0) {
+  //     setFormErrors(errors);
+  //     return;
+  //   }
+
+  //   if (!transactionType || !transactionAmount) {
+  //     notify("tr", t("financialReport.fillFields"), "warning");
+  //     return;
+  //   }
+
+  //   setIsAddingTransaction(true);
+  //   let Url = "";
+
+  //   if (receipt) {
+  //     Url = await uploadReceipt();
+  //   }
+
+  //   try {
+  //     console.log("values", transactionPurpose, manualPurpose);
+  //     const newTransaction = {
+  //       userId: localStorage.getItem("userId"),
+  //       transactionType:
+  //         transactionType === "receive"
+  //           ? "Receive"
+  //           : transactionType === "Payable"
+  //             ? "Payable"
+  //             : transactionType === "pay" && paymentMode === "boughtItem"
+  //               ? "New_Item"
+  //               : transactionType === "pay" && paymentMode !== "boughtItem"
+  //                 ? "Pay"
+  //                 : "New_Item",
+                  
+  //       transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
+  //         }`,
+  //       transactionAmount: parseFloat(transactionAmount),
+  //       originalAmount: parseFloat(transactionAmount),
+  //       subType:
+  //         paymentMode === "boughtItem"
+  //           ? "New_Item"
+  //           : paymentMode === "new"
+  //             ? "Expense"
+  //             : subType,
+  //       receiptUrl: Url || "",
+  //       status: transactionType === "Payable" ? "Unpaid" : "Paid",
+  //     };
+
+  //     const response = await axios.post(
+  //       apiUrl(ROUTES.TRANSACTION),
+  //       newTransaction
+  //     );
+
+  //     if (response.status === 200) {
+  //       const successMessage =
+  //         transactionType === "pay" && paymentMode === "boughtItem"
+  //           ? t("financialReport.newItemSuccess")
+  //           : t("financialReport.transactionAdded");
+  //       notify("tr", successMessage, "success");
+  //       resetForm();
+  //       fetchTransactions();
+  //       setShowAddTransaction(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error adding transaction:", error);
+  //     notify("tr", "Error processing transaction", "danger");
+  //   } finally {
+  //     setIsAddingTransaction(false);
+  //   }
+  // };
   const handleAddTransaction = async () => {
     const errors = {};
-
+  
     if (transactionPurpose === "manual" && !manualPurpose.trim()) {
       errors.manualPurpose = "Please enter a purpose manually";
     }
-
+  
+    // Payable + Bought new item: require asset type and item name
+    const isPayableBoughtItem =
+      transactionType === "Payable" && payableSubMode === "boughtItem";
+    if (isPayableBoughtItem) {
+      if (!assetType) {
+        errors.assetType = "Please select an asset type";
+      }
+      const resolvedAssetName =
+        assetName === "manual" ? assetNameManual : assetName;
+      if (!resolvedAssetName || !resolvedAssetName.trim()) {
+        errors.assetName = "Please select or enter an item name";
+      }
+    }
+  
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-
+  
     if (!transactionType || !transactionAmount) {
       notify("tr", t("financialReport.fillFields"), "warning");
       return;
     }
-
+  
     setIsAddingTransaction(true);
     let Url = "";
-
+  
     if (receipt) {
       Url = await uploadReceipt();
     }
-
+  
     try {
-      console.log("values", transactionPurpose, manualPurpose);
-      const newTransaction = {
-        userId: localStorage.getItem("userId"),
-        transactionType:
-          transactionType === "receive"
-            ? "Receive"
-            : transactionType === "Payable"
-              ? "Payable"
-              : transactionType === "pay" && paymentMode === "boughtItem"
-                ? "New_Item"
-                : transactionType === "pay" && paymentMode !== "boughtItem"
-                  ? "Pay"
-                  : "New_Item",
-        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
-          }`,
-        transactionAmount: parseFloat(transactionAmount),
-        originalAmount: parseFloat(transactionAmount),
-        subType:
-          paymentMode === "boughtItem"
-            ? "New_Item"
-            : paymentMode === "new"
-              ? "Expense"
-              : subType,
-        receiptUrl: Url || "",
-        status: transactionType === "Payable" ? "Unpaid" : "Paid",
-      };
-
+      const purposeText =
+        transactionPurpose === "manual"
+          ? (manualPurpose || "").trim()
+          : (transactionPurpose || "").trim();
+      const resolvedAssetName =
+        assetName === "manual" ? (assetNameManual || "").trim() : assetName || null;
+  
+      let newTransaction;
+  
+      if (isPayableBoughtItem) {
+        // Haven't Yet Paid → Bought a new item (payable, not paid)
+        newTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType: "Payable",
+          subType: "New_Item",
+          status: "Unpaid",
+          transactionPurpose: purposeText,
+          transactionAmount: parseFloat(transactionAmount),
+          originalAmount: parseFloat(transactionAmount),
+          assetType: assetType || null,
+          assetName: resolvedAssetName || null,
+          receiptUrl: Url || "",
+        };
+      } else {
+        // All other cases (receive, pay expense, pay recorded, pay bought item, Payable expense)
+        newTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType:
+            transactionType === "receive"
+              ? "Receive"
+              : transactionType === "Payable"
+                ? "Payable"
+                : transactionType === "pay" && paymentMode === "boughtItem"
+                  ? "New_Item"
+                  : transactionType === "pay" && paymentMode !== "boughtItem"
+                    ? "Pay"
+                    : "New_Item",
+          transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""}`,
+          transactionAmount: parseFloat(transactionAmount),
+          originalAmount: parseFloat(transactionAmount),
+          subType:
+            paymentMode === "boughtItem"
+              ? "New_Item"
+              : paymentMode === "new"
+                ? "Expense"
+                : subType,
+          receiptUrl: Url || "",
+          status: transactionType === "Payable" ? "Unpaid" : "Paid",
+        };
+        // Optional: add asset fields for Pay Cash → Bought a new item
+        if (
+          transactionType === "pay" &&
+          paymentMode === "boughtItem" &&
+          (assetType || resolvedAssetName)
+        ) {
+          newTransaction.assetType = assetType || null;
+          newTransaction.assetName = resolvedAssetName || null;
+        }
+      }
+  
       const response = await axios.post(
         apiUrl(ROUTES.TRANSACTION),
         newTransaction
       );
-
+  
       if (response.status === 200) {
         const successMessage =
-          transactionType === "pay" && paymentMode === "boughtItem"
+          isPayableBoughtItem
             ? t("financialReport.newItemSuccess")
-            : t("financialReport.transactionAdded");
+            : transactionType === "pay" && paymentMode === "boughtItem"
+              ? t("financialReport.newItemSuccess")
+              : t("financialReport.transactionAdded");
         notify("tr", successMessage, "success");
         resetForm();
         fetchTransactions();
@@ -460,12 +588,16 @@ const MesobFinancial2 = () => {
       setIsAddingTransaction(false);
     }
   };
-
   const resetForm = () => {
     setTransactionType("");
     setTransactionPurpose("");
     setTransactionAmount("");
     setManualPurpose("");
+    setsubType("");
+setPayableSubMode(null);
+setAssetType("");
+setAssetName("");
+setAssetNameManual("");
     setEditingTransaction(null);
     setReceipt(null);
     setPaymentMode(null);
@@ -904,6 +1036,7 @@ const MesobFinancial2 = () => {
     setIncomePurposes(purposes.income || []);
     setExpensePurposes(purposes.expenses || []);
     setPayablePurposes(purposes.payables || []);
+    setBoughtNewItemPurposes(purposes.boughtNewItemPurposes || []);
   }, [selectedBusinessType, i18n.language]); // ← ADD i18n.language dependency
 
   useEffect(() => {
@@ -3629,6 +3762,37 @@ const MesobFinancial2 = () => {
               </div>
             )}
 
+            {/* Show action buttons for Haven't Yet Paid (Payable) */}
+            {transactionType === "Payable" && (
+              <FormGroup>
+                <Label>{t('financialReport.selectAction')}:</Label>
+                <div
+                  style={{ display: "flex", gap: "5px", marginBottom: "15px" }}
+                >
+                  <Button
+                    color="primary"
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setPayableSubMode("expense");
+                      setPaymentMode(null);
+                    }}
+                  >
+                    {t('financialReport.expense')}
+                  </Button>
+                  <Button
+                    color="warning"
+                    className="transaction-action-btn action-new-item"
+                    onClick={() => {
+                      setPayableSubMode("boughtItem");
+                      setPaymentMode(null);
+                    }}
+                  >
+                    {t('financialReport.boughtNewItem')}
+                  </Button>
+                </div>
+              </FormGroup>
+            )}
+
             {transactionType === "pay" && paymentMode === "recorded" && (
               <>
 
@@ -3889,10 +4053,55 @@ const MesobFinancial2 = () => {
                 </Button>
               </>
             )}
+            {transactionType === "Payable" && payableSubMode === "boughtItem" && (
+  <>
+    <FormGroup>
+      <Label>{t('financialReport.purpose')}:</Label>
+      <Input type="select" value={transactionPurpose} onChange={(e) => setTransactionPurpose(e.target.value)}>
+        <option value="">{t('financialReport.selectPurpose')}</option>
+        {boughtNewItemPurposes.map((p, i) => <option key={i} value={p}>{p}</option>)}
+        <option value="manual">{t('financialReport.enterManually')}</option>
+      </Input>
+      {transactionPurpose === "manual" && (
+        <Input type="text" placeholder={t('financialReport.enterPurposeManually')} value={manualPurpose} onChange={(e) => setManualPurpose(e.target.value)} />
+      )}
+    </FormGroup>
+    <FormGroup>
+      <Label>{t('financialReport.assetType')}:</Label>
+      <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
+        <option value="">{t('financialReport.selectAssetType')}</option>
+        <option value="fixed">{t('financialReport.fixedAsset')}</option>
+        <option value="current">{t('financialReport.currentAsset')}</option>
+      </Input>
+    </FormGroup>
+    {assetType && (
+      <FormGroup>
+        <Label>{t('financialReport.itemName')}:</Label>
+        <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
+          <option value="">{t('financialReport.selectItem')}</option>
+          {[...new Set(items.filter(t => t.assetType === assetType).map(t => t.assetName).filter(Boolean))].map(name => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+          <option value="manual">{t('financialReport.enterManually')}</option>
+        </Input>
+        {assetName === "manual" && (
+          <Input type="text" placeholder={t('financialReport.enterItemName')} value={assetNameManual} onChange={(e) => setAssetNameManual(e.target.value)} />
+        )}
+      </FormGroup>
+    )}
+    <FormGroup>
+      <Label>{t('financialReport.amount')}:</Label>
+      <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
+    </FormGroup>
+    <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || (!assetNameManual && assetName !== "manual" && !assetName)}>
+      {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+    </Button>
+  </>
+)}
             {/* Show regular form fields for other cases */}
             {(transactionType === "receive" ||
               (transactionType === "pay" && paymentMode === "new") ||
-              transactionType === "Payable") && (
+              (transactionType === "Payable" && payableSubMode === "expense")) && (
                 <>
                   <FormGroup>
                     <Label>{t('financialReport.purpose')}:</Label>
@@ -3923,7 +4132,7 @@ const MesobFinancial2 = () => {
                           <option value="manual">{t('financialReport.enterManually')}</option>
                         </>
                       )}
-                      {transactionType === "Payable" && (
+                      {transactionType === "Payable" && payableSubMode === "expense" && (
                         <>
                           {payablePurposes.map((purpose, index) => (
                             <option key={index} value={purpose}>

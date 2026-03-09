@@ -125,7 +125,18 @@
     "searchJournal": "Raadi qoraallada joornaalka",
     "paymentRecordedInstallment": "Lacag bixinta qaybaha ah si guul leh ayaa loo diiwaangeliyay",
     "installmentExceedError": "Qadarka qaybta ma dhaafi karo qadarka haray ee ${amount}",
-    "noUnpaidSelected": "Fadlan dooro macaamil oo geli qadarka lacag bixinta qaybta"
+    "noUnpaidSelected": "Fadlan dooro macaamil oo geli qadarka lacag bixinta qaybta",
+    "boughtNewItemPayable": "Wax cusub la iibsaday (La bixinayo)",
+    "assetType": "Nooca Hantida",
+    "selectAssetType": "Dooro nooca hantida",
+    "fixedAsset": "Hanti adag",
+    "currentAsset": "Hanti hadda jirta",
+    "itemName": "Magaca Shayga",
+    "selectItem": "Dooro shay",
+    "enterItemName": "Geli magaca shayga",
+    "enterPurposeManually": "Gacanta ku geli ujeeddo",
+    "payablesBreakdown": "Kala qaybinta la bixinayo",
+    "totalPayableByPurpose": "Wadarta la bixinayo ee ujeeddo"
   },
   "receipts": {
     "title": "Rasiidada",

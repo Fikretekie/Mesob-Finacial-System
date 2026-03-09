@@ -125,7 +125,18 @@
     "searchJournal": "ጆርናል ግቤታት ደልይ",
     "paymentRecordedInstallment": "ናይ መክፈሊ ክፍሊት ብትኽክል ተመዝጊቡ",
     "installmentExceedError": "መጠን መክፈሊ ካብ ዝተረፈ መጠን ${amount} ክበልጽ ኣይክእልን",
-    "noUnpaidSelected": "እባኻ ግብይት ምረጽን መጠን መክፈሊ ኣእቱን"
+    "noUnpaidSelected": "እባኻ ግብይት ምረጽን መጠን መክፈሊ ኣእቱን",
+    "boughtNewItemPayable": "ሓድሽ ነገር ተገዚኡ (ክፍሊት)",
+    "assetType": "ዓይነት ንብረት",
+    "selectAssetType": "ዓይነት ንብረት ምረጽ",
+    "fixedAsset": "ተረጋጋጺ ንብረት",
+    "currentAsset": "ናይ ሕጂ ንብረት",
+    "itemName": "ስም ነገር",
+    "selectItem": "ነገር ምረጽ",
+    "enterItemName": "ስም ነገር ኣእቱ",
+    "enterPurposeManually": "ዕላማ ብኢድ ኣእቱ",
+    "payablesBreakdown": "ክፍፍል ክፍሊት",
+    "totalPayableByPurpose": "ጠቅላላ ክፍሊት ብዕላማ"
   },
   "receipts": {
     "title": "ደረሰኝታት",

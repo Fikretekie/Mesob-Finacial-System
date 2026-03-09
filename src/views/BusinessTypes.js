@@ -109,6 +109,10 @@ export const businessTypes = {
       "Rent (Expense)",
       "Miscellaneous (Expense)",
     ],
+    boughtNewItemPurposes: [
+      "Inventory Purchases (Expense)",
+      "Inventory Adjustments (Expense)",
+    ],
   },
   Cafe: {
     income: [

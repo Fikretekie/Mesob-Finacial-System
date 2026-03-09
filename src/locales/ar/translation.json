@@ -126,7 +126,18 @@
     "searchJournal": "البحث في قيود اليومية",
     "paymentRecordedInstallment": "تم تسجيل دفعة التقسيط بنجاح",
     "installmentExceedError": "لا يمكن أن يتجاوز مبلغ التقسيط المبلغ المتبقي ${amount}",
-    "noUnpaidSelected": "يرجى اختيار معاملة وإدخال مبلغ التقسيط"
+    "noUnpaidSelected": "يرجى اختيار معاملة وإدخال مبلغ التقسيط",
+    "boughtNewItemPayable": "تم شراء عنصر جديد (مستحق الدفع)",
+    "assetType": "نوع الأصل",
+    "selectAssetType": "اختر نوع الأصل",
+    "fixedAsset": "أصل ثابت",
+    "currentAsset": "أصل متداول",
+    "itemName": "اسم العنصر",
+    "selectItem": "اختر عنصراً",
+    "enterItemName": "أدخل اسم العنصر",
+    "enterPurposeManually": "أدخل الغرض يدوياً",
+    "payablesBreakdown": "تفصيل المستحقات",
+    "totalPayableByPurpose": "إجمالي المستحقات حسب الغرض"
   },
   "receipts": {
     "title": "الإيصالات",
