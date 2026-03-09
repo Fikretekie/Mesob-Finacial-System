@@ -55,6 +55,14 @@ jobs:
           REACT_APP_STAGING_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
           REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
           EOF
+          
+      - name: Debug - Show .env contents
+        run: |
+          echo "=== .env file contents ==="
+          cat .env
+          echo ""
+          echo "=== Check for empty values ==="
+          grep -E "^REACT_APP_STAGING.*=$" .env && echo "❌ Found empty staging vars!" || echo "✅ All staging vars have values"
 
       - name: Verify .env exists (env is baked into build – no .env on S3)
         run: |
