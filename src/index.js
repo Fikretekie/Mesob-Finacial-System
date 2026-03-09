@@ -41,7 +41,7 @@ const store = configureStore({
   },
 });
 
-// ENV from getEnv(): hostname (app/staging URL) or REACT_APP_ENV (localhost). Localhost uses .env to choose staging vs production.
+// ENV from getEnv(): hostname (app/staging URL) or REACT_APP_ENV (localhost). Localhost uses .env to choose staging vs production
 const ENV = getEnv();
 const isProduction = ENV === "production";
 const isLocalhost =
