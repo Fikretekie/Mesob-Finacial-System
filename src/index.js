@@ -51,6 +51,7 @@ const isLocalhost =
 const cognitoUserPoolId = isProduction
   ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID )
   : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID );
+  console.log("[Auth] Using Cognito User Pool ID:", cognitoUserPoolId ? `${cognitoUserPoolId.slice(0, 8)}...` : "MISSING");
 const cognitoClientId = isProduction
   ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID )
   : process.env.REACT_APP_STAGING_COGNITO_CLIENT_ID;
