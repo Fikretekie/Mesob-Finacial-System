@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
-import { apiUrl, ROUTES } from "../config/api";
+import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
 const logo = "/logo2.png";
 
 const Login = () => {
@@ -40,7 +40,7 @@ const Login = () => {
     try {
       setLoading(true);
       setSocialAuth("google");
-      console.log("🔵 Initiating Google sign-in with redirect...");
+      console.log(`🔵 Initiating Google sign-in with redirect... [env: ${CURRENT_ENV}]`);
       await signOut();
       await signInWithRedirect({
         provider: "Google",
@@ -60,7 +60,7 @@ const Login = () => {
       setSocialAuth("apple");
       await signOut();
 
-      console.log("🔵 Initiating Apple sign-in with redirect...");
+      console.log(`🔵 Initiating Apple sign-in with redirect... [env: ${CURRENT_ENV}]`);
       await signInWithRedirect({ provider: "SignInWithApple" });
       localStorage.setItem("provider", "Apple");
     } catch (error) {
@@ -86,7 +86,7 @@ const Login = () => {
 
       const res = await signIn({ username: email, password });
       if (res.isSignedIn) {
-        console.log("✅ Email sign-in successful");
+        console.log(`✅ Email sign-in successful [env: ${CURRENT_ENV}]`);
         const user = await getUserInfo();
         const response = await fetch(
           apiUrl(`${ROUTES.USERS}/${user?.userId}`),

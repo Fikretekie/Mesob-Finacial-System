@@ -7,7 +7,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { deleteUser, signUp } from "aws-amplify/auth";
 import axios from "axios";
-import { apiUrl, ROUTES, STAGING_API_URL } from "../config/api";
+import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
 import { businessTypes } from "./BusinessTypes";
 import { currencies } from "utils/currencies";
 import TermsOfUse from "./Terms";
@@ -314,7 +314,7 @@ const SignupPage = () => {
     // Handle Google OAuth signup (skip Cognito signup)
     if (provider === "Google" || provider === "Apple") {
       try {
-        console.log("🔵 Processing  OAuth signup...", provider);
+        console.log(`🔵 Processing OAuth signup... [env: ${CURRENT_ENV}]`, provider);
 
         // For Google users, we don't need Cognito signup since they're already authenticated
         // Just save to backend database
@@ -433,7 +433,7 @@ const SignupPage = () => {
 
     // Handle regular email/password signup (existing Cognito flow)
     try {
-      console.log("🔵 Processing regular email/password signup...");
+      console.log(`🔵 Processing regular email/password signup... [env: ${CURRENT_ENV}]`);
 
       // Cognito Signup for email/password users
       const res = await signUp({
@@ -446,7 +446,7 @@ const SignupPage = () => {
           },
         },
       });
-      console.log("Signup response:", res);
+      console.log(`✅ Cognito sign-up successful [env: ${CURRENT_ENV}]`, res);
 
       try {
         // Database Update for email/password users

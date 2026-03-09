@@ -60,6 +60,21 @@ const googleClientId = isProduction
   ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID || "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com")
   : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID || "263314305713-9b0q8c6f2h3s1u7l1g5l7h5m3v0n5l.apps.googleusercontent.com");
 
+if (typeof window !== "undefined") {
+  console.log("[Auth] Config:", {
+    ENV,
+    isProduction,
+    hostname: window.location?.hostname,
+    cognitoUserPoolId,
+    cognitoClientId: cognitoClientId ? `${cognitoClientId.slice(0, 8)}...` : "MISSING",
+    cognitoDomain: cognitoDomain || "MISSING",
+    appOrigin,
+  });
+  if (!isProduction && (!cognitoClientId || !cognitoDomain)) {
+    console.warn("[Auth] Staging Cognito needs REACT_APP_STAGING_COGNITO_CLIENT_ID and REACT_APP_STAGING_COGNITO_DOMAIN in .env (restart dev server after adding).");
+  }
+}
+
 Amplify.configure({
   Auth: {
     Cognito: {

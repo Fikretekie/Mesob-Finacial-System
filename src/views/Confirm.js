@@ -4,7 +4,7 @@ import { confirmSignUp, resendSignUpCode, signIn } from "aws-amplify/auth";
 import NotificationAlert from "react-notification-alert";
 import "react-notification-alert/dist/animate.css";
 import axios from "axios";
-import { apiUrl, ROUTES, STAGING_API_URL } from "../config/api";
+import { apiUrl, ROUTES, STAGING_API_URL, CURRENT_ENV } from "../config/api";
 
 const Confirm = () => {
   const [code, setCode] = useState("");
@@ -53,6 +53,7 @@ const Confirm = () => {
     try {
       // Confirm user sign up with AWS Amplify
       await confirmSignUp({ username: email, confirmationCode: code });
+      console.log(`✅ Cognito sign-up confirmed (email) [env: ${CURRENT_ENV}]`);
 
       showNotification("success", "Account confirmed successfully!");
 

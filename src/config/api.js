@@ -8,18 +8,20 @@
  */
 
 function getEnv() {
-  const raw = process.env.REACT_APP_ENV;
-  if (raw) return String(raw).toLowerCase().trim();
+  // Prefer hostname on known deployment hosts so login always uses the correct Cognito pool
   if (typeof window !== "undefined" && window.location?.hostname) {
     const h = window.location.hostname;
     if (h === "app.mesobfinancial.com") return "production";
     if (h === "staging.mesobfinancial.com") return "staging";
   }
+  const raw = process.env.REACT_APP_ENV;
+  if (raw) return String(raw).toLowerCase().trim();
   return process.env.NODE_ENV === "production" ? "production" : "staging";
 }
 
 const ENV = getEnv();
 export { getEnv };
+export const CURRENT_ENV = ENV; // "staging" | "production" for logging
 
 /** Cognito domain for current ENV (for OAuth userInfo URL). */
 const COGNITO_DOMAIN =
