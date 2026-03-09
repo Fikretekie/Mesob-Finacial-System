@@ -41,35 +41,46 @@ const store = configureStore({
   },
 });
 
-// ENV from getEnv() so deployed app works: hostname fallback when REACT_APP_ENV not in build
+// ENV from getEnv(): hostname (app/staging URL) or REACT_APP_ENV (localhost). Localhost uses .env to choose staging vs production.
 const ENV = getEnv();
 const isProduction = ENV === "production";
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location?.hostname === "localhost" || window.location?.hostname === "127.0.0.1");
 
 const cognitoUserPoolId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID || "us-east-1_avAIOjCOE")
-  : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID || "us-east-1_VpNtAU2i3");
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID )
+  : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID );
 const cognitoClientId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID || "6iejj0l52i4qihmmojh88kmvie")
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID )
   : process.env.REACT_APP_STAGING_COGNITO_CLIENT_ID;
 const cognitoDomain = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN || "us-east-1avaiojcoe.auth.us-east-1.amazoncognito.com")
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN )
   : process.env.REACT_APP_STAGING_COGNITO_DOMAIN;
 
 const appOrigin = isProduction ? "https://app.mesobfinancial.com" : "https://staging.mesobfinancial.com";
 const googleClientId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID || "263314305713-jam63sp7k0r9g7n58v0c986ekh8fv689.apps.googleusercontent.com")
-  : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID || "263314305713-9b0q8c6f2h3s1u7l1g5l7h5m3v0n5l.apps.googleusercontent.com");
+  ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID )
+  : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID );
 
 if (typeof window !== "undefined") {
+  const hostname = window.location?.hostname;
   console.log("[Auth] Config:", {
     ENV,
     isProduction,
-    hostname: window.location?.hostname,
+    isLocalhost,
+    hostname,
     cognitoUserPoolId,
+    pool: isProduction ? "production" : "staging",
     cognitoClientId: cognitoClientId ? `${cognitoClientId.slice(0, 8)}...` : "MISSING",
     cognitoDomain: cognitoDomain || "MISSING",
     appOrigin,
   });
+  if (isLocalhost) {
+    console.log(
+      `[Auth] Running on localhost → using ${isProduction ? "PRODUCTION" : "STAGING"} User Pool. Set REACT_APP_ENV=staging or REACT_APP_ENV=production in .env and restart to switch.`
+    );
+  }
   if (!isProduction && (!cognitoClientId || !cognitoDomain)) {
     console.warn("[Auth] Staging Cognito needs REACT_APP_STAGING_COGNITO_CLIENT_ID and REACT_APP_STAGING_COGNITO_DOMAIN in .env (restart dev server after adding).");
   }
