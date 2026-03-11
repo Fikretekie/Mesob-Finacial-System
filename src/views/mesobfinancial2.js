@@ -128,11 +128,15 @@ const MesobFinancial2 = () => {
   const [userSubscription, setUserSubscription] = useState(false);
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [scheduleCount, setScheduleCount] = useState(1);
-const [payableSubMode, setPayableSubMode] = useState(null);   // "expense" | "boughtItem"
-const [assetType, setAssetType] = useState("");                // "fixed" | "current"
-const [assetName, setAssetName] = useState("");                // selected or manual name
-const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
-const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
+  const [payableSubMode, setPayableSubMode] = useState(null);   // "expense" | "boughtItem"
+  const [receiveSubMode, setReceiveSubMode] = useState(null);  // "saleCurrent" | "saleFixed" | "other"
+  const [receiveSaleAssetName, setReceiveSaleAssetName] = useState("");
+  const [receiveSaleAssetCost, setReceiveSaleAssetCost] = useState(0);  // cost for display/validation
+  const [selectedSaleItem, setSelectedSaleItem] = useState(null);  // full transaction object for sale
+  const [assetType, setAssetType] = useState("");                // "fixed" | "current"
+  const [assetName, setAssetName] = useState("");                // selected or manual name
+  const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
+  const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // Add method to save new purposes
   const handleAddPurpose = () => {
     if (newPurpose.trim()) {
@@ -428,7 +432,7 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   //               : transactionType === "pay" && paymentMode !== "boughtItem"
   //                 ? "Pay"
   //                 : "New_Item",
-                  
+
   //       transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
   //         }`,
   //       transactionAmount: parseFloat(transactionAmount),
@@ -467,11 +471,11 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // };
   const handleAddTransaction = async () => {
     const errors = {};
-  
+
     if (transactionPurpose === "manual" && !manualPurpose.trim()) {
       errors.manualPurpose = "Please enter a purpose manually";
     }
-  
+
     // Payable + Bought new item: require asset type and item name
     const isPayableBoughtItem =
       transactionType === "Payable" && payableSubMode === "boughtItem";
@@ -485,24 +489,28 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
         errors.assetName = "Please select or enter an item name";
       }
     }
-  
+
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-  
+
     if (!transactionType || !transactionAmount) {
       notify("tr", t("financialReport.fillFields"), "warning");
       return;
     }
-  
+    if (transactionType === "receive" && (receiveSubMode === "saleCurrent" || receiveSubMode === "saleFixed") && !selectedSaleItem) {
+      notify("tr", t("financialReport.selectItem") || "Please select an item", "warning");
+      return;
+    }
+
     setIsAddingTransaction(true);
     let Url = "";
-  
+
     if (receipt) {
       Url = await uploadReceipt();
     }
-  
+
     try {
       const purposeText =
         transactionPurpose === "manual"
@@ -510,10 +518,25 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
           : (transactionPurpose || "").trim();
       const resolvedAssetName =
         assetName === "manual" ? (assetNameManual || "").trim() : assetName || null;
-  
+
       let newTransaction;
-  
-      if (isPayableBoughtItem) {
+
+      if (transactionType === "receive" && (receiveSubMode === "saleCurrent" || receiveSubMode === "saleFixed")) {
+        const cost = selectedSaleItem ? parseFloat(selectedSaleItem.amount) : parseFloat(receiveSaleAssetCost) || 0;
+        const assetName = selectedSaleItem ? selectedSaleItem.name : receiveSaleAssetName;
+        newTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType: "Receive",
+          subType: receiveSubMode === "saleCurrent" ? "sale_inventory" : "sale_fixed",
+          transactionPurpose: assetName,
+          transactionAmount: parseFloat(transactionAmount),
+          originalAmount: cost,
+          assetType: receiveSubMode === "saleCurrent" ? "current" : "fixed",
+          assetName: assetName,
+          soldTransactionId: selectedSaleItem ? selectedSaleItem.id : null,
+          receiptUrl: Url || "",
+        };
+      } else if (isPayableBoughtItem) {
         // Haven't Yet Paid → Bought a new item (payable, not paid)
         newTransaction = {
           userId: localStorage.getItem("userId"),
@@ -528,7 +551,7 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
           receiptUrl: Url || "",
         };
       } else {
-        // All other cases (receive, pay expense, pay recorded, pay bought item, Payable expense)
+        // All other cases (receive other income, pay expense, pay recorded, pay bought item, Payable expense)
         newTransaction = {
           userId: localStorage.getItem("userId"),
           transactionType:
@@ -541,15 +564,17 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
                   : transactionType === "pay" && paymentMode !== "boughtItem"
                     ? "Pay"
                     : "New_Item",
-          transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""}`,
+          transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""}`.trim(),
           transactionAmount: parseFloat(transactionAmount),
           originalAmount: parseFloat(transactionAmount),
           subType:
-            paymentMode === "boughtItem"
-              ? "New_Item"
-              : paymentMode === "new"
-                ? "Expense"
-                : subType,
+            transactionType === "receive" && receiveSubMode === "other"
+              ? undefined
+              : paymentMode === "boughtItem"
+                ? "New_Item"
+                : paymentMode === "new"
+                  ? "Expense"
+                  : subType,
           receiptUrl: Url || "",
           status: transactionType === "Payable" ? "Unpaid" : "Paid",
         };
@@ -563,12 +588,12 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
           newTransaction.assetName = resolvedAssetName || null;
         }
       }
-  
+
       const response = await axios.post(
         apiUrl(ROUTES.TRANSACTION),
         newTransaction
       );
-  
+
       if (response.status === 200) {
         const successMessage =
           isPayableBoughtItem
@@ -594,10 +619,14 @@ const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
     setTransactionAmount("");
     setManualPurpose("");
     setsubType("");
-setPayableSubMode(null);
-setAssetType("");
-setAssetName("");
-setAssetNameManual("");
+    setPayableSubMode(null);
+    setReceiveSubMode(null);
+    setReceiveSaleAssetName("");
+    setReceiveSaleAssetCost(0);
+    setSelectedSaleItem(null);
+    setAssetType("");
+    setAssetName("");
+    setAssetNameManual("");
     setEditingTransaction(null);
     setReceipt(null);
     setPaymentMode(null);
@@ -1179,6 +1208,135 @@ setAssetNameManual("");
     setAccountsPayable(newAccountsPayable);
   };
 
+  // Get individual current asset transactions (not grouped) for the dropdown
+  const getCurrentAssetItems = () => {
+    const result = [];
+    const soldIds = new Set();
+    
+    // Track which transactions have been sold
+    items.forEach((t) => {
+      if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId) {
+        soldIds.add(t.soldTransactionId);
+      }
+    });
+    
+    items.forEach((t) => {
+      // Skip if already sold
+      if (soldIds.has(t.id)) return;
+      
+      // Explicit current assets with assetName
+      const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
+      const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.assetName;
+      
+      if (isNewItemCurrent || isPayableCurrent) {
+        result.push({
+          id: t.id,
+          name: t.assetName,
+          amount: parseFloat(t.transactionAmount || 0),
+          purpose: t.transactionPurpose,
+          displayName: `${t.assetName} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+        });
+      }
+      
+      // Fallback: ANY unpaid Payable without assetType (use purpose as name)
+      const isUnpaidPayableWithoutAssetType = t.transactionType === "Payable" && 
+                                               !t.assetType && 
+                                               t.status !== "Paid" &&
+                                               t.transactionPurpose;
+      if (isUnpaidPayableWithoutAssetType) {
+        result.push({
+          id: t.id,
+          name: t.transactionPurpose,
+          amount: parseFloat(t.transactionAmount || 0),
+          purpose: t.transactionPurpose,
+          displayName: `${t.transactionPurpose} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+        });
+      }
+    });
+    
+    return result;
+  };
+
+  const getFixedAssetItems = () => {
+    const result = [];
+    const soldIds = new Set();
+    
+    // Track which transactions have been sold
+    items.forEach((t) => {
+      if (t.transactionType === "Receive" && t.subType === "sale_fixed" && t.soldTransactionId) {
+        soldIds.add(t.soldTransactionId);
+      }
+    });
+    
+    items.forEach((t) => {
+      // Skip if already sold
+      if (soldIds.has(t.id)) return;
+      
+      // Explicit fixed assets with assetName
+      const isNewItemFixed = t.transactionType === "New_Item" && t.assetType === "fixed" && t.assetName;
+      const isPayableFixed = t.transactionType === "Payable" && t.assetType === "fixed" && t.assetName;
+      
+      if (isNewItemFixed || isPayableFixed) {
+        result.push({
+          id: t.id,
+          name: t.assetName,
+          amount: parseFloat(t.transactionAmount || 0),
+          purpose: t.transactionPurpose,
+          displayName: `${t.assetName} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+        });
+      }
+      
+      // Fallback: ANY unpaid Payable without assetType but with fixed-asset related purpose
+      const isUnpaidFixedPayable = t.transactionType === "Payable" && 
+                                    !t.assetType && 
+                                    t.status !== "Paid" &&
+                                    t.transactionPurpose &&
+                                    (t.transactionPurpose.toLowerCase().includes("equipment") ||
+                                     t.transactionPurpose.toLowerCase().includes("vehicle") ||
+                                     t.transactionPurpose.toLowerCase().includes("truck") ||
+                                     t.transactionPurpose.toLowerCase().includes("machine") ||
+                                     t.transactionPurpose.toLowerCase().includes("furniture") ||
+                                     t.transactionPurpose.toLowerCase().includes("computer") ||
+                                     t.transactionPurpose.toLowerCase().includes("fixed"));
+      if (isUnpaidFixedPayable) {
+        result.push({
+          id: t.id,
+          name: t.transactionPurpose,
+          amount: parseFloat(t.transactionAmount || 0),
+          purpose: t.transactionPurpose,
+          displayName: `${t.transactionPurpose} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+        });
+      }
+    });
+    
+    return result;
+  };
+
+  // Remaining cost (book value) for an asset after subtracting sales (uses ALL items, not time-filtered)
+  const getAssetCost = (name, type) => {
+    let cost = 0;
+    
+    // Add purchases - check by assetName first, then by transactionPurpose for backward compatibility
+    items.forEach((t) => {
+      const matchesAssetName = t.assetName === name && t.assetType === type;
+      const matchesPurpose = !t.assetType && t.transactionPurpose === name && t.transactionType === "Payable";
+      
+      if ((t.transactionType === "New_Item" || t.transactionType === "Payable") && (matchesAssetName || matchesPurpose)) {
+        cost += parseFloat(t.transactionAmount || 0);
+      }
+    });
+    
+    // Subtract sales
+    const subType = type === "current" ? "sale_inventory" : "sale_fixed";
+    items.forEach((t) => {
+      if (t.transactionType === "Receive" && t.subType === subType && t.assetName === name) {
+        cost -= parseFloat(t.originalAmount || 0);
+      }
+    });
+    
+    return Math.max(0, cost);
+  };
+
   const calculateTotalRevenue = () => {
     const filteredItems = getFilteredItems();
     const totalReceived = filteredItems.reduce((sum, value) => {
@@ -1195,32 +1353,87 @@ setAssetNameManual("");
     const filteredItems = getFilteredItems();
 
     const newItemsTotal = filteredItems.reduce((sum, item) => {
-      if (item.transactionType === "New_Item" && item.subType === "New_Item") {
+      // New_Item transactions with current asset type
+      const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current";
+      // Payable with current asset type
+      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current";
+      // Legacy: New_Item without assetType (old transactions)
+      const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && !item.assetType;
+      
+      if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem) {
         return sum + parseFloat(item.transactionAmount || 0);
       }
       return sum;
     }, 0);
 
-    const totalInventory = newItemsTotal + valueableItems;
+    const saleInventoryCost = filteredItems.reduce((sum, item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && parseFloat(item.originalAmount || 0)) {
+        return sum + parseFloat(item.originalAmount);
+      }
+      return sum;
+    }, 0);
+
+    const totalInventory = Math.max(0, newItemsTotal - saleInventoryCost + valueableItems);
     return totalInventory.toFixed(2);
+  };
+
+  const calculateTotalFixedAssets = () => {
+    const filteredItems = getFilteredItems();
+    const fixedAdded = filteredItems.reduce((sum, item) => {
+      const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed";
+      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed";
+      if (isNewItemFixed || isPayableFixed) {
+        return sum + parseFloat(item.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
+    const fixedSold = filteredItems.reduce((sum, item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_fixed" && parseFloat(item.originalAmount || 0)) {
+        return sum + parseFloat(item.originalAmount);
+      }
+      return sum;
+    }, 0);
+    return (fixedAdded - fixedSold).toFixed(2);
+  };
+
+  const getFixedAssetBreakdown = () => {
+    const filteredItems = getFilteredItems();
+    const byName = {};
+    filteredItems.forEach((item) => {
+      const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed" && item.assetName;
+      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.assetName;
+      if (isNewItemFixed || isPayableFixed) {
+        byName[item.assetName] = (byName[item.assetName] || 0) + parseFloat(item.transactionAmount || 0);
+      }
+    });
+    filteredItems.forEach((item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_fixed" && item.assetName) {
+        byName[item.assetName] = (byName[item.assetName] || 0) - parseFloat(item.originalAmount || 0);
+      }
+    });
+    return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
   };
 
   const calculateTotalExpenses = () => {
     const filteredItems = getFilteredItems();
-    return filteredItems
-      .reduce((sum, value) => {
-        // *** FIX: Exclude outstanding debt payments ***
-        if (
-          (value.transactionType === "Pay" ||
-            (value.transactionType === "Payable" && value.status !== "Paid")) &&
-          value.payableId !== "outstanding-debt" &&
-          !value.transactionPurpose.includes("Outstanding Debt")
-        ) {
-          return sum + parseFloat(value.transactionAmount || 0);
-        }
-        return sum;
-      }, 0)
-      .toFixed(2);
+    const payExpenses = filteredItems.reduce((sum, value) => {
+      if (
+        (value.transactionType === "Pay" ||
+          (value.transactionType === "Payable" && value.status !== "Paid")) &&
+        value.payableId !== "outstanding-debt" &&
+        !value.transactionPurpose.includes("Outstanding Debt")
+      ) {
+        return sum + parseFloat(value.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
+    const cogs = filteredItems.reduce((sum, item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && parseFloat(item.originalAmount || 0)) {
+        return sum + parseFloat(item.originalAmount);
+      }
+      return sum;
+    }, 0);
+    return (payExpenses + cogs).toFixed(2);
   };
 
   const calculateTotalCash = () => {
@@ -2622,85 +2835,68 @@ setAssetNameManual("");
                           </td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.cash')}
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.currentAssets')}
                           </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalCash()).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.inventory')}
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ color: "#41926f", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td
-                            style={{
-                              color: "#ffffff",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(
-                              calculateTotalInventory()
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
-                          >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.inventory')}</td>
+                          <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalCurrentAssets')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.fixedAssets')}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {getFixedAssetBreakdown().map(({ name, balance }) => (
+                          <tr key={name}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalFixedAssets')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
                             <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              fontWeight: "bold",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
                           <td
@@ -3360,130 +3556,75 @@ setAssetNameManual("");
                     >
                       <tbody>
                         <tr>
-                          <td
-                            style={{
-                              width: "40%",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                              color: "#ffffff",
-                            }}
-                          >
+                          <td style={{ width: "40%", padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>
                             <strong>{t('financialReport.assets')}</strong>
                           </td>
-                          <td
-                            style={{
-                              width: "30%",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                              color: "#ffffff",
-                            }}
-                          >
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
-                          <td
-                            style={{
-                              width: "30%",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                              color: "#ffffff",
-                            }}
-                          >
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.cash')}
-                          </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalCash()).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
-                        </tr>
-
-                        <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.inventory')}
-                          </td>
-                          <td
-                            style={{
-                              color: "#ffffff",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(
-                              calculateTotalInventory()
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>{t('financialReport.currentAssets')}</td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
-                          >
-                            <strong>{t('financialReport.totalAssets')}</strong>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ color: "#41926f", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              fontWeight: "bold",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}
-                          >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.inventory')}</td>
+                          <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}><strong>{t('financialReport.totalCurrentAssets')}</strong></td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>{t('financialReport.fixedAssets')}</td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {getFixedAssetBreakdown().map(({ name, balance }) => (
+                          <tr key={`bs2-${name}`}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}><strong>{t('financialReport.totalFixedAssets')}</strong></td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}><strong>{t('financialReport.totalAssets')}</strong></td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}>
                             <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
@@ -3666,6 +3807,9 @@ setAssetNameManual("");
                   onClick={() => {
                     setTransactionType("receive");
                     setPaymentMode(null);
+                    setReceiveSubMode(null);
+                    setReceiveSaleAssetName("");
+                    setReceiveSaleAssetCost(0);
                   }}
                 >
                   {t('financialReport.receivedCash')}
@@ -3739,6 +3883,50 @@ setAssetNameManual("");
                 </div>
               </FormGroup>
             )}
+            {/* Receive Cash: Select Action */}
+            {transactionType === "receive" && (
+              <FormGroup>
+                <Label>{t('financialReport.selectAction')}:</Label>
+                <div style={{ display: "flex", gap: "5px", marginBottom: "15px", flexWrap: "wrap" }}>
+                  <Button
+                    color={receiveSubMode === "saleCurrent" ? "primary" : "secondary"}
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setReceiveSubMode("saleCurrent");
+                      setReceiveSaleAssetName("");
+                      setReceiveSaleAssetCost(0);
+                      setSelectedSaleItem(null);
+                    }}
+                  >
+                    {t('financialReport.recordedEarlierAsCurrentAssets')}
+                  </Button>
+                  <Button
+                    color={receiveSubMode === "saleFixed" ? "primary" : "secondary"}
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setReceiveSubMode("saleFixed");
+                      setReceiveSaleAssetName("");
+                      setReceiveSaleAssetCost(0);
+                      setSelectedSaleItem(null);
+                    }}
+                  >
+                    {t('financialReport.recordedEarlierAsFixedAsset')}
+                  </Button>
+                  <Button
+                    color={receiveSubMode === "other" ? "primary" : "secondary"}
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setReceiveSubMode("other");
+                      setReceiveSaleAssetName("");
+                      setReceiveSaleAssetCost(0);
+                      setSelectedSaleItem(null);
+                    }}
+                  >
+                    {t('financialReport.otherIncome')}
+                  </Button>
+                </div>
+              </FormGroup>
+            )}
             {/* Show dropdown for recorded payment mode under Pay Cash */}
             {selectedBusinessType === "Other" && (
               <div className="manual-purpose-management">
@@ -3770,8 +3958,8 @@ setAssetNameManual("");
                   style={{ display: "flex", gap: "5px", marginBottom: "15px" }}
                 >
                   <Button
-                    color="primary"
-                    className="transaction-action-btn"
+                    color="danger"
+                    className="transaction-action-btn action-expense"
                     onClick={() => {
                       setPayableSubMode("expense");
                       setPaymentMode(null);
@@ -3976,9 +4164,6 @@ setAssetNameManual("");
                     <option value="manual">{t('financialReport.enterManually')}</option>
                   </Input>
 
-
-
-                  {/* ----------  NEW VALIDATION FOR MANUAL DESCRIPTION ---------- */}
                   {isManual === "manual" && (
                     <FormGroup className="mt-2">
                       <Input
@@ -3987,22 +4172,42 @@ setAssetNameManual("");
                         value={manualPurpose}
                         onChange={(e) => {
                           setManualPurpose(e.target.value);
-                          // clear the error when the user starts typing
                           setFormErrors({ ...formErrors, manualPurpose: "" });
                         }}
                         invalid={!!formErrors.manualPurpose}
                       />
                       {formErrors.manualPurpose && (
-                        <div
-                          className="text-danger"
-                          style={{ fontSize: "0.875rem" }}
-                        >
+                        <div className="text-danger" style={{ fontSize: "0.875rem" }}>
                           {formErrors.manualPurpose}
                         </div>
                       )}
                     </FormGroup>
                   )}
                 </FormGroup>
+
+                <FormGroup>
+                  <Label>{t('financialReport.assetType')}:</Label>
+                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
+                    <option value="">{t('financialReport.selectAssetType')}</option>
+                    <option value="fixed">{t('financialReport.fixedAsset')}</option>
+                    <option value="current">{t('financialReport.currentAsset')}</option>
+                  </Input>
+                </FormGroup>
+                {assetType && (
+                  <FormGroup>
+                    <Label>{t('financialReport.itemName')}:</Label>
+                    <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
+                      <option value="">{t('financialReport.selectItem')}</option>
+                      {[...new Set(items.filter(t => t.assetType === assetType).map(t => t.assetName).filter(Boolean))].map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                      <option value="manual">{t('financialReport.enterManually')}</option>
+                    </Input>
+                    {assetName === "manual" && (
+                      <Input type="text" placeholder={t('financialReport.enterItemName')} value={assetNameManual} onChange={(e) => setAssetNameManual(e.target.value)} style={{ marginTop: "10px" }} />
+                    )}
+                  </FormGroup>
+                )}
 
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
@@ -4054,52 +4259,132 @@ setAssetNameManual("");
               </>
             )}
             {transactionType === "Payable" && payableSubMode === "boughtItem" && (
-  <>
-    <FormGroup>
-      <Label>{t('financialReport.purpose')}:</Label>
-      <Input type="select" value={transactionPurpose} onChange={(e) => setTransactionPurpose(e.target.value)}>
-        <option value="">{t('financialReport.selectPurpose')}</option>
-        {boughtNewItemPurposes.map((p, i) => <option key={i} value={p}>{p}</option>)}
-        <option value="manual">{t('financialReport.enterManually')}</option>
-      </Input>
-      {transactionPurpose === "manual" && (
-        <Input type="text" placeholder={t('financialReport.enterPurposeManually')} value={manualPurpose} onChange={(e) => setManualPurpose(e.target.value)} />
-      )}
-    </FormGroup>
-    <FormGroup>
-      <Label>{t('financialReport.assetType')}:</Label>
-      <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
-        <option value="">{t('financialReport.selectAssetType')}</option>
-        <option value="fixed">{t('financialReport.fixedAsset')}</option>
-        <option value="current">{t('financialReport.currentAsset')}</option>
-      </Input>
-    </FormGroup>
-    {assetType && (
-      <FormGroup>
-        <Label>{t('financialReport.itemName')}:</Label>
-        <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
-          <option value="">{t('financialReport.selectItem')}</option>
-          {[...new Set(items.filter(t => t.assetType === assetType).map(t => t.assetName).filter(Boolean))].map(name => (
-            <option key={name} value={name}>{name}</option>
-          ))}
-          <option value="manual">{t('financialReport.enterManually')}</option>
-        </Input>
-        {assetName === "manual" && (
-          <Input type="text" placeholder={t('financialReport.enterItemName')} value={assetNameManual} onChange={(e) => setAssetNameManual(e.target.value)} />
-        )}
-      </FormGroup>
-    )}
-    <FormGroup>
-      <Label>{t('financialReport.amount')}:</Label>
-      <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
-    </FormGroup>
-    <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || (!assetNameManual && assetName !== "manual" && !assetName)}>
-      {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
-    </Button>
-  </>
-)}
-            {/* Show regular form fields for other cases */}
-            {(transactionType === "receive" ||
+              <>
+                <FormGroup>
+                  <Label>{t('financialReport.purpose')}:</Label>
+                  <Input type="select" value={transactionPurpose} onChange={(e) => setTransactionPurpose(e.target.value)}>
+                    <option value="">{t('financialReport.selectPurpose')}</option>
+                    {boughtNewItemPurposes.map((p, i) => <option key={i} value={p}>{p}</option>)}
+                    <option value="manual">{t('financialReport.enterManually')}</option>
+                  </Input>
+                  {transactionPurpose === "manual" && (
+                    <Input type="text" placeholder={t('financialReport.enterPurposeManually')} value={manualPurpose} onChange={(e) => setManualPurpose(e.target.value)} />
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>{t('financialReport.assetType')}:</Label>
+                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
+                    <option value="">{t('financialReport.selectAssetType')}</option>
+                    <option value="fixed">{t('financialReport.fixedAsset')}</option>
+                    <option value="current">{t('financialReport.currentAsset')}</option>
+                  </Input>
+                </FormGroup>
+                {assetType && (
+                  <FormGroup>
+                    <Label>{t('financialReport.itemName')}:</Label>
+                    <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
+                      <option value="">{t('financialReport.selectItem')}</option>
+                      {[...new Set(items.filter(t => t.assetType === assetType).map(t => t.assetName).filter(Boolean))].map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                      <option value="manual">{t('financialReport.enterManually')}</option>
+                    </Input>
+                    {assetName === "manual" && (
+                      <Input type="text" placeholder={t('financialReport.enterItemName')} value={assetNameManual} onChange={(e) => setAssetNameManual(e.target.value)} />
+                    )}
+                  </FormGroup>
+                )}
+                <FormGroup>
+                  <Label>{t('financialReport.amount')}:</Label>
+                  <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
+                </FormGroup>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || (!assetNameManual && assetName !== "manual" && !assetName)}>
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                </Button>
+              </>
+            )}
+            {/* Receive: Recorded earlier as current assets */}
+            {transactionType === "receive" && receiveSubMode === "saleCurrent" && (
+              <>
+                <FormGroup>
+                  <Label>{t('financialReport.itemName')} ({t('financialReport.recordedEarlierAsCurrentAssets')}):</Label>
+                  <Input
+                    type="select"
+                    value={selectedSaleItem ? selectedSaleItem.id : ""}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const item = getCurrentAssetItems().find(i => String(i.id) === selectedId);
+                      if (item) {
+                        setSelectedSaleItem(item);
+                        setReceiveSaleAssetName(item.name);
+                        setReceiveSaleAssetCost(item.amount);
+                      } else {
+                        setSelectedSaleItem(null);
+                        setReceiveSaleAssetName("");
+                        setReceiveSaleAssetCost(0);
+                      }
+                    }}
+                  >
+                    <option value="">{t('financialReport.selectItem')}</option>
+                    {getCurrentAssetItems().map((item) => (
+                      <option key={item.id} value={item.id}>{item.displayName}</option>
+                    ))}
+                  </Input>
+                  {selectedSaleItem && (
+                    <small style={{ color: "#aaa" }}>Cost (book value): ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>{t('financialReport.amount')}:</Label>
+                  <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="e.g. 1500" />
+                </FormGroup>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                </Button>
+              </>
+            )}
+            {/* Receive: Recorded earlier as fixed asset */}
+            {transactionType === "receive" && receiveSubMode === "saleFixed" && (
+              <>
+                <FormGroup>
+                  <Label>{t('financialReport.itemName')} ({t('financialReport.recordedEarlierAsFixedAsset')}):</Label>
+                  <Input
+                    type="select"
+                    value={selectedSaleItem ? selectedSaleItem.id : ""}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const item = getFixedAssetItems().find(i => String(i.id) === selectedId);
+                      if (item) {
+                        setSelectedSaleItem(item);
+                        setReceiveSaleAssetName(item.name);
+                        setReceiveSaleAssetCost(item.amount);
+                      } else {
+                        setSelectedSaleItem(null);
+                        setReceiveSaleAssetName("");
+                        setReceiveSaleAssetCost(0);
+                      }
+                    }}
+                  >
+                    <option value="">{t('financialReport.selectItem')}</option>
+                    {getFixedAssetItems().map((item) => (
+                      <option key={item.id} value={item.id}>{item.displayName}</option>
+                    ))}
+                  </Input>
+                  {selectedSaleItem && (
+                    <small style={{ color: "#aaa" }}>Book value: ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>{t('financialReport.amount')}:</Label>
+                  <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="Sale amount" />
+                </FormGroup>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                </Button>
+              </>
+            )}
+            {/* Show regular form fields for other cases (Other income, Pay expense, Payable expense) */}
+            {((transactionType === "receive" && receiveSubMode === "other") ||
               (transactionType === "pay" && paymentMode === "new") ||
               (transactionType === "Payable" && payableSubMode === "expense")) && (
                 <>
@@ -4112,7 +4397,7 @@ setAssetNameManual("");
                       onChange={(e) => setTransactionPurpose(e.target.value)}
                     >
                       <option value="">{t('financialReport.selectPurpose')}</option>
-                      {transactionType === "receive" && (
+                      {transactionType === "receive" && receiveSubMode === "other" && (
                         <>
                           {incomePurposes.map((purpose, index) => (
                             <option key={index} value={purpose}>
@@ -4134,11 +4419,17 @@ setAssetNameManual("");
                       )}
                       {transactionType === "Payable" && payableSubMode === "expense" && (
                         <>
-                          {payablePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
+                          {payablePurposes
+                            .filter(
+                              (p) =>
+                                p !== t("businessTypes.payables.inventoryPurchases") &&
+                                p !== t("businessTypes.payables.inventoryAdjustments")
+                            )
+                            .map((purpose, index) => (
+                              <option key={index} value={purpose}>
+                                {purpose}
+                              </option>
+                            ))}
                           <option value="manual">{t('financialReport.enterManually')}</option>
                         </>
                       )}

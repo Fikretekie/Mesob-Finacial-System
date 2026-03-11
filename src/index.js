@@ -41,7 +41,7 @@ const store = configureStore({
   },
 });
 
-// ENV from getEnv(): hostname (app/staging URL) or REACT_APP_ENV (localhost). Localhost uses .env to choose staging vs production
+// ENV from getEnv(): hostname (app/staging URL) or REACT_APP_ENV (localhost). Localhost uses .env to choose staging vs production.
 const ENV = getEnv();
 const isProduction = ENV === "production";
 const isLocalhost =
@@ -49,20 +49,20 @@ const isLocalhost =
   (window.location?.hostname === "localhost" || window.location?.hostname === "127.0.0.1");
 
 const cognitoUserPoolId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID )
-  : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID );
-  console.log("[Auth] Using Cognito User Pool ID:", cognitoUserPoolId ? `${cognitoUserPoolId.slice(0, 8)}...` : "MISSING");
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID)
+  : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID);
+console.log("[Auth] Using Cognito User Pool ID:", cognitoUserPoolId ? `${cognitoUserPoolId.slice(0, 8)}...` : "MISSING");
 const cognitoClientId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID )
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID)
   : process.env.REACT_APP_STAGING_COGNITO_CLIENT_ID;
 const cognitoDomain = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN )
+  ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN)
   : process.env.REACT_APP_STAGING_COGNITO_DOMAIN;
 
 const appOrigin = isProduction ? "https://app.mesobfinancial.com" : "https://staging.mesobfinancial.com";
 const googleClientId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID )
-  : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID );
+  ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID)
+  : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID);
 
 if (typeof window !== "undefined") {
   const hostname = window.location?.hostname;
