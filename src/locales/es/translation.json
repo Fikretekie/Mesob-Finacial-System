@@ -48,6 +48,7 @@
     "receive": "Recibir [Efectivo]",
     "pay": "Pagita [Efectivo]",
     "payable": "Por Pagar",
+    "purchasesOf": "Compras de",
     "expense": "[Gasto]",
     "loadingTransactions": "Cargando transacciones...",
     "assets": "Activos",
@@ -301,7 +302,9 @@
       "utilitiesExpense": "Servicios Públicos (Gasto)",
       "taxesExpense": "Impuestos (Gasto)",
       "rentExpense": "Alquiler (Gasto)",
-      "insuranceExpense": "Seguro (Gasto)"
+      "insuranceExpense": "Seguro (Gasto)",
+      "inventoryPurchases": "Compras de Inventario",
+      "inventoryAdjustments": "Ajustes de Inventario"
     }
   },
   "common": {

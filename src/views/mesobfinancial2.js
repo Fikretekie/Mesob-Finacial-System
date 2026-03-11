@@ -1188,10 +1188,23 @@ const MesobFinancial2 = () => {
       ) {
         const purpose = transaction.transactionPurpose;
 
-        // *** FIX: Exclude outstanding debt payments from expenses ***
+        // Exclude Payable+New_Item (asset purchases on credit) from expenses
+        const isPayableNewItem = transaction.transactionType === "Payable" && transaction.subType === "New_Item";
+        
+        // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
+        let isPaymentForNewItem = false;
+        if (transaction.transactionType === "Pay" && transaction.payableId && transaction.payableId !== "outstanding-debt") {
+          const originalPayable = items.find(item => item.id === transaction.payableId);
+          if (originalPayable && originalPayable.subType === "New_Item") {
+            isPaymentForNewItem = true;
+          }
+        }
+        
         if (
           transaction.payableId !== "outstanding-debt" &&
-          !purpose.includes("Outstanding Debt")
+          !purpose.includes("Outstanding Debt") &&
+          !isPayableNewItem &&
+          !isPaymentForNewItem
         ) {
           newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
         }
@@ -1199,6 +1212,15 @@ const MesobFinancial2 = () => {
         if (transaction.transactionType === "Payable") {
           newAccountsPayable[purpose] =
             (newAccountsPayable[purpose] || 0) + amount;
+        }
+      }
+      
+      // Add COGS from inventory sales to expenses with purpose
+      if (transaction.transactionType === "Receive" && transaction.subType === "sale_inventory") {
+        const cogsAmount = parseFloat(transaction.originalAmount || 0);
+        if (cogsAmount > 0) {
+          const cogsPurpose = transaction.assetName || transaction.transactionPurpose || "Inventory";
+          newExpenses[cogsPurpose] = (newExpenses[cogsPurpose] || 0) + cogsAmount;
         }
       }
     });
@@ -1226,30 +1248,38 @@ const MesobFinancial2 = () => {
       
       // Explicit current assets with assetName
       const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
-      const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.assetName;
+      const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.subType === "New_Item" && t.assetName;
+      // Include New_Item without assetType (default to current assets / inventory)
+      const isNewItemDefault = t.transactionType === "New_Item" && !t.assetType && t.assetName;
       
-      if (isNewItemCurrent || isPayableCurrent) {
+      if (isNewItemCurrent || isPayableCurrent || isNewItemDefault) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = t.transactionType === "Payable" 
+          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
+          : parseFloat(t.transactionAmount || 0);
         result.push({
           id: t.id,
           name: t.assetName,
-          amount: parseFloat(t.transactionAmount || 0),
+          amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.assetName} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+          displayName: `${t.assetName} - $${amount.toFixed(2)}`
         });
       }
       
-      // Fallback: ANY unpaid Payable without assetType (use purpose as name)
-      const isUnpaidPayableWithoutAssetType = t.transactionType === "Payable" && 
-                                               !t.assetType && 
-                                               t.status !== "Paid" &&
-                                               t.transactionPurpose;
-      if (isUnpaidPayableWithoutAssetType) {
+      // Fallback: Payable+New_Item without assetType OR with assetType not fixed (default to current)
+      const isPayableDefaultCurrent = t.transactionType === "Payable" && 
+                                       t.subType === "New_Item" &&
+                                       t.assetType !== "fixed" && 
+                                       !t.assetName &&
+                                       t.transactionPurpose;
+      if (isPayableDefaultCurrent) {
+        const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
         result.push({
           id: t.id,
           name: t.transactionPurpose,
-          amount: parseFloat(t.transactionAmount || 0),
+          amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.transactionPurpose} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
         });
       }
     });
@@ -1274,37 +1304,42 @@ const MesobFinancial2 = () => {
       
       // Explicit fixed assets with assetName
       const isNewItemFixed = t.transactionType === "New_Item" && t.assetType === "fixed" && t.assetName;
-      const isPayableFixed = t.transactionType === "Payable" && t.assetType === "fixed" && t.assetName;
+      const isPayableFixed = t.transactionType === "Payable" && t.assetType === "fixed" && t.subType === "New_Item" && t.assetName;
       
       if (isNewItemFixed || isPayableFixed) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = t.transactionType === "Payable" 
+          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
+          : parseFloat(t.transactionAmount || 0);
         result.push({
           id: t.id,
           name: t.assetName,
-          amount: parseFloat(t.transactionAmount || 0),
+          amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.assetName} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+          displayName: `${t.assetName} - $${amount.toFixed(2)}`
         });
       }
       
-      // Fallback: ANY unpaid Payable without assetType but with fixed-asset related purpose
-      const isUnpaidFixedPayable = t.transactionType === "Payable" && 
-                                    !t.assetType && 
-                                    t.status !== "Paid" &&
-                                    t.transactionPurpose &&
-                                    (t.transactionPurpose.toLowerCase().includes("equipment") ||
-                                     t.transactionPurpose.toLowerCase().includes("vehicle") ||
-                                     t.transactionPurpose.toLowerCase().includes("truck") ||
-                                     t.transactionPurpose.toLowerCase().includes("machine") ||
-                                     t.transactionPurpose.toLowerCase().includes("furniture") ||
-                                     t.transactionPurpose.toLowerCase().includes("computer") ||
-                                     t.transactionPurpose.toLowerCase().includes("fixed"));
-      if (isUnpaidFixedPayable) {
+      // Fallback: ANY Payable with subType New_Item without assetType but with fixed-asset related purpose
+      const isFixedPayable = t.transactionType === "Payable" && 
+                              t.subType === "New_Item" &&
+                              !t.assetType && 
+                              t.transactionPurpose &&
+                              (t.transactionPurpose.toLowerCase().includes("equipment") ||
+                               t.transactionPurpose.toLowerCase().includes("vehicle") ||
+                               t.transactionPurpose.toLowerCase().includes("truck") ||
+                               t.transactionPurpose.toLowerCase().includes("machine") ||
+                               t.transactionPurpose.toLowerCase().includes("furniture") ||
+                               t.transactionPurpose.toLowerCase().includes("computer") ||
+                               t.transactionPurpose.toLowerCase().includes("fixed"));
+      if (isFixedPayable) {
+        const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
         result.push({
           id: t.id,
           name: t.transactionPurpose,
-          amount: parseFloat(t.transactionAmount || 0),
+          amount: amount,
           purpose: t.transactionPurpose,
-          displayName: `${t.transactionPurpose} - $${parseFloat(t.transactionAmount || 0).toFixed(2)}`
+          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
         });
       }
     });
@@ -1322,7 +1357,11 @@ const MesobFinancial2 = () => {
       const matchesPurpose = !t.assetType && t.transactionPurpose === name && t.transactionType === "Payable";
       
       if ((t.transactionType === "New_Item" || t.transactionType === "Payable") && (matchesAssetName || matchesPurpose)) {
-        cost += parseFloat(t.transactionAmount || 0);
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = t.transactionType === "Payable" 
+          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
+          : parseFloat(t.transactionAmount || 0);
+        cost += amount;
       }
     });
     
@@ -1355,13 +1394,19 @@ const MesobFinancial2 = () => {
     const newItemsTotal = filteredItems.reduce((sum, item) => {
       // New_Item transactions with current asset type
       const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current";
-      // Payable with current asset type
-      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current";
-      // Legacy: New_Item without assetType (old transactions)
-      const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && !item.assetType;
+      // Payable with current asset type and subType New_Item
+      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current" && item.subType === "New_Item";
+      // Legacy/Default: New_Item without assetType (treat as inventory by default, unless explicitly fixed)
+      const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && item.assetType !== "fixed";
+      // Payable New_Item without assetType (treat as inventory by default)
+      const isLegacyPayableNewItem = item.transactionType === "Payable" && item.subType === "New_Item" && !item.assetType;
       
-      if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem) {
-        return sum + parseFloat(item.transactionAmount || 0);
+      if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem || isLegacyPayableNewItem) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable" 
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        return sum + amount;
       }
       return sum;
     }, 0);
@@ -1381,9 +1426,13 @@ const MesobFinancial2 = () => {
     const filteredItems = getFilteredItems();
     const fixedAdded = filteredItems.reduce((sum, item) => {
       const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed";
-      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed";
+      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item";
       if (isNewItemFixed || isPayableFixed) {
-        return sum + parseFloat(item.transactionAmount || 0);
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable" 
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        return sum + amount;
       }
       return sum;
     }, 0);
@@ -1401,9 +1450,13 @@ const MesobFinancial2 = () => {
     const byName = {};
     filteredItems.forEach((item) => {
       const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed" && item.assetName;
-      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.assetName;
+      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item" && item.assetName;
       if (isNewItemFixed || isPayableFixed) {
-        byName[item.assetName] = (byName[item.assetName] || 0) + parseFloat(item.transactionAmount || 0);
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable" 
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        byName[item.assetName] = (byName[item.assetName] || 0) + amount;
       }
     });
     filteredItems.forEach((item) => {
@@ -1417,11 +1470,25 @@ const MesobFinancial2 = () => {
   const calculateTotalExpenses = () => {
     const filteredItems = getFilteredItems();
     const payExpenses = filteredItems.reduce((sum, value) => {
+      // Exclude Payable+New_Item (asset purchases on credit) - these are inventory, not expenses
+      const isPayableNewItem = value.transactionType === "Payable" && value.subType === "New_Item";
+      
+      // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
+      let isPaymentForNewItem = false;
+      if (value.transactionType === "Pay" && value.payableId && value.payableId !== "outstanding-debt") {
+        const originalPayable = items.find(item => item.id === value.payableId);
+        if (originalPayable && originalPayable.subType === "New_Item") {
+          isPaymentForNewItem = true;
+        }
+      }
+      
       if (
         (value.transactionType === "Pay" ||
           (value.transactionType === "Payable" && value.status !== "Paid")) &&
         value.payableId !== "outstanding-debt" &&
-        !value.transactionPurpose.includes("Outstanding Debt")
+        !value.transactionPurpose.includes("Outstanding Debt") &&
+        !isPayableNewItem &&
+        !isPaymentForNewItem
       ) {
         return sum + parseFloat(value.transactionAmount || 0);
       }
@@ -2343,7 +2410,7 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        {t('financialReport.totalCashOnHand')}:
+                        {t('financialReport.totalCashOnHand')}
                       </div>
                       <div
                         style={{
@@ -2443,17 +2510,26 @@ const MesobFinancial2 = () => {
                           {Object.entries(expenses)
                             .filter(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
-                              return filteredItems.some(
+                              // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                              const hasRegularExpense = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
                                   (item.transactionType === "Pay" ||
                                     (item.transactionType === "Payable" &&
                                       item.status !== "Paid"))
                               );
+                              const hasCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                              );
+                              return hasRegularExpense || hasCOGS;
                             })
                             .map(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
-                              const totalAmount = filteredItems.reduce(
+                              // Calculate total from regular expenses
+                              let totalAmount = filteredItems.reduce(
                                 (sum, item) => {
                                   if (
                                     item.transactionPurpose === purpose &&
@@ -2469,12 +2545,30 @@ const MesobFinancial2 = () => {
                                 },
                                 0
                               );
+                              // Add COGS amount
+                              filteredItems.forEach((item) => {
+                                if (
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                                ) {
+                                  totalAmount += parseFloat(item.originalAmount || 0);
+                                }
+                              });
 
                               const isPaid = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
                                   item.transactionType === "Payable" &&
                                   item.status === "Paid"
+                              );
+                              
+                              // Check if this is a COGS expense
+                              const isCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
                               );
 
                               return (
@@ -2494,9 +2588,11 @@ const MesobFinancial2 = () => {
                                   </span>
                                   <span
                                     style={{
-                                      color: isPaid
-                                        ? "#c7ae4f"
-                                        : "#a7565d",
+                                      color: isCOGS
+                                        ? "#a7565d"
+                                        : isPaid
+                                          ? "#c7ae4f"
+                                          : "#a7565d",
                                       fontWeight: "bold",
                                       fontSize: "0.9rem",
                                     }}
@@ -2602,17 +2698,26 @@ const MesobFinancial2 = () => {
                         {Object.entries(expenses)
                           .filter(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            return filteredItems.some(
+                            // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                            const hasRegularExpense = filteredItems.some(
                               (item) =>
                                 item.transactionPurpose === purpose &&
                                 (item.transactionType === "Pay" ||
                                   (item.transactionType === "Payable" &&
                                     item.status !== "Paid"))
                             );
+                            const hasCOGS = filteredItems.some(
+                              (item) =>
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                            );
+                            return hasRegularExpense || hasCOGS;
                           })
                           .map(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            const totalAmount = filteredItems.reduce(
+                            // Calculate total from regular expenses
+                            let totalAmount = filteredItems.reduce(
                               (sum, item) => {
                                 if (
                                   item.transactionPurpose === purpose &&
@@ -2629,6 +2734,16 @@ const MesobFinancial2 = () => {
                               },
                               0
                             );
+                            // Add COGS amount
+                            filteredItems.forEach((item) => {
+                              if (
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                              ) {
+                                totalAmount += parseFloat(item.originalAmount || 0);
+                              }
+                            });
 
                             return (
                               <tr key={`expense-${purpose}`}>
@@ -3188,17 +3303,26 @@ const MesobFinancial2 = () => {
                           {Object.entries(expenses)
                             .filter(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
-                              return filteredItems.some(
+                              // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                              const hasRegularExpense = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
                                   (item.transactionType === "Pay" ||
                                     (item.transactionType === "Payable" &&
                                       item.status !== "Paid"))
                               );
+                              const hasCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                              );
+                              return hasRegularExpense || hasCOGS;
                             })
                             .map(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
-                              const totalAmount = filteredItems.reduce(
+                              // Calculate total from regular expenses
+                              let totalAmount = filteredItems.reduce(
                                 (sum, item) => {
                                   if (
                                     item.transactionPurpose === purpose &&
@@ -3214,12 +3338,30 @@ const MesobFinancial2 = () => {
                                 },
                                 0
                               );
+                              // Add COGS amount
+                              filteredItems.forEach((item) => {
+                                if (
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                                ) {
+                                  totalAmount += parseFloat(item.originalAmount || 0);
+                                }
+                              });
 
                               const isPaid = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
                                   item.transactionType === "Payable" &&
                                   item.status === "Paid"
+                              );
+                              
+                              // Check if this is a COGS expense
+                              const isCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
                               );
 
                               return (
@@ -3237,9 +3379,11 @@ const MesobFinancial2 = () => {
                                   </span>
                                   <span
                                     style={{
-                                      color: isPaid
-                                        ? "#c7ae4f"
-                                        : "#a7565d",
+                                      color: isCOGS
+                                        ? "#a7565d"
+                                        : isPaid
+                                          ? "#c7ae4f"
+                                          : "#a7565d",
                                       fontWeight: "bold",
                                       fontSize: "0.9rem",
                                     }}
@@ -3409,17 +3553,26 @@ const MesobFinancial2 = () => {
                         {Object.entries(expenses)
                           .filter(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            return filteredItems.some(
+                            // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                            const hasRegularExpense = filteredItems.some(
                               (item) =>
                                 item.transactionPurpose === purpose &&
                                 (item.transactionType === "Pay" ||
                                   (item.transactionType === "Payable" &&
                                     item.status !== "Paid"))
                             );
+                            const hasCOGS = filteredItems.some(
+                              (item) =>
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                            );
+                            return hasRegularExpense || hasCOGS;
                           })
                           .map(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            const totalAmount = filteredItems.reduce(
+                            // Calculate total from regular expenses
+                            let totalAmount = filteredItems.reduce(
                               (sum, item) => {
                                 if (
                                   item.transactionPurpose === purpose &&
@@ -3436,6 +3589,16 @@ const MesobFinancial2 = () => {
                               },
                               0
                             );
+                            // Add COGS amount
+                            filteredItems.forEach((item) => {
+                              if (
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                              ) {
+                                totalAmount += parseFloat(item.originalAmount || 0);
+                              }
+                            });
 
                             return (
                               <tr key={`expense-${purpose}`}>
@@ -4011,12 +4174,17 @@ const MesobFinancial2 = () => {
                       .filter(
                         (t) => t.status !== "Paid" && t.transactionAmount !== 0
                       )
-                      .map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.transactionPurpose} - $
-                          {t.transactionAmount.toFixed(2)}
-                        </option>
-                      ))}
+                      .map((t) => {
+                        // Use originalAmount for display (transactionAmount changes after partial payments)
+                        const displayAmount = t.originalAmount || t.transactionAmount;
+                        // Show assetName if available, otherwise transactionPurpose
+                        const displayName = t.assetName || t.transactionPurpose;
+                        return (
+                          <option key={t.id} value={t.id}>
+                            {displayName} - ${parseFloat(displayAmount).toFixed(2)}
+                          </option>
+                        );
+                      })}
                   </Input>
                 </FormGroup>
 

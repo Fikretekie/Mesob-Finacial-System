@@ -48,6 +48,7 @@
     "receive": "Recevoir [Espèces]",
     "pay": "Payé [Espèces]",
     "payable": "À Payer",
+    "purchasesOf": "Achats de",
     "expense": "[Dépense]",
     "loadingTransactions": "Chargement des transactions...",
     "assets": "Actifs",
@@ -296,7 +297,9 @@
       "utilitiesExpense": "Services Publics (Dépense)",
       "taxesExpense": "Impôts (Dépense)",
       "rentExpense": "Loyer (Dépense)",
-      "insuranceExpense": "Assurance (Dépense)"
+      "insuranceExpense": "Assurance (Dépense)",
+      "inventoryPurchases": "Achats de Stock",
+      "inventoryAdjustments": "Ajustements de Stock"
     }
   },
   "common": {

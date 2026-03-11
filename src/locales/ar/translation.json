@@ -48,6 +48,7 @@
     "receive": "استلام [نقدي]",
     "pay": "تم الدفع [نقدي]",
     "payable": "مستحق الدفع",
+    "purchasesOf": "مشتريات",
     "expense": "[مصروف]",
     "loadingTransactions": "جاري تحميل المعاملات...",
     "assets": "الأصول",
@@ -316,7 +317,9 @@
       "utilitiesExpense": "المرافق (مصروف)",
       "taxesExpense": "الضرائب (مصروف)",
       "rentExpense": "الإيجار (مصروف)",
-      "insuranceExpense": "التأمين (مصروف)"
+      "insuranceExpense": "التأمين (مصروف)",
+      "inventoryPurchases": "مشتريات المخزون",
+      "inventoryAdjustments": "تعديلات المخزون"
     }
   },
   "common": {

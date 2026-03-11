@@ -48,6 +48,7 @@
     "receive": "Qaado [Lacag]",
     "pay": "La bixiyay [Lacag]",
     "payable": "La Bixinayo",
+    "purchasesOf": "Iibsiga",
     "expense": "[Kharash]",
     "loadingTransactions": "Waa la soo dejinayaa macaamilada...",
     "assets": "Hantida",
@@ -286,7 +287,9 @@
       "utilitiesExpense": "Adeegyada (Kharash)",
       "taxesExpense": "Canshuuraha (Kharash)",
       "rentExpense": "Kirada (Kharash)",
-      "insuranceExpense": "Caymiska (Kharash)"
+      "insuranceExpense": "Caymiska (Kharash)",
+      "inventoryPurchases": "Alaabta Iibsiga",
+      "inventoryAdjustments": "Hagaajinta Alaabta"
     }
   },
   "common": {
