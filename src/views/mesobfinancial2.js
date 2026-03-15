@@ -1190,7 +1190,7 @@ const MesobFinancial2 = () => {
 
         // Exclude Payable+New_Item (asset purchases on credit) from expenses
         const isPayableNewItem = transaction.transactionType === "Payable" && transaction.subType === "New_Item";
-        
+
         // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
         let isPaymentForNewItem = false;
         if (transaction.transactionType === "Pay" && transaction.payableId && transaction.payableId !== "outstanding-debt") {
@@ -1199,7 +1199,7 @@ const MesobFinancial2 = () => {
             isPaymentForNewItem = true;
           }
         }
-        
+
         if (
           transaction.payableId !== "outstanding-debt" &&
           !purpose.includes("Outstanding Debt") &&
@@ -1214,7 +1214,7 @@ const MesobFinancial2 = () => {
             (newAccountsPayable[purpose] || 0) + amount;
         }
       }
-      
+
       // Add COGS from inventory sales to expenses with purpose
       if (transaction.transactionType === "Receive" && transaction.subType === "sale_inventory") {
         const cogsAmount = parseFloat(transaction.originalAmount || 0);
@@ -1234,27 +1234,27 @@ const MesobFinancial2 = () => {
   const getCurrentAssetItems = () => {
     const result = [];
     const soldIds = new Set();
-    
+
     // Track which transactions have been sold
     items.forEach((t) => {
       if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId) {
         soldIds.add(t.soldTransactionId);
       }
     });
-    
+
     items.forEach((t) => {
       // Skip if already sold
       if (soldIds.has(t.id)) return;
-      
+
       // Explicit current assets with assetName
       const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
       const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.subType === "New_Item" && t.assetName;
       // Include New_Item without assetType (default to current assets / inventory)
       const isNewItemDefault = t.transactionType === "New_Item" && !t.assetType && t.assetName;
-      
+
       if (isNewItemCurrent || isPayableCurrent || isNewItemDefault) {
         // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = t.transactionType === "Payable" 
+        const amount = t.transactionType === "Payable"
           ? parseFloat(t.originalAmount || t.transactionAmount || 0)
           : parseFloat(t.transactionAmount || 0);
         result.push({
@@ -1265,13 +1265,13 @@ const MesobFinancial2 = () => {
           displayName: `${t.assetName} - $${amount.toFixed(2)}`
         });
       }
-      
+
       // Fallback: Payable+New_Item without assetType OR with assetType not fixed (default to current)
-      const isPayableDefaultCurrent = t.transactionType === "Payable" && 
-                                       t.subType === "New_Item" &&
-                                       t.assetType !== "fixed" && 
-                                       !t.assetName &&
-                                       t.transactionPurpose;
+      const isPayableDefaultCurrent = t.transactionType === "Payable" &&
+        t.subType === "New_Item" &&
+        t.assetType !== "fixed" &&
+        !t.assetName &&
+        t.transactionPurpose;
       if (isPayableDefaultCurrent) {
         const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
         result.push({
@@ -1283,32 +1283,32 @@ const MesobFinancial2 = () => {
         });
       }
     });
-    
+
     return result;
   };
 
   const getFixedAssetItems = () => {
     const result = [];
     const soldIds = new Set();
-    
+
     // Track which transactions have been sold
     items.forEach((t) => {
       if (t.transactionType === "Receive" && t.subType === "sale_fixed" && t.soldTransactionId) {
         soldIds.add(t.soldTransactionId);
       }
     });
-    
+
     items.forEach((t) => {
       // Skip if already sold
       if (soldIds.has(t.id)) return;
-      
+
       // Explicit fixed assets with assetName
       const isNewItemFixed = t.transactionType === "New_Item" && t.assetType === "fixed" && t.assetName;
       const isPayableFixed = t.transactionType === "Payable" && t.assetType === "fixed" && t.subType === "New_Item" && t.assetName;
-      
+
       if (isNewItemFixed || isPayableFixed) {
         // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = t.transactionType === "Payable" 
+        const amount = t.transactionType === "Payable"
           ? parseFloat(t.originalAmount || t.transactionAmount || 0)
           : parseFloat(t.transactionAmount || 0);
         result.push({
@@ -1319,19 +1319,19 @@ const MesobFinancial2 = () => {
           displayName: `${t.assetName} - $${amount.toFixed(2)}`
         });
       }
-      
+
       // Fallback: ANY Payable with subType New_Item without assetType but with fixed-asset related purpose
-      const isFixedPayable = t.transactionType === "Payable" && 
-                              t.subType === "New_Item" &&
-                              !t.assetType && 
-                              t.transactionPurpose &&
-                              (t.transactionPurpose.toLowerCase().includes("equipment") ||
-                               t.transactionPurpose.toLowerCase().includes("vehicle") ||
-                               t.transactionPurpose.toLowerCase().includes("truck") ||
-                               t.transactionPurpose.toLowerCase().includes("machine") ||
-                               t.transactionPurpose.toLowerCase().includes("furniture") ||
-                               t.transactionPurpose.toLowerCase().includes("computer") ||
-                               t.transactionPurpose.toLowerCase().includes("fixed"));
+      const isFixedPayable = t.transactionType === "Payable" &&
+        t.subType === "New_Item" &&
+        !t.assetType &&
+        t.transactionPurpose &&
+        (t.transactionPurpose.toLowerCase().includes("equipment") ||
+          t.transactionPurpose.toLowerCase().includes("vehicle") ||
+          t.transactionPurpose.toLowerCase().includes("truck") ||
+          t.transactionPurpose.toLowerCase().includes("machine") ||
+          t.transactionPurpose.toLowerCase().includes("furniture") ||
+          t.transactionPurpose.toLowerCase().includes("computer") ||
+          t.transactionPurpose.toLowerCase().includes("fixed"));
       if (isFixedPayable) {
         const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
         result.push({
@@ -1343,28 +1343,28 @@ const MesobFinancial2 = () => {
         });
       }
     });
-    
+
     return result;
   };
 
   // Remaining cost (book value) for an asset after subtracting sales (uses ALL items, not time-filtered)
   const getAssetCost = (name, type) => {
     let cost = 0;
-    
+
     // Add purchases - check by assetName first, then by transactionPurpose for backward compatibility
     items.forEach((t) => {
       const matchesAssetName = t.assetName === name && t.assetType === type;
       const matchesPurpose = !t.assetType && t.transactionPurpose === name && t.transactionType === "Payable";
-      
+
       if ((t.transactionType === "New_Item" || t.transactionType === "Payable") && (matchesAssetName || matchesPurpose)) {
         // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = t.transactionType === "Payable" 
+        const amount = t.transactionType === "Payable"
           ? parseFloat(t.originalAmount || t.transactionAmount || 0)
           : parseFloat(t.transactionAmount || 0);
         cost += amount;
       }
     });
-    
+
     // Subtract sales
     const subType = type === "current" ? "sale_inventory" : "sale_fixed";
     items.forEach((t) => {
@@ -1372,7 +1372,7 @@ const MesobFinancial2 = () => {
         cost -= parseFloat(t.originalAmount || 0);
       }
     });
-    
+
     return Math.max(0, cost);
   };
 
@@ -1400,10 +1400,10 @@ const MesobFinancial2 = () => {
       const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && item.assetType !== "fixed";
       // Payable New_Item without assetType (treat as inventory by default)
       const isLegacyPayableNewItem = item.transactionType === "Payable" && item.subType === "New_Item" && !item.assetType;
-      
+
       if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem || isLegacyPayableNewItem) {
         // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable" 
+        const amount = item.transactionType === "Payable"
           ? parseFloat(item.originalAmount || item.transactionAmount || 0)
           : parseFloat(item.transactionAmount || 0);
         return sum + amount;
@@ -1429,7 +1429,7 @@ const MesobFinancial2 = () => {
       const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item";
       if (isNewItemFixed || isPayableFixed) {
         // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable" 
+        const amount = item.transactionType === "Payable"
           ? parseFloat(item.originalAmount || item.transactionAmount || 0)
           : parseFloat(item.transactionAmount || 0);
         return sum + amount;
@@ -1453,7 +1453,7 @@ const MesobFinancial2 = () => {
       const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item" && item.assetName;
       if (isNewItemFixed || isPayableFixed) {
         // Use originalAmount for Payable (transactionAmount changes after payment)
-        const amount = item.transactionType === "Payable" 
+        const amount = item.transactionType === "Payable"
           ? parseFloat(item.originalAmount || item.transactionAmount || 0)
           : parseFloat(item.transactionAmount || 0);
         byName[item.assetName] = (byName[item.assetName] || 0) + amount;
@@ -1472,7 +1472,7 @@ const MesobFinancial2 = () => {
     const payExpenses = filteredItems.reduce((sum, value) => {
       // Exclude Payable+New_Item (asset purchases on credit) - these are inventory, not expenses
       const isPayableNewItem = value.transactionType === "Payable" && value.subType === "New_Item";
-      
+
       // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
       let isPaymentForNewItem = false;
       if (value.transactionType === "Pay" && value.payableId && value.payableId !== "outstanding-debt") {
@@ -1481,7 +1481,7 @@ const MesobFinancial2 = () => {
           isPaymentForNewItem = true;
         }
       }
-      
+
       if (
         (value.transactionType === "Pay" ||
           (value.transactionType === "Payable" && value.status !== "Paid")) &&
@@ -2562,7 +2562,7 @@ const MesobFinancial2 = () => {
                                   item.transactionType === "Payable" &&
                                   item.status === "Paid"
                               );
-                              
+
                               // Check if this is a COGS expense
                               const isCOGS = filteredItems.some(
                                 (item) =>
@@ -3355,7 +3355,7 @@ const MesobFinancial2 = () => {
                                   item.transactionType === "Payable" &&
                                   item.status === "Paid"
                               );
-                              
+
                               // Check if this is a COGS expense
                               const isCOGS = filteredItems.some(
                                 (item) =>

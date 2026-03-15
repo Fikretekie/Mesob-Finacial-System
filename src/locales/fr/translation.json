@@ -363,5 +363,31 @@
   "downloadDashboard": "Télécharger le Tableau de Bord",
   "downloadBoth": "Télécharger les Deux",
   "pdfNote": "Les rapports seront téléchargés en fichiers PDF"
-}
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Téléchargez et gérez les fichiers importants. Taille max :",
+    "upload": "Télécharger un document",
+    "uploading": "Téléchargement…",
+    "uploadFirst": "Téléchargez votre premier document",
+    "uploadSuccess": "Document téléchargé avec succès.",
+    "uploadError": "Échec du téléchargement.",
+    "download": "Télécharger",
+    "downloadAll": "Tout télécharger",
+    "downloadingAll": "Téléchargement…",
+    "downloadAllDone": "{{count}} document(s) téléchargé(s).",
+    "downloadStarted": "Téléchargement démarré.",
+    "preview": "Aperçu",
+    "previewNotAvailable": "Aperçu non disponible.",
+    "openPdf": "Ouvrir le PDF dans un nouvel onglet",
+    "noDocuments": "Aucun document pour l'instant.",
+    "noUrl": "Lien non disponible.",
+    "loading": "Chargement des documents…",
+    "errorList": "Impossible de charger les documents.",
+    "name": "Nom",
+    "size": "Taille",
+    "date": "Date",
+    "actions": "Actions",
+    "fileTooBig": "Fichier trop volumineux. Maximum {{max}} Mo."
+  }
 }

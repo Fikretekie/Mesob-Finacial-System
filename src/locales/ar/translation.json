@@ -383,5 +383,31 @@
   "downloadDashboard": "تحميل لوحة التحكم",
   "downloadBoth": "تحميل الاثنين",
   "pdfNote": "سيتم تحميل التقارير كملفات PDF"
-}
+  },
+  "documents": {
+    "title": "المستندات",
+    "subtitle": "رفع وإدارة الملفات المهمة. الحد الأقصى لحجم الملف:",
+    "upload": "رفع مستند",
+    "uploading": "جاري الرفع…",
+    "uploadFirst": "ارفع مستندك الأول",
+    "uploadSuccess": "تم رفع المستند بنجاح.",
+    "uploadError": "فشل الرفع.",
+    "download": "تحميل",
+    "downloadAll": "تحميل الكل",
+    "downloadingAll": "جاري التحميل…",
+    "downloadAllDone": "تم تحميل {{count}} مستند(ات).",
+    "downloadStarted": "بدء التحميل.",
+    "preview": "معاينة",
+    "previewNotAvailable": "المعاينة غير متاحة لهذا الملف.",
+    "openPdf": "فتح PDF في نافذة جديدة",
+    "noDocuments": "لا توجد مستندات بعد.",
+    "noUrl": "رابط التحميل غير متاح.",
+    "loading": "جاري تحميل المستندات…",
+    "errorList": "تعذر تحميل المستندات.",
+    "name": "الاسم",
+    "size": "الحجم",
+    "date": "التاريخ",
+    "actions": "إجراءات",
+    "fileTooBig": "الملف كبير جداً. الحد الأقصى {{max}} ميجابايت."
+  }
 }

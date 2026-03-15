@@ -723,73 +723,73 @@ function Dashboard() {
         <title>Dashboard - Mesob Finance </title>
       </Helmet>
       {isMobile ?
-        <PanelHeader
-          size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
-          content={
-            <>
-              {isMobile && (
-                <div style={{
-                  position: "absolute",
-                  top: 0, left: 0, right: 0,
-                  display: "flex",
-                  marginTop: 70,
+      <PanelHeader
+        size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+        content={
+          <>
+            {isMobile && (
+          <div style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0,
+            display: "flex",
+            marginTop: 70,
                   justifyContent: 'center',
-                  paddingLeft: 5,
-                  paddingRight: 5,
-                  gap: "10px",
-                }}>
-                  <Button
-                    onClick={() => setShowDownloadReportModal(true)}
-                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                    style={{
-                      backgroundColor: "#2b427d",
-                      borderColor: "#2b427d",
-                      color: "#ffffff",
-                      height: "44px",
-                      borderRadius: "10px",
-                      width: "45%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      whiteSpace: "nowrap",
-                      margin: 0,
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
-                    {t('financialReport.downloadReport')}
-                  </Button>
+            paddingLeft: 5,
+            paddingRight: 5,
+            gap: "10px",
+          }}>
+            <Button
+              onClick={() => setShowDownloadReportModal(true)}
+              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+              style={{
+                backgroundColor: "#2b427d",
+                borderColor: "#2b427d",
+                color: "#ffffff",
+                height: "44px",
+                borderRadius: "10px",
+                width: "45%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "13px",
+                fontWeight: "600",
+                whiteSpace: "nowrap",
+                margin: 0,
+              }}
+            >
+              <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
+              {t('financialReport.downloadReport')}
+            </Button>
 
-                  {userRole !== 0 && (
-                    <Button
-                      onClick={handleAddTransactionClick}
-                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                      style={{
-                        backgroundColor: "#41926f",
-                        borderColor: "#41926f",
-                        color: "#ffffff",
-                        height: "44px",
-                        borderRadius: "10px",
-                        width: "45%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "13px",
-                        fontWeight: "600",
-                        whiteSpace: "nowrap",
-                        margin: 0,
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
-                      {t('dashboard.addTransaction')}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </>
-          }
-        />
+            {userRole !== 0 && (
+              <Button
+                onClick={handleAddTransactionClick}
+                disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                style={{
+                  backgroundColor: "#41926f",
+                  borderColor: "#41926f",
+                  color: "#ffffff",
+                  height: "44px",
+                  borderRadius: "10px",
+                  width: "45%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap",
+                  margin: 0,
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
+                {t('dashboard.addTransaction')}
+              </Button>
+            )}
+          </div>
+            )}
+          </>
+        }
+      />
         : null}
       {userRole === 0 && (
         <div

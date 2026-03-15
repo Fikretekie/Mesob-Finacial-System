@@ -170,15 +170,15 @@ const TransactionTable = ({
                 <tr key={`${transaction.id || idx}-single`}>
                   <td style={{ color: "#ffffff" }}>{formatDate(transaction.createdAt)}</td>
                   <td style={{ color: "#ffffff" }}>{srNo}</td>
-                  <td style={{ color: "#ffffff" }}>
-                    {transaction.transactionType === "Receive" ? (
-                      <>
-                        <div style={{ fontWeight: "bold" }}>{t('financialReport.receive')}</div>
-                        <div>{transaction.transactionPurpose}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div>
+              <td style={{ color: "#ffffff" }}>
+                {transaction.transactionType === "Receive" ? (
+                  <>
+                    <div style={{ fontWeight: "bold" }}>{t('financialReport.receive')}</div>
+                    <div>{transaction.transactionPurpose}</div>
+                  </>
+                ) : (
+                  <>
+                    <div>
                           {/* For Payable+New_Item (asset purchase on credit), show "Purchases of (item name)" */}
                           {transaction.transactionType === "Payable" && transaction.subType === "New_Item"
                             ? `${t('financialReport.purchasesOf')} (${transaction.assetName || transaction.transactionPurpose?.replace(/\s*\(Expense\)/gi, "") || "Item"})`
@@ -187,72 +187,72 @@ const TransactionTable = ({
                           {transaction.transactionType === "Payable" && 
                            transaction.subType !== "New_Item" && 
                            !transaction.transactionPurpose?.includes("(Expense)") ? " " + t('financialReport.expense') : ""}
-                        </div>
-                        <div style={{ fontWeight: "bold" }}>
+                    </div>
+                    <div style={{ fontWeight: "bold" }}>
                           {transaction.transactionType === "Pay" ? t('financialReport.pay') : transaction.transactionType === "Payable" ? t('financialReport.payable') : transaction.transactionType === "New_Item" ? t('financialReport.pay') : transaction.transactionType}
-                        </div>
-                      </>
-                    )}
-                  </td>
-                  <td className="debit">
-                    {transaction.transactionType === "Receive" && (
-                      <>
-                        <div className="debit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
+              </div>
+                  </>
+                )}
+              </td>
+              <td className="debit">
+                {transaction.transactionType === "Receive" && (
+                  <>
+                    <div className="debit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                        <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
-                      </>
-                    )}
-                    {transaction.transactionType === "Payable" && (
-                      <>
-                        <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
+                    </div>
+                    <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                  </>
+                )}
+                {transaction.transactionType === "Payable" && (
+                  <>
+                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
                           $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                        <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
-                      </>
-                    )}
-                    {["Pay", "New_Item"].includes(transaction.transactionType) && (
-                      <>
-                        <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
+                    </div>
+                    <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                  </>
+                )}
+                {["Pay", "New_Item"].includes(transaction.transactionType) && (
+                  <>
+                    <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                        <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
-                      </>
-                    )}
-                  </td>
-                  <td className="credit">
-                    {transaction.transactionType === "Receive" && (
-                      <>
-                        <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                        <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
+                    </div>
+                    <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
+                  </>
+                )}
+              </td>
+              <td className="credit">
+                {transaction.transactionType === "Receive" && (
+                  <>
+                    <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      </>
-                    )}
-                    {transaction.transactionType === "Payable" && (
-                      <>
-                        <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                        <div className="credit-value" style={{ backgroundColor: "#c7ae4f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
+                    </div>
+                  </>
+                )}
+                {transaction.transactionType === "Payable" && (
+                  <>
+                    <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                    <div className="credit-value" style={{ backgroundColor: "#c7ae4f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
                           $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      </>
-                    )}
-                    {["Pay", "New_Item"].includes(transaction.transactionType) && (
-                      <>
-                        <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                        <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
+                    </div>
+                  </>
+                )}
+                {["Pay", "New_Item"].includes(transaction.transactionType) && (
+                  <>
+                    <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
+                    <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                      </>
-                    )}
-                  </td>
-                  <td style={{ verticalAlign: "middle" }}>
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
+                    </div>
+                  </>
+                )}
+              </td>
+              <td style={{ verticalAlign: "middle" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
                       <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />
                       {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5, display: "flex", alignItems: "center", justifyContent: "center" }} />}
-                    </div>
-                  </td>
-                </tr>
+                </div>
+              </td>
+            </tr>
               );
             }
             return null;

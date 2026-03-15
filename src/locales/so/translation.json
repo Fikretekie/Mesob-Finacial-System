@@ -353,5 +353,31 @@
       "downloadDashboard": "Soo Dejiso Xaashida Xogta",
       "downloadBoth": "Soo Dejiso Labadaba",
       "pdfNote": "Warbixinnadu waxay soo dejisan doonaan faylasha PDF ahaan"
+    },
+    "documents": {
+      "title": "Dukumeentiyada",
+      "subtitle": "Soo rar oo maamul dukumeentiyada muhimsan. Cabbirka ugu weyn:",
+      "upload": "Soo rar dukumeenti",
+      "uploading": "Soo rogid…",
+      "uploadFirst": "Soo rar dukumeentigaaga koowaad",
+      "uploadSuccess": "Dukumeentiga si guul leh ayaa loo soo raray.",
+      "uploadError": "Soo rogidku waa ku guul daray.",
+      "download": "Soo dejiso",
+      "downloadAll": "Dhammaan soo dejiso",
+      "downloadingAll": "Soo dejinta…",
+      "downloadAllDone": "{{count}} dukumeenti ayaa la soo dejiyay.",
+      "downloadStarted": "Soo dejinta waa bilaabantay.",
+      "preview": "Fiidmo",
+      "previewNotAvailable": "Fiidmadu ma bannaana faylkan.",
+      "openPdf": "Fur PDF tab cusub",
+      "noDocuments": "Weli ma jiraan dukumeenti.",
+      "noUrl": "Xiriirka soo dejinta ma bannaana.",
+      "loading": "Soo dejinta dukumeentiyada…",
+      "errorList": "Dukumeentiyada soo dejinta kuma suurto gelin.",
+      "name": "Magac",
+      "size": "Cabbir",
+      "date": "Taariikh",
+      "actions": "Tallaabooyin",
+      "fileTooBig": "Faylku waa weyn yahay. Ugu badan {{max}} MB."
     }
-}
+  }

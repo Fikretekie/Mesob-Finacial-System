@@ -76,6 +76,8 @@ export const ROUTES = {
   CREATE_EVENT: "createevent",
   SIGNIN: "Signin",
   SIGN_UP: "SignUp",
+  /** Documents stored in S3 under Document/ prefix. List, upload, get URL. */
+  DOCUMENT: "Document",
 };
 
 /**

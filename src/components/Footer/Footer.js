@@ -25,10 +25,18 @@ function Footer(props) {
   return (
     <footer className={"footer" + (props.default ? " footer-default" : "")}>
       <Container fluid={props.fluid ? true : false}>
-        <div className="copyright">
+        <div
+          className="copyright"
+          style={{ color: "#e2e8f0" }}
+        >
           &copy; {1900 + new Date().getYear()} · Copy right reserved for Mesob Financial ·
           Coded by{" "}
-          <a href="https://therevolutiontectnologies.io" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://therevolutiontechnologies.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#e2e8f0", textDecoration: "underline" }}
+          >
             The Revolution Technologies
           </a>
         </div>

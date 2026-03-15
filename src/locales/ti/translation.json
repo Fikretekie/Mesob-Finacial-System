@@ -501,5 +501,31 @@
   "downloadDashboard": "ዳሽቦርድ ጫን",
   "downloadBoth": "ክልቲኦም ጫን",
   "pdfNote": "ጸብጻባት ከም PDF ፋይላት ኮይኖም ክጻዓኑ እዮም"
-}
+  },
+  "documents": {
+    "title": "ሰነድታት",
+    "subtitle": "ኣገዳስን ፋይላት ስቀል ኣስተዳድር። ከፍታዊ መጠን ፋይል:",
+    "upload": "ሰነድ ስቀል",
+    "uploading": "በማስቀመጥ ላይ…",
+    "uploadFirst": "መጀመሪያ ሰነድ ስቀል",
+    "uploadSuccess": "ሰነድ ብዓወት ተስቀሊሉ።",
+    "uploadError": "ማስቀመጥ ኣይተዓወተን።",
+    "download": "ጫን",
+    "downloadAll": "ኹሎም ጫን",
+    "downloadingAll": "በጫን ላይ…",
+    "downloadAllDone": "{{count}} ሰነድ(ታት) ተጻዒኑ።",
+    "downloadStarted": "ጫን ጀሚሩ።",
+    "preview": "ቅድመ እይታ",
+    "previewNotAvailable": "ንዚ ፋይል ቅድመ እይታ የለን።",
+    "openPdf": "PDF ኣብ ሓድሽ ታብ ክፈት",
+    "noDocuments": "ክሳብ ሕጂ ሰነድታት የለን።",
+    "noUrl": "ኣገናኝ ጫን የለን።",
+    "loading": "ሰነድታት በመጫን ላይ…",
+    "errorList": "ሰነድታት ምጽናን ኣይተዓወተን።",
+    "name": "ስም",
+    "size": "መጠን",
+    "date": "ዕለት",
+    "actions": "ተግባራት",
+    "fileTooBig": "ፋይል ኣዝዩ ዓብዪ። ከፍታዊ {{max}} MB።"
+  }
 }

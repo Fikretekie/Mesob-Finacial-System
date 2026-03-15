@@ -498,11 +498,36 @@
   "expenseEntry": "የወጪ ግቤት"
   },
   "downloadReport": {
-      "title": "ሪፖርት ያውርዱ",    
+      "title": "ሪፖርት ያውርዱ",
       "downloadFinancialReport": "የፋይናንስ ሪፖርት ያውርዱ",
       "downloadDashboard": "ዳሽቦርድ ያውርዱ",
       "downloadBoth": "ሁለቱንም ያውርዱ",
       "pdfNote": "ሪፖርቶቹ እንደ PDF ፋይሎች ይወርዳሉ"
-    }
-
+    },
+  "documents": {
+    "title": "ሰነዶች",
+    "subtitle": "ጠቃሚ ፋይሎች ይስቀሉ ያስተዳድሩ። ከፍተኛ መጠን ፋይል:",
+    "upload": "ሰነድ ይስቀሉ",
+    "uploading": "በማስቀመጥ ላይ…",
+    "uploadFirst": "የመጀመሪያ ሰነድዎን ይስቀሉ",
+    "uploadSuccess": "ሰነድ በተሳካ ሁኔታ ተስቀሏል።",
+    "uploadError": "ማስቀመጥ አልተሳካም።",
+    "download": "አውርድ",
+    "downloadAll": "ሁሉንም አውርድ",
+    "downloadingAll": "በማውረድ ላይ…",
+    "downloadAllDone": "{{count}} ሰነድ(ዎች) ተወርደዋል።",
+    "downloadStarted": "ማውረድ ጀምሯል።",
+    "preview": "ቅድመ እይታ",
+    "previewNotAvailable": "ለዚህ ፋይል ቅድመ እይታ አይገኝም።",
+    "openPdf": "PDF በአዲስ ታብ ክፈት",
+    "noDocuments": "እስካሁን ሰነዶች የሉም።",
+    "noUrl": "የማውረድ አገናኝ አይገኝም።",
+    "loading": "ሰነዶች በመጫን ላይ…",
+    "errorList": "ሰነዶች መጫን አልተሳካም።",
+    "name": "ስም",
+    "size": "መጠን",
+    "date": "ቀን",
+    "actions": "ድርጊቶች",
+    "fileTooBig": "ፋይሉ በጣም ትልቅ ነው። ከፍተኛ መጠን {{max}} MB።"
+  }
 }

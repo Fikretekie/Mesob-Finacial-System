@@ -158,16 +158,16 @@ const Receipts = ({ selectedUser }) => {
     }
   };
 
- const handlePreview = (receipt) => {
-  console.log("🧾 Raw receipt object:", receipt);
-  console.log("🔗 Raw receiptUrl:", receipt.receiptUrl);
+  const handlePreview = (receipt) => {
+    console.log("🧾 Raw receipt object:", receipt);
+    console.log("🔗 Raw receiptUrl:", receipt.receiptUrl);
 
-  const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
-  console.log("✅ Normalized URL:", modifiedUrl);
+    const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
+    console.log("✅ Normalized URL:", modifiedUrl);
 
-  setSelectedReceipt({ receiptUrl: modifiedUrl });
-  setPreviewModal(true);
-};
+    setSelectedReceipt({ receiptUrl: modifiedUrl });
+    setPreviewModal(true);
+  };
 
   const handleDownload = async (receipt) => {
     try {
@@ -671,9 +671,9 @@ const Receipts = ({ selectedUser }) => {
           {t('receipts.receiptPreview')}
         </ModalHeader>
         <ModalBody>
-                    {selectedReceipt && selectedReceipt.receiptUrl && (
+          {selectedReceipt && selectedReceipt.receiptUrl && (
             <>
-                {console.log("🖼️ Rendering preview for URL:", selectedReceipt.receiptUrl)}
+              {console.log("🖼️ Rendering preview for URL:", selectedReceipt.receiptUrl)}
 
               {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
                 <object

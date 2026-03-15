@@ -7,6 +7,7 @@ import CSVReports from "views/CSVReports";
 import AdminSubscriptions from "views/Payment/AdminSubscriptions";
 import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import MesobFinancial2 from "views/mesobfinancial2";
+import Documents from "views/Documents";
 
 const userRole = parseInt(localStorage.getItem("role"));
 console.log("userRole---=>>>", userRole);
@@ -36,17 +37,24 @@ const adminRoutes = [
     layout: "/admin",
   },
   {
-    path: "/profile",
-    name: "User Profile",
-    icon: "users_single-02",
-    component: <UserPage />,
-    layout: "/admin",
-  },
-  {
     path: "/receipts",
     name: "Receipts",
     icon: "files_paper",
     component: <Receipts />,
+    layout: "/admin",
+  },
+  {
+    path: "/documents",
+    name: "Documents",
+    icon: "files_box",
+    component: <Documents />,
+    layout: "/admin",
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    icon: "users_single-02",
+    component: <UserPage />,
     layout: "/admin",
   },
   {
@@ -82,8 +90,15 @@ const customerRoutes = [
     layout: "/customer",
   },
   {
+    path: "/documents",
+    name: "Documents",
+    icon: "files_box",
+    component: <Documents />,
+    layout: "/customer",
+  },
+  {
     path: "/profile",
-    name: "User Profile",
+    name: "Profile",
     icon: "users_single-02",
     component: <UserPage />,
     layout: "/customer",

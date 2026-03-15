@@ -368,5 +368,31 @@
     "downloadDashboard": "Descargar Panel de Control",
     "downloadBoth": "Descargar Ambos",
     "pdfNote": "Los informes se descargarán como archivos PDF"
+  },
+  "documents": {
+    "title": "Documentos",
+    "subtitle": "Sube y gestiona archivos importantes. Tamaño máximo:",
+    "upload": "Subir documento",
+    "uploading": "Subiendo…",
+    "uploadFirst": "Sube tu primer documento",
+    "uploadSuccess": "Documento subido correctamente.",
+    "uploadError": "Error al subir.",
+    "download": "Descargar",
+    "downloadAll": "Descargar todo",
+    "downloadingAll": "Descargando…",
+    "downloadAllDone": "{{count}} documento(s) descargado(s).",
+    "downloadStarted": "Descarga iniciada.",
+    "preview": "Vista previa",
+    "previewNotAvailable": "Vista previa no disponible.",
+    "openPdf": "Abrir PDF en nueva pestaña",
+    "noDocuments": "Aún no hay documentos.",
+    "noUrl": "Enlace no disponible.",
+    "loading": "Cargando documentos…",
+    "errorList": "No se pudieron cargar los documentos.",
+    "name": "Nombre",
+    "size": "Tamaño",
+    "date": "Fecha",
+    "actions": "Acciones",
+    "fileTooBig": "Archivo demasiado grande. Máximo {{max}} MB."
   }
 }

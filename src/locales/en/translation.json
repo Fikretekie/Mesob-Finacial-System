@@ -519,5 +519,31 @@
   "downloadDashboard": "Download Dashboard",
   "downloadBoth": "Download Both",
   "pdfNote": "Reports will be downloaded as PDF files"
-}
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Upload and manage important files. Max file size:",
+    "upload": "Upload document",
+    "uploading": "Uploading…",
+    "uploadFirst": "Upload your first document",
+    "uploadSuccess": "Document uploaded successfully.",
+    "uploadError": "Upload failed.",
+    "download": "Download",
+    "downloadAll": "Download all",
+    "downloadingAll": "Downloading…",
+    "downloadAllDone": "Downloaded {{count}} document(s).",
+    "downloadStarted": "Download started.",
+    "preview": "Preview",
+    "previewNotAvailable": "Preview not available for this file.",
+    "openPdf": "Open PDF in new tab",
+    "noDocuments": "No documents yet.",
+    "noUrl": "Download link not available.",
+    "loading": "Loading documents…",
+    "errorList": "Could not load documents.",
+    "name": "Name",
+    "size": "Size",
+    "date": "Date",
+    "actions": "Actions",
+    "fileTooBig": "File is too large. Maximum size is {{max}} MB."
+  }
 }

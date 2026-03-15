@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Button,
@@ -12,11 +12,24 @@ import {
   Row,
   Col,
   Alert,
+  Nav,
+  NavItem,
+  NavLink,
+  TabContent,
+  TabPane,
+  Modal,
+  ModalHeader,
+  ModalBody,
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
-import { apiUrl, ROUTES } from "../config/api";
+import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
+import { saveAs } from "file-saver";
 
 function UserPage() {
+  const [activeTab, setActiveTab] = useState("1");
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState("");
+  const [isWorking, setIsWorking] = useState(false);
   const [userData, setUserData] = useState({
     id: "",
     name: "",
@@ -37,6 +50,8 @@ function UserPage() {
   const [success, setSuccess] = useState(null);
   const [editDisabled, setEditDisabled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const userRole = parseInt(localStorage.getItem("role") || "1");
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -150,6 +165,134 @@ function UserPage() {
     }
   };
 
+  // ——— Data Management (Reset) ———
+  const isIOSDevice = () => /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const fetchWithRetry = async (url, options = {}, retries = 2, delayMs = 800) => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res;
+      } catch (err) {
+        if (attempt === retries) throw err;
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+  };
+  const fetchTransactionsForExport = async () => {
+    const userId = localStorage.getItem("userId");
+    const res = await fetchWithRetry(apiUrl(`${ROUTES.TRANSACTION}?userId=${userId}`));
+    const data = await res.json();
+    return data || [];
+  };
+  const generateCSV = (data) => {
+    if (!data || data.length === 0) return "";
+    const headers = Object.keys(data[0]);
+    const rows = data.map((row) =>
+      headers.map((h) => `"${String(row[h]).replace(/"/g, '""')}"`).join(",")
+    );
+    return [headers.join(","), ...rows].join("\n");
+  };
+  const downloadCSV = (csvData, fileName) => {
+    try {
+      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
+      if (isIOSDevice()) {
+        const url = URL.createObjectURL(blob);
+        const newTab = window.open(url, "_blank");
+        if (!newTab) {
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } else {
+        saveAs(blob, fileName);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+  const uploadCSVToS3 = async (csvData) => {
+    const userId = localStorage.getItem("userId");
+    const fileName = `transactions_${new Date().toISOString()}.csv`;
+    const s3Key = `backups/${userId}${fileName}`;
+    const base64CsvData = btoa(unescape(encodeURIComponent(csvData)));
+    const payload = {
+      bucketName: S3_BUCKET_NAME,
+      key: s3Key,
+      filename: fileName,
+      userId,
+      fileContent: base64CsvData,
+      type: "text/csv;charset=utf-8",
+    };
+    const response = await fetchWithRetry(apiUrl(ROUTES.BACKUP), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return response.json();
+  };
+  const handleDownloadReport = () => {
+    if (location.pathname.includes("financial-report")) {
+      window.dispatchEvent(new Event("mesob:downloadReport"));
+    } else {
+      navigate("/customer/financial-report", { state: { openDownloadModal: true } });
+    }
+  };
+  const handleOpenResetModal = () => {
+    setResetConfirmText("");
+    setShowResetModal(true);
+    fetch(apiUrl(`${ROUTES.TRANSACTION}?userId=ping`)).catch(() => {});
+  };
+  const handleConfirmReset = async () => {
+    if (resetConfirmText !== "RESET") return;
+    try {
+      setIsWorking(true);
+      const userId = localStorage.getItem("userId");
+      const items = await fetchTransactionsForExport();
+      if (items.length) {
+        const csvData = generateCSV(items);
+        const fileName = `transactions_backup_${new Date().toISOString().slice(0, 10)}.csv`;
+        try {
+          if (isIOSDevice()) {
+            downloadCSV(csvData, fileName);
+            await new Promise((r) => setTimeout(r, 500));
+          } else {
+            downloadCSV(csvData, fileName);
+          }
+        } catch (e) {}
+        try {
+          await uploadCSVToS3(csvData);
+        } catch (e) {}
+      }
+      try {
+        await fetchWithRetry(apiUrl(`${ROUTES.TRANSACTION}/deleteAll?userId=${userId}`), {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (deleteErr) {
+        alert(`Reset failed: ${deleteErr?.message || "Unknown error"}`);
+        setIsWorking(false);
+        return;
+      }
+      setShowResetModal(false);
+      setResetConfirmText("");
+      navigate("/customer/financial-report");
+      setTimeout(() => window.location.reload(), 500);
+    } catch (err) {
+      alert(`Reset failed: ${err?.message}`);
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
   return (
     <>
       <PanelHeader size="sm" />
@@ -158,9 +301,52 @@ function UserPage() {
           <Col md="8" style={{ paddingInline: 0 }}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
-                <h5 className="title" style={{ color: "#ffffff" }}>User Profile</h5>
+                <h5 className="title" style={{ color: "#ffffff" }}>Profile</h5>
+                <Nav tabs style={{ borderBottom: "1px solid #2d3a4f", marginTop: "12px" }}>
+                  <NavItem>
+                    <NavLink
+                      className={activeTab === "1" ? "active" : ""}
+                      onClick={() => setActiveTab("1")}
+                      style={{
+                        cursor: "pointer",
+                        color: activeTab === "1" ? "#22d3ee" : "#94a3b8",
+                        borderColor: "#2d3a4f",
+                      }}
+                    >
+                      Personal Information
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={activeTab === "2" ? "active" : ""}
+                      onClick={() => setActiveTab("2")}
+                      style={{
+                        cursor: "pointer",
+                        color: activeTab === "2" ? "#22d3ee" : "#94a3b8",
+                        borderColor: "#2d3a4f",
+                      }}
+                    >
+                      Payment Management
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink
+                      className={activeTab === "3" ? "active" : ""}
+                      onClick={() => setActiveTab("3")}
+                      style={{
+                        cursor: "pointer",
+                        color: activeTab === "3" ? "#22d3ee" : "#94a3b8",
+                        borderColor: "#2d3a4f",
+                      }}
+                    >
+                      Data Management
+                    </NavLink>
+                  </NavItem>
+                </Nav>
               </CardHeader>
               <CardBody style={{ backgroundColor: "#101926" }}>
+                <TabContent activeTab={activeTab}>
+                  <TabPane tabId="1">
                 {error && <Alert color="danger">{error}</Alert>}
                 {success && <Alert color="success">{success}</Alert>}
                 <Form onSubmit={handleSubmit}>
@@ -332,7 +518,7 @@ function UserPage() {
                       {/* Edit button when NOT editing or no changes */}
                       {(!isEditing || !hasChanges) && (
                         <Row>
-                          <Col md="12" className="d-flex gap-2">
+                          <Col md="12" className="d-flex" style={{ gap: "16px" }}>
                             <Button
                               color="primary"
                               onClick={() => setIsEditing(true)}
@@ -360,11 +546,113 @@ function UserPage() {
                     </>
                   )}
                 </Form>
+                  </TabPane>
+                  <TabPane tabId="2">
+                    <div style={{ padding: "20px", color: "#e2e8f0" }}>
+                      <p className="mb-3">Manage your subscription and payment methods.</p>
+                      <Button
+                        color="primary"
+                        style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
+                        onClick={() => navigate(location.pathname.includes("admin") ? "/admin/subscriptions" : "/customer/subscription")}
+                      >
+                        Go to Subscribe
+                      </Button>
+                    </div>
+                  </TabPane>
+                  <TabPane tabId="3">
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "15px",
+                        backgroundColor: "#0d1a2b",
+                        borderRadius: "8px",
+                        border: "1px solid #1e3a5f",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                        <span style={{ fontSize: "14px" }}>⚠️</span>
+                        <span style={{ color: "#e53e3e", fontWeight: "bold", fontSize: "13px" }}>
+                          Data Management
+                        </span>
+                      </div>
+                      <p style={{ color: "#a0aec0", fontSize: "13px", marginBottom: "12px", lineHeight: "1.4" }}>
+                        Reset all accounting records and start fresh. Make sure to download your reports first.
+                      </p>
+                      <Button
+                        onClick={handleOpenResetModal}
+                        disabled={isWorking}
+                        style={{
+                          backgroundColor: "#e53e3e",
+                          borderColor: "#e53e3e",
+                          color: "#ffffff",
+                          fontSize: "12px",
+                          padding: "8px 16px",
+                          borderRadius: "6px",
+                        }}
+                      >
+                        Reset All Transactions
+                      </Button>
+                    </div>
+                  </TabPane>
+                </TabContent>
               </CardBody>
             </Card>
           </Col>
         </Row>
       </div>
+
+      <Modal isOpen={showResetModal} toggle={() => { setShowResetModal(false); setResetConfirmText(""); }}>
+        <ModalHeader
+          toggle={() => { setShowResetModal(false); setResetConfirmText(""); }}
+          style={{ backgroundColor: "#1a273a", border: "none" }}
+        >
+          <span style={{ color: "#e53e3e", fontWeight: "bold" }}>Reset All Transactions</span>
+        </ModalHeader>
+        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
+          <p style={{ color: "#ffffff", marginBottom: "12px" }}>
+            This will permanently delete <strong>all transactions</strong> and reset your dashboard balances to zero.
+          </p>
+          <p style={{ color: "#e53e3e", marginBottom: "20px", fontWeight: "500" }}>
+            We strongly recommend downloading your financial reports before continuing. This action cannot be undone.
+          </p>
+          <p style={{ color: "#ffffff", marginBottom: "8px" }}>Type <strong>RESET</strong> to confirm:</p>
+          <Input
+            type="text"
+            placeholder="Type RESET here"
+            value={resetConfirmText}
+            onChange={(e) => setResetConfirmText(e.target.value)}
+            style={{
+              backgroundColor: "#0d1a2b",
+              color: "#ffffff",
+              border: "1px solid #3a4555",
+              marginBottom: "20px",
+            }}
+          />
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <Button
+              onClick={handleDownloadReport}
+              disabled={isWorking}
+              style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1", color: "#ffffff", flex: "1" }}
+            >
+              {isWorking ? "Downloading..." : "Download Financial Report"}
+            </Button>
+            <Button color="secondary" onClick={() => { setShowResetModal(false); setResetConfirmText(""); }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmReset}
+              disabled={resetConfirmText !== "RESET" || isWorking}
+              style={{
+                backgroundColor: resetConfirmText === "RESET" ? "#e53e3e" : "#666",
+                borderColor: resetConfirmText === "RESET" ? "#e53e3e" : "#666",
+                color: "#ffffff",
+              }}
+            >
+              {isWorking ? "Processing..." : "Confirm Reset"}
+            </Button>
+          </div>
+        </ModalBody>
+      </Modal>
     </>
   );
 }
