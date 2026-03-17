@@ -90,6 +90,10 @@ const MesobFinancial2 = () => {
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
+  const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(true);
+  const [isRevenueExpanded, setIsRevenueExpanded] = useState(true);
+  const [isExpenseExpanded, setIsExpenseExpanded] = useState(true);
+  const [isInventoryExpanded, setIsInventoryExpanded] = useState(true);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const selectedUser = useSelector((state) => state.selectedUser);
@@ -1149,6 +1153,7 @@ const MesobFinancial2 = () => {
 
         if (response.data?.user) {
           const userData = response.data.user;
+          console.log("Full userData=>>> ", userData);
           setUserSubscription(userData?.subscription || false);
           console.log("subscription=>>> ", userData?.subscription);
           setTrialEndDate(new Date(userData?.trialEndDate));
@@ -1461,6 +1466,28 @@ const MesobFinancial2 = () => {
     });
     filteredItems.forEach((item) => {
       if (item.transactionType === "Receive" && item.subType === "sale_fixed" && item.assetName) {
+        byName[item.assetName] = (byName[item.assetName] || 0) - parseFloat(item.originalAmount || 0);
+      }
+    });
+    return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
+  };
+
+  const getInventoryBreakdown = () => {
+    const filteredItems = getFilteredItems();
+    const byName = {};
+    filteredItems.forEach((item) => {
+      const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current" && item.assetName;
+      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current" && item.subType === "New_Item" && item.assetName;
+      if (isNewItemCurrent || isPayableCurrent) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable"
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        byName[item.assetName] = (byName[item.assetName] || 0) + amount;
+      }
+    });
+    filteredItems.forEach((item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && item.assetName) {
         byName[item.assetName] = (byName[item.assetName] || 0) - parseFloat(item.originalAmount || 0);
       }
     });
@@ -2461,6 +2488,27 @@ const MesobFinancial2 = () => {
                     </div>
 
                     <div style={{ marginTop: "20px" }}>
+                      {/* Commented out dropdown functionality */}
+                      {/* <div 
+                        style={{ 
+                          fontWeight: "bold", 
+                          color: "#ffffff", 
+                          marginBottom: "12px", 
+                          fontSize: "0.95rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          cursor: "pointer",
+                          userSelect: "none"
+                        }}
+                        onClick={() => setIsBreakdownExpanded(!isBreakdownExpanded)}
+                      >
+                        <span>{t('financialReport.breakdown')}</span>
+                        <span style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
+                          {isBreakdownExpanded ? "▼" : "▶"}
+                        </span>
+                      </div>
+                      {isBreakdownExpanded && ( */}
                       <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
                         {t('financialReport.breakdown')}
                       </div>
@@ -2486,6 +2534,65 @@ const MesobFinancial2 = () => {
                             )}
                           </span>
                         </div>
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                          {Object.entries(revenues)
+                            .filter(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              return filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                              );
+                            })
+                            .map(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              const totalAmount = filteredItems.reduce(
+                                (sum, item) => {
+                                  if (
+                                    item.transactionPurpose === purpose &&
+                                    item.transactionType === "Receive"
+                                  ) {
+                                    return (
+                                      sum + parseFloat(item.transactionAmount || 0)
+                                    );
+                                  }
+                                  return sum;
+                                },
+                                0
+                              );
+
+                              return (
+                                <div
+                                  key={purpose}
+                                  style={{
+                                    marginBottom: "8px",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                      {translatePurpose(purpose)}:
+                                    </span>
+                                  </span>
+                                  <span
+                                    style={{
+                                      color: "#41926f",
+                                      fontWeight: "bold",
+                                      fontSize: "0.9rem",
+                                    }}
+                                  >
+                                    $
+                                    {totalAmount.toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div> */}
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
                             {t('financialReport.totalExpense')}
@@ -2506,7 +2613,7 @@ const MesobFinancial2 = () => {
                             })}
                           </span>
                         </div>
-                        <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(expenses)
                             .filter(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
@@ -2606,8 +2713,9 @@ const MesobFinancial2 = () => {
                                 </div>
                               );
                             })}
-                        </div>
+                        </div> */}
                       </div>
+                      {/* )} Commented out closing bracket for dropdown */}
                     </div>
                   </div>
                 </CardBody>
@@ -2643,21 +2751,77 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <tbody>
-                        <tr>
+                        <tr
+                          onClick={() => setIsRevenueExpanded(!isRevenueExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>{t('financialReport.revenueManualSales')}</strong>
+                            <strong>
+                              {t('financialReport.revenue')} {isRevenueExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", textAlign: "right" }}
-                          >
-                            ${Object.values(revenues).reduce((sum, amt) => sum + parseFloat(amt || 0), 0).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
+                          ></td>
                         </tr>
+
+                        {isRevenueExpanded && Object.entries(revenues)
+                          .filter(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            return filteredItems.some(
+                              (item) =>
+                                item.transactionPurpose === purpose &&
+                                item.transactionType === "Receive"
+                            );
+                          })
+                          .map(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            const totalAmount = filteredItems.reduce(
+                              (sum, item) => {
+                                if (
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                                ) {
+                                  return (
+                                    sum + parseFloat(item.transactionAmount || 0)
+                                  );
+                                }
+                                return sum;
+                              },
+                              0
+                            );
+
+                            return (
+                              <tr key={`revenue-${purpose}`}>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    color: "#ffffff",
+                                  }}
+                                >
+                                  {t('financialReport.revenue')} ({translatePurpose(purpose)})
+                                </td>
+                                <td
+                                  style={{
+                                    color: "#ffffff",
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    textAlign: "right",
+                                  }}
+                                >
+                                  $
+                                  {totalAmount.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </td>
+                              </tr>
+                            );
+                          })}
+
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
@@ -2684,18 +2848,23 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
 
-                        <tr>
+                        <tr
+                          onClick={() => setIsExpenseExpanded(!isExpenseExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>{t('financialReport.expenses')}</strong>
+                            <strong>
+                              {t('financialReport.expenses')} {isExpenseExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
                         </tr>
 
-                        {Object.entries(expenses)
+                        {isExpenseExpanded && Object.entries(expenses)
                           .filter(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
                             // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
@@ -2963,9 +3132,30 @@ const MesobFinancial2 = () => {
                           </td>
                           <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
+                        <tr
+                          onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
+                          <tr key={name}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.inventory')}</td>
-                          <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalInventory')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
                             $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
@@ -3254,6 +3444,27 @@ const MesobFinancial2 = () => {
                     </div>
 
                     <div style={{ marginTop: "20px" }}>
+                      {/* Commented out dropdown functionality */}
+                      {/* <div 
+                        style={{ 
+                          fontWeight: "bold", 
+                          color: "#ffffff", 
+                          marginBottom: "12px", 
+                          fontSize: "0.95rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          cursor: "pointer",
+                          userSelect: "none"
+                        }}
+                        onClick={() => setIsBreakdownExpanded(!isBreakdownExpanded)}
+                      >
+                        <span>{t('financialReport.breakdown')}</span>
+                        <span style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
+                          {isBreakdownExpanded ? "▼" : "▶"}
+                        </span>
+                      </div>
+                      {isBreakdownExpanded && ( */}
                       <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
                         {t('financialReport.breakdown')}
                       </div>
@@ -3279,6 +3490,65 @@ const MesobFinancial2 = () => {
                             )}
                           </span>
                         </div>
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                          {Object.entries(revenues)
+                            .filter(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              return filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                              );
+                            })
+                            .map(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              const totalAmount = filteredItems.reduce(
+                                (sum, item) => {
+                                  if (
+                                    item.transactionPurpose === purpose &&
+                                    item.transactionType === "Receive"
+                                  ) {
+                                    return (
+                                      sum + parseFloat(item.transactionAmount || 0)
+                                    );
+                                  }
+                                  return sum;
+                                },
+                                0
+                              );
+
+                              return (
+                                <div
+                                  key={purpose}
+                                  style={{
+                                    marginBottom: "8px",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                      {translatePurpose(purpose)}:
+                                    </span>
+                                  </span>
+                                  <span
+                                    style={{
+                                      color: "#41926f",
+                                      fontWeight: "bold",
+                                      fontSize: "0.9rem",
+                                    }}
+                                  >
+                                    $
+                                    {totalAmount.toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div> */}
                         <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
                             {t('financialReport.totalExpense')}
@@ -3299,7 +3569,7 @@ const MesobFinancial2 = () => {
                             })}
                           </span>
                         </div>
-                        <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(expenses)
                             .filter(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
@@ -3397,8 +3667,9 @@ const MesobFinancial2 = () => {
                                 </div>
                               );
                             })}
-                        </div>
+                        </div> */}
                       </div>
+                      {/* )} Commented out closing bracket for dropdown */}
                     </div>
                   </div>
                 </CardBody>
@@ -3476,43 +3747,77 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <tbody>
-                        <tr>
+                        <tr
+                          onClick={() => setIsRevenueExpanded(!isRevenueExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>Revenue</strong>
+                            <strong>
+                              {t('financialReport.revenue')} {isRevenueExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
                         </tr>
-                        {Object.entries(revenues).map(([purpose, amount]) => (
-                          <tr key={`revenue-${purpose}`}>
-                            <td
-                              style={{
-                                padding: "8px",
-                                border: "1px solid #3a4555",
-                              }}
-                            >
-                              {purpose}
-                            </td>
-                            <td
-                              style={{
-                                backgroundColor: "#1a273a",
-                                color: "#ffffff",
-                                padding: "8px",
-                                border: "1px solid #3a4555",
-                                textAlign: "right",
-                              }}
-                            >
-                              $
-                              {amount.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </td>
-                          </tr>
-                        ))}
+
+                        {isRevenueExpanded && Object.entries(revenues)
+                          .filter(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            return filteredItems.some(
+                              (item) =>
+                                item.transactionPurpose === purpose &&
+                                item.transactionType === "Receive"
+                            );
+                          })
+                          .map(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            const totalAmount = filteredItems.reduce(
+                              (sum, item) => {
+                                if (
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                                ) {
+                                  return (
+                                    sum + parseFloat(item.transactionAmount || 0)
+                                  );
+                                }
+                                return sum;
+                              },
+                              0
+                            );
+
+                            return (
+                              <tr key={`revenue-${purpose}`}>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    color: "#ffffff",
+                                  }}
+                                >
+                                  {t('financialReport.revenue')} ({translatePurpose(purpose)})
+                                </td>
+                                <td
+                                  style={{
+                                    backgroundColor: "#1a273a",
+                                    color: "#ffffff",
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    textAlign: "right",
+                                  }}
+                                >
+                                  $
+                                  {totalAmount.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
@@ -3539,18 +3844,23 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
 
-                        <tr>
+                        <tr
+                          onClick={() => setIsExpenseExpanded(!isExpenseExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>{t('financialReport.expenses')}</strong>
+                            <strong>
+                              {t('financialReport.expenses')} {isExpenseExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
                         </tr>
 
-                        {Object.entries(expenses)
+                        {isExpenseExpanded && Object.entries(expenses)
                           .filter(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
                             // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
@@ -3741,9 +4051,30 @@ const MesobFinancial2 = () => {
                           </td>
                           <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
+                        <tr
+                          onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
+                          <tr key={`bs2-inv-${name}`}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
                         <tr>
-                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.inventory')}</td>
-                          <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalInventory')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
                             $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
@@ -4229,14 +4560,12 @@ const MesobFinancial2 = () => {
                         const value = parseFloat(e.target.value);
                         setRemainingAmount(e.target.value);
 
-                        // Validate that partial payment is less than total amount
-                        if (
-                          value >= selectedUnpaidTransaction.transactionAmount
-                        ) {
+                        const currentRemaining = selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount;
+                        
+                        // Validate that partial payment is less than or equal to remaining amount
+                        if (value > currentRemaining) {
                           setPartialPaymentError(
-                            `Partial payment must be less than $${selectedUnpaidTransaction.transactionAmount.toFixed(
-                              2
-                            )}`
+                            `Partial payment cannot exceed $${currentRemaining.toFixed(2)}`
                           );
                         } else if (value <= 0) {
                           setPartialPaymentError(
@@ -4247,7 +4576,7 @@ const MesobFinancial2 = () => {
                         }
                       }}
                       min="0.01"
-                      max={selectedUnpaidTransaction.transactionAmount - 0.01}
+                      max={selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount}
                       step="0.01"
                       invalid={!!partialPaymentError}
                     />
@@ -4262,7 +4591,7 @@ const MesobFinancial2 = () => {
                     <small className="text-muted">
                       Maximum: $
                       {(
-                        selectedUnpaidTransaction.transactionAmount - 0.01
+                        selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount
                       ).toFixed(2)}
                     </small>
                   </FormGroup>
@@ -4306,8 +4635,7 @@ const MesobFinancial2 = () => {
                     paymentOption === "partial" &&
                     (!remainingAmount ||
                       partialPaymentError ||
-                      parseFloat(remainingAmount) >=
-                      selectedUnpaidTransaction.transactionAmount ||
+                      parseFloat(remainingAmount) > (selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount) ||
                       parseFloat(remainingAmount) <= 0)
                   }
                 >
@@ -4366,9 +4694,6 @@ const MesobFinancial2 = () => {
                     <Label>{t('financialReport.itemName')}:</Label>
                     <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
                       <option value="">{t('financialReport.selectItem')}</option>
-                      {[...new Set(items.filter(t => t.assetType === assetType).map(t => t.assetName).filter(Boolean))].map(name => (
-                        <option key={name} value={name}>{name}</option>
-                      ))}
                       <option value="manual">{t('financialReport.enterManually')}</option>
                     </Input>
                     {assetName === "manual" && (
@@ -4428,7 +4753,7 @@ const MesobFinancial2 = () => {
             )}
             {transactionType === "Payable" && payableSubMode === "boughtItem" && (
               <>
-                <FormGroup>
+                {/* <FormGroup>
                   <Label>{t('financialReport.purpose')}:</Label>
                   <Input type="select" value={transactionPurpose} onChange={(e) => setTransactionPurpose(e.target.value)}>
                     <option value="">{t('financialReport.selectPurpose')}</option>
@@ -4438,7 +4763,7 @@ const MesobFinancial2 = () => {
                   {transactionPurpose === "manual" && (
                     <Input type="text" placeholder={t('financialReport.enterPurposeManually')} value={manualPurpose} onChange={(e) => setManualPurpose(e.target.value)} />
                   )}
-                </FormGroup>
+                </FormGroup> */}
                 <FormGroup>
                   <Label>{t('financialReport.assetType')}:</Label>
                   <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
@@ -4452,9 +4777,6 @@ const MesobFinancial2 = () => {
                     <Label>{t('financialReport.itemName')}:</Label>
                     <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
                       <option value="">{t('financialReport.selectItem')}</option>
-                      {[...new Set(items.filter(t => t.assetType === assetType).map(t => t.assetName).filter(Boolean))].map(name => (
-                        <option key={name} value={name}>{name}</option>
-                      ))}
                       <option value="manual">{t('financialReport.enterManually')}</option>
                     </Input>
                     {assetName === "manual" && (

@@ -20,6 +20,8 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
+  ModalFooter,
+  Spinner,
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
@@ -49,6 +51,14 @@ function UserPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [editDisabled, setEditDisabled] = useState(false);
+  const [subscriptionData, setSubscriptionData] = useState(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [showProviderSwitchModal, setShowProviderSwitchModal] = useState(false);
+  const [selectedNewProvider, setSelectedNewProvider] = useState(null);
+  const [switchLoading, setSwitchLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = parseInt(localStorage.getItem("role") || "1");
@@ -98,6 +108,33 @@ function UserPage() {
     };
     fetchSubscription();
   }, []);
+
+  useEffect(() => {
+    const fetchSubscriptionDetails = async () => {
+      if (activeTab === "2") {
+        setLoadingSubscription(true);
+        try {
+          const userId = localStorage.getItem("userId");
+          const response = await axios.get(
+            apiUrl(`${ROUTES.SUBSCRIPTION}/${userId}`)
+          );
+          console.log("Subscription API response:", response.data);
+          const data = response.data?.data;
+          if (data && data.isPaid && data.subscriptionId && data.subscriptionDetails) {
+            setSubscriptionData(data);
+          } else {
+            setSubscriptionData(null);
+          }
+        } catch (error) {
+          console.error("Error fetching subscription details:", error);
+          setSubscriptionData(null);
+        } finally {
+          setLoadingSubscription(false);
+        }
+      }
+    };
+    fetchSubscriptionDetails();
+  }, [activeTab]);
 
   // Discard changes → restore original data
   const handleDiscard = () => {
@@ -251,6 +288,114 @@ function UserPage() {
     setShowResetModal(true);
     fetch(apiUrl(`${ROUTES.TRANSACTION}?userId=ping`)).catch(() => {});
   };
+  // Cancel Subscription Functions
+  const cancelStripeSubscription = async () => {
+    try {
+      setCancelLoading(true);
+      setError("");
+      if (!subscriptionData?.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+      await axios.delete(
+        apiUrl(`${ROUTES.SUBSCRIPTION}/${subscriptionData.subscriptionId}`)
+      );
+      setSuccess("Subscription cancelled successfully!");
+      setShowCancelModal(false);
+      // Refresh subscription data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      console.error("Error cancelling subscription:", err);
+      setError("Failed to cancel subscription. Please try again.");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const handleCancelSubscription = () => {
+    if (subscriptionData?.paymentType === "STRIPE") {
+      cancelStripeSubscription();
+    } else if (subscriptionData?.paymentType === "PAYPAL") {
+      setError("PayPal cancellation not yet implemented. Please contact support.");
+    } else {
+      setError("Unable to determine payment type. Please contact support.");
+    }
+  };
+
+  const handleUpdatePaymentMethod = async () => {
+    // Show provider selection modal instead of directly opening portal
+    setShowPaymentModal(true);
+  };
+
+  const handleSwitchProvider = async (newProvider) => {
+    try {
+      setSwitchLoading(true);
+      setError("");
+      const userId = localStorage.getItem("userId");
+      
+      const response = await axios.post(
+        apiUrl(ROUTES.SWITCH_PROVIDER),
+        { userId, newProvider }
+      );
+      
+      if (response.data?.success) {
+        setSuccess(response.data.message);
+        setShowProviderSwitchModal(false);
+        setShowPaymentModal(false);
+        
+        // Refresh subscription data
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        setError(response.data?.error || "Failed to schedule provider switch.");
+      }
+    } catch (error) {
+      console.error("Error switching provider:", error);
+      const errorMsg = error.response?.data?.error || error.response?.data?.details || "Failed to switch payment provider. Please try again.";
+      setError(errorMsg);
+    } finally {
+      setSwitchLoading(false);
+    }
+  };
+
+  const handleUpdateCurrentProvider = async () => {
+    try {
+      setLoadingSubscription(true);
+      setError("");
+      const userId = localStorage.getItem("userId");
+      const currentProvider = subscriptionData?.paymentType;
+      
+      if (currentProvider === "STRIPE") {
+        // Create Stripe Customer Portal session
+        const response = await axios.post(
+          apiUrl(ROUTES.CREATE_PORTAL_SESSION),
+          { userId }
+        );
+        
+        if (response.data?.url) {
+          window.location.href = response.data.url;
+        } else {
+          setError("Failed to create portal session. Please try again.");
+          setLoadingSubscription(false);
+        }
+      } else if (currentProvider === "PAYPAL") {
+        // For PayPal, redirect to PayPal management
+        setError("PayPal payment method updates must be done through PayPal.com. Please log in to your PayPal account to update your payment method.");
+        setLoadingSubscription(false);
+      } else {
+        setError("Unable to determine payment provider. Please contact support.");
+        setLoadingSubscription(false);
+      }
+    } catch (error) {
+      console.error("Error updating payment method:", error);
+      setError("Failed to open payment settings. Please try again or contact support.");
+      setLoadingSubscription(false);
+    }
+  };
+
   const handleConfirmReset = async () => {
     if (resetConfirmText !== "RESET") return;
     try {
@@ -548,16 +693,426 @@ function UserPage() {
                 </Form>
                   </TabPane>
                   <TabPane tabId="2">
-                    <div style={{ padding: "20px", color: "#e2e8f0" }}>
-                      <p className="mb-3">Manage your subscription and payment methods.</p>
-                      <Button
-                        color="primary"
-                        style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
-                        onClick={() => navigate(location.pathname.includes("admin") ? "/admin/subscriptions" : "/customer/subscription")}
-                      >
-                        Go to Subscribe
-                      </Button>
-                    </div>
+                    {loadingSubscription ? (
+                      <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="sr-only">Loading...</span>
+                        </div>
+                        <p style={{ marginTop: "16px" }}>Loading subscription details...</p>
+                      </div>
+                    ) : subscriptionData && subscriptionData.isPaid && subscriptionData.subscriptionDetails ? (
+                      <div style={{ padding: "20px" }}>
+                        {/* Subscription Status Card */}
+                        <div style={{
+                          backgroundColor: "#0d1a2b",
+                          borderRadius: "12px",
+                          padding: "24px",
+                          marginBottom: "24px",
+                          border: "1px solid #1e3a5f",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                            <div>
+                            
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <span style={{
+                                  backgroundColor: subscriptionData.subscriptionDetails.status === "active" ? "#10b981" : "#f59e0b",
+                                  color: "#ffffff",
+                                  padding: "4px 12px",
+                                  borderRadius: "12px",
+                                  fontSize: "12px",
+                                  fontWeight: "600",
+                                  textTransform: "capitalize"
+                                }}>
+                                  {subscriptionData.subscriptionDetails.status === "active" ? "✓ Active" : subscriptionData.subscriptionDetails.status}
+                                </span>
+                                <span style={{ color: "#94a3b8", fontSize: "14px" }}>
+                                  {subscriptionData.paymentType || "STRIPE"}
+                                </span>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div style={{ fontSize: "32px", fontWeight: "700", color: "#ffffff" }}>
+                                ${subscriptionData.subscriptionDetails.amount}
+                              </div>
+                              <div style={{ color: "#94a3b8", fontSize: "14px" }}>
+                                per {subscriptionData.subscriptionDetails.interval}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Subscription Details */}
+                          <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                            gap: "16px",
+                            marginTop: "24px",
+                            paddingTop: "24px",
+                            borderTop: "1px solid #1e3a5f"
+                          }}>
+                            <div>
+                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                                Subscription ID
+                              </div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px", fontFamily: "monospace", wordBreak: "break-all" }}>
+                                {subscriptionData.subscriptionId}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                                Provider
+                              </div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px", textTransform: "capitalize" }}>
+                                {subscriptionData.subscriptionDetails.provider || "Stripe"}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                                Next Billing Date
+                              </div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px" }}>
+                                {new Date(subscriptionData.subscriptionDetails.nextBillingDate).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric"
+                                })}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                                Billing Cycle
+                              </div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px", textTransform: "capitalize" }}>
+                                {subscriptionData.subscriptionDetails.interval}ly
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                                Currency
+                              </div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px", textTransform: "uppercase" }}>
+                                {subscriptionData.subscriptionDetails.currency}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                                Auto-Renewal
+                              </div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px" }}>
+                                {subscriptionData.subscriptionDetails.cancelAtPeriodEnd ? "Disabled (Canceling)" : "Enabled"}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cancellation Notice */}
+                        {subscriptionData.subscriptionDetails.cancelAtPeriodEnd && (
+                          <div style={{
+                            backgroundColor: "#451a03",
+                            borderRadius: "12px",
+                            padding: "16px",
+                            marginBottom: "24px",
+                            border: "1px solid #f59e0b",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px"
+                          }}>
+                            <span style={{ fontSize: "24px" }}>⚠️</span>
+                            <div>
+                              <div style={{ color: "#fbbf24", fontWeight: "600", marginBottom: "4px" }}>
+                                Subscription Ending
+                              </div>
+                              <div style={{ color: "#fcd34d", fontSize: "14px" }}>
+                                Your subscription will end on {new Date(subscriptionData.subscriptionDetails.nextBillingDate).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric"
+                                })}. You can reactivate it anytime before this date.
+                              </div>
+                            </div>
+                          </div>
+                        )}
+ {/* Invoices Section */}
+ {subscriptionData.invoices && subscriptionData.invoices.length > 0 && (
+                          <div style={{
+                            backgroundColor: "#0d1a2b",
+                            borderRadius: "12px",
+                            padding: "24px",
+                            marginBottom: "24px",
+                            border: "1px solid #1e3a5f"
+                          }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                              <h5 style={{ color: "#ffffff", fontSize: "16px", fontWeight: "600", margin: 0 }}>
+                                Billing History
+                              </h5>
+                              <span style={{ color: "#64748b", fontSize: "14px" }}>
+                                {subscriptionData.invoiceCount || subscriptionData.invoices.length} {subscriptionData.invoices.length === 1 ? 'Invoice' : 'Invoices'}
+                              </span>
+                            </div>
+                            
+                            <div style={{ overflowX: "auto" }}>
+                              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <thead>
+                                  <tr style={{ borderBottom: "1px solid #1e3a5f" }}>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                      Invoice
+                                    </th>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                      Date
+                                    </th>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                      Amount
+                                    </th>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                      Status
+                                    </th>
+                                    <th style={{ padding: "12px 8px", textAlign: "right", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                      Actions
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {subscriptionData.invoices.map((invoice, index) => (
+                                    <tr key={invoice.invoiceId || index} style={{ borderBottom: "1px solid #1e3a5f" }}>
+                                      <td style={{ padding: "16px 8px" }}>
+                                        <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "500", marginBottom: "4px" }}>
+                                          {invoice.invoiceNumber || invoice.invoiceId}
+                                        </div>
+                                        <div style={{ color: "#64748b", fontSize: "12px" }}>
+                                          {invoice.description || `${invoice.frequency || 'Monthly'} Subscription`}
+                                        </div>
+                                      </td>
+                                      <td style={{ padding: "16px 8px" }}>
+                                        <div style={{ color: "#e2e8f0", fontSize: "14px" }}>
+                                          {new Date(invoice.paidAt || invoice.createdAt).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric"
+                                          })}
+                                        </div>
+                                      </td>
+                                      <td style={{ padding: "16px 8px" }}>
+                                        <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "500" }}>
+                                          ${invoice.amountPaid || invoice.amount}
+                                        </div>
+                                        <div style={{ color: "#64748b", fontSize: "12px" }}>
+                                          {(invoice.currency || 'USD').toUpperCase()}
+                                        </div>
+                                      </td>
+                                      <td style={{ padding: "16px 8px" }}>
+                                        <span style={{
+                                          backgroundColor: invoice.status === "paid" ? "#10b98120" : invoice.status === "open" ? "#f59e0b20" : "#ef444420",
+                                          color: invoice.status === "paid" ? "#10b981" : invoice.status === "open" ? "#f59e0b" : "#ef4444",
+                                          padding: "4px 10px",
+                                          borderRadius: "12px",
+                                          fontSize: "12px",
+                                          fontWeight: "600",
+                                          textTransform: "capitalize"
+                                        }}>
+                                          {invoice.status}
+                                        </span>
+                                      </td>
+                                      <td style={{ padding: "16px 8px", textAlign: "right" }}>
+                                        <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                                          {invoice.pdfUrl && (
+                                            <a
+                                              href={invoice.pdfUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              style={{
+                                                backgroundColor: "#1e3a5f",
+                                                color: "#22d3ee",
+                                                padding: "6px 12px",
+                                                borderRadius: "6px",
+                                                fontSize: "12px",
+                                                textDecoration: "none",
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "4px",
+                                                transition: "background-color 0.2s"
+                                              }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = "#2d4a6f"}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = "#1e3a5f"}
+                                            >
+                                              📄 PDF
+                                            </a>
+                                          )}
+                                          {invoice.hostedUrl && (
+                                            <a
+                                              href={invoice.hostedUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              style={{
+                                                backgroundColor: "#1e3a5f",
+                                                color: "#22d3ee",
+                                                padding: "6px 12px",
+                                                borderRadius: "6px",
+                                                fontSize: "12px",
+                                                textDecoration: "none",
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "4px",
+                                                transition: "background-color 0.2s"
+                                              }}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = "#2d4a6f"}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = "#1e3a5f"}
+                                            >
+                                              🔗 View
+                                            </a>
+                                          )}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      
+
+                        {/* Payment Method Card */}
+                        <div style={{
+                          backgroundColor: "#0d1a2b",
+                          borderRadius: "12px",
+                          padding: "24px",
+                          marginBottom: "24px",
+                          border: "1px solid #1e3a5f"
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                            <h5 style={{ color: "#ffffff", fontSize: "16px", fontWeight: "600", margin: 0 }}>
+                              Payment Method
+                            </h5>
+                            <Button
+                              size="sm"
+                              style={{
+                                backgroundColor: "#3d83f1",
+                                borderColor: "#3d83f1",
+                                fontSize: "12px",
+                                padding: "6px 16px"
+                              }}
+                              onClick={handleUpdatePaymentMethod}
+                              disabled={loadingSubscription || subscriptionData?.pendingProviderSwitch}
+                            >
+                              {loadingSubscription ? (
+                                <>
+                                  <Spinner size="sm" style={{ marginRight: "4px" }} />
+                                  Loading...
+                                </>
+                              ) : (
+                                "Manage Payment"
+                              )}
+                            </Button>
+                          </div>
+                          
+                          {/* Pending Provider Switch Notice */}
+                          {subscriptionData?.pendingProviderSwitch && (
+                            <div style={{
+                              backgroundColor: "#451a03",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              marginBottom: "16px",
+                              border: "1px solid #f59e0b",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px"
+                            }}>
+                              <span style={{ fontSize: "18px" }}>🔄</span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ color: "#fbbf24", fontWeight: "600", fontSize: "13px", marginBottom: "2px" }}>
+                                  Provider Switch Scheduled
+                                </div>
+                                <div style={{ color: "#fcd34d", fontSize: "12px" }}>
+                                  Switching to {subscriptionData.pendingProviderSwitch} on {new Date(subscriptionData.switchScheduledFor).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <div style={{
+                              backgroundColor: "#1e3a5f",
+                              padding: "12px",
+                              borderRadius: "8px",
+                              fontSize: "24px"
+                            }}>
+                              {subscriptionData.paymentType === "STRIPE" ? "💳" : "🅿️"}
+                            </div>
+                            <div>
+                              <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "500" }}>
+                                {subscriptionData.paymentType === "STRIPE" ? "Credit/Debit Card (Stripe)" : "PayPal"}
+                              </div>
+                              <div style={{ color: "#64748b", fontSize: "12px" }}>
+                                {subscriptionData.paymentType === "STRIPE" ? "Managed via Stripe" : "Managed via PayPal"}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                       
+
+                        {/* Actions */}
+                        <div style={{
+                          backgroundColor: "#0d1a2b",
+                          borderRadius: "12px",
+                          padding: "24px",
+                          border: "1px solid #1e3a5f"
+                        }}>
+                          <h5 style={{ color: "#ffffff", marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
+                            Manage Subscription
+                          </h5>
+                          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                            <Button
+                              style={{
+                                backgroundColor: "#3d83f1",
+                                borderColor: "#3d83f1",
+                                fontSize: "14px"
+                              }}
+                              onClick={() => navigate(location.pathname.includes("admin") ? "/admin/subscriptions" : "/customer/subscription")}
+                            >
+                              View Plans & Pricing
+                            </Button>
+                            <Button
+                              style={{
+                                backgroundColor: "#e53e3e",
+                                borderColor: "#e53e3e",
+                                color: "#ffffff",
+                                fontSize: "14px"
+                              }}
+                              onClick={() => setShowCancelModal(true)}
+                              disabled={cancelLoading}
+                            >
+                              {cancelLoading ? <><Spinner size="sm" /> Cancelling...</> : "Cancel Subscription"}
+                            </Button>
+                          </div>
+                          <p style={{ color: "#64748b", fontSize: "12px", marginTop: "16px", marginBottom: 0 }}>
+                            Need help? Contact our support team at info@mesobfinancial.com
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: "40px", textAlign: "center" }}>
+                        <div style={{
+                          backgroundColor: "#0d1a2b",
+                          borderRadius: "12px",
+                          padding: "40px",
+                          border: "1px solid #1e3a5f"
+                        }}>
+                          <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
+                          <h4 style={{ color: "#ffffff", marginBottom: "12px" }}>No Active Subscription</h4>
+                          <p style={{ color: "#94a3b8", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>
+                            Subscribe to Pro Plan to unlock unlimited transactions, advanced reports, and more features.
+                          </p>
+                          <Button
+                            color="primary"
+                            style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1", fontSize: "14px" }}
+                            onClick={() => navigate(location.pathname.includes("admin") ? "/admin/subscriptions" : "/customer/subscription")}
+                          >
+                            View Plans & Subscribe
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </TabPane>
                   <TabPane tabId="3">
                     <div
@@ -652,6 +1207,306 @@ function UserPage() {
             </Button>
           </div>
         </ModalBody>
+      </Modal>
+
+      {/* Cancel Subscription Confirmation Modal */}
+      <Modal isOpen={showCancelModal} toggle={() => setShowCancelModal(false)}>
+        <ModalHeader
+          toggle={() => setShowCancelModal(false)}
+          style={{ backgroundColor: "#1a273a", border: "none" }}
+        >
+          <span style={{ color: "#e53e3e", fontWeight: "bold" }}>Cancel Subscription</span>
+        </ModalHeader>
+        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
+          <p style={{ color: "#ffffff", marginBottom: "12px" }}>
+            Are you sure you want to cancel your subscription?
+          </p>
+          <p style={{ color: "#fbbf24", marginBottom: "20px", fontWeight: "500" }}>
+            Your subscription will remain active until the end of your current billing period on{" "}
+            <strong>
+              {subscriptionData?.subscriptionDetails?.nextBillingDate
+                ? new Date(subscriptionData.subscriptionDetails.nextBillingDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                  })
+                : "the end of the billing period"}
+            </strong>.
+          </p>
+          <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+            After cancellation, you'll lose access to:
+          </p>
+          <ul style={{ color: "#94a3b8", fontSize: "14px", marginBottom: "20px" }}>
+            <li>Unlimited transactions</li>
+            <li>Advanced financial reports</li>
+            <li>Balance sheet and income statement</li>
+            <li>Receipt management</li>
+          </ul>
+        </ModalBody>
+        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
+          <Button
+            color="secondary"
+            onClick={() => setShowCancelModal(false)}
+            disabled={cancelLoading}
+            style={{ backgroundColor: "#475569", borderColor: "#475569" }}
+          >
+            Keep Subscription
+          </Button>
+          <Button
+            onClick={handleCancelSubscription}
+            disabled={cancelLoading}
+            style={{
+              backgroundColor: "#e53e3e",
+              borderColor: "#e53e3e",
+              color: "#ffffff"
+            }}
+          >
+            {cancelLoading ? (
+              <>
+                <Spinner size="sm" style={{ marginRight: "8px" }} />
+                Cancelling...
+              </>
+            ) : (
+              "Yes, Cancel Subscription"
+            )}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Payment Method Selection Modal */}
+      <Modal isOpen={showPaymentModal} toggle={() => setShowPaymentModal(false)}>
+        <ModalHeader
+          toggle={() => setShowPaymentModal(false)}
+          style={{ backgroundColor: "#1a273a", border: "none" }}
+        >
+          <span style={{ color: "#22d3ee", fontWeight: "bold" }}>Manage Payment Method</span>
+        </ModalHeader>
+        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
+          <p style={{ color: "#e2e8f0", marginBottom: "20px", fontSize: "14px" }}>
+            Choose an option to manage your payment method:
+          </p>
+          
+          {/* Current Provider Card */}
+          <div style={{
+            backgroundColor: "#0d1a2b",
+            border: "1px solid #1e3a5f",
+            borderRadius: "8px",
+            padding: "16px",
+            marginBottom: "16px"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+              <span style={{ fontSize: "24px" }}>
+                {subscriptionData?.paymentType === "STRIPE" ? "💳" : "🅿️"}
+              </span>
+              <div>
+                <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "600" }}>
+                  Current Provider: {subscriptionData?.paymentType || "N/A"}
+                </div>
+                <div style={{ color: "#64748b", fontSize: "12px" }}>
+                  {subscriptionData?.paymentType === "STRIPE" ? "Credit/Debit Card" : "PayPal Account"}
+                </div>
+              </div>
+            </div>
+            <Button
+              block
+              style={{
+                backgroundColor: "#3d83f1",
+                borderColor: "#3d83f1",
+                fontSize: "13px",
+                padding: "8px"
+              }}
+              onClick={handleUpdateCurrentProvider}
+              disabled={loadingSubscription}
+            >
+              {loadingSubscription ? (
+                <>
+                  <Spinner size="sm" style={{ marginRight: "4px" }} />
+                  Loading...
+                </>
+              ) : (
+                `Update ${subscriptionData?.paymentType} Details`
+              )}
+            </Button>
+          </div>
+
+          <div style={{
+            textAlign: "center",
+            color: "#64748b",
+            fontSize: "12px",
+            margin: "16px 0",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "#2d3a4f" }}></div>
+            <span>OR</span>
+            <div style={{ flex: 1, height: "1px", backgroundColor: "#2d3a4f" }}></div>
+          </div>
+
+          {/* Switch Provider Card */}
+          <div style={{
+            backgroundColor: "#0d1a2b",
+            border: "1px solid #1e3a5f",
+            borderRadius: "8px",
+            padding: "16px"
+          }}>
+            <div style={{ marginBottom: "12px" }}>
+              <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>
+                Switch Payment Provider
+              </div>
+              <div style={{ color: "#64748b", fontSize: "12px" }}>
+                Change to {subscriptionData?.paymentType === "STRIPE" ? "PayPal" : "Stripe"} at the end of your current billing period
+              </div>
+            </div>
+            <Button
+              block
+              style={{
+                backgroundColor: "#10b981",
+                borderColor: "#10b981",
+                fontSize: "13px",
+                padding: "8px"
+              }}
+              onClick={() => {
+                const newProvider = subscriptionData?.paymentType === "STRIPE" ? "PAYPAL" : "STRIPE";
+                setSelectedNewProvider(newProvider);
+                setShowPaymentModal(false);
+                setShowProviderSwitchModal(true);
+              }}
+              disabled={subscriptionData?.pendingProviderSwitch}
+            >
+              {subscriptionData?.pendingProviderSwitch ? (
+                "Switch Already Scheduled"
+              ) : (
+                `Switch to ${subscriptionData?.paymentType === "STRIPE" ? "PayPal" : "Stripe"}`
+              )}
+            </Button>
+          </div>
+        </ModalBody>
+        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
+          <Button
+            color="secondary"
+            onClick={() => setShowPaymentModal(false)}
+            style={{ backgroundColor: "#475569", borderColor: "#475569" }}
+          >
+            Close
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Provider Switch Confirmation Modal */}
+      <Modal isOpen={showProviderSwitchModal} toggle={() => setShowProviderSwitchModal(false)}>
+        <ModalHeader
+          toggle={() => setShowProviderSwitchModal(false)}
+          style={{ backgroundColor: "#1a273a", border: "none" }}
+        >
+          <span style={{ color: "#10b981", fontWeight: "bold" }}>Switch Payment Provider</span>
+        </ModalHeader>
+        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
+          <div style={{ marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "16px" }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "32px", marginBottom: "4px" }}>
+                  {subscriptionData?.paymentType === "STRIPE" ? "💳" : "🅿️"}
+                </div>
+                <div style={{ color: "#64748b", fontSize: "12px" }}>
+                  {subscriptionData?.paymentType}
+                </div>
+              </div>
+              <div style={{ fontSize: "24px", color: "#64748b" }}>→</div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "32px", marginBottom: "4px" }}>
+                  {selectedNewProvider === "STRIPE" ? "💳" : "🅿️"}
+                </div>
+                <div style={{ color: "#10b981", fontSize: "12px", fontWeight: "600" }}>
+                  {selectedNewProvider}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: "#0d1a2b",
+            border: "1px solid #1e3a5f",
+            borderRadius: "8px",
+            padding: "16px",
+            marginBottom: "16px"
+          }}>
+            <h6 style={{ color: "#22d3ee", fontSize: "14px", fontWeight: "600", marginBottom: "12px" }}>
+              How Provider Switching Works:
+            </h6>
+            <ul style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "0", paddingLeft: "20px" }}>
+              <li style={{ marginBottom: "8px" }}>
+                Your current <strong>{subscriptionData?.paymentType}</strong> subscription will remain active until{" "}
+                <strong>
+                  {subscriptionData?.subscriptionDetails?.nextBillingDate
+                    ? new Date(subscriptionData.subscriptionDetails.nextBillingDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
+                      })
+                    : "the end of the billing period"}
+                </strong>
+              </li>
+              <li style={{ marginBottom: "8px" }}>
+                You'll continue to have <strong>full access</strong> during this period
+              </li>
+              <li style={{ marginBottom: "8px" }}>
+                On the end date, your {subscriptionData?.paymentType} subscription will automatically cancel
+              </li>
+              <li>
+                You'll receive an email reminder to set up your <strong>{selectedNewProvider}</strong> subscription
+              </li>
+            </ul>
+          </div>
+
+          <div style={{
+            backgroundColor: "#451a03",
+            border: "1px solid #f59e0b",
+            borderRadius: "8px",
+            padding: "12px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px"
+          }}>
+            <span style={{ fontSize: "16px" }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: "#fbbf24", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                Important
+              </div>
+              <div style={{ color: "#fcd34d", fontSize: "12px" }}>
+                Make sure to complete your {selectedNewProvider} subscription setup when you receive the reminder email to avoid service interruption.
+              </div>
+            </div>
+          </div>
+        </ModalBody>
+        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
+          <Button
+            color="secondary"
+            onClick={() => setShowProviderSwitchModal(false)}
+            disabled={switchLoading}
+            style={{ backgroundColor: "#475569", borderColor: "#475569" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => handleSwitchProvider(selectedNewProvider)}
+            disabled={switchLoading}
+            style={{
+              backgroundColor: "#10b981",
+              borderColor: "#10b981",
+              color: "#ffffff"
+            }}
+          >
+            {switchLoading ? (
+              <>
+                <Spinner size="sm" style={{ marginRight: "8px" }} />
+                Scheduling...
+              </>
+            ) : (
+              `Confirm Switch to ${selectedNewProvider}`
+            )}
+          </Button>
+        </ModalFooter>
       </Modal>
     </>
   );

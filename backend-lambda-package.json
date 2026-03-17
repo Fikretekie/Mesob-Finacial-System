@@ -1,0 +1,21 @@
+{
+  "name": "mesob-financial-stripe-lambdas",
+  "version": "1.0.0",
+  "description": "Lambda functions for Stripe Customer Portal and Webhook handling",
+  "main": "index.js",
+  "scripts": {
+    "install-deps": "npm install",
+    "package-portal": "zip -r portal-session-lambda.zip backend-lambda-portal-session.js node_modules package.json",
+    "package-webhook": "zip -r webhook-lambda.zip backend-lambda-stripe-webhook.js node_modules package.json",
+    "package-all": "npm run package-portal && npm run package-webhook"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Mesob Financial",
+  "license": "MIT"
+}

@@ -78,6 +78,8 @@ export const ROUTES = {
   SIGN_UP: "SignUp",
   /** Documents stored in S3 under Document/ prefix. List, upload, get URL. */
   DOCUMENT: "Document",
+  CREATE_PORTAL_SESSION: "create-portal-session",
+  SWITCH_PROVIDER: "Subscription/switchmethod",
 };
 
 /**
