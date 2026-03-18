@@ -2487,7 +2487,7 @@ const MesobFinancial2 = () => {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: "20px" }}>
+                    <div style={{ marginTop: "0px" }}>
                       {/* Commented out dropdown functionality */}
                       {/* <div 
                         style={{ 
@@ -2509,19 +2509,34 @@ const MesobFinancial2 = () => {
                         </span>
                       </div>
                       {isBreakdownExpanded && ( */}
-                      <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
+                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
                         {t('financialReport.breakdown')}
-                      </div>
-                      <div style={{ marginTop: "8px" }}>
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.revenue')}
-                          </span>
-                          <span
+                      </div> */}
+                      <div style={{ marginTop: "0px" }}>
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalRevenue")}
+                          </div>
+                          <div
                             style={{
                               color: "#41926f",
                               fontWeight: "bold",
-                              fontSize: "0.9rem",
+                              fontSize: "1.1rem",
                             }}
                           >
                             $
@@ -2532,7 +2547,7 @@ const MesobFinancial2 = () => {
                                 maximumFractionDigits: 2,
                               }
                             )}
-                          </span>
+                          </div>
                         </div>
                         {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(revenues)
@@ -2593,25 +2608,41 @@ const MesobFinancial2 = () => {
                               );
                             })}
                         </div> */}
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.totalExpense')}
-                          </span>
-                          <span
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
                             style={{
-                              color: "#a7565d",
+                              marginBottom: "8px",
+                              color: "#ffffff",
                               fontWeight: "bold",
                               fontSize: "0.9rem",
                             }}
                           >
+                            {t("financialReport.totalExpense")}
+                          </div>
+                          <div
+                            style={{
+                              color: "#a7565d",
+                              fontWeight: "bold",
+                              fontSize: "1.1rem",
+                            }}
+                          >
                             $
-                            {parseFloat(
-                              calculateTotalExpenses(true)
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
+                            {parseFloat(calculateTotalExpenses(true)).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
+                          </div>
                         </div>
                         {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(expenses)
@@ -3443,7 +3474,7 @@ const MesobFinancial2 = () => {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: "20px" }}>
+                      <div style={{ marginTop: "0px" }}>
                       {/* Commented out dropdown functionality */}
                       {/* <div 
                         style={{ 
@@ -3465,19 +3496,34 @@ const MesobFinancial2 = () => {
                         </span>
                       </div>
                       {isBreakdownExpanded && ( */}
-                      <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
+                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
                         {t('financialReport.breakdown')}
-                      </div>
-                      <div style={{ marginTop: "8px" }}>
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.revenue')}
-                          </span>
-                          <span
+                      </div> */}
+                      <div style={{ marginTop: "0px" }}>
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalRevenue")}
+                          </div>
+                          <div
                             style={{
                               color: "#41926f",
                               fontWeight: "bold",
-                              fontSize: "0.9rem",
+                              fontSize: "1.1rem",
                             }}
                           >
                             $
@@ -3488,7 +3534,7 @@ const MesobFinancial2 = () => {
                                 maximumFractionDigits: 2,
                               }
                             )}
-                          </span>
+                          </div>
                         </div>
                         {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(revenues)
@@ -3549,15 +3595,30 @@ const MesobFinancial2 = () => {
                               );
                             })}
                         </div> */}
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.totalExpense')}
-                          </span>
-                          <span
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalExpense")}
+                          </div>
+                          <div
                             style={{
                               color: "#a7565d",
                               fontWeight: "bold",
-                              fontSize: "0.9rem",
+                              fontSize: "1.1rem",
                             }}
                           >
                             $
@@ -3567,7 +3628,7 @@ const MesobFinancial2 = () => {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
-                          </span>
+                          </div>
                         </div>
                         {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(expenses)
@@ -4554,6 +4615,7 @@ const MesobFinancial2 = () => {
                   <FormGroup>
                     <Label>{t('financialReport.partialPaymentAmount')}:</Label>
                     <Input
+                      className="no-number-spinner"
                       type="number"
                       value={remainingAmount}
                       onChange={(e) => {
@@ -4561,7 +4623,7 @@ const MesobFinancial2 = () => {
                         setRemainingAmount(e.target.value);
 
                         const currentRemaining = selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount;
-                        
+
                         // Validate that partial payment is less than or equal to remaining amount
                         if (value > currentRemaining) {
                           setPartialPaymentError(
@@ -4683,7 +4745,7 @@ const MesobFinancial2 = () => {
 
                 <FormGroup>
                   <Label>{t('financialReport.assetType')}:</Label>
-                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
+                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName("manual"); setAssetNameManual(""); }}>
                     <option value="">{t('financialReport.selectAssetType')}</option>
                     <option value="fixed">{t('financialReport.fixedAsset')}</option>
                     <option value="current">{t('financialReport.currentAsset')}</option>
@@ -4692,19 +4754,19 @@ const MesobFinancial2 = () => {
                 {assetType && (
                   <FormGroup>
                     <Label>{t('financialReport.itemName')}:</Label>
-                    <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
-                      <option value="">{t('financialReport.selectItem')}</option>
-                      <option value="manual">{t('financialReport.enterManually')}</option>
-                    </Input>
-                    {assetName === "manual" && (
-                      <Input type="text" placeholder={t('financialReport.enterItemName')} value={assetNameManual} onChange={(e) => setAssetNameManual(e.target.value)} style={{ marginTop: "10px" }} />
-                    )}
+                    <Input
+                      type="text"
+                      placeholder={t('financialReport.enterItemName')}
+                      value={assetNameManual}
+                      onChange={(e) => setAssetNameManual(e.target.value)}
+                    />
                   </FormGroup>
                 )}
 
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
                   <Input
+                    className="no-number-spinner"
                     type="number"
                     value={transactionAmount}
                     onChange={(e) => setTransactionAmount(e.target.value)}
@@ -4766,7 +4828,7 @@ const MesobFinancial2 = () => {
                 </FormGroup> */}
                 <FormGroup>
                   <Label>{t('financialReport.assetType')}:</Label>
-                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName(""); setAssetNameManual(""); }}>
+                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName("manual"); setAssetNameManual(""); }}>
                     <option value="">{t('financialReport.selectAssetType')}</option>
                     <option value="fixed">{t('financialReport.fixedAsset')}</option>
                     <option value="current">{t('financialReport.currentAsset')}</option>
@@ -4775,20 +4837,19 @@ const MesobFinancial2 = () => {
                 {assetType && (
                   <FormGroup>
                     <Label>{t('financialReport.itemName')}:</Label>
-                    <Input type="select" value={assetName} onChange={(e) => setAssetName(e.target.value)}>
-                      <option value="">{t('financialReport.selectItem')}</option>
-                      <option value="manual">{t('financialReport.enterManually')}</option>
-                    </Input>
-                    {assetName === "manual" && (
-                      <Input type="text" placeholder={t('financialReport.enterItemName')} value={assetNameManual} onChange={(e) => setAssetNameManual(e.target.value)} />
-                    )}
+                    <Input
+                      type="text"
+                      placeholder={t('financialReport.enterItemName')}
+                      value={assetNameManual}
+                      onChange={(e) => setAssetNameManual(e.target.value)}
+                    />
                   </FormGroup>
                 )}
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
+                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
                 </FormGroup>
-                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || (!assetNameManual && assetName !== "manual" && !assetName)}>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || !(assetNameManual || "").trim()}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
                 </Button>
               </>
@@ -4826,7 +4887,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="e.g. 1500" />
+                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="e.g. 1500" />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4866,7 +4927,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="Sale amount" />
+                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="Sale amount" />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4955,6 +5016,7 @@ const MesobFinancial2 = () => {
                   <FormGroup>
                     <Label>{t('financialReport.amount')}:</Label>
                     <Input
+                      className="no-number-spinner"
                       type="number"
                       value={transactionAmount}
                       onChange={(e) => setTransactionAmount(e.target.value)}
@@ -5077,6 +5139,7 @@ const MesobFinancial2 = () => {
               <FormGroup>
                 <Label>{t('financialReport.installmentAmount')}:</Label>
                 <Input
+                  className="no-number-spinner"
                   type="number"
                   value={installmentAmount}
                   onChange={(e) => setInstallmentAmount(e.target.value)}

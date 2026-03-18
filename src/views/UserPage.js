@@ -54,11 +54,7 @@ function UserPage() {
   const [subscriptionData, setSubscriptionData] = useState(null);
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
-  const [showProviderSwitchModal, setShowProviderSwitchModal] = useState(false);
-  const [selectedNewProvider, setSelectedNewProvider] = useState(null);
-  const [switchLoading, setSwitchLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = parseInt(localStorage.getItem("role") || "1");
@@ -325,40 +321,8 @@ function UserPage() {
   };
 
   const handleUpdatePaymentMethod = async () => {
-    // Show provider selection modal instead of directly opening portal
-    setShowPaymentModal(true);
-  };
-
-  const handleSwitchProvider = async (newProvider) => {
-    try {
-      setSwitchLoading(true);
-      setError("");
-      const userId = localStorage.getItem("userId");
-      
-      const response = await axios.post(
-        apiUrl(ROUTES.SWITCH_PROVIDER),
-        { userId, newProvider }
-      );
-      
-      if (response.data?.success) {
-        setSuccess(response.data.message);
-        setShowProviderSwitchModal(false);
-        setShowPaymentModal(false);
-        
-        // Refresh subscription data
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else {
-        setError(response.data?.error || "Failed to schedule provider switch.");
-      }
-    } catch (error) {
-      console.error("Error switching provider:", error);
-      const errorMsg = error.response?.data?.error || error.response?.data?.details || "Failed to switch payment provider. Please try again.";
-      setError(errorMsg);
-    } finally {
-      setSwitchLoading(false);
-    }
+    // Manage/update payment method within the CURRENT provider (no provider switching).
+    await handleUpdateCurrentProvider();
   };
 
   const handleUpdateCurrentProvider = async () => {
@@ -382,8 +346,14 @@ function UserPage() {
           setLoadingSubscription(false);
         }
       } else if (currentProvider === "PAYPAL") {
-        // For PayPal, redirect to PayPal management
-        setError("PayPal payment method updates must be done through PayPal.com. Please log in to your PayPal account to update your payment method.");
+        // For PayPal, payment method updates are done in the user's PayPal account (autopay/subscriptions).
+        const isLocal =
+          typeof window !== "undefined" &&
+          ["localhost", "127.0.0.1"].includes(window.location.hostname);
+        const paypalManageUrl = isLocal
+          ? "https://www.sandbox.paypal.com/myaccount/autopay/"
+          : "https://www.paypal.com/myaccount/autopay/";
+        window.open(paypalManageUrl, "_blank", "noopener,noreferrer");
         setLoadingSubscription(false);
       } else {
         setError("Unable to determine payment provider. Please contact support.");
@@ -992,7 +962,7 @@ function UserPage() {
                                 padding: "6px 16px"
                               }}
                               onClick={handleUpdatePaymentMethod}
-                              disabled={loadingSubscription || subscriptionData?.pendingProviderSwitch}
+                              disabled={loadingSubscription}
                             >
                               {loadingSubscription ? (
                                 <>
@@ -1004,31 +974,7 @@ function UserPage() {
                               )}
                             </Button>
                           </div>
-                          
-                          {/* Pending Provider Switch Notice */}
-                          {subscriptionData?.pendingProviderSwitch && (
-                            <div style={{
-                              backgroundColor: "#451a03",
-                              borderRadius: "8px",
-                              padding: "12px",
-                              marginBottom: "16px",
-                              border: "1px solid #f59e0b",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px"
-                            }}>
-                              <span style={{ fontSize: "18px" }}>🔄</span>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ color: "#fbbf24", fontWeight: "600", fontSize: "13px", marginBottom: "2px" }}>
-                                  Provider Switch Scheduled
-                                </div>
-                                <div style={{ color: "#fcd34d", fontSize: "12px" }}>
-                                  Switching to {subscriptionData.pendingProviderSwitch} on {new Date(subscriptionData.switchScheduledFor).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          
+
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                             <div style={{
                               backgroundColor: "#1e3a5f",
@@ -1268,242 +1214,6 @@ function UserPage() {
               </>
             ) : (
               "Yes, Cancel Subscription"
-            )}
-          </Button>
-        </ModalFooter>
-      </Modal>
-
-      {/* Payment Method Selection Modal */}
-      <Modal isOpen={showPaymentModal} toggle={() => setShowPaymentModal(false)}>
-        <ModalHeader
-          toggle={() => setShowPaymentModal(false)}
-          style={{ backgroundColor: "#1a273a", border: "none" }}
-        >
-          <span style={{ color: "#22d3ee", fontWeight: "bold" }}>Manage Payment Method</span>
-        </ModalHeader>
-        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
-          <p style={{ color: "#e2e8f0", marginBottom: "20px", fontSize: "14px" }}>
-            Choose an option to manage your payment method:
-          </p>
-          
-          {/* Current Provider Card */}
-          <div style={{
-            backgroundColor: "#0d1a2b",
-            border: "1px solid #1e3a5f",
-            borderRadius: "8px",
-            padding: "16px",
-            marginBottom: "16px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-              <span style={{ fontSize: "24px" }}>
-                {subscriptionData?.paymentType === "STRIPE" ? "💳" : "🅿️"}
-              </span>
-              <div>
-                <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "600" }}>
-                  Current Provider: {subscriptionData?.paymentType || "N/A"}
-                </div>
-                <div style={{ color: "#64748b", fontSize: "12px" }}>
-                  {subscriptionData?.paymentType === "STRIPE" ? "Credit/Debit Card" : "PayPal Account"}
-                </div>
-              </div>
-            </div>
-            <Button
-              block
-              style={{
-                backgroundColor: "#3d83f1",
-                borderColor: "#3d83f1",
-                fontSize: "13px",
-                padding: "8px"
-              }}
-              onClick={handleUpdateCurrentProvider}
-              disabled={loadingSubscription}
-            >
-              {loadingSubscription ? (
-                <>
-                  <Spinner size="sm" style={{ marginRight: "4px" }} />
-                  Loading...
-                </>
-              ) : (
-                `Update ${subscriptionData?.paymentType} Details`
-              )}
-            </Button>
-          </div>
-
-          <div style={{
-            textAlign: "center",
-            color: "#64748b",
-            fontSize: "12px",
-            margin: "16px 0",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#2d3a4f" }}></div>
-            <span>OR</span>
-            <div style={{ flex: 1, height: "1px", backgroundColor: "#2d3a4f" }}></div>
-          </div>
-
-          {/* Switch Provider Card */}
-          <div style={{
-            backgroundColor: "#0d1a2b",
-            border: "1px solid #1e3a5f",
-            borderRadius: "8px",
-            padding: "16px"
-          }}>
-            <div style={{ marginBottom: "12px" }}>
-              <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>
-                Switch Payment Provider
-              </div>
-              <div style={{ color: "#64748b", fontSize: "12px" }}>
-                Change to {subscriptionData?.paymentType === "STRIPE" ? "PayPal" : "Stripe"} at the end of your current billing period
-              </div>
-            </div>
-            <Button
-              block
-              style={{
-                backgroundColor: "#10b981",
-                borderColor: "#10b981",
-                fontSize: "13px",
-                padding: "8px"
-              }}
-              onClick={() => {
-                const newProvider = subscriptionData?.paymentType === "STRIPE" ? "PAYPAL" : "STRIPE";
-                setSelectedNewProvider(newProvider);
-                setShowPaymentModal(false);
-                setShowProviderSwitchModal(true);
-              }}
-              disabled={subscriptionData?.pendingProviderSwitch}
-            >
-              {subscriptionData?.pendingProviderSwitch ? (
-                "Switch Already Scheduled"
-              ) : (
-                `Switch to ${subscriptionData?.paymentType === "STRIPE" ? "PayPal" : "Stripe"}`
-              )}
-            </Button>
-          </div>
-        </ModalBody>
-        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
-          <Button
-            color="secondary"
-            onClick={() => setShowPaymentModal(false)}
-            style={{ backgroundColor: "#475569", borderColor: "#475569" }}
-          >
-            Close
-          </Button>
-        </ModalFooter>
-      </Modal>
-
-      {/* Provider Switch Confirmation Modal */}
-      <Modal isOpen={showProviderSwitchModal} toggle={() => setShowProviderSwitchModal(false)}>
-        <ModalHeader
-          toggle={() => setShowProviderSwitchModal(false)}
-          style={{ backgroundColor: "#1a273a", border: "none" }}
-        >
-          <span style={{ color: "#10b981", fontWeight: "bold" }}>Switch Payment Provider</span>
-        </ModalHeader>
-        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
-          <div style={{ marginBottom: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px", marginBottom: "16px" }}>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "32px", marginBottom: "4px" }}>
-                  {subscriptionData?.paymentType === "STRIPE" ? "💳" : "🅿️"}
-                </div>
-                <div style={{ color: "#64748b", fontSize: "12px" }}>
-                  {subscriptionData?.paymentType}
-                </div>
-              </div>
-              <div style={{ fontSize: "24px", color: "#64748b" }}>→</div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "32px", marginBottom: "4px" }}>
-                  {selectedNewProvider === "STRIPE" ? "💳" : "🅿️"}
-                </div>
-                <div style={{ color: "#10b981", fontSize: "12px", fontWeight: "600" }}>
-                  {selectedNewProvider}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: "#0d1a2b",
-            border: "1px solid #1e3a5f",
-            borderRadius: "8px",
-            padding: "16px",
-            marginBottom: "16px"
-          }}>
-            <h6 style={{ color: "#22d3ee", fontSize: "14px", fontWeight: "600", marginBottom: "12px" }}>
-              How Provider Switching Works:
-            </h6>
-            <ul style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "0", paddingLeft: "20px" }}>
-              <li style={{ marginBottom: "8px" }}>
-                Your current <strong>{subscriptionData?.paymentType}</strong> subscription will remain active until{" "}
-                <strong>
-                  {subscriptionData?.subscriptionDetails?.nextBillingDate
-                    ? new Date(subscriptionData.subscriptionDetails.nextBillingDate).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric"
-                      })
-                    : "the end of the billing period"}
-                </strong>
-              </li>
-              <li style={{ marginBottom: "8px" }}>
-                You'll continue to have <strong>full access</strong> during this period
-              </li>
-              <li style={{ marginBottom: "8px" }}>
-                On the end date, your {subscriptionData?.paymentType} subscription will automatically cancel
-              </li>
-              <li>
-                You'll receive an email reminder to set up your <strong>{selectedNewProvider}</strong> subscription
-              </li>
-            </ul>
-          </div>
-
-          <div style={{
-            backgroundColor: "#451a03",
-            border: "1px solid #f59e0b",
-            borderRadius: "8px",
-            padding: "12px",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "8px"
-          }}>
-            <span style={{ fontSize: "16px" }}>⚠️</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: "#fbbf24", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                Important
-              </div>
-              <div style={{ color: "#fcd34d", fontSize: "12px" }}>
-                Make sure to complete your {selectedNewProvider} subscription setup when you receive the reminder email to avoid service interruption.
-              </div>
-            </div>
-          </div>
-        </ModalBody>
-        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
-          <Button
-            color="secondary"
-            onClick={() => setShowProviderSwitchModal(false)}
-            disabled={switchLoading}
-            style={{ backgroundColor: "#475569", borderColor: "#475569" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => handleSwitchProvider(selectedNewProvider)}
-            disabled={switchLoading}
-            style={{
-              backgroundColor: "#10b981",
-              borderColor: "#10b981",
-              color: "#ffffff"
-            }}
-          >
-            {switchLoading ? (
-              <>
-                <Spinner size="sm" style={{ marginRight: "8px" }} />
-                Scheduling...
-              </>
-            ) : (
-              `Confirm Switch to ${selectedNewProvider}`
             )}
           </Button>
         </ModalFooter>

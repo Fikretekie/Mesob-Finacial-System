@@ -71,6 +71,8 @@ export const ROUTES = {
   RECEIPT: "Receipt",
   BACKUP: "backup",
   SUBSCRIPTION: "Subscription",
+  /** Stripe Billing Portal session (update card / Apple Pay / Google Pay, etc.). */
+  CREATE_PORTAL_SESSION: "Subscription/PortalSession",
   PRICE: "price",
   EXISTING_USER_CHECK: "existingusercheck",
   CREATE_EVENT: "createevent",
@@ -78,8 +80,6 @@ export const ROUTES = {
   SIGN_UP: "SignUp",
   /** Documents stored in S3 under Document/ prefix. List, upload, get URL. */
   DOCUMENT: "Document",
-  CREATE_PORTAL_SESSION: "create-portal-session",
-  SWITCH_PROVIDER: "Subscription/switchmethod",
 };
 
 /**
