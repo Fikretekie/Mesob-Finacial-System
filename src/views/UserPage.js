@@ -310,11 +310,41 @@ function UserPage() {
     }
   };
 
+  /** Cancels at period end via backend PayPal API (same path as SubscriptionPlans). */
+  const cancelPaypalSubscription = async () => {
+    try {
+      setCancelLoading(true);
+      setError("");
+      if (!subscriptionData?.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+      await axios.delete(
+        apiUrl(
+          `${ROUTES.PAYPAL_SUBSCRIPTION}/${subscriptionData.subscriptionId}`
+        )
+      );
+      setSuccess("Subscription cancelled successfully!");
+      setShowCancelModal(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err) {
+      console.error("Error cancelling PayPal subscription:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to cancel PayPal subscription. Please try again or manage it in your PayPal account."
+      );
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   const handleCancelSubscription = () => {
     if (subscriptionData?.paymentType === "STRIPE") {
       cancelStripeSubscription();
     } else if (subscriptionData?.paymentType === "PAYPAL") {
-      setError("PayPal cancellation not yet implemented. Please contact support.");
+      cancelPaypalSubscription();
     } else {
       setError("Unable to determine payment type. Please contact support.");
     }

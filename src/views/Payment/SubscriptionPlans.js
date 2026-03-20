@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/api";
+import { API_BASE_URL, apiUrl, ROUTES } from "../../config/api";
 import {
   Row,
   Col,
@@ -299,7 +299,7 @@ const SubscriptionPlans = () => {
       setError("");
       const userId = getUserId();
       if (!userId) { setUserData(null); return; }
-      const response = await axios.get(`${backendBaseUrl}/Users/${userId}`);
+      const response = await axios.get(apiUrl(`${ROUTES.USERS}/${userId}`));
       setUserData(response.data.user || response.data);
     } catch (err) {
       if (err.response?.status === 404) setUserData(null);
@@ -382,31 +382,66 @@ const SubscriptionPlans = () => {
 
   const cancelStripeSubscription = async () => {
     try {
-      setCancelLoading(true); setError("");
-      if (!userData?.subscriptionId) { setError("Subscription ID missing."); return; }
-      await axios.delete(`${backendBaseUrl}/Subscription/${userData.subscriptionId}`);
+      setCancelLoading(true);
+      setError("");
+      if (!userData?.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+      await axios.delete(
+        apiUrl(`${ROUTES.SUBSCRIPTION}/${userData.subscriptionId}`)
+      );
+      setShowConfirmModal(false);
       await fetchUser();
       window.location.reload();
-    } catch { setError("Failed to cancel Stripe subscription."); }
-    finally { setCancelLoading(false); }
+    } catch (err) {
+      console.error("Cancel Stripe subscription:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to cancel Stripe subscription. Please try again."
+      );
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
+  /** DELETE /MesobFinancialSystem/PaypalSubscription/{id} → your Lambda (PayPal cancel + DynamoDB). */
   const cancelPaypalSubscription = async () => {
     try {
-      setCancelLoading(true); setError("");
-      if (!userData?.subscriptionId) { setError("Subscription ID missing."); return; }
-      await fetch(`${backendBaseUrl}/PaypalSubscription/${userData.subscriptionId}`, {
-        method: "DELETE", headers: { "Content-Type": "application/json" },
-      });
+      setCancelLoading(true);
+      setError("");
+      if (!userData?.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+      await axios.delete(
+        apiUrl(
+          `${ROUTES.PAYPAL_SUBSCRIPTION}/${userData.subscriptionId}`
+        )
+      );
+      setShowConfirmModal(false);
       await fetchUser();
-    } catch { setError("Failed to cancel PayPal subscription."); }
-    finally { setCancelLoading(false); }
+      window.location.reload();
+    } catch (err) {
+      console.error("Cancel PayPal subscription:", err);
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to cancel PayPal subscription. Please try again or cancel in your PayPal account."
+      );
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   const handleCancelSubscription = () => {
-    if (userData?.paymentType === "STRIPE") cancelStripeSubscription();
-    else if (userData?.paymentType === "PAYPAL") cancelPaypalSubscription();
-    else setError("Unable to determine payment type. Please contact support.");
+    const provider = (userData?.paymentType || "").toUpperCase();
+    if (provider === "STRIPE") cancelStripeSubscription();
+    else if (provider === "PAYPAL") cancelPaypalSubscription();
+    else
+      setError(
+        "Unable to determine payment type. Please contact support."
+      );
   };
 
   const getPaypalClientId = () =>
@@ -502,7 +537,10 @@ const SubscriptionPlans = () => {
                     <button
                       style={styles.cancelBtn}
                       disabled={cancelLoading}
-                      onClick={() => setShowConfirmModal(true)}
+                      onClick={() => {
+                        setError("");
+                        setShowConfirmModal(true);
+                      }}
                       onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                     >
@@ -668,6 +706,11 @@ const SubscriptionPlans = () => {
             </ModalHeader>
             <ModalBody style={styles.confirmModalBody}>
               {t("subscription.unsubscribeMessage")}
+              {error ? (
+                <div style={{ ...styles.errorBox, marginTop: "1rem", marginBottom: 0 }}>
+                  ⚠️ {error}
+                </div>
+              ) : null}
             </ModalBody>
             <ModalFooter style={styles.modalFooter}>
               <button
@@ -679,7 +722,7 @@ const SubscriptionPlans = () => {
               <button
                 style={styles.dangerBtn}
                 disabled={cancelLoading}
-                onClick={() => { handleCancelSubscription(); setShowConfirmModal(false); }}
+                onClick={() => handleCancelSubscription()}
               >
                 {cancelLoading ? (
                   <><Spinner size="sm" /> {t("subscription.unsubscribing")}</>

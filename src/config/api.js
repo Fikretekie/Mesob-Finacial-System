@@ -71,6 +71,8 @@ export const ROUTES = {
   RECEIPT: "Receipt",
   BACKUP: "backup",
   SUBSCRIPTION: "Subscription",
+  /** PayPal subscription cancel / lifecycle (API Gateway resource name). */
+  PAYPAL_SUBSCRIPTION: "PaypalSubscription",
   /** Stripe Billing Portal session (update card / Apple Pay / Google Pay, etc.). */
   CREATE_PORTAL_SESSION: "Subscription/PortalSession",
   PRICE: "price",
