@@ -14,6 +14,7 @@
     "loadingUsers": "جاري تحميل المستخدمين...",
     "loadingFinancialData": "جاري تحميل البيانات المالية...",
     "loadingChart": "جاري تحميل الرسم البياني...",
+    "taxEstimation": "تقدير الضريبة",
     "totalCashOnHandChart": "مخطط إجمالي النقد في اليد",
     "revenueChart": "مخطط الإيرادات",
     "totalPayableChart": "مخطط إجمالي المستحقات",
@@ -72,6 +73,9 @@
     "editTransaction": "تحرير المعاملة",
     "type": "النوع",
     "receivedCash": "نقد مستلم",
+    "recordedEarlierAsCurrentAssets": "مسجل سابقاً كأصول متداولة",
+    "recordedEarlierAsFixedAsset": "مسجل سابقاً كأصل ثابت",
+    "otherIncome": "دخل آخر",
     "paidCash": "نقد مدفوع",
     "haventYetPaid": "لم يتم الدفع بعد",
     "selectAction": "اختر الإجراء",
@@ -408,6 +412,16 @@
     "size": "الحجم",
     "date": "التاريخ",
     "actions": "إجراءات",
-    "fileTooBig": "الملف كبير جداً. الحد الأقصى {{max}} ميجابايت."
+    "fileTooBig": "الملف كبير جداً. الحد الأقصى {{max}} ميجابايت.",
+    "delete": "حذف",
+    "deleteConfirm": "حذف هذا المستند؟ لا يمكن التراجع.",
+    "deleting": "جاري الحذف…",
+    "deleteSuccess": "تم حذف المستند.",
+    "deleteError": "تعذر حذف المستند.",
+    "nameDocumentTitle": "اسم المستند",
+    "nameDocumentLabel": "اسم الملف",
+    "nameDocumentHint": "سيظهر الملف بهذا الاسم في القائمة. إن حذفت الامتداد، يُحتفظ بنوع الملف الأصلي (مثل .pdf).",
+    "nameDocumentEmpty": "يرجى إدخال اسم الملف.",
+    "uploadConfirm": "رفع"
   }
 }

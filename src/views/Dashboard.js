@@ -895,7 +895,7 @@ function Dashboard() {
                     <div
                       style={{
                         width: "100%",
-                        border: "1px solid #41926f",
+                        border: "1px solid #22d3ee",
                         borderRadius: "6px",
                         padding: isMobile ? "6px 1.25rem" : "8px 1.25rem",
                         display: "flex",
@@ -906,7 +906,7 @@ function Dashboard() {
                       }}
                     >
                       <span style={{ color: "white", fontSize: isMobile ? "0.7rem" : "0.75rem", fontWeight: 600 }}>
-                        {t('dashboard.taxEstimation', 'Tax Estimation')}
+                        {t("dashboard.taxEstimation")}
                       </span>
                       <span style={{ color: "white", fontSize: isMobile ? "0.85rem" : "0.95rem", fontWeight: 600 }}>
                         ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

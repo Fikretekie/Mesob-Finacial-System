@@ -14,6 +14,7 @@
     "loadingUsers": "ተጠቃሚዎች በመጫን ላይ...",
     "loadingFinancialData": "የፋይናንስ መረጃ በመጫን ላይ...",
     "loadingChart": "ገበታ በመጫን ላይ...",
+    "taxEstimation": "የግብር ግምት",
     "totalCashOnHandChart": "ጠቅላላ የእጅ ገንዘብ ቻርት",
     "revenueChart": "ገቢ ቻርት",
     "totalPayableChart": "ጠቅላላ ተከፋይ ቻርት",
@@ -73,6 +74,9 @@
     "editTransaction": "ግብይት አርትዕ",
     "type": "ዓይነት",
     "receivedCash": "ጥሬ ገንዘብ ተቀብለዋል",
+    "recordedEarlierAsCurrentAssets": "ቀደም እንደ ተመላለሰ ንብረት ተመዝግቧል",
+    "recordedEarlierAsFixedAsset": "ቀደም ብሎ እንደ ቋሚ ንብረት ተመዝግቧል",
+    "otherIncome": "ሌላ ገቢ",
     "paidCash": "ጥሬ ገንዘብ ከፍለዋል",
     "haventYetPaid": "ገና አልተከፈለም",
     "selectAction": "ድርጊት ይምረጡ",
@@ -528,6 +532,16 @@
     "size": "መጠን",
     "date": "ቀን",
     "actions": "ድርጊቶች",
-    "fileTooBig": "ፋይሉ በጣም ትልቅ ነው። ከፍተኛ መጠን {{max}} MB።"
+    "fileTooBig": "ፋይሉ በጣም ትልቅ ነው። ከፍተኛ መጠን {{max}} MB።",
+    "delete": "ሰርዝ",
+    "deleteConfirm": "ይህን ሰነድ መሰረዝ ይፈልጋሉ? ወደኋላ መመለስ አይቻልም።",
+    "deleting": "በመሰረዝ ላይ…",
+    "deleteSuccess": "ሰነዱ ተሰርዟል።",
+    "deleteError": "ሰነዱን መሰረዝ አልተቻለም።",
+    "nameDocumentTitle": "የሰነድ ስም",
+    "nameDocumentLabel": "የፋይል ስም",
+    "nameDocumentHint": "ፋይሉ በዝርዝሩ እንዲህ ይታያል። ቅጥያ ካላስገቡ የመጀመሪያው አይነት (ለምሳሌ .pdf) ይቀጥላል።",
+    "nameDocumentEmpty": "እባክዎ የፋይል ስም ያስገቡ።",
+    "uploadConfirm": "ጫን"
   }
 }

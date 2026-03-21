@@ -14,7 +14,8 @@
     "loadingUsers": "ተጠቃሚታት ይጸዓኑ ኣለዉ...",
     "loadingFinancialData": "ፋይናንሳዊ ዳታ ይጸዓን ኣሎ...",
     "loadingChart": "ቻርት ይጸዓን ኣሎ...",
-     "totalCashOnHandChart": "ጠቕላላ ናይ ኢድ ገንዘብ ቻርት",
+    "taxEstimation": "ግምት ግብሪ",
+    "totalCashOnHandChart": "ጠቕላላ ናይ ኢድ ገንዘብ ቻርት",
     "revenueChart": "ኣታዊ ቻርት",
     "totalPayableChart": "ጠቕላላ ክኽፈል ዘለዎ ቻርት",
     "totalExpensesChart": "ጠቕላላ ወጻኢታት ቻርት",
@@ -71,6 +72,9 @@
     "editTransaction": "ግብይት ኣረምቲ",
     "type": "ዓይነት",
     "receivedCash": "ገንዘብ ተቐቢሉ",
+    "recordedEarlierAsCurrentAssets": "ቅድም ከም ንብረት ምዝርጋሕ ተመዝጊቡ",
+    "recordedEarlierAsFixedAsset": "ቅድም ከም ንብረት ስብራት ተመዝጊቡ",
+    "otherIncome": "ካልእ ኣታዊ",
     "paidCash": "ገንዘብ ተኸፊሉ",
     "haventYetPaid": "ገና ኣይተኸፈለን",
     "selectAction": "ተግባር ምረጽ",
@@ -526,6 +530,16 @@
     "size": "መጠን",
     "date": "ዕለት",
     "actions": "ተግባራት",
-    "fileTooBig": "ፋይል ኣዝዩ ዓብዪ። ከፍታዊ {{max}} MB።"
+    "fileTooBig": "ፋይል ኣዝዩ ዓብዪ። ከፍታዊ {{max}} MB።",
+    "delete": "ሰርዝ",
+    "deleteConfirm": "ነዚ ሰነድ ክትሰርዝ ትደሊ? ናብ ድሕሪት ክትምለስ ኣይትክእልን።",
+    "deleting": "ኣብ ምስረዝ…",
+    "deleteSuccess": "ሰነድ ተሰሪዑ።",
+    "deleteError": "ሰነድ ክሰርዝ ኣይተኻእለን።",
+    "nameDocumentTitle": "ስም ሰነድ",
+    "nameDocumentLabel": "ስም ፋይል",
+    "nameDocumentHint": "ኣብ ዝርዝርካ ከምዚ ይረአ። extension ክትወስድ ኣይትኽእል እንተኾይንካ ናይ ኣቐዲምካ ዓይነት (ከም .pdf) ይሕላል።",
+    "nameDocumentEmpty": "በጃኻ ስም ፋይል ኣእትዉ።",
+    "uploadConfirm": "ስቕር"
   }
 }

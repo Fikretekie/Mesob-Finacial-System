@@ -14,6 +14,7 @@
     "loadingUsers": "Chargement des utilisateurs...",
     "loadingFinancialData": "Chargement des données financières...",
     "loadingChart": "Chargement du graphique...",
+    "taxEstimation": "Estimation fiscale",
     "totalCashOnHandChart": "Graphique de TRÉSORERIE TOTALE",
     "revenueChart": "Graphique des REVENUS",
     "totalPayableChart": "Graphique du TOTAL À PAYER",
@@ -72,6 +73,9 @@
     "editTransaction": "Modifier la Transaction",
     "type": "Type",
     "receivedCash": "Espèces Reçues",
+    "recordedEarlierAsCurrentAssets": "Enregistré comme actifs circulants",
+    "recordedEarlierAsFixedAsset": "Enregistré comme immobilisation",
+    "otherIncome": "Autre revenu",
     "paidCash": "Espèces Payées",
     "haventYetPaid": "Pas Encore Payé",
     "selectAction": "Sélectionner l'Action",
@@ -388,6 +392,16 @@
     "size": "Taille",
     "date": "Date",
     "actions": "Actions",
-    "fileTooBig": "Fichier trop volumineux. Maximum {{max}} Mo."
+    "fileTooBig": "Fichier trop volumineux. Maximum {{max}} Mo.",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer ce document ? Cette action est irréversible.",
+    "deleting": "Suppression…",
+    "deleteSuccess": "Document supprimé.",
+    "deleteError": "Impossible de supprimer le document.",
+    "nameDocumentTitle": "Nom du document",
+    "nameDocumentLabel": "Nom du fichier",
+    "nameDocumentHint": "Le fichier apparaîtra ainsi dans la liste. Si vous omettez l’extension, le type d’origine (ex. .pdf) est conservé.",
+    "nameDocumentEmpty": "Veuillez saisir un nom de fichier.",
+    "uploadConfirm": "Envoyer"
   }
 }

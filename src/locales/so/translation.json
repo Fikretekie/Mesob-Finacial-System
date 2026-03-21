@@ -14,7 +14,8 @@
     "loadingUsers": "Waa la soo dejinayaa isticmaalayaasha...",
     "loadingFinancialData": "Waa la soo dejinayaa xogta maaliyadeed...",
     "loadingChart": "Waa la soo dejinayaa shaxda...",
-     "totalCashOnHandChart": "Jaantiska Wadarta Lacagta Gacanta",
+    "taxEstimation": "Qiyaasta canshuurta",
+    "totalCashOnHandChart": "Jaantiska Wadarta Lacagta Gacanta",
     "revenueChart": "Jaantiska Dakhliga",
     "totalPayableChart": "Jaantiska Wadarta La Bixinayo",
     "totalExpensesChart": "Jaantiska Wadarta Kharashka",
@@ -71,6 +72,9 @@
     "editTransaction": "Wax Ka Badal Macaamil",
     "type": "Nooca",
     "receivedCash": "Lacag La Qaatay",
+    "recordedEarlierAsCurrentAssets": "Hore loo diiwaan geliyey sidii hantida wareega",
+    "recordedEarlierAsFixedAsset": "Hore loo diiwaan geliyey sidii hantida joogta ah",
+    "otherIncome": "Dakhli kale",
     "paidCash": "Lacag La Bixiyay",
     "haventYetPaid": "Weli Lama Bixin",
     "selectAction": "Dooro Ficil",
@@ -378,6 +382,16 @@
       "size": "Cabbir",
       "date": "Taariikh",
       "actions": "Tallaabooyin",
-      "fileTooBig": "Faylku waa weyn yahay. Ugu badan {{max}} MB."
+      "fileTooBig": "Faylku waa weyn yahay. Ugu badan {{max}} MB.",
+      "delete": "Tirtir",
+      "deleteConfirm": "Dukumeentigan tirtir? Looma celin karo.",
+      "deleting": "Tirtirida…",
+      "deleteSuccess": "Dukumeentiga waa la tirtiray.",
+      "deleteError": "Dukumeentiga lama tirtiri karin.",
+      "nameDocumentTitle": "Magaca dukumeentiga",
+      "nameDocumentLabel": "Magaca faylka",
+      "nameDocumentHint": "Sidaas ayuu u muuqan doonaa liiskaaga. Haddii aad ka tagto kordhinta, nooca asalka ah (tusaale .pdf) waa la haystaa.",
+      "nameDocumentEmpty": "Fadlan geli magaca faylka.",
+      "uploadConfirm": "Soo rar"
     }
   }

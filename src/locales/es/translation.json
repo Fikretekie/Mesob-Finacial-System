@@ -14,6 +14,7 @@
     "loadingUsers": "Cargando usuarios...",
     "loadingFinancialData": "Cargando datos financieros...",
     "loadingChart": "Cargando gráfico...",
+    "taxEstimation": "Estimación de impuestos",
     "totalCashOnHandChart": "Gráfico de EFECTIVO TOTAL EN MANO",
     "revenueChart": "Gráfico de INGRESOS",
     "totalPayableChart": "Gráfico de TOTAL A PAGAR",
@@ -72,6 +73,9 @@
     "editTransaction": "Editar Transacción",
     "type": "Tipo",
     "receivedCash": "Efectivo Recibido",
+    "recordedEarlierAsCurrentAssets": "Registrado como activo corriente",
+    "recordedEarlierAsFixedAsset": "Registrado como activo fijo",
+    "otherIncome": "Otros ingresos",
     "paidCash": "Efectivo Pagado",
     "haventYetPaid": "Aún No Pagado",
     "selectAction": "Seleccionar Acción",
@@ -393,6 +397,16 @@
     "size": "Tamaño",
     "date": "Fecha",
     "actions": "Acciones",
-    "fileTooBig": "Archivo demasiado grande. Máximo {{max}} MB."
+    "fileTooBig": "Archivo demasiado grande. Máximo {{max}} MB.",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Eliminar este documento? No se puede deshacer.",
+    "deleting": "Eliminando…",
+    "deleteSuccess": "Documento eliminado.",
+    "deleteError": "No se pudo eliminar el documento.",
+    "nameDocumentTitle": "Nombre del documento",
+    "nameDocumentLabel": "Nombre del archivo",
+    "nameDocumentHint": "Así aparecerá en tu lista. Si omites la extensión, se conserva el tipo original (p. ej. .pdf).",
+    "nameDocumentEmpty": "Introduce un nombre de archivo.",
+    "uploadConfirm": "Subir"
   }
 }

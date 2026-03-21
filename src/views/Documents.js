@@ -14,16 +14,31 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
+  ModalFooter,
   Table,
 } from "reactstrap";
 import { Helmet } from "react-helmet";
 import { useTranslation } from "react-i18next";
-import { FaUpload, FaDownload, FaEye } from "react-icons/fa";
+import { FaUpload, FaDownload, FaEye, FaTrash } from "react-icons/fa";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
 
+/** POST body action — must match Lambda POST /Document branch (avoids DELETE CORS preflight). */
+const DOCUMENT_DELETE_ACTION = ROUTES.DOCUMENT_DELETE_ACTION;
+
 const MAX_FILE_SIZE_MB = 10;
 const ACCEPT_TYPES = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv";
+
+/** Keep original extension if user omits it (e.g. "Invoice" + ".pdf"). */
+function resolveUploadFileName(inputName, originalFileName) {
+  const trimmed = (inputName || "").trim();
+  if (!trimmed) return originalFileName;
+  const lastDot = originalFileName.lastIndexOf(".");
+  const ext = lastDot >= 0 ? originalFileName.slice(lastDot) : "";
+  if (!ext) return trimmed;
+  if (trimmed.toLowerCase().endsWith(ext.toLowerCase())) return trimmed;
+  return trimmed + ext;
+}
 
 const Documents = () => {
   const { t } = useTranslation();
@@ -38,6 +53,10 @@ const Documents = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [deletingKey, setDeletingKey] = useState(null);
+  const [uploadNameModal, setUploadNameModal] = useState(false);
+  const [pendingUploadFile, setPendingUploadFile] = useState(null);
+  const [uploadDisplayName, setUploadDisplayName] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const userId = localStorage.getItem("userId");
@@ -101,7 +120,14 @@ const Documents = () => {
     }
   };
 
-  const handleUpload = async (e) => {
+  const closeUploadNameModal = () => {
+    setUploadNameModal(false);
+    setPendingUploadFile(null);
+    setUploadDisplayName("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleFileSelected = (e) => {
     const files = e.target.files;
     if (!files?.length || !userId) return;
     const file = files[0];
@@ -111,7 +137,27 @@ const Documents = () => {
       e.target.value = "";
       return;
     }
+    setPendingUploadFile(file);
+    setUploadDisplayName(file.name);
+    setUploadNameModal(true);
+  };
 
+  const confirmUploadWithName = () => {
+    if (!pendingUploadFile) return;
+    const resolved = resolveUploadFileName(uploadDisplayName, pendingUploadFile.name);
+    if (!resolved.trim()) {
+      notify("tr", t("documents.nameDocumentEmpty"), "warning");
+      return;
+    }
+    const file = pendingUploadFile;
+    setUploadNameModal(false);
+    setPendingUploadFile(null);
+    setUploadDisplayName("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    performUpload(file, resolved);
+  };
+
+  const performUpload = async (file, fileNameForApi) => {
     setUploading(true);
     try {
       const reader = new FileReader();
@@ -124,7 +170,7 @@ const Documents = () => {
             body: JSON.stringify({
               userId,
               fileContent: base64,
-              fileName: file.name,
+              fileName: fileNameForApi,
               contentType: file.type,
               bucketName: S3_BUCKET_NAME,
               keyPrefix: "documents",
@@ -132,7 +178,7 @@ const Documents = () => {
           });
           if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || `HTTP ${res.status}`);
+            throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
           }
           notify("tr", t("documents.uploadSuccess"), "success");
           fetchDocuments();
@@ -141,7 +187,6 @@ const Documents = () => {
           notify("tr", t("documents.uploadError") + " " + (err.message || ""), "danger");
         } finally {
           setUploading(false);
-          if (fileInputRef.current) fileInputRef.current.value = "";
         }
       };
       reader.readAsDataURL(file);
@@ -173,6 +218,45 @@ const Documents = () => {
       }
     } else {
       notify("tr", t("documents.noUrl"), "warning");
+    }
+  };
+
+  const handleDelete = async (item) => {
+    const key = item.key || item.s3Key;
+    if (!key || !userId) {
+      notify("tr", t("documents.noUrl"), "warning");
+      return;
+    }
+    if (!window.confirm(t("documents.deleteConfirm"))) return;
+
+    setDeletingKey(key);
+    try {
+      // POST (not DELETE): same /Document path as upload; CORS usually allows POST already.
+      const res = await fetch(apiUrl(ROUTES.DOCUMENT), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: DOCUMENT_DELETE_ACTION,
+          userId,
+          key,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || data.message || `HTTP ${res.status}`);
+      }
+      notify("tr", t("documents.deleteSuccess"), "success");
+      if (previewModal && (previewItem?.key === key || previewItem?.s3Key === key)) {
+        setPreviewModal(false);
+        setPreviewItem(null);
+        setPreviewUrl(null);
+      }
+      fetchDocuments();
+    } catch (err) {
+      console.error("Delete error:", err);
+      notify("tr", `${t("documents.deleteError")} ${err.message || ""}`, "danger");
+    } finally {
+      setDeletingKey(null);
     }
   };
 
@@ -238,7 +322,7 @@ const Documents = () => {
                       ref={fileInputRef}
                       type="file"
                       accept={ACCEPT_TYPES}
-                      onChange={handleUpload}
+                      onChange={handleFileSelected}
                       style={{ display: "none" }}
                     />
                     <Button
@@ -322,16 +406,34 @@ const Documents = () => {
                                   size="sm"
                                   style={{ backgroundColor: "#2d3a4f", borderColor: "#2d3a4f", color: "#e2e8f0" }}
                                   onClick={() => handlePreview(doc)}
+                                  aria-label={t("documents.preview")}
+                                  title={t("documents.preview")}
                                 >
-                                  <FaEye className="me-1" /> {t("documents.preview")}
+                                  <FaEye />
                                 </Button>
                               )}
                               <Button
                                 size="sm"
                                 style={{ backgroundColor: "#0d9488", borderColor: "#0d9488", color: "#fff" }}
                                 onClick={() => handleDownload(doc)}
+                                aria-label={t("documents.download")}
+                                title={t("documents.download")}
                               >
-                                <FaDownload className="me-1" /> {t("documents.download")}
+                                <FaDownload />
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={deletingKey === (doc.key || doc.s3Key)}
+                                style={{ backgroundColor: "#dc2626", borderColor: "#b91c1c", color: "#fff" }}
+                                onClick={() => handleDelete(doc)}
+                                aria-label={t("documents.delete")}
+                                title={t("documents.delete")}
+                              >
+                                {deletingKey === (doc.key || doc.s3Key) ? (
+                                  <Spinner size="sm" />
+                                ) : (
+                                  <FaTrash />
+                                )}
                               </Button>
                             </div>
                           </div>
@@ -364,16 +466,34 @@ const Documents = () => {
                                       size="sm"
                                       style={{ backgroundColor: "#2d3a4f", borderColor: "#2d3a4f", color: "#e2e8f0" }}
                                       onClick={() => handlePreview(doc)}
+                                      aria-label={t("documents.preview")}
+                                      title={t("documents.preview")}
                                     >
-                                      <FaEye className="me-1" /> {t("documents.preview")}
+                                      <FaEye />
                                     </Button>
                                   )}
                                   <Button
                                     size="sm"
                                     style={{ backgroundColor: "#0d9488", borderColor: "#0d9488", color: "#fff" }}
                                     onClick={() => handleDownload(doc)}
+                                    aria-label={t("documents.download")}
+                                    title={t("documents.download")}
                                   >
-                                    <FaDownload className="me-1" /> {t("documents.download")}
+                                    <FaDownload />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    disabled={deletingKey === (doc.key || doc.s3Key)}
+                                    style={{ backgroundColor: "#dc2626", borderColor: "#b91c1c", color: "#fff" }}
+                                    onClick={() => handleDelete(doc)}
+                                    aria-label={t("documents.delete")}
+                                    title={t("documents.delete")}
+                                  >
+                                    {deletingKey === (doc.key || doc.s3Key) ? (
+                                      <Spinner size="sm" />
+                                    ) : (
+                                      <FaTrash />
+                                    )}
                                   </Button>
                                 </div>
                               </td>
@@ -389,6 +509,62 @@ const Documents = () => {
           </Col>
         </Row>
       </div>
+
+      <Modal
+        isOpen={uploadNameModal}
+        toggle={closeUploadNameModal}
+        style={{ maxWidth: "480px" }}
+      >
+        <ModalHeader
+          toggle={closeUploadNameModal}
+          style={{ backgroundColor: "#1a273a", color: "#e2e8f0", borderBottom: "1px solid #2d3a4f" }}
+        >
+          {t("documents.nameDocumentTitle")}
+        </ModalHeader>
+        <ModalBody style={{ backgroundColor: "#1a273a", color: "#e2e8f0" }}>
+          <FormGroup>
+            <Label for="doc-upload-name" style={{ color: "#94a3b8" }}>
+              {t("documents.nameDocumentLabel")}
+            </Label>
+            <Input
+              id="doc-upload-name"
+              type="text"
+              value={uploadDisplayName}
+              onChange={(e) => setUploadDisplayName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  confirmUploadWithName();
+                }
+              }}
+              style={{
+                backgroundColor: "#0d1321",
+                borderColor: "#2d3a4f",
+                color: "#e2e8f0",
+              }}
+              autoFocus
+            />
+            <p className="mb-0 mt-2 small" style={{ color: "#64748b" }}>
+              {t("documents.nameDocumentHint")}
+            </p>
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter
+          style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}
+        >
+          <Button color="secondary" outline onClick={closeUploadNameModal}>
+            {t("common.cancel")}
+          </Button>
+          <Button
+            color="primary"
+            style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
+            disabled={!uploadDisplayName.trim()}
+            onClick={confirmUploadWithName}
+          >
+            {t("documents.uploadConfirm")}
+          </Button>
+        </ModalFooter>
+      </Modal>
 
       <Modal
         isOpen={previewModal}

@@ -25,6 +25,7 @@ import {
 } from "reactstrap";
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
+import "./UserPage.css";
 import { saveAs } from "file-saver";
 
 function UserPage() {
@@ -58,6 +59,45 @@ function UserPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = parseInt(localStorage.getItem("role") || "1");
+
+  /** Profile layout: tabs overflow horizontally on small phones — stack + tighten padding */
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024
+  );
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  const isCompactProfile = viewportWidth < 480;
+  const isVeryNarrow = viewportWidth < 360;
+  const isUltraNarrow = viewportWidth < 300;
+
+  const profileTabLinkStyle = (isActive) => ({
+    cursor: "pointer",
+    backgroundColor: "#000000",
+    color: isActive ? "#22d3ee" : "#94a3b8",
+    borderColor: "#2d3a4f",
+    ...(isCompactProfile && {
+      width: "100%",
+      maxWidth: "100%",
+      textAlign: "center",
+      boxSizing: "border-box",
+      borderRadius: "8px",
+      border: `1px solid ${isActive ? "#22d3ee" : "#2d3a4f"}`,
+      whiteSpace: "normal",
+      lineHeight: 1.25,
+    }),
+    ...(isUltraNarrow && {
+      fontSize: "0.68rem",
+      padding: "0.35rem 0.35rem",
+    }),
+    ...(!isUltraNarrow &&
+      isVeryNarrow && {
+        fontSize: "0.78rem",
+        padding: "0.45rem 0.5rem",
+      }),
+  });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -441,55 +481,93 @@ function UserPage() {
   return (
     <>
       <PanelHeader size="sm" />
-      <div className="content">
-        <Row>
-          <Col md="8" style={{ paddingInline: 0 }}>
-            <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <CardHeader style={{ backgroundColor: "#101926" }}>
-                <h5 className="title" style={{ color: "#ffffff" }}>Profile</h5>
-                <Nav tabs style={{ borderBottom: "1px solid #2d3a4f", marginTop: "12px" }}>
-                  <NavItem>
+      <div
+        className="content"
+        style={{
+          paddingLeft: isUltraNarrow ? 4 : isVeryNarrow ? 8 : undefined,
+          paddingRight: isUltraNarrow ? 4 : isVeryNarrow ? 8 : undefined,
+          maxWidth: "100%",
+          overflowX: "hidden",
+        }}
+      >
+        <Row className="g-0" style={{ marginLeft: 0, marginRight: 0 }}>
+          <Col
+            xs="12"
+            md="8"
+            style={{
+              paddingInline: isUltraNarrow ? 0 : 0,
+              minWidth: 0,
+              maxWidth: "100%",
+            }}
+          >
+            <Card
+              style={{
+                backgroundColor: "#101926",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
+                maxWidth: "100%",
+              }}
+            >
+              <CardHeader
+                style={{
+                  backgroundColor: "#101926",
+                  padding: isUltraNarrow ? "0.5rem 0.35rem" : isVeryNarrow ? "0.65rem 0.5rem" : undefined,
+                }}
+              >
+                <h5
+                  className="title mb-0"
+                  style={{
+                    color: "#ffffff",
+                    fontSize: isUltraNarrow ? "1rem" : undefined,
+                  }}
+                >
+                  Profile
+                </h5>
+                <Nav
+                  tabs
+                  className={`profile-page-nav${isCompactProfile ? " flex-column align-items-stretch" : ""}`}
+                  style={{
+                    borderBottom: isCompactProfile ? "none" : "1px solid #2d3a4f",
+                    marginTop: "12px",
+                    gap: isCompactProfile ? "6px" : 0,
+                    width: "100%",
+                    flexWrap: isCompactProfile ? "nowrap" : "wrap",
+                  }}
+                >
+                  <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
                     <NavLink
                       className={activeTab === "1" ? "active" : ""}
                       onClick={() => setActiveTab("1")}
-                      style={{
-                        cursor: "pointer",
-                        color: activeTab === "1" ? "#22d3ee" : "#94a3b8",
-                        borderColor: "#2d3a4f",
-                      }}
+                      style={profileTabLinkStyle(activeTab === "1")}
                     >
                       Personal Information
                     </NavLink>
                   </NavItem>
-                  <NavItem>
+                  <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
                     <NavLink
                       className={activeTab === "2" ? "active" : ""}
                       onClick={() => setActiveTab("2")}
-                      style={{
-                        cursor: "pointer",
-                        color: activeTab === "2" ? "#22d3ee" : "#94a3b8",
-                        borderColor: "#2d3a4f",
-                      }}
+                      style={profileTabLinkStyle(activeTab === "2")}
                     >
                       Payment Management
                     </NavLink>
                   </NavItem>
-                  <NavItem>
+                  <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
                     <NavLink
                       className={activeTab === "3" ? "active" : ""}
                       onClick={() => setActiveTab("3")}
-                      style={{
-                        cursor: "pointer",
-                        color: activeTab === "3" ? "#22d3ee" : "#94a3b8",
-                        borderColor: "#2d3a4f",
-                      }}
+                      style={profileTabLinkStyle(activeTab === "3")}
                     >
                       Data Management
                     </NavLink>
                   </NavItem>
                 </Nav>
               </CardHeader>
-              <CardBody style={{ backgroundColor: "#101926" }}>
+              <CardBody
+                style={{
+                  backgroundColor: "#101926",
+                  padding: isUltraNarrow ? "0.5rem 0.35rem" : isVeryNarrow ? "0.65rem 0.5rem" : undefined,
+                }}
+              >
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="1">
                 {error && <Alert color="danger">{error}</Alert>}
@@ -646,16 +724,26 @@ function UserPage() {
                       {isEditing && hasChanges && (
                         <Row>
                           <Col md="12">
-                            <Button color="success" type="submit">
-                              Save Changes
-                            </Button>
-                            <Button
-                              color="secondary"
-                              className="ml-2"
-                              onClick={handleDiscard}
+                            <div
+                              className="d-flex"
+                              style={{
+                                gap: "12px",
+                                flexDirection: isCompactProfile ? "column" : "row",
+                                flexWrap: "wrap",
+                              }}
                             >
-                              Discard
-                            </Button>
+                              <Button color="success" type="submit" style={isCompactProfile ? { width: "100%" } : undefined}>
+                                Save Changes
+                              </Button>
+                              <Button
+                                color="secondary"
+                                className={isCompactProfile ? "" : "ml-2"}
+                                onClick={handleDiscard}
+                                style={isCompactProfile ? { width: "100%", marginLeft: 0 } : undefined}
+                              >
+                                Discard
+                              </Button>
+                            </div>
                           </Col>
                         </Row>
                       )}
@@ -663,17 +751,32 @@ function UserPage() {
                       {/* Edit button when NOT editing or no changes */}
                       {(!isEditing || !hasChanges) && (
                         <Row>
-                          <Col md="12" className="d-flex" style={{ gap: "16px" }}>
-                            <Button
-                              color="primary"
-                              onClick={() => setIsEditing(true)}
-                              disabled={editDisabled}
+                          <Col md="12">
+                            <div
+                              className="d-flex"
+                              style={{
+                                gap: "12px",
+                                flexDirection: isCompactProfile ? "column" : "row",
+                                flexWrap: "wrap",
+                                alignItems: "stretch",
+                              }}
                             >
-                              Edit Profile
-                            </Button>
-                            <Button color="danger" onClick={handleDelete}>
-                              Delete Account
-                            </Button>
+                              <Button
+                                color="primary"
+                                onClick={() => setIsEditing(true)}
+                                disabled={editDisabled}
+                                style={isCompactProfile ? { width: "100%" } : undefined}
+                              >
+                                Edit Profile
+                              </Button>
+                              <Button
+                                color="danger"
+                                onClick={handleDelete}
+                                style={isCompactProfile ? { width: "100%" } : undefined}
+                              >
+                                Delete Account
+                              </Button>
+                            </div>
                           </Col>
                         </Row>
                       )}

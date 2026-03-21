@@ -545,6 +545,16 @@
     "size": "Size",
     "date": "Date",
     "actions": "Actions",
-    "fileTooBig": "File is too large. Maximum size is {{max}} MB."
+    "fileTooBig": "File is too large. Maximum size is {{max}} MB.",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this document? This cannot be undone.",
+    "deleting": "Deleting…",
+    "deleteSuccess": "Document deleted.",
+    "deleteError": "Could not delete document.",
+    "nameDocumentTitle": "Name your document",
+    "nameDocumentLabel": "File name",
+    "nameDocumentHint": "This is how the file will appear in your list. If you omit the extension, the original type (e.g. .pdf) is kept.",
+    "nameDocumentEmpty": "Please enter a file name.",
+    "uploadConfirm": "Upload"
   }
 }

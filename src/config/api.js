@@ -46,22 +46,53 @@ export const S3_BUCKET_NAME =
 export const BACKUP_BASE_URL = `https://${S3_BUCKET_NAME}`;
 
 /**
- * Normalize S3 receipt URL from virtual-hosted to path-style so it works for preview/download.
- * Handles both app (production) and staging buckets.
- * @param {string} rawUrl - Receipt URL (e.g. https://bucket.s3.amazonaws.com/key)
- * @returns {string} Path-style URL (e.g. https://s3.amazonaws.com/bucket/key)
+ * Normalize S3 receipt URLs for browser preview/download.
+ *
+ * Virtual-hosted URLs like `https://staging.mesobfinancial.com.s3.amazonaws.com/key` use a
+ * hostname whose SSL certificate does not match buckets that contain **dots** in the name
+ * (`ERR_CERT_COMMON_NAME_INVALID`). Convert those to **path-style**:
+ * `https://s3.amazonaws.com/staging.mesobfinancial.com/key` (cert matches `s3.amazonaws.com`).
+ *
+ * Buckets without dots keep the original URL (virtual-hosted works with default S3 certs).
+ *
+ * @param {string} rawUrl - Receipt URL
+ * @returns {string} Same URL, or path-style when needed
  */
 export function normalizeReceiptUrl(rawUrl) {
   if (!rawUrl || typeof rawUrl !== "string") return rawUrl;
-  return rawUrl
-    .replace(
-      "app.mesobfinancial.com.s3.amazonaws.com",
-      "s3.amazonaws.com/app.mesobfinancial.com"
-    )
-    .replace(
-      "s3.amazonaws.com/staging.mesobfinancial.com",   // finds broken/old URL
-      "staging.mesobfinancial.com.s3.amazonaws.com"    // replaces with correct URL
-    )
+  const trimmed = rawUrl.trim();
+
+  let base = trimmed;
+  let suffix = "";
+  const q = trimmed.indexOf("?");
+  const h = trimmed.indexOf("#");
+  if (q >= 0) {
+    base = trimmed.slice(0, q);
+    suffix = trimmed.slice(q);
+  } else if (h >= 0) {
+    base = trimmed.slice(0, h);
+    suffix = trimmed.slice(h);
+  }
+
+  // Virtual-hosted: https://bucket.s3.amazonaws.com/key
+  // Regional:       https://bucket.s3.us-east-1.amazonaws.com/key
+  const vh = base.match(
+    /^https?:\/\/([^/]+)\.s3(?:\.([^.]+))?\.amazonaws\.com\/(.+)$/i
+  );
+  if (vh) {
+    const bucket = vh[1];
+    const region = vh[2];
+    const key = vh[3];
+    if (bucket.includes(".")) {
+      if (region) {
+        return `https://s3.${region}.amazonaws.com/${bucket}/${key}${suffix}`;
+      }
+      // Legacy global endpoint (common for us-east-1)
+      return `https://s3.amazonaws.com/${bucket}/${key}${suffix}`;
+    }
+  }
+
+  return trimmed;
 }
 
 /** Route path segments (no leading slash; append to API_BASE_URL). */
@@ -80,8 +111,13 @@ export const ROUTES = {
   CREATE_EVENT: "createevent",
   SIGNIN: "Signin",
   SIGN_UP: "SignUp",
-  /** Documents stored in S3 under Document/ prefix. List, upload, get URL. */
+  /**
+   * Documents (S3). Upload uses POST; delete uses POST + JSON body
+   * `{ action: "deleteDocument", userId, key }` so localhost works without API Gateway allowing DELETE in CORS.
+   */
   DOCUMENT: "Document",
+  /** Must match Documents.js delete payload (Lambda POST branch). */
+  DOCUMENT_DELETE_ACTION: "deleteDocument",
 };
 
 /**
