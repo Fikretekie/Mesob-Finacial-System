@@ -536,6 +536,7 @@
     "deleting": "ኣብ ምስረዝ…",
     "deleteSuccess": "ሰነድ ተሰሪዑ።",
     "deleteError": "ሰነድ ክሰርዝ ኣይተኻእለን።",
+    "deleteErrorBackend": "ምስረዝ ኣይረኽብን (ናይ ሰርቨር ምስክር ኣድላይ)። ምስ ድጋም ርከቡ።",
     "nameDocumentTitle": "ስም ሰነድ",
     "nameDocumentLabel": "ስም ፋይል",
     "nameDocumentHint": "ኣብ ዝርዝርካ ከምዚ ይረአ። extension ክትወስድ ኣይትኽእል እንተኾይንካ ናይ ኣቐዲምካ ዓይነት (ከም .pdf) ይሕላል።",

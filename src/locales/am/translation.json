@@ -538,6 +538,7 @@
     "deleting": "በመሰረዝ ላይ…",
     "deleteSuccess": "ሰነዱ ተሰርዟል።",
     "deleteError": "ሰነዱን መሰረዝ አልተቻለም።",
+    "deleteErrorBackend": "መሰረዝ ገና አይገኝም (ከአገልጋይ ጋር ማስተካከል ያስፈልጋል)። ድጋፍ ያግኙ።",
     "nameDocumentTitle": "የሰነድ ስም",
     "nameDocumentLabel": "የፋይል ስም",
     "nameDocumentHint": "ፋይሉ በዝርዝሩ እንዲህ ይታያል። ቅጥያ ካላስገቡ የመጀመሪያው አይነት (ለምሳሌ .pdf) ይቀጥላል።",

@@ -388,6 +388,7 @@
       "deleting": "Tirtirida…",
       "deleteSuccess": "Dukumeentiga waa la tirtiray.",
       "deleteError": "Dukumeentiga lama tirtiri karin.",
+      "deleteErrorBackend": "Tirtiridu weli ma jirto (server-ka waa in la habeeyaa). La xiriir taageerada.",
       "nameDocumentTitle": "Magaca dukumeentiga",
       "nameDocumentLabel": "Magaca faylka",
       "nameDocumentHint": "Sidaas ayuu u muuqan doonaa liiskaaga. Haddii aad ka tagto kordhinta, nooca asalka ah (tusaale .pdf) waa la haystaa.",

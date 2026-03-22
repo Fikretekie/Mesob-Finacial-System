@@ -233,7 +233,7 @@ const Documents = () => {
     try {
       // POST (not DELETE): same /Document path as upload; CORS usually allows POST already.
       const res = await fetch(apiUrl(ROUTES.DOCUMENT), {
-        method: "POST",
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: DOCUMENT_DELETE_ACTION,
@@ -243,7 +243,20 @@ const Documents = () => {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || data.message || `HTTP ${res.status}`);
+        const msg = data.error || data.message || "";
+        // Backend must route POST /Document: delete (action) before upload — else 400 from upload validator
+        if (
+          res.status === 400 &&
+          (msg.includes("fileContent") || msg.includes("fileName"))
+        ) {
+          console.error(
+            "Document delete: POST /Document must call deleteDocument when body.action is deleteDocument (before uploadDocument). See backend-lambda-document-post-router.mjs."
+          );
+          throw new Error(
+            t("documents.deleteErrorBackend")
+          );
+        }
+        throw new Error(msg || `HTTP ${res.status}`);
       }
       notify("tr", t("documents.deleteSuccess"), "success");
       if (previewModal && (previewItem?.key === key || previewItem?.s3Key === key)) {

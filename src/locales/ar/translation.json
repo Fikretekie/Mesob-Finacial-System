@@ -418,6 +418,7 @@
     "deleting": "جاري الحذف…",
     "deleteSuccess": "تم حذف المستند.",
     "deleteError": "تعذر حذف المستند.",
+    "deleteErrorBackend": "الحذف غير متاح بعد (يجب ضبط المسار في الخادم). تواصل مع الدعم.",
     "nameDocumentTitle": "اسم المستند",
     "nameDocumentLabel": "اسم الملف",
     "nameDocumentHint": "سيظهر الملف بهذا الاسم في القائمة. إن حذفت الامتداد، يُحتفظ بنوع الملف الأصلي (مثل .pdf).",

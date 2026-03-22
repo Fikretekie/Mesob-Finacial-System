@@ -64,12 +64,56 @@
   text-align: center;
 }
 
-/* Actions */
-.transaction-table th:nth-child(6),
-.transaction-table td:nth-child(6) {
+/* Actions — class so colspan rows still match (sale_inventory / sale_fixed use colSpan 3) */
+.transaction-table th.transaction-table-actions,
+.transaction-table td.transaction-table-actions {
   max-width: 30px;
   width: 30px;
   text-align: center;
+}
+
+/* Multi-line sale row: one grid spans Transaction + Debit + Credit so rows stay aligned */
+.journal-sale-cell {
+  vertical-align: top;
+  padding: 8px 12px;
+}
+
+.journal-sale-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(76px, 1fr) minmax(76px, 1fr);
+  column-gap: 10px;
+  row-gap: 6px;
+  align-items: start;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.journal-sale-txn {
+  font-size: 13px;
+  color: #aaa;
+  text-align: left;
+  line-height: 1.35;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.journal-sale-txn-bold {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.journal-sale-debit,
+.journal-sale-credit {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: center;
+  min-height: 1.5em;
+}
+
+.journal-sale-debit span,
+.journal-sale-credit span {
+  white-space: nowrap;
 }
 
 /* Header */
@@ -99,6 +143,7 @@
   transform: scale(1.1);
   transition: all 0.2s ease;
 }
+
 .debit,
 .credit {
   vertical-align: middle;
@@ -110,19 +155,25 @@
 }
 
 /* Ensure proper alignment */
-.debit > div:first-child,
-.credit > div:last-child {
+.debit>div:first-child,
+.credit>div:last-child {
   text-align: center;
   width: 100%;
 }
 
-.debit > div:last-child,
-.credit > div:first-child {
+.debit>div:last-child,
+.credit>div:first-child {
   text-align: center;
   width: 100%;
 }
+
 /* ✅ Mobile Adjustments */
 @media screen and (max-width: 768px) {
+  .journal-sale-grid {
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+
   .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -133,6 +184,7 @@
     min-width: 600px;
     /* ✅ keeps structure, user can scroll horizontally */
   }
+
   .transaction-table th:nth-child(4),
   .transaction-table td:nth-child(4) {
     width: 40px !important;
@@ -169,8 +221,8 @@
   }
 
   /* Ensure all child divs are properly sized */
-  .debit > div,
-  .credit > div {
+  .debit>div,
+  .credit>div {
     width: 100% !important;
     text-align: center !important;
     display: block !important;

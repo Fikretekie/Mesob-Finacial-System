@@ -398,6 +398,7 @@
     "deleting": "Suppression…",
     "deleteSuccess": "Document supprimé.",
     "deleteError": "Impossible de supprimer le document.",
+    "deleteErrorBackend": "La suppression n’est pas disponible (configuration serveur requise). Contactez le support.",
     "nameDocumentTitle": "Nom du document",
     "nameDocumentLabel": "Nom du fichier",
     "nameDocumentHint": "Le fichier apparaîtra ainsi dans la liste. Si vous omettez l’extension, le type d’origine (ex. .pdf) est conservé.",

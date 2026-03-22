@@ -403,6 +403,7 @@
     "deleting": "Eliminando…",
     "deleteSuccess": "Documento eliminado.",
     "deleteError": "No se pudo eliminar el documento.",
+    "deleteErrorBackend": "La eliminación no está disponible (el servidor debe configurar la ruta de borrado). Contacte con soporte.",
     "nameDocumentTitle": "Nombre del documento",
     "nameDocumentLabel": "Nombre del archivo",
     "nameDocumentHint": "Así aparecerá en tu lista. Si omites la extensión, se conserva el tipo original (p. ej. .pdf).",
