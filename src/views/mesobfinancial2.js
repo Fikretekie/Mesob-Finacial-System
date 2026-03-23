@@ -1185,6 +1185,19 @@ const MesobFinancial2 = () => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
 
       if (transaction.transactionType === "Receive") {
+        if (transaction.subType === "sale_fixed") {
+          // Add gain/loss on fixed asset sale to revenues
+          const salePrice = parseFloat(transaction.transactionAmount || 0);
+          const bookValue = parseFloat(transaction.originalAmount || 0);
+          const gain = salePrice - bookValue;
+          if (gain !== 0) {
+            const gainPurpose = gain > 0
+              ? `Gain on Sale (${transaction.assetName || transaction.transactionPurpose})`
+              : `Loss on Sale (${transaction.assetName || transaction.transactionPurpose})`;
+            newRevenues[gainPurpose] = (newRevenues[gainPurpose] || 0) + gain;
+          }
+          return; // don't add full sale price to revenues
+        }
         const purpose = transaction.transactionPurpose;
         newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
       } else if (
@@ -1385,6 +1398,14 @@ const MesobFinancial2 = () => {
     const filteredItems = getFilteredItems();
     const totalReceived = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Receive") {
+        if (value.subType === "sale_fixed") {
+          // Only add the GAIN (sale price - book value) to revenue
+          // If sold for less than book value, this will be negative (a loss)
+          const salePrice = parseFloat(value.transactionAmount || 0);
+          const bookValue = parseFloat(value.originalAmount || 0);
+          const gain = salePrice - bookValue;
+          return sum + gain; // adds gain, subtracts loss
+        }
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
@@ -3372,14 +3393,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid #3a4555",
                             }}
                           >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                            ${(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td
                             style={{
@@ -3474,7 +3488,7 @@ const MesobFinancial2 = () => {
                       </div>
                     </div>
 
-                      <div style={{ marginTop: "0px" }}>
+                    <div style={{ marginTop: "0px" }}>
                       {/* Commented out dropdown functionality */}
                       {/* <div 
                         style={{ 
