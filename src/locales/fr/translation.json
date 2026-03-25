@@ -403,6 +403,16 @@
     "nameDocumentLabel": "Nom du fichier",
     "nameDocumentHint": "Le fichier apparaîtra ainsi dans la liste. Si vous omettez l’extension, le type d’origine (ex. .pdf) est conservé.",
     "nameDocumentEmpty": "Veuillez saisir un nom de fichier.",
-    "uploadConfirm": "Envoyer"
-  }
+    "uploadConfirm": "Envoyer",
+    "subtitleCompress": "Les images dépassant la limite sont automatiquement compressées.",
+    "compressing": "Compression de l'image en cours…",
+    "compressionDone": "Compression terminée",
+    "compressionHint": "Réduction de la taille du fichier tout en maintenant la qualité…",
+    "compressionSuccessHint": "Prêt à être téléversé. Vous pouvez renommer le fichier à l'étape suivante.",
+    "compressionFailed": "Impossible de compresser l'image en dessous de {{max}} Mo. Essayez un fichier plus petit.",
+    "compressionError": "La compression a échoué. Veuillez réessayer.",
+    "originalSize": "Taille originale",
+    "compressedSize": "Taille compressée",
+    "fileTooBigNonImage": "Les fichiers {{type}} ne peuvent pas être compressés automatiquement. La taille du fichier est {{size}} — la taille maximale autorisée est {{max}} Mo."
+    }
 }

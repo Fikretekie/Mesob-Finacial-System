@@ -408,6 +408,16 @@
     "nameDocumentLabel": "Nombre del archivo",
     "nameDocumentHint": "Así aparecerá en tu lista. Si omites la extensión, se conserva el tipo original (p. ej. .pdf).",
     "nameDocumentEmpty": "Introduce un nombre de archivo.",
-    "uploadConfirm": "Subir"
+    "uploadConfirm": "Subir",
+    "subtitleCompress": "Las imágenes que superen el límite se comprimen automáticamente.",
+    "compressing": "Comprimiendo imagen…",
+    "compressionDone": "Compresión completada",
+    "compressionHint": "Reduciendo el tamaño del archivo manteniendo la calidad…",
+    "compressionSuccessHint": "Listo para subir. A continuación puedes cambiar el nombre del archivo.",
+    "compressionFailed": "No se pudo comprimir la imagen por debajo de {{max}} MB. Prueba con un archivo más pequeño.",
+    "compressionError": "Error al comprimir. Por favor, inténtalo de nuevo.",
+    "originalSize": "Tamaño original",
+    "compressedSize": "Tamaño comprimido",
+    "fileTooBigNonImage": "Los archivos {{type}} no se pueden comprimir automáticamente. El tamaño del archivo es {{size}} — el máximo permitido es {{max}} MB."
   }
 }

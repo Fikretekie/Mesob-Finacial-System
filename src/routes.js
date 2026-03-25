@@ -52,7 +52,7 @@ const adminRoutes = [
   },
   {
     path: "/profile",
-    name: "Profile",
+    name: "Account",
     icon: "users_single-02",
     component: <UserPage />,
     layout: "/admin",
@@ -98,7 +98,7 @@ const customerRoutes = [
   },
   {
     path: "/profile",
-    name: "Profile",
+    name: "Account",
     icon: "users_single-02",
     component: <UserPage />,
     layout: "/customer",

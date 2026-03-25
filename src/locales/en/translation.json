@@ -557,5 +557,5 @@
     "nameDocumentHint": "This is how the file will appear in your list. If you omit the extension, the original type (e.g. .pdf) is kept.",
     "nameDocumentEmpty": "Please enter a file name.",
     "uploadConfirm": "Upload"
-  }
+   }
 }

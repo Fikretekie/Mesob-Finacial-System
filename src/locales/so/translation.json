@@ -393,6 +393,16 @@
       "nameDocumentLabel": "Magaca faylka",
       "nameDocumentHint": "Sidaas ayuu u muuqan doonaa liiskaaga. Haddii aad ka tagto kordhinta, nooca asalka ah (tusaale .pdf) waa la haystaa.",
       "nameDocumentEmpty": "Fadlan geli magaca faylka.",
-      "uploadConfirm": "Soo rar"
-    }
+      "uploadConfirm": "Soo rar",
+      "subtitleCompress": "Sawirrada ka weyn xaddiga si toos ah ayaa loo cadaadiyaa.",
+      "compressing": "Sawirka waa la cadaadiyaa…",
+      "compressionDone": "Cadaadinta waa la dhamaystiray",
+      "compressionHint": "Cabbirka faylka waa la yaraynayaa iyadoo tayada la ilaalinayo…",
+      "compressionSuccessHint": "Diyaar u ah in la soo raro. Ka dibna waxaad magac u bixin kartaa faylka.",
+      "compressionFailed": "Ma suurtogelin in sawirka laga yareeyo {{max}} MB. Isku day fayl yar.",
+      "compressionError": "Cadaadinta waxay ku guuldarowday. Fadlan isku day mar kale.",
+      "originalSize": "Cabbirka asalka ah",
+      "compressedSize": "Cabbirka la cadaadiyay",
+      "fileTooBigNonImage": "Faylasha {{type}} si toos ah loogama cadaadin karo. Cabbirka faylku waa {{size}} — ugu badnaan {{max}} MB."
+      }
   }

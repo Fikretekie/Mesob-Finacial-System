@@ -423,6 +423,16 @@
     "nameDocumentLabel": "اسم الملف",
     "nameDocumentHint": "سيظهر الملف بهذا الاسم في القائمة. إن حذفت الامتداد، يُحتفظ بنوع الملف الأصلي (مثل .pdf).",
     "nameDocumentEmpty": "يرجى إدخال اسم الملف.",
-    "uploadConfirm": "رفع"
+    "uploadConfirm": "رفع",
+    "subtitleCompress": "تُضغط الصور التي تتجاوز الحد تلقائياً.",
+    "compressing": "جارٍ ضغط الصورة…",
+    "compressionDone": "اكتمل الضغط",
+    "compressionHint": "جارٍ تقليل حجم الملف مع الحفاظ على الجودة…",
+    "compressionSuccessHint": "جاهز للرفع. يمكنك تسمية الملف في الخطوة التالية.",
+    "compressionFailed": "تعذّر ضغط الصورة إلى أقل من {{max}} ميغابايت. جرّب ملفاً أصغر حجماً.",
+    "compressionError": "فشل الضغط. يرجى المحاولة مرة أخرى.",
+    "originalSize": "الحجم الأصلي",
+    "compressedSize": "الحجم بعد الضغط",
+    "fileTooBigNonImage": "لا يمكن ضغط ملفات {{type}} تلقائياً. حجم الملف {{size}} — الحد الأقصى المسموح به {{max}} ميغابايت."
   }
 }

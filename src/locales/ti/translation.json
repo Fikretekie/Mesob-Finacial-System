@@ -541,6 +541,16 @@
     "nameDocumentLabel": "ስም ፋይል",
     "nameDocumentHint": "ኣብ ዝርዝርካ ከምዚ ይረአ። extension ክትወስድ ኣይትኽእል እንተኾይንካ ናይ ኣቐዲምካ ዓይነት (ከም .pdf) ይሕላል።",
     "nameDocumentEmpty": "በጃኻ ስም ፋይል ኣእትዉ።",
-    "uploadConfirm": "ስቕር"
+    "uploadConfirm": "ስቕር",
+    "subtitleCompress": "ስእልታት ልዕሊ ወሰን ዝኾኑ ብኣውቶማቲክ ይጽቀጡ።",
+    "compressing": "ስእሊ ይጽቀጥ ኣሎ…",
+    "compressionDone": "ምጽቃጥ ተዛዚሙ",
+    "compressionHint": "መጠን ፋይሊ እናቀነሰ ጽሬቱ ይሕሎ…",
+    "compressionSuccessHint": "ንምስቓል ድሉው። ቀጺልካ ፋይሊ ስም ክትህቦ ትኽእል።",
+    "compressionFailed": "ስእሊ ካብ {{max}} ሜባ ታሕቲ ምጽቃጥ ኣይተኻእለን። ንእሽቶ ፋይሊ ፈትን።",
+    "compressionError": "ምጽቃጥ ኣይሰለጠን። ካልእ ግዜ ፈትን።",
+    "originalSize": "ናይ መጀመርያ መጠን",
+    "compressedSize": "ዝጸቀጠ መጠን",
+    "fileTooBigNonImage": "ፋይላት {{type}} ብኣውቶማቲክ ክጽቀጡ ኣይክእሉን። መጠን ፋይሊ {{size}} እዩ — ዝለዓለ ፍቑድ {{max}} ሜባ እዩ።"
   }
 }

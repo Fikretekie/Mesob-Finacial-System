@@ -543,6 +543,16 @@
     "nameDocumentLabel": "የፋይል ስም",
     "nameDocumentHint": "ፋይሉ በዝርዝሩ እንዲህ ይታያል። ቅጥያ ካላስገቡ የመጀመሪያው አይነት (ለምሳሌ .pdf) ይቀጥላል።",
     "nameDocumentEmpty": "እባክዎ የፋይል ስም ያስገቡ።",
-    "uploadConfirm": "ጫን"
+    "uploadConfirm": "ጫን",
+    "subtitleCompress": "ከወሰኑ በላይ የሆኑ ምስሎች በራስ-ሰር ይጨመቃሉ።",
+    "compressing": "ምስሉን በመጨመቅ ላይ…",
+    "compressionDone": "መጨመቅ ተጠናቋል",
+    "compressionHint": "ጥራቱን እየጠበቀ የፋይሉን መጠን እየቀነሰ ነው…",
+    "compressionSuccessHint": "ለመጫን ዝግጁ ነው። ቀጥሎ ፋይሉን መሰየም ይችላሉ።",
+    "compressionFailed": "ምስሉን ከ{{max}} ሜባ በታች መጨመቅ አልተቻለም። ትንሽ ፋይል ይሞክሩ።",
+    "compressionError": "መጨመቅ አልተሳካም። እንደገና ይሞክሩ።",
+    "originalSize": "የመጀመሪያ መጠን",
+    "compressedSize": "የተጨመቀ መጠን",
+    "fileTooBigNonImage": "{{type}} ፋይሎች በራስ-ሰር ሊጨመቁ አይችሉም። የፋይሉ መጠን {{size}} ነው — ከፍተኛው {{max}} ሜባ ነው።"
   }
 }

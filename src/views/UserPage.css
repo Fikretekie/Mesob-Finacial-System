@@ -1,7 +1,6 @@
 /* Profile: tabs + card usable below 300px width */
 .profile-page-nav.nav-tabs {
   border-bottom: 1px solid #2d3a4f;
-  background-color: #000000;
 }
 
 .profile-page-nav.nav-tabs .nav-item {

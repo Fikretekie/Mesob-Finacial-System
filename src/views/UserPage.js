@@ -520,7 +520,7 @@ function UserPage() {
                     fontSize: isUltraNarrow ? "1rem" : undefined,
                   }}
                 >
-                  Profile
+                  Account
                 </h5>
                 <Nav
                   tabs
@@ -539,18 +539,10 @@ function UserPage() {
                       onClick={() => setActiveTab("1")}
                       style={profileTabLinkStyle(activeTab === "1")}
                     >
-                      Personal Information
+                      Personal Info
                     </NavLink>
                   </NavItem>
-                  <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
-                    <NavLink
-                      className={activeTab === "2" ? "active" : ""}
-                      onClick={() => setActiveTab("2")}
-                      style={profileTabLinkStyle(activeTab === "2")}
-                    >
-                      Payment Management
-                    </NavLink>
-                  </NavItem>
+                
                   <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
                     <NavLink
                       className={activeTab === "3" ? "active" : ""}
@@ -558,6 +550,15 @@ function UserPage() {
                       style={profileTabLinkStyle(activeTab === "3")}
                     >
                       Data Management
+                    </NavLink>
+                  </NavItem>
+                    <NavItem style={isCompactProfile ? { width: "100%", maxWidth: "100%" } : {}}>
+                    <NavLink
+                      className={activeTab === "2" ? "active" : ""}
+                      onClick={() => setActiveTab("2")}
+                      style={profileTabLinkStyle(activeTab === "2")}
+                    >
+                      Payment Info
                     </NavLink>
                   </NavItem>
                 </Nav>
