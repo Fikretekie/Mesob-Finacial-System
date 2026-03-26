@@ -475,7 +475,7 @@ function DemoNavbar(props) {
             </a>
 
             {/* Email */}
-            <a href="mailto:info@meksova.com.com" style={{ textDecoration: "none" }}>
+            <a href="mailto:info@meksova.com" style={{ textDecoration: "none" }}>
               <div
                 style={{ display: "flex", alignItems: "center", gap: "1rem", background: "rgba(30,41,59,0.6)", border: "1px solid rgba(99,102,241,0.15)", borderRadius: "12px", padding: "1rem 1.25rem", transition: "all 0.25s ease", cursor: "pointer" }}
                 onMouseEnter={e => { e.currentTarget.style.border = "1px solid rgba(99,102,241,0.45)"; e.currentTarget.style.background = "rgba(99,102,241,0.08)"; }}
@@ -486,7 +486,7 @@ function DemoNavbar(props) {
                 </div>
                 <div>
                   <p style={{ color: "#94a3b8", fontSize: "0.72rem", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>Email</p>
-                  <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>info@meksova.com.com</p>
+                  <p style={{ color: "#e2e8f0", fontWeight: 600, margin: 0, fontSize: "0.95rem" }}>info@meksova.com</p>
                 </div>
               </div>
             </a>
