@@ -153,14 +153,14 @@ const Login = () => {
   return (
     <>
       <Helmet>
-        <title>Login - Mesob Finance</title>
+        <title>Login - Meksova</title>
       </Helmet>
       <div className="login-container">
         <NotificationAlert ref={notificationAlertRef} />
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
-          <p style={{color: "#9ca5b0"}}>Welcome! Login to access the <span style={{color: "#3b83f6"}}>Mesob Financial</span> </p> 
+          <p style={{color: "#9ca5b0"}}>Welcome! Login to access the <span style={{color: "#3b83f6"}}>Meksova</span> </p> 
           {loading && (
             <div
               className="loading-message"

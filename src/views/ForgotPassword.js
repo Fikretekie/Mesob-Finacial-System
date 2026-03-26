@@ -170,7 +170,7 @@ const ForgotPassword = () => {
   return (
     <>
       <Helmet>
-        <title>Reset Password - Mesob Finance</title>
+        <title>Reset Password - Meksova</title>
       </Helmet>
       <div
         style={{

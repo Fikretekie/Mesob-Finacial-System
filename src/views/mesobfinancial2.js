@@ -2215,7 +2215,7 @@ const MesobFinancial2 = () => {
   return (
     <>
       <Helmet>
-        <title>Mesob Financial - Mesob Finance</title>
+        <title>Meksova - Meksova</title>
       </Helmet>
 
       <NotificationAlert ref={notificationAlertRef} />

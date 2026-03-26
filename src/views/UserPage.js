@@ -1166,7 +1166,7 @@ function UserPage() {
                             </Button>
                           </div>
                           <p style={{ color: "#64748b", fontSize: "12px", marginTop: "16px", marginBottom: 0 }}>
-                            Need help? Contact our support team at info@mesobfinancial.com
+                            Need help? Contact our support team at info@meksova.com.com
                           </p>
                         </div>
                       </div>

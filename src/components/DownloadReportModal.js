@@ -45,7 +45,7 @@ const PDF_EN = {
   totalPayable: "TOTAL PAYABLE",
   totalExpenses: "TOTAL EXPENSES",
   termsTitle: "TERMS & RESPONSIBILITY",
-  termsText: "The user is fully responsible for the accuracy and completeness of information entered into the system. Mesob Financial is not responsible for inaccuracies in user-input data.",
+  termsText: "The user is fully responsible for the accuracy and completeness of information entered into the system. Meksova is not responsible for inaccuracies in user-input data.",
   financialReportingSystems: "Financial Reporting Systems",
   confidential: "Confidential",
   page: "Page",

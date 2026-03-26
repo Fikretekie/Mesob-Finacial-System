@@ -348,12 +348,12 @@ const SignupPage = () => {
           // Send welcome email for Google users
           const emailData = {
             email: email,
-            subject: "Welcome to Mesob Financial – You're All Set!",
+            subject: "Welcome to Meksova – You're All Set!",
             message: `
   <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; padding: 20px;">
     <p>Dear <strong>${name}</strong>,</p>
 
-    <p>Welcome to <strong>Mesob Financial</strong>! Your account has been successfully created and you're ready to start managing your business finances.</p>
+    <p>Welcome to <strong>Meksova</strong>! Your account has been successfully created and you're ready to start managing your business finances.</p>
 
     <p>Here's what you can do next:</p>
     <ul style="padding-left: 20px;">
@@ -366,7 +366,7 @@ const SignupPage = () => {
     <p><strong>Ready to unlock all features?</strong></p>
 
     <p>
-      <a href="https://app.mesobfinancial.com/customer/subscription" style="color: #1e90ff; text-decoration: none;">
+      <a href="https://app.meksova.com.com/customer/subscription" style="color: #1e90ff; text-decoration: none;">
         Click here to view or upgrade your subscription
       </a>
     </p>
@@ -374,7 +374,7 @@ const SignupPage = () => {
     <p>If you have any questions, feel free to reach out to our support team.</p>
 
     <p>Best regards,<br>
-    The Mesob Financial Team</p>
+    The Meksova Team</p>
   </div>
 `,
           };
@@ -793,7 +793,7 @@ const SignupPage = () => {
         return (
           <div>
             <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+              <img src={logo} alt="Meksova" style={{ height: "50px" }} />
             </div>
 
             <h2 style={{ fontSize: "28px", fontWeight: "600", marginBottom: "10px", textAlign: "center" }}>
@@ -969,7 +969,7 @@ const SignupPage = () => {
       //         return (
       //           <div>
       //             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-      //   <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+      //   <img src={logo} alt="Meksova" style={{ height: "50px" }} />
       // </div>
       //             <h2>Select Business Type</h2>
       //             <div className="login-input-group">
@@ -1062,7 +1062,7 @@ const SignupPage = () => {
 
           <div>
             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-              <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+              <img src={logo} alt="Meksova" style={{ height: "50px" }} />
             </div>
             <h2>Select Business Type</h2>
             <p style={styles.subtext}>
@@ -1220,7 +1220,7 @@ const SignupPage = () => {
         return (
           <div>
             <div style={{ textAlign: "center", marginBottom: "16px" }}>
-              <img src={logo} alt="Mesob Financial" style={{ height: "50px" }} />
+              <img src={logo} alt="Meksova" style={{ height: "50px" }} />
             </div>
             <h2>Financial Information</h2>
             <p style={styles.infoText}>

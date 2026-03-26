@@ -492,7 +492,7 @@ const SubscriptionPlans = () => {
   return (
     <>
       <Helmet>
-        <title>{t("subscription.title")} - Mesob Finance</title>
+        <title>{t("subscription.title")} - Meksova</title>
       </Helmet>
     
       <div

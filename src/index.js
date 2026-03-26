@@ -59,7 +59,7 @@ const cognitoDomain = isProduction
   ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN)
   : process.env.REACT_APP_STAGING_COGNITO_DOMAIN;
 
-const appOrigin = isProduction ? "https://app.mesobfinancial.com" : "https://staging.mesobfinancial.com";
+const appOrigin = isProduction ? "https://app.meksova.com.com" : "https://staging.meksova.com.com";
 const googleClientId = isProduction
   ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID)
   : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID);

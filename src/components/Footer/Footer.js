@@ -29,7 +29,7 @@ function Footer(props) {
           className="copyright"
           style={{ color: "#e2e8f0" }}
         >
-          &copy; {1900 + new Date().getYear()} · Copy right reserved for Mesob Financial ·
+          &copy; {1900 + new Date().getYear()} · Copy right reserved for Meksova ·
           Coded by{" "}
           <a
             href="https://therevolutiontechnologies.io"

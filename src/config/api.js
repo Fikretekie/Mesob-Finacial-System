@@ -1,5 +1,5 @@
 /**
- * Mesob Financial System – API base URL and route definitions.
+ * Meksova System – API base URL and route definitions.
  * Use API_BASE_URL + ROUTES.* (or apiUrl helper) for all backend calls.
  *
  * Env is set at BUILD time (e.g. in GitHub Actions via .env from secrets).
@@ -11,8 +11,8 @@ function getEnv() {
   // Prefer hostname on known deployment hosts so login always uses the correct Cognito pool
   if (typeof window !== "undefined" && window.location?.hostname) {
     const h = window.location.hostname;
-    if (h === "app.mesobfinancial.com") return "production";
-    if (h === "staging.mesobfinancial.com") return "staging";
+    if (h === "app.meksova.com.com") return "production";
+    if (h === "staging.meksova.com.com") return "staging";
   }
   const raw = process.env.REACT_APP_ENV;
   if (raw) return String(raw).toLowerCase().trim();
@@ -40,18 +40,18 @@ export const STAGING_API_URL =
   `https://axv5d700vg.execute-api.us-east-1.amazonaws.com/${ENV}`;
 
 export const S3_BUCKET_NAME =
-  ENV === "production" ? "app.mesobfinancial.com" : "staging.mesobfinancial.com";
+  ENV === "production" ? "app.meksova.com.com" : "staging.meksova.com.com";
 
-/** Base URL for backups/CSV (production: app.mesobfinancial.com, staging: staging.mesobfinancial.com). */
+/** Base URL for backups/CSV (production: app.meksova.com.com, staging: staging.meksova.com.com). */
 export const BACKUP_BASE_URL = `https://${S3_BUCKET_NAME}`;
 
 /**
  * Normalize S3 receipt URLs for browser preview/download.
  *
- * Virtual-hosted URLs like `https://staging.mesobfinancial.com.s3.amazonaws.com/key` use a
+ * Virtual-hosted URLs like `https://staging.meksova.com.com.s3.amazonaws.com/key` use a
  * hostname whose SSL certificate does not match buckets that contain **dots** in the name
  * (`ERR_CERT_COMMON_NAME_INVALID`). Convert those to **path-style**:
- * `https://s3.amazonaws.com/staging.mesobfinancial.com/key` (cert matches `s3.amazonaws.com`).
+ * `https://s3.amazonaws.com/staging.meksova.com.com/key` (cert matches `s3.amazonaws.com`).
  *
  * Buckets without dots keep the original URL (virtual-hosted works with default S3 certs).
  *

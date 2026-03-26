@@ -153,7 +153,7 @@ function Dashboard() {
   // These are passed as callbacks to DownloadReportModal and called at PDF
   // generation time (not at render time), so they MUST read from refs to avoid
   // stale closure issues. All return plain "0.00" decimal strings — same format
-  // as MesobFinancial2 — so DownloadReportModal's parseFloat() always works.
+  // as meksova.com2 — so DownloadReportModal's parseFloat() always works.
 
   const calculateTotalCash = () => {
     const safeItems = itemsRef.current || [];
@@ -720,7 +720,7 @@ function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard - Mesob Finance </title>
+        <title>Dashboard - Meksova </title>
       </Helmet>
       {isMobile ?
       <PanelHeader

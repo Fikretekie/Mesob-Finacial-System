@@ -314,7 +314,7 @@ const Receipts = ({ selectedUser }) => {
   return (
     <>
       <Helmet>
-        <title>{t('receipts.title')} - Mesob Finance</title>
+        <title>{t('receipts.title')} - Meksova</title>
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>

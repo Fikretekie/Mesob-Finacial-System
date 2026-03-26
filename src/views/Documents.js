@@ -311,7 +311,7 @@
 //   return (
 //     <>
 //       <Helmet>
-//         <title>{t("documents.title")} - Mesob Finance</title>
+//         <title>{t("documents.title")} - Meksova</title>
 //       </Helmet>
 //       <NotificationAlert ref={notificationAlertRef} />
 //       <div className="content" style={{ paddingInline: 15, paddingTop: 80, backgroundColor: "#101926", minHeight: "100vh" }}>
@@ -1191,7 +1191,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
   return (
     <>
       <Helmet>
-        <title>{t("documents.title")} - Mesob Finance</title>
+        <title>{t("documents.title")} - Meksova</title>
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
 
