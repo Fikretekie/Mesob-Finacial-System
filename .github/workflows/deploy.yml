@@ -55,7 +55,7 @@ jobs:
           REACT_APP_STAGING_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
           REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
           EOF
-          
+
       - name: Debug - Show .env contents
         run: |
           echo "=== .env file contents ==="
@@ -74,32 +74,8 @@ jobs:
 
       - name: Deploy to Production S3
         if: github.ref == 'refs/heads/main'
-        run: aws s3 sync ./build/ s3://app.mesobfinancial.com
+        run: aws s3 sync ./build/ s3://app.meksova.com
 
       - name: Deploy to Staging S3
         if: github.ref == 'refs/heads/staging'
-        run: aws s3 sync ./build/ s3://staging.mesobfinancial.com
-# name: Deploy to Amazon S3
-
-# on:
-#   push:
-#     branches:
-#       - staging
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: us-east-1
-
-#       - name: Build React App
-#         run: npm install --legacy-peer-deps && npm run build
-
-#       - name: Deploy app build to S3 bucket
-#         run: aws s3 sync ./build/ s3://staging.mesobfinancial.com
+        run: aws s3 sync ./build/ s3://staging.meksova.com
