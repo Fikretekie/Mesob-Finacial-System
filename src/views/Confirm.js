@@ -74,7 +74,7 @@ const Confirm = () => {
     </ul>
     <p><strong>Ready to unlock all features?</strong></p>
     <p>
-      <a href="https://app.meksova.com.com/customer/subscription" style="color: #1e90ff; text-decoration: none;">
+      <a href="https://app.meksova.com/customer/subscription" style="color: #1e90ff; text-decoration: none;">
         Click here to view or upgrade your subscription
       </a>
     </p>

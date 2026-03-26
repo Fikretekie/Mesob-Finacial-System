@@ -150,9 +150,9 @@ const TermsOfUse = () => {
           <p>
             Meksova
             <br />
-            Email: info@meksova.com.com
+            Email: info@meksova.com
             <br />
-            Website: meksova.com.com
+            Website: meksova.com
           </p>
         </Col>
       </Row>
