@@ -556,6 +556,8 @@
     "nameDocumentLabel": "File name",
     "nameDocumentHint": "This is how the file will appear in your list. If you omit the extension, the original type (e.g. .pdf) is kept.",
     "nameDocumentEmpty": "Please enter a file name.",
-    "uploadConfirm": "Upload"
+    "uploadConfirm": "Upload",
+    "subtitleCompress": "Large images will be automatically compressed.",
+    "fileTooBigNonImage": "File too large ({{size}}). {{type}} files cannot be compressed automatically. Please reduce the file size to under {{max}} MB before uploading."
    }
 }

@@ -897,7 +897,13 @@ const Documents = () => {
     const files = e.target.files;
     if (!files?.length || !userId) return;
     const file = files[0];
-
+  console.log("[Upload] File selected:", {
+      name: file.name,
+      type: file.type,
+      size: formatSize(file.size),
+      isOverLimit: file.size > MAX_FILE_SIZE_BYTES,
+      isCompressibleImage: COMPRESSIBLE_IMAGE_TYPES.includes(file.type),
+    });
     if (file.size <= MAX_FILE_SIZE_BYTES) {
       // File is within limit — go straight to name modal
       setPendingUploadFile(file);
@@ -909,20 +915,18 @@ const Documents = () => {
     // File exceeds limit — can we compress it?
     const isImage = COMPRESSIBLE_IMAGE_TYPES.includes(file.type);
 
-    if (!isImage) {
-      // Non-image files (PDF, DOCX, etc.) cannot be safely compressed client-side
-      notify(
-        "tr",
-        t("documents.fileTooBigNonImage", {
-          size: formatSize(file.size),
-          max: MAX_FILE_SIZE_MB,
-          type: file.name.split(".").pop().toUpperCase(),
-        }),
-        "warning"
-      );
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
+  if (!isImage) {
+  // Non-image large file — skip compression, go straight to upload via presigned URL
+  console.log("[Upload] Large non-image file, skipping compression, will use presigned URL:", {
+    fileName: file.name,
+    fileType: file.name.split(".").pop().toUpperCase(),
+    fileSize: formatSize(file.size),
+  });
+  setPendingUploadFile(file);
+  setUploadDisplayName(file.name);
+  setUploadNameModal(true);
+  return;
+}
 
     // Show compression modal and start compressing
     setCompressionInfo({ originalSize: file.size, compressedSize: null });
@@ -1000,44 +1004,52 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
     performUpload(file, resolved);
   };
 
-  const performUpload = async (file, fileNameForApi) => {
-    setUploading(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64 = reader.result?.split(",")[1] || btoa(reader.result);
-          const res = await fetch(apiUrl(ROUTES.DOCUMENT), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId,
-              fileContent: base64,
-              fileName: fileNameForApi,
-              contentType: file.type,
-              bucketName: S3_BUCKET_NAME,
-              keyPrefix: "documents",
-            }),
-          });
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || errData.error || `HTTP ${res.status}`);
-          }
-          notify("tr", t("documents.uploadSuccess"), "success");
-          fetchDocuments();
-        } catch (err) {
-          console.error("Upload error:", err);
-          notify("tr", t("documents.uploadError") + " " + (err.message || ""), "danger");
-        } finally {
-          setUploading(false);
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      setUploading(false);
-      notify("tr", t("documents.uploadError"), "danger");
+ const performUpload = async (file, fileNameForApi) => {
+  setUploading(true);
+  try {
+    console.log("[performUpload] Requesting presigned URL:", {
+      fileName: fileNameForApi,
+      contentType: file.type,
+      sizeMB: (file.size / (1024 * 1024)).toFixed(2),
+    });
+
+    // Step 1 — get presigned URL from Lambda
+    const presignRes = await fetch(
+      apiUrl(
+        `${ROUTES.DOCUMENT}/presign?userId=${encodeURIComponent(userId)}&fileName=${encodeURIComponent(fileNameForApi)}&contentType=${encodeURIComponent(file.type || "application/octet-stream")}`
+      )
+    );
+
+    if (!presignRes.ok) {
+      const err = await presignRes.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to get upload URL: HTTP ${presignRes.status}`);
     }
-  };
+
+    const { presignedUrl, key } = await presignRes.json();
+    console.log("[performUpload] Got presigned URL, uploading directly to S3, key:", key);
+
+    // Step 2 — PUT file directly to S3 (bypasses API Gateway, no size limit)
+    const uploadRes = await fetch(presignedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      body: file,
+    });
+
+    if (!uploadRes.ok) {
+      console.error("[performUpload] S3 PUT failed:", uploadRes.status, uploadRes.statusText);
+      throw new Error(`S3 upload failed: HTTP ${uploadRes.status}`);
+    }
+
+    console.log("[performUpload] ✅ Upload successful, key:", key);
+    notify("tr", t("documents.uploadSuccess"), "success");
+    fetchDocuments();
+  } catch (err) {
+    console.error("[performUpload] Error:", { message: err?.message, stack: err?.stack });
+    notify("tr", t("documents.uploadError") + " " + (err.message || ""), "danger");
+  } finally {
+    setUploading(false);
+  }
+};
 
   const handleDownload = async (item) => {
     const key = item.key || item.s3Key;
