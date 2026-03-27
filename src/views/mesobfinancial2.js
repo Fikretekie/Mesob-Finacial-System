@@ -306,11 +306,33 @@ const MesobFinancial2 = () => {
     }
   };
 
-  const handlePreview = (receiptUrl) => {
-    const modifiedUrl = normalizeReceiptUrl(receiptUrl);
-    setSelectedReceipt({ receiptUrl: modifiedUrl });
+  const handlePreview = async (receiptUrl) => {
+  try {
+    const keyMatch = (receiptUrl || "").match(/amazonaws\.com\/(.+?)(\?|$)/);
+    const s3Key = keyMatch ? keyMatch[1] : null;
+
+    if (!s3Key) {
+      console.error("❌ Could not extract S3 key from URL:", receiptUrl);
+      notify("tr", t("financialReport.noReceipt"), "warning");
+      return;
+    }
+
+    const res = await fetch(
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+    );
+    const data = await res.json();
+
+    if (!res.ok || !data.url) {
+      throw new Error(data.error || "Failed to get preview URL");
+    }
+
+    setSelectedReceipt({ receiptUrl: data.url, originalUrl: receiptUrl });
     setPreviewModal(true);
-  };
+  } catch (err) {
+    console.error("❌ handlePreview error:", err);
+    notify("tr", t("financialReport.noReceipt"), "warning");
+  }
+};
 
   const handleReceiptUpload = async (e) => {
     let file = e.target.files[0];
@@ -5089,7 +5111,7 @@ const MesobFinancial2 = () => {
           <ModalBody>
             {selectedReceipt?.receiptUrl && (
               <>
-                {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
+                {(selectedReceipt.receiptUrl.includes(".pdf") || selectedReceipt.originalUrl?.includes(".pdf")) ? (
                   <object
                     data={selectedReceipt.receiptUrl}
                     type="application/pdf"
