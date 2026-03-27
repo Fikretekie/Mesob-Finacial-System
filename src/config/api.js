@@ -58,37 +58,59 @@ export const BACKUP_BASE_URL = `https://${S3_BUCKET_NAME}`;
  * @param {string} rawUrl - Receipt URL
  * @returns {string} Same URL, or path-style when needed
  */
+// export function normalizeReceiptUrl(rawUrl) {
+//   if (!rawUrl || typeof rawUrl !== "string") return rawUrl;
+//   const trimmed = rawUrl.trim();
+
+//   let base = trimmed;
+//   let suffix = "";
+//   const q = trimmed.indexOf("?");
+//   const h = trimmed.indexOf("#");
+//   if (q >= 0) {
+//     base = trimmed.slice(0, q);
+//     suffix = trimmed.slice(q);
+//   } else if (h >= 0) {
+//     base = trimmed.slice(0, h);
+//     suffix = trimmed.slice(h);
+//   }
+
+//   // Virtual-hosted: https://bucket.s3.amazonaws.com/key
+//   // Regional:       https://bucket.s3.us-east-1.amazonaws.com/key
+//   const vh = base.match(
+//     /^https?:\/\/([^/]+)\.s3(?:\.([^.]+))?\.amazonaws\.com\/(.+)$/i
+//   );
+//   if (vh) {
+//     const bucket = vh[1];
+//     const region = vh[2];
+//     const key = vh[3];
+//     if (bucket.includes(".")) {
+//       if (region) {
+//         return `https://s3.${region}.amazonaws.com/${bucket}/${key}${suffix}`;
+//       }
+//       // Legacy global endpoint (common for us-east-1)
+//       return `https://s3.amazonaws.com/${bucket}/${key}${suffix}`;
+//     }
+//   }
+
+//   return trimmed;
+// }
 export function normalizeReceiptUrl(rawUrl) {
   if (!rawUrl || typeof rawUrl !== "string") return rawUrl;
   const trimmed = rawUrl.trim();
 
-  let base = trimmed;
-  let suffix = "";
-  const q = trimmed.indexOf("?");
-  const h = trimmed.indexOf("#");
-  if (q >= 0) {
-    base = trimmed.slice(0, q);
-    suffix = trimmed.slice(q);
-  } else if (h >= 0) {
-    base = trimmed.slice(0, h);
-    suffix = trimmed.slice(h);
-  }
-
-  // Virtual-hosted: https://bucket.s3.amazonaws.com/key
-  // Regional:       https://bucket.s3.us-east-1.amazonaws.com/key
-  const vh = base.match(
-    /^https?:\/\/([^/]+)\.s3(?:\.([^.]+))?\.amazonaws\.com\/(.+)$/i
+  const vh = trimmed.match(
+    /^https?:\/\/([^/]+)\.s3(?:\.([\w-]+))?\.amazonaws\.com\/(.+)$/i
   );
+
   if (vh) {
     const bucket = vh[1];
-    const region = vh[2];
+    const region = vh[2] || "us-east-1"; // default region
     const key = vh[3];
+
     if (bucket.includes(".")) {
-      if (region) {
-        return `https://s3.${region}.amazonaws.com/${bucket}/${key}${suffix}`;
-      }
-      // Legacy global endpoint (common for us-east-1)
-      return `https://s3.amazonaws.com/${bucket}/${key}${suffix}`;
+      // Use REGIONAL path-style — avoids dot-bucket SSL cert issues
+      // and works with modern AWS (unlike the deprecated global s3.amazonaws.com)
+      return `https://s3.${region}.amazonaws.com/${bucket}/${key}`;
     }
   }
 
