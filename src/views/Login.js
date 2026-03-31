@@ -11,7 +11,7 @@ import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
-const logo = "/logo2.png";
+const logo = "/transparent.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");

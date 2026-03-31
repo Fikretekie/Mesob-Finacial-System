@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Nav } from "reactstrap";
 import PerfectScrollbar from "perfect-scrollbar";
 
-const logo = "/logo2.png";
+const logo = "/thlogo.png";
 var ps;
 
 function Sidebar(props) {

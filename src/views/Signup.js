@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faApple } from "@fortawesome/free-brands-svg-icons";
 import { Spinner } from "reactstrap";
 
-const logo = "/logo2.png";
+const logo = "/transparent.png";
 
 const SignupPage = () => {
   const [step, setStep] = useState(1);

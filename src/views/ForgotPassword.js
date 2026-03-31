@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet";
 import { resetPassword, confirmResetPassword } from "aws-amplify/auth";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
 
-const logo = "/logo.png";
+const logo = "/transparent.png";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
