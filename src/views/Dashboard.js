@@ -233,15 +233,6 @@ function Dashboard() {
           speed: 800,
         },
       },
-      title: {
-        text: title,
-        align: window.innerWidth < 576 ? "left" : "center",
-        style: {
-          fontSize: "16px",
-          fontWeight: 600,
-          color: "#ffffff",
-        },
-      },
       series: [
         {
           name: title,
