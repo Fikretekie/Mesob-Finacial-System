@@ -100,7 +100,7 @@ const TransactionTable = ({
               const dash = <span style={{ color: "#ffffff", fontSize: "14px" }}>-</span>;
               return (
                 <tr key={`${transaction.id || idx}-sale-inv`}>
-                  <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
+                  <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px", }}>{formatDate(transaction.createdAt)}</td>
                   <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
                   <td colSpan={3} className="journal-sale-cell">
                     <div className="journal-sale-grid">
@@ -272,7 +272,7 @@ const TransactionTable = ({
           })}
         </tbody>
       </table>
-    </div>
+    </div >
   );
 };
 

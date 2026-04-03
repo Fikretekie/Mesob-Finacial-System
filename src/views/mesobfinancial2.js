@@ -307,32 +307,32 @@ const MesobFinancial2 = () => {
   };
 
   const handlePreview = async (receiptUrl) => {
-  try {
-    const keyMatch = (receiptUrl || "").match(/amazonaws\.com\/(.+?)(\?|$)/);
-    const s3Key = keyMatch ? keyMatch[1] : null;
+    try {
+      const keyMatch = (receiptUrl || "").match(/amazonaws\.com\/(.+?)(\?|$)/);
+      const s3Key = keyMatch ? keyMatch[1] : null;
 
-    if (!s3Key) {
-      console.error("❌ Could not extract S3 key from URL:", receiptUrl);
+      if (!s3Key) {
+        console.error("❌ Could not extract S3 key from URL:", receiptUrl);
+        notify("tr", t("financialReport.noReceipt"), "warning");
+        return;
+      }
+
+      const res = await fetch(
+        apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+      );
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Failed to get preview URL");
+      }
+
+      setSelectedReceipt({ receiptUrl: data.url, originalUrl: receiptUrl });
+      setPreviewModal(true);
+    } catch (err) {
+      console.error("❌ handlePreview error:", err);
       notify("tr", t("financialReport.noReceipt"), "warning");
-      return;
     }
-
-    const res = await fetch(
-      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
-    );
-    const data = await res.json();
-
-    if (!res.ok || !data.url) {
-      throw new Error(data.error || "Failed to get preview URL");
-    }
-
-    setSelectedReceipt({ receiptUrl: data.url, originalUrl: receiptUrl });
-    setPreviewModal(true);
-  } catch (err) {
-    console.error("❌ handlePreview error:", err);
-    notify("tr", t("financialReport.noReceipt"), "warning");
-  }
-};
+  };
 
   const handleReceiptUpload = async (e) => {
     let file = e.target.files[0];
@@ -2452,7 +2452,7 @@ const MesobFinancial2 = () => {
           <Row className="d-none d-md-flex" style={{ marginTop: "3px" }}>
             <Col
               xs={12}
-              md={5}
+              md={3}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
@@ -2794,7 +2794,66 @@ const MesobFinancial2 = () => {
                   </div>
                 </CardBody>
               </Card>
+            </Col>
 
+            <Col
+              xs={12}
+              md={9}
+              style={{ paddingLeft: "1px", paddingRight: "1px" }}
+            >
+              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
+                <CardHeader style={{ backgroundColor: "#1a273a" }}>
+                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
+                    {t('financialReport.journalEntry')}
+                  </CardTitle>
+                </CardHeader>
+                <CardBody
+                  style={{
+                    height: "380px",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    padding: "10px",
+                    backgroundColor: "#1a273a",
+                  }}
+                >
+                  {loadingTransactions ? (
+                    <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
+                      <Spinner color="primary" />
+                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
+                    </div>
+                  ) : (
+                    <div style={{ width: "100%" }}>
+                      <TransactionTable
+                        items={filterItemsByTimeRange(
+                          items,
+                          selectedTimeRange,
+                          searchTerm
+                        )}
+                        disabled={
+                          userRole === 1
+                            ? false
+                            : !userSubscription && scheduleCount >= 4
+                        }
+                        selectedTimeRange={selectedTimeRange}
+                        handleDelete={handleDelete}
+                        handleAddExpense={handleAddExpense}
+                        handleReceiptClick={handleReceiptClick}
+                        scheduleCount={scheduleCount}
+                        userSubscription={userSubscription}
+                      />
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row className="d-none d-md-flex" style={{ marginTop: "3px" }}>
+            <Col
+              xs={12}
+              md={6}
+              style={{ paddingLeft: "1px", paddingRight: "1px" }}
+            >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
@@ -3077,57 +3136,11 @@ const MesobFinancial2 = () => {
                 </CardBody>
               </Card>
             </Col>
-
             <Col
               xs={12}
-              md={7}
+              md={6}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
-                <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
-                    {t('financialReport.journalEntry')}
-                  </CardTitle>
-                </CardHeader>
-                <CardBody
-                  style={{
-                    height: "380px",
-                    overflowY: "auto",
-                    overflowX: "hidden",
-                    padding: "10px",
-                    backgroundColor: "#1a273a",
-                  }}
-                >
-                  {loadingTransactions ? (
-                    <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
-                      <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%" }}>
-                      <TransactionTable
-                        items={filterItemsByTimeRange(
-                          items,
-                          selectedTimeRange,
-                          searchTerm
-                        )}
-                        disabled={
-                          userRole === 1
-                            ? false
-                            : !userSubscription && scheduleCount >= 4
-                        }
-                        selectedTimeRange={selectedTimeRange}
-                        handleDelete={handleDelete}
-                        handleAddExpense={handleAddExpense}
-                        handleReceiptClick={handleReceiptClick}
-                        scheduleCount={scheduleCount}
-                        userSubscription={userSubscription}
-                      />
-                    </div>
-                  )}
-                </CardBody>
-              </Card>
-
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
