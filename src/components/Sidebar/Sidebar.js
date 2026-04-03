@@ -31,7 +31,10 @@ function Sidebar(props) {
   return (
     <>
       <div className="sidebar" data-color={props.backgroundColor}>
-        <div className="logo" style={{ backgroundColor: "#101926" }}>
+        <div
+          className="logo"
+          style={{ backgroundColor: "#101926", padding: "5px 12px 5px" }}
+        >
           <a
             href="#"
             className="simple-text logo-mini"
@@ -45,7 +48,17 @@ function Sidebar(props) {
             }}
           >
             <div className="logo-img">
-              <img src={logo} alt="react-logo" />
+              <img
+                src={logo}
+                alt="Meksova"
+                style={{
+                  height: "60px",
+                  width: "auto",
+                  maxWidth: "100%",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
             </div>
           </a>
         </div>
