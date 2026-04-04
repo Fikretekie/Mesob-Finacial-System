@@ -48,42 +48,77 @@ const isLocalhost =
   typeof window !== "undefined" &&
   (window.location?.hostname === "localhost" || window.location?.hostname === "127.0.0.1");
 
+/** Mask secret IDs for logs (never log full pool/client IDs in production). */
+const maskId = (value) =>
+  value && typeof value === "string" && value.length > 0
+    ? `${value.slice(0, 8)}…`
+    : "MISSING";
+
 const cognitoUserPoolId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID)
-  : (process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID);
-console.log("[Auth] Using Cognito User Pool ID:", cognitoUserPoolId ? `${cognitoUserPoolId.slice(0, 8)}...` : "MISSING");
+  ? process.env.REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID
+  : process.env.REACT_APP_STAGING_COGNITO_USER_POOL_ID;
 const cognitoClientId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID)
+  ? process.env.REACT_APP_PRODUCTION_COGNITO_CLIENT_ID
   : process.env.REACT_APP_STAGING_COGNITO_CLIENT_ID;
 const cognitoDomain = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN)
+  ? process.env.REACT_APP_PRODUCTION_COGNITO_DOMAIN
   : process.env.REACT_APP_STAGING_COGNITO_DOMAIN;
 
 const appOrigin = isProduction ? "https://app.meksova.com" : "https://staging.meksova.com";
 const googleClientId = isProduction
-  ? (process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID)
-  : (process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID);
+  ? process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID
+  : process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID;
+
+const authConfigOk =
+  Boolean(cognitoUserPoolId) && Boolean(cognitoClientId) && Boolean(cognitoDomain);
 
 if (typeof window !== "undefined") {
   const hostname = window.location?.hostname;
-  console.log("[Auth] Config:", {
-    ENV,
-    isProduction,
-    isLocalhost,
+
+  // Inspect on deployed site: open DevTools → Console → __MESOB_AUTH_DEBUG__
+  window.__MESOB_AUTH_DEBUG__ = {
+    env: ENV,
     hostname,
-    cognitoUserPoolId,
     pool: isProduction ? "production" : "staging",
-    cognitoClientId: cognitoClientId ? `${cognitoClientId.slice(0, 8)}...` : "MISSING",
+    userPoolId: maskId(cognitoUserPoolId),
+    clientId: maskId(cognitoClientId),
     cognitoDomain: cognitoDomain || "MISSING",
+    authConfigOk,
+    hint:
+      isProduction && !isLocalhost
+        ? "Production bundle must be built with REACT_APP_PRODUCTION_COGNITO_* in CI. .env on the server does not change an already-built JS file."
+        : undefined,
+  };
+
+  console.log("[Auth] Cognito (masked):", {
+    ENV,
+    hostname,
+    userPoolId: maskId(cognitoUserPoolId),
+    clientId: maskId(cognitoClientId),
+    cognitoDomain: cognitoDomain || "MISSING",
+    authConfigOk,
     appOrigin,
   });
+
   if (isLocalhost) {
     console.log(
-      `[Auth] Running on localhost → using ${isProduction ? "PRODUCTION" : "STAGING"} User Pool. Set REACT_APP_ENV=staging or REACT_APP_ENV=production in .env and restart to switch.`
+      `[Auth] Localhost → using ${isProduction ? "PRODUCTION" : "STAGING"} pool (from REACT_APP_ENV / .env). Restart dev server after .env changes.`
     );
   }
+
+  if (isProduction && !authConfigOk) {
+    console.error(
+      "[Auth] Production Cognito is not configured in this JS bundle. " +
+        "Set REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID, REACT_APP_PRODUCTION_COGNITO_CLIENT_ID, and REACT_APP_PRODUCTION_COGNITO_DOMAIN " +
+        "in your build pipeline (GitHub Actions / Amplify / etc.), then run npm run build and redeploy. " +
+        "Values are baked in at build time, not read from the server at runtime."
+    );
+  }
+
   if (!isProduction && (!cognitoClientId || !cognitoDomain)) {
-    console.warn("[Auth] Staging Cognito needs REACT_APP_STAGING_COGNITO_CLIENT_ID and REACT_APP_STAGING_COGNITO_DOMAIN in .env (restart dev server after adding).");
+    console.warn(
+      "[Auth] Staging needs REACT_APP_STAGING_COGNITO_CLIENT_ID and REACT_APP_STAGING_COGNITO_DOMAIN in .env (restart dev server after adding)."
+    );
   }
 }
 
