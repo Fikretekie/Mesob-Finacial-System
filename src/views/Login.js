@@ -10,8 +10,8 @@ import { Link } from "react-router-dom";
 import { signIn, signInWithRedirect, signOut } from "aws-amplify/auth";
 import getUserInfo from "utils/Getuser";
 import NotificationAlert from "react-notification-alert";
-import { apiUrl, ROUTES } from "../config/api";
-const logo = "/logo2.png";
+import { apiUrl, ROUTES, CURRENT_ENV } from "../config/api";
+const logo = "/transparent.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -40,7 +40,7 @@ const Login = () => {
     try {
       setLoading(true);
       setSocialAuth("google");
-      console.log("🔵 Initiating Google sign-in with redirect...");
+      console.log(`🔵 Initiating Google sign-in with redirect... [env: ${CURRENT_ENV}]`);
       await signOut();
       await signInWithRedirect({
         provider: "Google",
@@ -60,7 +60,7 @@ const Login = () => {
       setSocialAuth("apple");
       await signOut();
 
-      console.log("🔵 Initiating Apple sign-in with redirect...");
+      console.log(`🔵 Initiating Apple sign-in with redirect... [env: ${CURRENT_ENV}]`);
       await signInWithRedirect({ provider: "SignInWithApple" });
       localStorage.setItem("provider", "Apple");
     } catch (error) {
@@ -86,7 +86,7 @@ const Login = () => {
 
       const res = await signIn({ username: email, password });
       if (res.isSignedIn) {
-        console.log("✅ Email sign-in successful");
+        console.log(`✅ Email sign-in successful [env: ${CURRENT_ENV}]`);
         const user = await getUserInfo();
         const response = await fetch(
           apiUrl(`${ROUTES.USERS}/${user?.userId}`),
@@ -153,14 +153,14 @@ const Login = () => {
   return (
     <>
       <Helmet>
-        <title>Login - Mesob Finance</title>
+        <title>Login - Meksova</title>
       </Helmet>
       <div className="login-container">
         <NotificationAlert ref={notificationAlertRef} />
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
-          <p style={{color: "#9ca5b0"}}>Welcome! Login to access the <span style={{color: "#3b83f6"}}>Mesob Financial</span> </p> 
+          <p style={{color: "#9ca5b0"}}>Welcome! Login to access the <span style={{color: "#3b83f6"}}>Meksova</span> </p> 
           {loading && (
             <div
               className="loading-message"

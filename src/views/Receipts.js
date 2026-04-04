@@ -158,56 +158,86 @@ const Receipts = ({ selectedUser }) => {
     }
   };
 
- const handlePreview = (receipt) => {
-  console.log("🧾 Raw receipt object:", receipt);
-  console.log("🔗 Raw receiptUrl:", receipt.receiptUrl);
+ const handlePreview = async (receipt) => {
+  try {
+    console.log("🧾 Raw receipt object:", receipt);
+    console.log("🔗 Raw receiptUrl:", receipt.receiptUrl);
 
-  const modifiedUrl = normalizeReceiptUrl(receipt.receiptUrl);
-  console.log("✅ Normalized URL:", modifiedUrl);
+    // Extract the S3 key from the stored URL
+    // Stored format: https://bucket.s3.amazonaws.com/uploads/timestamp-file.jpg
+    const url = receipt.receiptUrl || "";
+    const keyMatch = url.match(/amazonaws\.com\/(.+)$/);
+    const s3Key = keyMatch ? keyMatch[1] : null;
 
-  setSelectedReceipt({ receiptUrl: modifiedUrl });
-  setPreviewModal(true);
+    if (!s3Key) {
+      console.error("❌ Could not extract S3 key from URL:", url);
+      notify("tr", "Could not load receipt preview.", "danger");
+      return;
+    }
+
+    console.log("🔑 Extracted S3 key:", s3Key);
+
+    // Get a fresh presigned URL
+    const res = await fetch(
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+    );
+    const data = await res.json();
+
+    if (!res.ok || !data.url) {
+      throw new Error(data.error || "Failed to get preview URL");
+    }
+
+    console.log("✅ Presigned view URL:", data.url);
+    setSelectedReceipt({ receiptUrl: data.url, originalUrl: url });
+    setPreviewModal(true);
+  } catch (err) {
+    console.error("❌ handlePreview error:", err);
+    notify("tr", "Could not load receipt preview.", "danger");
+  }
 };
 
-  const handleDownload = async (receipt) => {
-    try {
-      if (!receipt || !receipt.receiptUrl) {
-        throw new Error("Invalid receipt or missing URL");
-      }
-
-      const url = normalizeReceiptUrl(receipt.receiptUrl);
-
-      const response = await fetch(url);
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
-
-      const contentType = response.headers.get("content-type");
-      let fileExtension;
-      if (contentType.startsWith("image/")) {
-        fileExtension = contentType.split("/")[1];
-      } else if (contentType === "application/pdf") {
-        fileExtension = "pdf";
-      } else {
-        fileExtension = "bin";
-      }
-
-      const blob = await response.blob();
-      const fileName = `receipt-${receipt.transactionPurpose || "unknown"
-        }-${Date.now()}.${fileExtension}`;
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error("Error downloading receipt:", error);
-      notify("tr", `Error downloading receipt: ${error.message}`, "danger");
+ const handleDownload = async (receipt) => {
+  try {
+    if (!receipt || !receipt.receiptUrl) {
+      throw new Error("Invalid receipt or missing URL");
     }
-  };
+
+    // Extract S3 key and get presigned URL
+    const url = receipt.receiptUrl || "";
+    const keyMatch = url.match(/amazonaws\.com\/(.+)$/);
+    const s3Key = keyMatch ? keyMatch[1] : null;
+
+    if (!s3Key) throw new Error("Could not extract S3 key from URL");
+
+    const res = await fetch(
+      apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+    );
+    const data = await res.json();
+    if (!res.ok || !data.url) throw new Error(data.error || "Failed to get download URL");
+
+    const response = await fetch(data.url);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+    const contentType = response.headers.get("content-type") || "";
+    let fileExtension = "bin";
+    if (contentType.startsWith("image/")) fileExtension = contentType.split("/")[1];
+    else if (contentType === "application/pdf") fileExtension = "pdf";
+
+    const blob = await response.blob();
+    const fileName = `receipt-${receipt.transactionPurpose || "unknown"}-${Date.now()}.${fileExtension}`;
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Error downloading receipt:", error);
+    notify("tr", `Error downloading receipt: ${error.message}`, "danger");
+  }
+};
 
   const handleRun = () => {
     if (fromDate && toDate) {
@@ -314,7 +344,7 @@ const Receipts = ({ selectedUser }) => {
   return (
     <>
       <Helmet>
-        <title>{t('receipts.title')} - Mesob Finance</title>
+        <title>{t('receipts.title')} - Meksova</title>
       </Helmet>
       <NotificationAlert ref={notificationAlertRef} />
       <div className="content" style={{ paddingInline: 15, backgroundColor: "#101926" }}>
@@ -671,11 +701,11 @@ const Receipts = ({ selectedUser }) => {
           {t('receipts.receiptPreview')}
         </ModalHeader>
         <ModalBody>
-                    {selectedReceipt && selectedReceipt.receiptUrl && (
+          {selectedReceipt && selectedReceipt.receiptUrl && (
             <>
-                {console.log("🖼️ Rendering preview for URL:", selectedReceipt.receiptUrl)}
+              {console.log("🖼️ Rendering preview for URL:", selectedReceipt.receiptUrl)}
 
-              {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
+              {(selectedReceipt.receiptUrl.includes(".pdf") || selectedReceipt.originalUrl?.includes(".pdf")) ? (
                 <object
                   data={selectedReceipt.receiptUrl}
                   type="application/pdf"
