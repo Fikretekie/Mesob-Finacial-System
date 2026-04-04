@@ -1,10 +1,3 @@
-# Required GitHub Secrets:
-#   Production (main): AWS_*, PROD_API_URL, PROD_S3_BUCKET, PROD_APP_URL,
-#     PROD_COGNITO_USER_POOL_ID, PROD_COGNITO_CLIENT_ID, PROD_COGNITO_DOMAIN,
-#     PROD_GOOGLE_CLIENT_ID, PROD_APPLE_CLIENT_ID
-#   Staging: AWS_*, STAGING_API_URL, STAGING_S3_BUCKET, STAGING_APP_URL,
-#     STAGING_COGNITO_USER_POOL_ID, STAGING_COGNITO_CLIENT_ID, STAGING_COGNITO_DOMAIN,
-#     STAGING_GOOGLE_CLIENT_ID, STAGING_APPLE_CLIENT_ID
 name: Deploy to Amazon S3
 
 on:
@@ -56,6 +49,14 @@ jobs:
           REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
           EOF
 
+      - name: Debug - Show .env contents
+        run: |
+          echo "=== .env file contents ==="
+          cat .env
+          echo ""
+          echo "=== Check for empty values ==="
+          grep -E "^REACT_APP_STAGING.*=$" .env && echo "❌ Found empty staging vars!" || echo "✅ All staging vars have values"
+
       - name: Verify .env exists (env is baked into build – no .env on S3)
         run: |
           if [ ! -f .env ]; then echo "::error::No .env created. Check that workflow ran for main or staging."; exit 1; fi
@@ -66,32 +67,8 @@ jobs:
 
       - name: Deploy to Production S3
         if: github.ref == 'refs/heads/main'
-        run: aws s3 sync ./build/ s3://app.mesobfinancial.com
+        run: aws s3 sync ./build/ s3://app.meksova.com
 
       - name: Deploy to Staging S3
         if: github.ref == 'refs/heads/staging'
-        run: aws s3 sync ./build/ s3://staging.mesobfinancial.com
-# name: Deploy to Amazon S3
-
-# on:
-#   push:
-#     branches:
-#       - staging
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#           aws-region: us-east-1
-
-#       - name: Build React App
-#         run: npm install --legacy-peer-deps && npm run build
-
-#       - name: Deploy app build to S3 bucket
-#         run: aws s3 sync ./build/ s3://staging.mesobfinancial.com
+        run: aws s3 sync ./build/ s3://staging.meksova.com
