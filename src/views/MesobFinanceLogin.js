@@ -121,7 +121,7 @@ const MesobFinanceAuth = () => {
     <>
       <Helmet>
         <title>
-          {activeTab === "login" ? "Login" : "Sign Up"} - Mesob Finance
+          {activeTab === "login" ? "Login" : "Sign Up"} - Meksova
         </title>
       </Helmet>
       <div className="auth-container">
@@ -145,7 +145,7 @@ const MesobFinanceAuth = () => {
           {activeTab === "login" ? (
             <form onSubmit={handleLogin}>
               <h2>Login</h2>
-              <p>Welcome! Login to access the Mesob Financial Services</p>
+              <p>Welcome! Login to access the Meksova Services</p>
               <div className="auth-input-group">
                 <label>Email</label>
                 <input
@@ -190,7 +190,7 @@ const MesobFinanceAuth = () => {
           ) : (
             <form onSubmit={handleSignup}>
               <h2>Sign Up</h2>
-              <p>Create an account to access Mesob Financial Services</p>
+              <p>Create an account to access Meksova Services</p>
 
               <div className="explanation-box" >
                 <p>

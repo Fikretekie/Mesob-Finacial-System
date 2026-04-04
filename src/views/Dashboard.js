@@ -153,7 +153,7 @@ function Dashboard() {
   // These are passed as callbacks to DownloadReportModal and called at PDF
   // generation time (not at render time), so they MUST read from refs to avoid
   // stale closure issues. All return plain "0.00" decimal strings — same format
-  // as MesobFinancial2 — so DownloadReportModal's parseFloat() always works.
+  // as meksova.com2 — so DownloadReportModal's parseFloat() always works.
 
   const calculateTotalCash = () => {
     const safeItems = itemsRef.current || [];
@@ -231,15 +231,6 @@ function Dashboard() {
           enabled: true,
           easing: "easeinout",
           speed: 800,
-        },
-      },
-      title: {
-        text: title,
-        align: window.innerWidth < 576 ? "left" : "center",
-        style: {
-          fontSize: "16px",
-          fontWeight: 600,
-          color: "#ffffff",
         },
       },
       series: [
@@ -720,76 +711,76 @@ function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard - Mesob Finance </title>
+        <title>Dashboard - Meksova </title>
       </Helmet>
       {isMobile ?
-        <PanelHeader
-          size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
-          content={
-            <>
-              {isMobile && (
-                <div style={{
-                  position: "absolute",
-                  top: 0, left: 0, right: 0,
-                  display: "flex",
-                  marginTop: 70,
+      <PanelHeader
+        size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+        content={
+          <>
+            {isMobile && (
+          <div style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0,
+            display: "flex",
+            marginTop: 70,
                   justifyContent: 'center',
-                  paddingLeft: 5,
-                  paddingRight: 5,
-                  gap: "10px",
-                }}>
-                  <Button
-                    onClick={() => setShowDownloadReportModal(true)}
-                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                    style={{
-                      backgroundColor: "#2b427d",
-                      borderColor: "#2b427d",
-                      color: "#ffffff",
-                      height: "44px",
-                      borderRadius: "10px",
-                      width: "45%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      whiteSpace: "nowrap",
-                      margin: 0,
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
-                    {t('financialReport.downloadReport')}
-                  </Button>
+            paddingLeft: 5,
+            paddingRight: 5,
+            gap: "10px",
+          }}>
+            <Button
+              onClick={() => setShowDownloadReportModal(true)}
+              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+              style={{
+                backgroundColor: "#2b427d",
+                borderColor: "#2b427d",
+                color: "#ffffff",
+                height: "44px",
+                borderRadius: "10px",
+                width: "45%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "13px",
+                fontWeight: "600",
+                whiteSpace: "nowrap",
+                margin: 0,
+              }}
+            >
+              <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
+              {t('financialReport.downloadReport')}
+            </Button>
 
-                  {userRole !== 0 && (
-                    <Button
-                      onClick={handleAddTransactionClick}
-                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                      style={{
-                        backgroundColor: "#41926f",
-                        borderColor: "#41926f",
-                        color: "#ffffff",
-                        height: "44px",
-                        borderRadius: "10px",
-                        width: "45%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "13px",
-                        fontWeight: "600",
-                        whiteSpace: "nowrap",
-                        margin: 0,
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
-                      {t('dashboard.addTransaction')}
-                    </Button>
-                  )}
-                </div>
-              )}
-            </>
-          }
-        />
+            {userRole !== 0 && (
+              <Button
+                onClick={handleAddTransactionClick}
+                disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                style={{
+                  backgroundColor: "#41926f",
+                  borderColor: "#41926f",
+                  color: "#ffffff",
+                  height: "44px",
+                  borderRadius: "10px",
+                  width: "45%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  whiteSpace: "nowrap",
+                  margin: 0,
+                }}
+              >
+                <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
+                {t('dashboard.addTransaction')}
+              </Button>
+            )}
+          </div>
+            )}
+          </>
+        }
+      />
         : null}
       {userRole === 0 && (
         <div
@@ -895,7 +886,7 @@ function Dashboard() {
                     <div
                       style={{
                         width: "100%",
-                        border: "1px solid #41926f",
+                        border: "1px solid #22d3ee",
                         borderRadius: "6px",
                         padding: isMobile ? "6px 1.25rem" : "8px 1.25rem",
                         display: "flex",
@@ -906,7 +897,7 @@ function Dashboard() {
                       }}
                     >
                       <span style={{ color: "white", fontSize: isMobile ? "0.7rem" : "0.75rem", fontWeight: 600 }}>
-                        {t('dashboard.taxEstimation', 'Tax Estimation')}
+                        {t("dashboard.taxEstimation")}
                       </span>
                       <span style={{ color: "white", fontSize: isMobile ? "0.85rem" : "0.95rem", fontWeight: 600 }}>
                         ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

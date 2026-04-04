@@ -218,14 +218,14 @@ const MesobFinancial = () => {
   return (
     <>
       <Helmet>
-        <title>Mesob Financial - Mesob Store</title>
+        <title>Meksova - Mesob Store</title>
       </Helmet>
 
       <PanelHeader
         size="sm"
         content={
           <div className="header text-center">
-            <h2 className="title">Mesob Financial Report</h2>
+            <h2 className="title">Meksova Report</h2>
           </div>
         }
       />

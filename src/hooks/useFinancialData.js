@@ -11,26 +11,26 @@ import { apiUrl, ROUTES } from "../config/api";
 
 const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) => {
   // ── Raw data ───────────────────────────────────────────────────────────────
-  const [items, setItems]                           = useState([]);
-  const [revenues, setRevenues]                     = useState({});
-  const [expenses, setExpenses]                     = useState({});
-  const [accountsPayable, setAccountsPayable]       = useState({});
-  const [companyName, setCompanyName]               = useState("");
-  const [initialBalance, setInitialBalance]         = useState(0);
-  const [initialvalueableItems, setValuableItems]   = useState(0);
-  const [initialoutstandingDebt, setOutstandingDebt]= useState(0);
+  const [items, setItems] = useState([]);
+  const [revenues, setRevenues] = useState({});
+  const [expenses, setExpenses] = useState({});
+  const [accountsPayable, setAccountsPayable] = useState({});
+  const [companyName, setCompanyName] = useState("");
+  const [initialBalance, setInitialBalance] = useState(0);
+  const [initialvalueableItems, setValuableItems] = useState(0);
+  const [initialoutstandingDebt, setOutstandingDebt] = useState(0);
   const [selectedBusinessType, setSelectedBusinessType] = useState(
     localStorage.getItem("businessType") || ""
   );
 
   // ── Loading flags ──────────────────────────────────────────────────────────
-  const [loadingTransactions, setLoadingTransactions]         = useState(false);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [loadingUserInitialBalance, setLoadingUserInitialBalance] = useState(false);
 
   // ── Filter state (optional — callers may manage their own or pass overrides) ─
   const [selectedTimeRange, setSelectedTimeRange] = useState("all");
-  const [searchTerm, setSearchTerm]               = useState("");
-  const [searchedDates, setSearchedDates]         = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchedDates, setSearchedDates] = useState(null);
 
   // ── Resolve which userId to use ────────────────────────────────────────────
   const resolveUserId = () => propUserId || localStorage.getItem("userId");
@@ -49,7 +49,7 @@ const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) 
           setSelectedBusinessType(user.businessType);
           localStorage.setItem("businessType", user.businessType);
         }
-        if (user.cashBalance)    setInitialBalance(parseFloat(user.cashBalance));
+        if (user.cashBalance) setInitialBalance(parseFloat(user.cashBalance));
         if (user.valueableItems) setValuableItems(parseFloat(user.valueableItems));
         if (user.outstandingDebt) setOutstandingDebt(parseFloat(user.outstandingDebt));
         if (typeof user.companyName === "string") setCompanyName(user.companyName);
@@ -91,14 +91,14 @@ const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) 
 
   // ── Build revenues / expenses maps ────────────────────────────────────────
   const buildFinancials = useCallback((transactions) => {
-    const newRevenues      = {};
-    const newExpenses      = {};
+    const newRevenues = {};
+    const newExpenses = {};
     const newAccountsPayable = {};
 
     const filtered = filterItemsByTimeRange(transactions, selectedTimeRange, searchTerm);
 
     filtered.forEach((transaction) => {
-      const amount  = parseFloat(transaction.transactionAmount) || 0;
+      const amount = parseFloat(transaction.transactionAmount) || 0;
       const purpose = transaction.transactionPurpose;
 
       if (transaction.transactionType === "Receive") {
@@ -141,7 +141,7 @@ const useFinancialData = ({ userId: propUserId = null, autoFetch = true } = {}) 
                 transaction.installmentPlan.remainingAmount > 0
                   ? "Partially Paid"
                   : "Paid",
-              paidAmount:      transaction.installmentPlan.paidAmount,
+              paidAmount: transaction.installmentPlan.paidAmount,
               remainingAmount: transaction.installmentPlan.remainingAmount,
             };
           }

@@ -55,6 +55,20 @@
 .custom-modal-width {
   width: 113%;
 }
+
+/* Hide number input spinners (Amount fields) */
+.no-number-spinner::-webkit-outer-spin-button,
+.no-number-spinner::-webkit-inner-spin-button,
+.no-number-spinner input::-webkit-outer-spin-button,
+.no-number-spinner input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-number-spinner[type="number"],
+.no-number-spinner input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 .searchbtn {
   display: flex;
   align-items: center;

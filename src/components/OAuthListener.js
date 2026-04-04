@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiUrl, ROUTES, COGNITO_USERINFO_URL } from "../config/api";
+import { apiUrl, ROUTES, COGNITO_USERINFO_URL, CURRENT_ENV } from "../config/api";
 import { getCurrentUser, fetchAuthSession } from "aws-amplify/auth";
 import { Hub } from "aws-amplify/utils";
 
@@ -58,7 +58,7 @@ const OAuthListener = () => {
           console.log("🟡 Auth Event:", payload);
 
           if (payload.event === "signedIn") {
-            console.log("✅ Signed in, fetching user...");
+            console.log(`✅ Cognito sign-in (OAuth) [env: ${CURRENT_ENV}], fetching user...`);
 
             try {
               // Get current user
@@ -140,7 +140,7 @@ const OAuthListener = () => {
 
                 if (!checkResult.exists) {
                   // User does not exist, redirect to signup
-                  console.log("🆕 New user, redirecting to signup...");
+                  console.log(`🆕 New user (OAuth), redirecting to signup [env: ${CURRENT_ENV}]`);
                   localStorage.setItem("socialSignup", "true");
                   localStorage.setItem("socialEmail", email);
                   localStorage.setItem("socialProvider", provider);
@@ -157,7 +157,7 @@ const OAuthListener = () => {
                   );
                   return;
                 } else {
-                  console.log("✅ User exists, proceeding with sign-in...");
+                  console.log(`✅ User exists, OAuth sign-in complete [env: ${CURRENT_ENV}]`);
                   const userData = checkResult.user;
                   console.log("🔎 API Result:", checkResult);
                   localStorage.clear();

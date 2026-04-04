@@ -206,7 +206,7 @@ function Users() {
   return (
     <>
       <Helmet>
-        <title>Users - Mesob Finance</title>
+        <title>Users - Meksova</title>
       </Helmet>
 
       <NotificationAlert ref={notificationAlertRef} />

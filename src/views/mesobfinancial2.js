@@ -90,6 +90,10 @@ const MesobFinancial2 = () => {
   const [showInstallmentInput, setShowInstallmentInput] = useState(false);
   const [paymentOption, setPaymentOption] = useState(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
+  const [isBreakdownExpanded, setIsBreakdownExpanded] = useState(true);
+  const [isRevenueExpanded, setIsRevenueExpanded] = useState(true);
+  const [isExpenseExpanded, setIsExpenseExpanded] = useState(true);
+  const [isInventoryExpanded, setIsInventoryExpanded] = useState(true);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const selectedUser = useSelector((state) => state.selectedUser);
@@ -128,7 +132,15 @@ const MesobFinancial2 = () => {
   const [userSubscription, setUserSubscription] = useState(false);
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [scheduleCount, setScheduleCount] = useState(1);
-
+  const [payableSubMode, setPayableSubMode] = useState(null);   // "expense" | "boughtItem"
+  const [receiveSubMode, setReceiveSubMode] = useState(null);  // "saleCurrent" | "saleFixed" | "other"
+  const [receiveSaleAssetName, setReceiveSaleAssetName] = useState("");
+  const [receiveSaleAssetCost, setReceiveSaleAssetCost] = useState(0);  // cost for display/validation
+  const [selectedSaleItem, setSelectedSaleItem] = useState(null);  // full transaction object for sale
+  const [assetType, setAssetType] = useState("");                // "fixed" | "current"
+  const [assetName, setAssetName] = useState("");                // selected or manual name
+  const [assetNameManual, setAssetNameManual] = useState("");    // when "Enter manually" for asset
+  const [boughtNewItemPurposes, setBoughtNewItemPurposes] = useState([]);
   // Add method to save new purposes
   const handleAddPurpose = () => {
     if (newPurpose.trim()) {
@@ -294,10 +306,32 @@ const MesobFinancial2 = () => {
     }
   };
 
-  const handlePreview = (receiptUrl) => {
-    const modifiedUrl = normalizeReceiptUrl(receiptUrl);
-    setSelectedReceipt({ receiptUrl: modifiedUrl });
-    setPreviewModal(true);
+  const handlePreview = async (receiptUrl) => {
+    try {
+      const keyMatch = (receiptUrl || "").match(/amazonaws\.com\/(.+?)(\?|$)/);
+      const s3Key = keyMatch ? keyMatch[1] : null;
+
+      if (!s3Key) {
+        console.error("❌ Could not extract S3 key from URL:", receiptUrl);
+        notify("tr", t("financialReport.noReceipt"), "warning");
+        return;
+      }
+
+      const res = await fetch(
+        apiUrl(`${ROUTES.RECEIPT}/view?key=${encodeURIComponent(s3Key)}`)
+      );
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Failed to get preview URL");
+      }
+
+      setSelectedReceipt({ receiptUrl: data.url, originalUrl: receiptUrl });
+      setPreviewModal(true);
+    } catch (err) {
+      console.error("❌ handlePreview error:", err);
+      notify("tr", t("financialReport.noReceipt"), "warning");
+    }
   };
 
   const handleReceiptUpload = async (e) => {
@@ -386,11 +420,100 @@ const MesobFinancial2 = () => {
     });
   };
 
+  // const handleAddTransaction = async () => {
+  //   const errors = {};
+
+  //   if (transactionPurpose === "manual" && !manualPurpose.trim()) {
+  //     errors.manualPurpose = "Please enter a purpose manually";
+  //   }
+
+  //   if (Object.keys(errors).length > 0) {
+  //     setFormErrors(errors);
+  //     return;
+  //   }
+
+  //   if (!transactionType || !transactionAmount) {
+  //     notify("tr", t("financialReport.fillFields"), "warning");
+  //     return;
+  //   }
+
+  //   setIsAddingTransaction(true);
+  //   let Url = "";
+
+  //   if (receipt) {
+  //     Url = await uploadReceipt();
+  //   }
+
+  //   try {
+  //     console.log("values", transactionPurpose, manualPurpose);
+  //     const newTransaction = {
+  //       userId: localStorage.getItem("userId"),
+  //       transactionType:
+  //         transactionType === "receive"
+  //           ? "Receive"
+  //           : transactionType === "Payable"
+  //             ? "Payable"
+  //             : transactionType === "pay" && paymentMode === "boughtItem"
+  //               ? "New_Item"
+  //               : transactionType === "pay" && paymentMode !== "boughtItem"
+  //                 ? "Pay"
+  //                 : "New_Item",
+
+  //       transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
+  //         }`,
+  //       transactionAmount: parseFloat(transactionAmount),
+  //       originalAmount: parseFloat(transactionAmount),
+  //       subType:
+  //         paymentMode === "boughtItem"
+  //           ? "New_Item"
+  //           : paymentMode === "new"
+  //             ? "Expense"
+  //             : subType,
+  //       receiptUrl: Url || "",
+  //       status: transactionType === "Payable" ? "Unpaid" : "Paid",
+  //     };
+
+  //     const response = await axios.post(
+  //       apiUrl(ROUTES.TRANSACTION),
+  //       newTransaction
+  //     );
+
+  //     if (response.status === 200) {
+  //       const successMessage =
+  //         transactionType === "pay" && paymentMode === "boughtItem"
+  //           ? t("financialReport.newItemSuccess")
+  //           : t("financialReport.transactionAdded");
+  //       notify("tr", successMessage, "success");
+  //       resetForm();
+  //       fetchTransactions();
+  //       setShowAddTransaction(false);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error adding transaction:", error);
+  //     notify("tr", "Error processing transaction", "danger");
+  //   } finally {
+  //     setIsAddingTransaction(false);
+  //   }
+  // };
   const handleAddTransaction = async () => {
     const errors = {};
 
     if (transactionPurpose === "manual" && !manualPurpose.trim()) {
       errors.manualPurpose = "Please enter a purpose manually";
+    }
+
+    // Payable + Bought new item: require asset type and item name
+    const isPayableBoughtItem =
+      transactionType === "Payable" && payableSubMode === "boughtItem";
+    if (isPayableBoughtItem) {
+      if (!assetType) {
+        errors.assetType = "Please select an asset type";
+      }
+      const resolvedAssetName =
+        assetName === "manual" ? assetNameManual : assetName;
+      if (!resolvedAssetName || !resolvedAssetName.trim()) {
+        errors.assetName = "Please select or enter an item name";
+      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -402,6 +525,10 @@ const MesobFinancial2 = () => {
       notify("tr", t("financialReport.fillFields"), "warning");
       return;
     }
+    if (transactionType === "receive" && (receiveSubMode === "saleCurrent" || receiveSubMode === "saleFixed") && !selectedSaleItem) {
+      notify("tr", t("financialReport.selectItem") || "Please select an item", "warning");
+      return;
+    }
 
     setIsAddingTransaction(true);
     let Url = "";
@@ -411,32 +538,82 @@ const MesobFinancial2 = () => {
     }
 
     try {
-      console.log("values", transactionPurpose, manualPurpose);
-      const newTransaction = {
-        userId: localStorage.getItem("userId"),
-        transactionType:
-          transactionType === "receive"
-            ? "Receive"
-            : transactionType === "Payable"
-              ? "Payable"
-              : transactionType === "pay" && paymentMode === "boughtItem"
+      const purposeText =
+        transactionPurpose === "manual"
+          ? (manualPurpose || "").trim()
+          : (transactionPurpose || "").trim();
+      const resolvedAssetName =
+        assetName === "manual" ? (assetNameManual || "").trim() : assetName || null;
+
+      let newTransaction;
+
+      if (transactionType === "receive" && (receiveSubMode === "saleCurrent" || receiveSubMode === "saleFixed")) {
+        const cost = selectedSaleItem ? parseFloat(selectedSaleItem.amount) : parseFloat(receiveSaleAssetCost) || 0;
+        const assetName = selectedSaleItem ? selectedSaleItem.name : receiveSaleAssetName;
+        newTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType: "Receive",
+          subType: receiveSubMode === "saleCurrent" ? "sale_inventory" : "sale_fixed",
+          transactionPurpose: assetName,
+          transactionAmount: parseFloat(transactionAmount),
+          originalAmount: cost,
+          assetType: receiveSubMode === "saleCurrent" ? "current" : "fixed",
+          assetName: assetName,
+          soldTransactionId: selectedSaleItem ? selectedSaleItem.id : null,
+          receiptUrl: Url || "",
+        };
+      } else if (isPayableBoughtItem) {
+        // Haven't Yet Paid → Bought a new item (payable, not paid)
+        newTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType: "Payable",
+          subType: "New_Item",
+          status: "Unpaid",
+          transactionPurpose: purposeText,
+          transactionAmount: parseFloat(transactionAmount),
+          originalAmount: parseFloat(transactionAmount),
+          assetType: assetType || null,
+          assetName: resolvedAssetName || null,
+          receiptUrl: Url || "",
+        };
+      } else {
+        // All other cases (receive other income, pay expense, pay recorded, pay bought item, Payable expense)
+        newTransaction = {
+          userId: localStorage.getItem("userId"),
+          transactionType:
+            transactionType === "receive"
+              ? "Receive"
+              : transactionType === "Payable"
+                ? "Payable"
+                : transactionType === "pay" && paymentMode === "boughtItem"
+                  ? "New_Item"
+                  : transactionType === "pay" && paymentMode !== "boughtItem"
+                    ? "Pay"
+                    : "New_Item",
+          transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""}`.trim(),
+          transactionAmount: parseFloat(transactionAmount),
+          originalAmount: parseFloat(transactionAmount),
+          subType:
+            transactionType === "receive" && receiveSubMode === "other"
+              ? undefined
+              : paymentMode === "boughtItem"
                 ? "New_Item"
-                : transactionType === "pay" && paymentMode !== "boughtItem"
-                  ? "Pay"
-                  : "New_Item",
-        transactionPurpose: `${transactionPurpose}${manualPurpose ? ` ${manualPurpose}` : ""
-          }`,
-        transactionAmount: parseFloat(transactionAmount),
-        originalAmount: parseFloat(transactionAmount),
-        subType:
-          paymentMode === "boughtItem"
-            ? "New_Item"
-            : paymentMode === "new"
-              ? "Expense"
-              : subType,
-        receiptUrl: Url || "",
-        status: transactionType === "Payable" ? "Unpaid" : "Paid",
-      };
+                : paymentMode === "new"
+                  ? "Expense"
+                  : subType,
+          receiptUrl: Url || "",
+          status: transactionType === "Payable" ? "Unpaid" : "Paid",
+        };
+        // Optional: add asset fields for Pay Cash → Bought a new item
+        if (
+          transactionType === "pay" &&
+          paymentMode === "boughtItem" &&
+          (assetType || resolvedAssetName)
+        ) {
+          newTransaction.assetType = assetType || null;
+          newTransaction.assetName = resolvedAssetName || null;
+        }
+      }
 
       const response = await axios.post(
         apiUrl(ROUTES.TRANSACTION),
@@ -445,9 +622,11 @@ const MesobFinancial2 = () => {
 
       if (response.status === 200) {
         const successMessage =
-          transactionType === "pay" && paymentMode === "boughtItem"
+          isPayableBoughtItem
             ? t("financialReport.newItemSuccess")
-            : t("financialReport.transactionAdded");
+            : transactionType === "pay" && paymentMode === "boughtItem"
+              ? t("financialReport.newItemSuccess")
+              : t("financialReport.transactionAdded");
         notify("tr", successMessage, "success");
         resetForm();
         fetchTransactions();
@@ -460,12 +639,20 @@ const MesobFinancial2 = () => {
       setIsAddingTransaction(false);
     }
   };
-
   const resetForm = () => {
     setTransactionType("");
     setTransactionPurpose("");
     setTransactionAmount("");
     setManualPurpose("");
+    setsubType("");
+    setPayableSubMode(null);
+    setReceiveSubMode(null);
+    setReceiveSaleAssetName("");
+    setReceiveSaleAssetCost(0);
+    setSelectedSaleItem(null);
+    setAssetType("");
+    setAssetName("");
+    setAssetNameManual("");
     setEditingTransaction(null);
     setReceipt(null);
     setPaymentMode(null);
@@ -904,6 +1091,7 @@ const MesobFinancial2 = () => {
     setIncomePurposes(purposes.income || []);
     setExpensePurposes(purposes.expenses || []);
     setPayablePurposes(purposes.payables || []);
+    setBoughtNewItemPurposes(purposes.boughtNewItemPurposes || []);
   }, [selectedBusinessType, i18n.language]); // ← ADD i18n.language dependency
 
   useEffect(() => {
@@ -987,6 +1175,7 @@ const MesobFinancial2 = () => {
 
         if (response.data?.user) {
           const userData = response.data.user;
+          console.log("Full userData=>>> ", userData);
           setUserSubscription(userData?.subscription || false);
           console.log("subscription=>>> ", userData?.subscription);
           setTrialEndDate(new Date(userData?.trialEndDate));
@@ -1018,6 +1207,19 @@ const MesobFinancial2 = () => {
       const amount = parseFloat(transaction.transactionAmount) || 0;
 
       if (transaction.transactionType === "Receive") {
+        if (transaction.subType === "sale_fixed") {
+          // Add gain/loss on fixed asset sale to revenues
+          const salePrice = parseFloat(transaction.transactionAmount || 0);
+          const bookValue = parseFloat(transaction.originalAmount || 0);
+          const gain = salePrice - bookValue;
+          if (gain !== 0) {
+            const gainPurpose = gain > 0
+              ? `Gain on Sale (${transaction.assetName || transaction.transactionPurpose})`
+              : `Loss on Sale (${transaction.assetName || transaction.transactionPurpose})`;
+            newRevenues[gainPurpose] = (newRevenues[gainPurpose] || 0) + gain;
+          }
+          return; // don't add full sale price to revenues
+        }
         const purpose = transaction.transactionPurpose;
         newRevenues[purpose] = (newRevenues[purpose] || 0) + amount;
       } else if (
@@ -1026,10 +1228,23 @@ const MesobFinancial2 = () => {
       ) {
         const purpose = transaction.transactionPurpose;
 
-        // *** FIX: Exclude outstanding debt payments from expenses ***
+        // Exclude Payable+New_Item (asset purchases on credit) from expenses
+        const isPayableNewItem = transaction.transactionType === "Payable" && transaction.subType === "New_Item";
+
+        // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
+        let isPaymentForNewItem = false;
+        if (transaction.transactionType === "Pay" && transaction.payableId && transaction.payableId !== "outstanding-debt") {
+          const originalPayable = items.find(item => item.id === transaction.payableId);
+          if (originalPayable && originalPayable.subType === "New_Item") {
+            isPaymentForNewItem = true;
+          }
+        }
+
         if (
           transaction.payableId !== "outstanding-debt" &&
-          !purpose.includes("Outstanding Debt")
+          !purpose.includes("Outstanding Debt") &&
+          !isPayableNewItem &&
+          !isPaymentForNewItem
         ) {
           newExpenses[purpose] = (newExpenses[purpose] || 0) + amount;
         }
@@ -1039,6 +1254,15 @@ const MesobFinancial2 = () => {
             (newAccountsPayable[purpose] || 0) + amount;
         }
       }
+
+      // Add COGS from inventory sales to expenses with purpose
+      if (transaction.transactionType === "Receive" && transaction.subType === "sale_inventory") {
+        const cogsAmount = parseFloat(transaction.originalAmount || 0);
+        if (cogsAmount > 0) {
+          const cogsPurpose = transaction.assetName || transaction.transactionPurpose || "Inventory";
+          newExpenses[cogsPurpose] = (newExpenses[cogsPurpose] || 0) + cogsAmount;
+        }
+      }
     });
 
     setRevenues(newRevenues);
@@ -1046,10 +1270,164 @@ const MesobFinancial2 = () => {
     setAccountsPayable(newAccountsPayable);
   };
 
+  // Get individual current asset transactions (not grouped) for the dropdown
+  const getCurrentAssetItems = () => {
+    const result = [];
+    const soldIds = new Set();
+
+    // Track which transactions have been sold
+    items.forEach((t) => {
+      if (t.transactionType === "Receive" && t.subType === "sale_inventory" && t.soldTransactionId) {
+        soldIds.add(t.soldTransactionId);
+      }
+    });
+
+    items.forEach((t) => {
+      // Skip if already sold
+      if (soldIds.has(t.id)) return;
+
+      // Explicit current assets with assetName
+      const isNewItemCurrent = t.transactionType === "New_Item" && t.assetType === "current" && t.assetName;
+      const isPayableCurrent = t.transactionType === "Payable" && t.assetType === "current" && t.subType === "New_Item" && t.assetName;
+      // Include New_Item without assetType (default to current assets / inventory)
+      const isNewItemDefault = t.transactionType === "New_Item" && !t.assetType && t.assetName;
+
+      if (isNewItemCurrent || isPayableCurrent || isNewItemDefault) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = t.transactionType === "Payable"
+          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
+          : parseFloat(t.transactionAmount || 0);
+        result.push({
+          id: t.id,
+          name: t.assetName,
+          amount: amount,
+          purpose: t.transactionPurpose,
+          displayName: `${t.assetName} - $${amount.toFixed(2)}`
+        });
+      }
+
+      // Fallback: Payable+New_Item without assetType OR with assetType not fixed (default to current)
+      const isPayableDefaultCurrent = t.transactionType === "Payable" &&
+        t.subType === "New_Item" &&
+        t.assetType !== "fixed" &&
+        !t.assetName &&
+        t.transactionPurpose;
+      if (isPayableDefaultCurrent) {
+        const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
+        result.push({
+          id: t.id,
+          name: t.transactionPurpose,
+          amount: amount,
+          purpose: t.transactionPurpose,
+          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
+        });
+      }
+    });
+
+    return result;
+  };
+
+  const getFixedAssetItems = () => {
+    const result = [];
+    const soldIds = new Set();
+
+    // Track which transactions have been sold
+    items.forEach((t) => {
+      if (t.transactionType === "Receive" && t.subType === "sale_fixed" && t.soldTransactionId) {
+        soldIds.add(t.soldTransactionId);
+      }
+    });
+
+    items.forEach((t) => {
+      // Skip if already sold
+      if (soldIds.has(t.id)) return;
+
+      // Explicit fixed assets with assetName
+      const isNewItemFixed = t.transactionType === "New_Item" && t.assetType === "fixed" && t.assetName;
+      const isPayableFixed = t.transactionType === "Payable" && t.assetType === "fixed" && t.subType === "New_Item" && t.assetName;
+
+      if (isNewItemFixed || isPayableFixed) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = t.transactionType === "Payable"
+          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
+          : parseFloat(t.transactionAmount || 0);
+        result.push({
+          id: t.id,
+          name: t.assetName,
+          amount: amount,
+          purpose: t.transactionPurpose,
+          displayName: `${t.assetName} - $${amount.toFixed(2)}`
+        });
+      }
+
+      // Fallback: ANY Payable with subType New_Item without assetType but with fixed-asset related purpose
+      const isFixedPayable = t.transactionType === "Payable" &&
+        t.subType === "New_Item" &&
+        !t.assetType &&
+        t.transactionPurpose &&
+        (t.transactionPurpose.toLowerCase().includes("equipment") ||
+          t.transactionPurpose.toLowerCase().includes("vehicle") ||
+          t.transactionPurpose.toLowerCase().includes("truck") ||
+          t.transactionPurpose.toLowerCase().includes("machine") ||
+          t.transactionPurpose.toLowerCase().includes("furniture") ||
+          t.transactionPurpose.toLowerCase().includes("computer") ||
+          t.transactionPurpose.toLowerCase().includes("fixed"));
+      if (isFixedPayable) {
+        const amount = parseFloat(t.originalAmount || t.transactionAmount || 0);
+        result.push({
+          id: t.id,
+          name: t.transactionPurpose,
+          amount: amount,
+          purpose: t.transactionPurpose,
+          displayName: `${t.transactionPurpose} - $${amount.toFixed(2)}`
+        });
+      }
+    });
+
+    return result;
+  };
+
+  // Remaining cost (book value) for an asset after subtracting sales (uses ALL items, not time-filtered)
+  const getAssetCost = (name, type) => {
+    let cost = 0;
+
+    // Add purchases - check by assetName first, then by transactionPurpose for backward compatibility
+    items.forEach((t) => {
+      const matchesAssetName = t.assetName === name && t.assetType === type;
+      const matchesPurpose = !t.assetType && t.transactionPurpose === name && t.transactionType === "Payable";
+
+      if ((t.transactionType === "New_Item" || t.transactionType === "Payable") && (matchesAssetName || matchesPurpose)) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = t.transactionType === "Payable"
+          ? parseFloat(t.originalAmount || t.transactionAmount || 0)
+          : parseFloat(t.transactionAmount || 0);
+        cost += amount;
+      }
+    });
+
+    // Subtract sales
+    const subType = type === "current" ? "sale_inventory" : "sale_fixed";
+    items.forEach((t) => {
+      if (t.transactionType === "Receive" && t.subType === subType && t.assetName === name) {
+        cost -= parseFloat(t.originalAmount || 0);
+      }
+    });
+
+    return Math.max(0, cost);
+  };
+
   const calculateTotalRevenue = () => {
     const filteredItems = getFilteredItems();
     const totalReceived = filteredItems.reduce((sum, value) => {
       if (value.transactionType === "Receive") {
+        if (value.subType === "sale_fixed") {
+          // Only add the GAIN (sale price - book value) to revenue
+          // If sold for less than book value, this will be negative (a loss)
+          const salePrice = parseFloat(value.transactionAmount || 0);
+          const bookValue = parseFloat(value.originalAmount || 0);
+          const gain = salePrice - bookValue;
+          return sum + gain; // adds gain, subtracts loss
+        }
         return sum + parseFloat(value.transactionAmount || 0);
       }
       return sum;
@@ -1062,32 +1440,137 @@ const MesobFinancial2 = () => {
     const filteredItems = getFilteredItems();
 
     const newItemsTotal = filteredItems.reduce((sum, item) => {
-      if (item.transactionType === "New_Item" && item.subType === "New_Item") {
-        return sum + parseFloat(item.transactionAmount || 0);
+      // New_Item transactions with current asset type
+      const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current";
+      // Payable with current asset type and subType New_Item
+      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current" && item.subType === "New_Item";
+      // Legacy/Default: New_Item without assetType (treat as inventory by default, unless explicitly fixed)
+      const isLegacyNewItem = item.transactionType === "New_Item" && item.subType === "New_Item" && item.assetType !== "fixed";
+      // Payable New_Item without assetType (treat as inventory by default)
+      const isLegacyPayableNewItem = item.transactionType === "Payable" && item.subType === "New_Item" && !item.assetType;
+
+      if (isNewItemCurrent || isPayableCurrent || isLegacyNewItem || isLegacyPayableNewItem) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable"
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        return sum + amount;
       }
       return sum;
     }, 0);
 
-    const totalInventory = newItemsTotal + valueableItems;
+    const saleInventoryCost = filteredItems.reduce((sum, item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && parseFloat(item.originalAmount || 0)) {
+        return sum + parseFloat(item.originalAmount);
+      }
+      return sum;
+    }, 0);
+
+    const totalInventory = Math.max(0, newItemsTotal - saleInventoryCost + valueableItems);
     return totalInventory.toFixed(2);
+  };
+
+  const calculateTotalFixedAssets = () => {
+    const filteredItems = getFilteredItems();
+    const fixedAdded = filteredItems.reduce((sum, item) => {
+      const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed";
+      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item";
+      if (isNewItemFixed || isPayableFixed) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable"
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        return sum + amount;
+      }
+      return sum;
+    }, 0);
+    const fixedSold = filteredItems.reduce((sum, item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_fixed" && parseFloat(item.originalAmount || 0)) {
+        return sum + parseFloat(item.originalAmount);
+      }
+      return sum;
+    }, 0);
+    return (fixedAdded - fixedSold).toFixed(2);
+  };
+
+  const getFixedAssetBreakdown = () => {
+    const filteredItems = getFilteredItems();
+    const byName = {};
+    filteredItems.forEach((item) => {
+      const isNewItemFixed = item.transactionType === "New_Item" && item.assetType === "fixed" && item.assetName;
+      const isPayableFixed = item.transactionType === "Payable" && item.assetType === "fixed" && item.subType === "New_Item" && item.assetName;
+      if (isNewItemFixed || isPayableFixed) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable"
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        byName[item.assetName] = (byName[item.assetName] || 0) + amount;
+      }
+    });
+    filteredItems.forEach((item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_fixed" && item.assetName) {
+        byName[item.assetName] = (byName[item.assetName] || 0) - parseFloat(item.originalAmount || 0);
+      }
+    });
+    return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
+  };
+
+  const getInventoryBreakdown = () => {
+    const filteredItems = getFilteredItems();
+    const byName = {};
+    filteredItems.forEach((item) => {
+      const isNewItemCurrent = item.transactionType === "New_Item" && item.assetType === "current" && item.assetName;
+      const isPayableCurrent = item.transactionType === "Payable" && item.assetType === "current" && item.subType === "New_Item" && item.assetName;
+      if (isNewItemCurrent || isPayableCurrent) {
+        // Use originalAmount for Payable (transactionAmount changes after payment)
+        const amount = item.transactionType === "Payable"
+          ? parseFloat(item.originalAmount || item.transactionAmount || 0)
+          : parseFloat(item.transactionAmount || 0);
+        byName[item.assetName] = (byName[item.assetName] || 0) + amount;
+      }
+    });
+    filteredItems.forEach((item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && item.assetName) {
+        byName[item.assetName] = (byName[item.assetName] || 0) - parseFloat(item.originalAmount || 0);
+      }
+    });
+    return Object.entries(byName).map(([name, balance]) => ({ name, balance: Math.max(0, balance) })).filter((x) => x.balance > 0);
   };
 
   const calculateTotalExpenses = () => {
     const filteredItems = getFilteredItems();
-    return filteredItems
-      .reduce((sum, value) => {
-        // *** FIX: Exclude outstanding debt payments ***
-        if (
-          (value.transactionType === "Pay" ||
-            (value.transactionType === "Payable" && value.status !== "Paid")) &&
-          value.payableId !== "outstanding-debt" &&
-          !value.transactionPurpose.includes("Outstanding Debt")
-        ) {
-          return sum + parseFloat(value.transactionAmount || 0);
+    const payExpenses = filteredItems.reduce((sum, value) => {
+      // Exclude Payable+New_Item (asset purchases on credit) - these are inventory, not expenses
+      const isPayableNewItem = value.transactionType === "Payable" && value.subType === "New_Item";
+
+      // Exclude Pay transactions that are payments for New_Item Payables (asset purchases)
+      let isPaymentForNewItem = false;
+      if (value.transactionType === "Pay" && value.payableId && value.payableId !== "outstanding-debt") {
+        const originalPayable = items.find(item => item.id === value.payableId);
+        if (originalPayable && originalPayable.subType === "New_Item") {
+          isPaymentForNewItem = true;
         }
-        return sum;
-      }, 0)
-      .toFixed(2);
+      }
+
+      if (
+        (value.transactionType === "Pay" ||
+          (value.transactionType === "Payable" && value.status !== "Paid")) &&
+        value.payableId !== "outstanding-debt" &&
+        !value.transactionPurpose.includes("Outstanding Debt") &&
+        !isPayableNewItem &&
+        !isPaymentForNewItem
+      ) {
+        return sum + parseFloat(value.transactionAmount || 0);
+      }
+      return sum;
+    }, 0);
+    const cogs = filteredItems.reduce((sum, item) => {
+      if (item.transactionType === "Receive" && item.subType === "sale_inventory" && parseFloat(item.originalAmount || 0)) {
+        return sum + parseFloat(item.originalAmount);
+      }
+      return sum;
+    }, 0);
+    return (payExpenses + cogs).toFixed(2);
   };
 
   const calculateTotalCash = () => {
@@ -1754,7 +2237,7 @@ const MesobFinancial2 = () => {
   return (
     <>
       <Helmet>
-        <title>Mesob Financial - Mesob Finance</title>
+        <title>Meksova - Meksova</title>
       </Helmet>
 
       <NotificationAlert ref={notificationAlertRef} />
@@ -1969,7 +2452,7 @@ const MesobFinancial2 = () => {
           <Row className="d-none d-md-flex" style={{ marginTop: "3px" }}>
             <Col
               xs={12}
-              md={5}
+              md={3}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
@@ -1997,7 +2480,7 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <div style={{ marginBottom: "8px", color: "#ffffff", fontWeight: "bold", fontSize: "0.9rem" }}>
-                        {t('financialReport.totalCashOnHand')}:
+                        {t('financialReport.totalCashOnHand')}
                       </div>
                       <div
                         style={{
@@ -2047,20 +2530,56 @@ const MesobFinancial2 = () => {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: "20px" }}>
-                      <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                        {t('financialReport.breakdown')}
+                    <div style={{ marginTop: "0px" }}>
+                      {/* Commented out dropdown functionality */}
+                      {/* <div 
+                        style={{ 
+                          fontWeight: "bold", 
+                          color: "#ffffff", 
+                          marginBottom: "12px", 
+                          fontSize: "0.95rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          cursor: "pointer",
+                          userSelect: "none"
+                        }}
+                        onClick={() => setIsBreakdownExpanded(!isBreakdownExpanded)}
+                      >
+                        <span>{t('financialReport.breakdown')}</span>
+                        <span style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
+                          {isBreakdownExpanded ? "▼" : "▶"}
+                        </span>
                       </div>
-                      <div style={{ marginTop: "8px" }}>
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.revenue')}
-                          </span>
-                          <span
+                      {isBreakdownExpanded && ( */}
+                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
+                        {t('financialReport.breakdown')}
+                      </div> */}
+                      <div style={{ marginTop: "0px" }}>
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalRevenue")}
+                          </div>
+                          <div
                             style={{
                               color: "#41926f",
                               fontWeight: "bold",
-                              fontSize: "0.9rem",
+                              fontSize: "1.1rem",
                             }}
                           >
                             $
@@ -2071,38 +2590,16 @@ const MesobFinancial2 = () => {
                                 maximumFractionDigits: 2,
                               }
                             )}
-                          </span>
+                          </div>
                         </div>
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.totalExpense')}
-                          </span>
-                          <span
-                            style={{
-                              color: "#a7565d",
-                              fontWeight: "bold",
-                              fontSize: "0.9rem",
-                            }}
-                          >
-                            $
-                            {parseFloat(
-                              calculateTotalExpenses(true)
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
-                        </div>
-                        <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
-                          {Object.entries(expenses)
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                          {Object.entries(revenues)
                             .filter(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
                               return filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
-                                  (item.transactionType === "Pay" ||
-                                    (item.transactionType === "Payable" &&
-                                      item.status !== "Paid"))
+                                  item.transactionType === "Receive"
                               );
                             })
                             .map(([purpose, amount]) => {
@@ -2111,9 +2608,7 @@ const MesobFinancial2 = () => {
                                 (sum, item) => {
                                   if (
                                     item.transactionPurpose === purpose &&
-                                    (item.transactionType === "Pay" ||
-                                      (item.transactionType === "Payable" &&
-                                        item.status !== "Paid"))
+                                    item.transactionType === "Receive"
                                   ) {
                                     return (
                                       sum + parseFloat(item.transactionAmount || 0)
@@ -2122,13 +2617,6 @@ const MesobFinancial2 = () => {
                                   return sum;
                                 },
                                 0
-                              );
-
-                              const isPaid = filteredItems.some(
-                                (item) =>
-                                  item.transactionPurpose === purpose &&
-                                  item.transactionType === "Payable" &&
-                                  item.status === "Paid"
                               );
 
                               return (
@@ -2148,9 +2636,7 @@ const MesobFinancial2 = () => {
                                   </span>
                                   <span
                                     style={{
-                                      color: isPaid
-                                        ? "#c7ae4f"
-                                        : "#a7565d",
+                                      color: "#41926f",
                                       fontWeight: "bold",
                                       fontSize: "0.9rem",
                                     }}
@@ -2164,13 +2650,210 @@ const MesobFinancial2 = () => {
                                 </div>
                               );
                             })}
+                        </div> */}
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalExpense")}
+                          </div>
+                          <div
+                            style={{
+                              color: "#a7565d",
+                              fontWeight: "bold",
+                              fontSize: "1.1rem",
+                            }}
+                          >
+                            $
+                            {parseFloat(calculateTotalExpenses(true)).toLocaleString(
+                              "en-US",
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
+                          </div>
                         </div>
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                          {Object.entries(expenses)
+                            .filter(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                              const hasRegularExpense = filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  (item.transactionType === "Pay" ||
+                                    (item.transactionType === "Payable" &&
+                                      item.status !== "Paid"))
+                              );
+                              const hasCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                              );
+                              return hasRegularExpense || hasCOGS;
+                            })
+                            .map(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              // Calculate total from regular expenses
+                              let totalAmount = filteredItems.reduce(
+                                (sum, item) => {
+                                  if (
+                                    item.transactionPurpose === purpose &&
+                                    (item.transactionType === "Pay" ||
+                                      (item.transactionType === "Payable" &&
+                                        item.status !== "Paid"))
+                                  ) {
+                                    return (
+                                      sum + parseFloat(item.transactionAmount || 0)
+                                    );
+                                  }
+                                  return sum;
+                                },
+                                0
+                              );
+                              // Add COGS amount
+                              filteredItems.forEach((item) => {
+                                if (
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                                ) {
+                                  totalAmount += parseFloat(item.originalAmount || 0);
+                                }
+                              });
+
+                              const isPaid = filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Payable" &&
+                                  item.status === "Paid"
+                              );
+
+                              // Check if this is a COGS expense
+                              const isCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                              );
+
+                              return (
+                                <div
+                                  key={purpose}
+                                  style={{
+                                    marginBottom: "8px",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                      {translatePurpose(purpose)}:
+                                    </span>
+                                  </span>
+                                  <span
+                                    style={{
+                                      color: isCOGS
+                                        ? "#a7565d"
+                                        : isPaid
+                                          ? "#c7ae4f"
+                                          : "#a7565d",
+                                      fontWeight: "bold",
+                                      fontSize: "0.9rem",
+                                    }}
+                                  >
+                                    $
+                                    {totalAmount.toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div> */}
                       </div>
+                      {/* )} Commented out closing bracket for dropdown */}
                     </div>
                   </div>
                 </CardBody>
               </Card>
+            </Col>
 
+            <Col
+              xs={12}
+              md={9}
+              style={{ paddingLeft: "1px", paddingRight: "1px" }}
+            >
+              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
+                <CardHeader style={{ backgroundColor: "#1a273a" }}>
+                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
+                    {t('financialReport.journalEntry')}
+                  </CardTitle>
+                </CardHeader>
+                <CardBody
+                  style={{
+                    height: "380px",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    padding: "10px",
+                    backgroundColor: "#1a273a",
+                  }}
+                >
+                  {loadingTransactions ? (
+                    <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
+                      <Spinner color="primary" />
+                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
+                    </div>
+                  ) : (
+                    <div style={{ width: "100%" }}>
+                      <TransactionTable
+                        items={filterItemsByTimeRange(
+                          items,
+                          selectedTimeRange,
+                          searchTerm
+                        )}
+                        disabled={
+                          userRole === 1
+                            ? false
+                            : !userSubscription && scheduleCount >= 4
+                        }
+                        selectedTimeRange={selectedTimeRange}
+                        handleDelete={handleDelete}
+                        handleAddExpense={handleAddExpense}
+                        handleReceiptClick={handleReceiptClick}
+                        scheduleCount={scheduleCount}
+                        userSubscription={userSubscription}
+                      />
+                    </div>
+                  )}
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row className="d-none d-md-flex" style={{ marginTop: "3px" }}>
+            <Col
+              xs={12}
+              md={6}
+              style={{ paddingLeft: "1px", paddingRight: "1px" }}
+            >
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
@@ -2201,21 +2884,77 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <tbody>
-                        <tr>
+                        <tr
+                          onClick={() => setIsRevenueExpanded(!isRevenueExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>{t('financialReport.revenueManualSales')}</strong>
+                            <strong>
+                              {t('financialReport.revenue')} {isRevenueExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", textAlign: "right" }}
-                          >
-                            ${Object.values(revenues).reduce((sum, amt) => sum + parseFloat(amt || 0), 0).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
+                          ></td>
                         </tr>
+
+                        {isRevenueExpanded && Object.entries(revenues)
+                          .filter(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            return filteredItems.some(
+                              (item) =>
+                                item.transactionPurpose === purpose &&
+                                item.transactionType === "Receive"
+                            );
+                          })
+                          .map(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            const totalAmount = filteredItems.reduce(
+                              (sum, item) => {
+                                if (
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                                ) {
+                                  return (
+                                    sum + parseFloat(item.transactionAmount || 0)
+                                  );
+                                }
+                                return sum;
+                              },
+                              0
+                            );
+
+                            return (
+                              <tr key={`revenue-${purpose}`}>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    color: "#ffffff",
+                                  }}
+                                >
+                                  {t('financialReport.revenue')} ({translatePurpose(purpose)})
+                                </td>
+                                <td
+                                  style={{
+                                    color: "#ffffff",
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    textAlign: "right",
+                                  }}
+                                >
+                                  $
+                                  {totalAmount.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </td>
+                              </tr>
+                            );
+                          })}
+
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
@@ -2242,31 +2981,45 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
 
-                        <tr>
+                        <tr
+                          onClick={() => setIsExpenseExpanded(!isExpenseExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>{t('financialReport.expenses')}</strong>
+                            <strong>
+                              {t('financialReport.expenses')} {isExpenseExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
                         </tr>
 
-                        {Object.entries(expenses)
+                        {isExpenseExpanded && Object.entries(expenses)
                           .filter(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            return filteredItems.some(
+                            // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                            const hasRegularExpense = filteredItems.some(
                               (item) =>
                                 item.transactionPurpose === purpose &&
                                 (item.transactionType === "Pay" ||
                                   (item.transactionType === "Payable" &&
                                     item.status !== "Paid"))
                             );
+                            const hasCOGS = filteredItems.some(
+                              (item) =>
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                            );
+                            return hasRegularExpense || hasCOGS;
                           })
                           .map(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            const totalAmount = filteredItems.reduce(
+                            // Calculate total from regular expenses
+                            let totalAmount = filteredItems.reduce(
                               (sum, item) => {
                                 if (
                                   item.transactionPurpose === purpose &&
@@ -2283,6 +3036,16 @@ const MesobFinancial2 = () => {
                               },
                               0
                             );
+                            // Add COGS amount
+                            filteredItems.forEach((item) => {
+                              if (
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                              ) {
+                                totalAmount += parseFloat(item.originalAmount || 0);
+                              }
+                            });
 
                             return (
                               <tr key={`expense-${purpose}`}>
@@ -2373,57 +3136,11 @@ const MesobFinancial2 = () => {
                 </CardBody>
               </Card>
             </Col>
-
             <Col
               xs={12}
-              md={7}
+              md={6}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
-                <CardHeader style={{ backgroundColor: "#1a273a" }}>
-                  <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
-                    {t('financialReport.journalEntry')}
-                  </CardTitle>
-                </CardHeader>
-                <CardBody
-                  style={{
-                    height: "380px",
-                    overflowY: "auto",
-                    overflowX: "hidden",
-                    padding: "10px",
-                    backgroundColor: "#1a273a",
-                  }}
-                >
-                  {loadingTransactions ? (
-                    <div className="d-flex flex-column align-items-center justify-content-center" style={{ height: "100%", minHeight: "300px" }}>
-                      <Spinner color="primary" />
-                      <p style={{ color: "#ffffff", marginTop: "1rem" }}>{t('financialReport.loadingTransactions')}</p>
-                    </div>
-                  ) : (
-                    <div style={{ width: "100%" }}>
-                      <TransactionTable
-                        items={filterItemsByTimeRange(
-                          items,
-                          selectedTimeRange,
-                          searchTerm
-                        )}
-                        disabled={
-                          userRole === 1
-                            ? false
-                            : !userSubscription && scheduleCount >= 4
-                        }
-                        selectedTimeRange={selectedTimeRange}
-                        handleDelete={handleDelete}
-                        handleAddExpense={handleAddExpense}
-                        handleReceiptClick={handleReceiptClick}
-                        scheduleCount={scheduleCount}
-                        userSubscription={userSubscription}
-                      />
-                    </div>
-                  )}
-                </CardBody>
-              </Card>
-
               <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
@@ -2489,85 +3206,89 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.cash')}
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.currentAssets')}
                           </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalCash()).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.inventory')}
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ color: "#41926f", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td
-                            style={{
-                              color: "#ffffff",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(
-                              calculateTotalInventory()
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr
+                          onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
                           </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
+                          <tr key={name}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalInventory')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
-                          >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalCurrentAssets')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.fixedAssets')}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {getFixedAssetBreakdown().map(({ name, balance }) => (
+                          <tr key={name}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalFixedAssets')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
                             <strong>{t('financialReport.totalAssets')}</strong>
                           </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              fontWeight: "bold",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
                           <td
@@ -2707,14 +3428,7 @@ const MesobFinancial2 = () => {
                               border: "1px solid #3a4555",
                             }}
                           >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                            ${(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                           <td
                             style={{
@@ -2809,20 +3523,56 @@ const MesobFinancial2 = () => {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: "20px" }}>
-                      <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
-                        {t('financialReport.breakdown')}
+                    <div style={{ marginTop: "0px" }}>
+                      {/* Commented out dropdown functionality */}
+                      {/* <div 
+                        style={{ 
+                          fontWeight: "bold", 
+                          color: "#ffffff", 
+                          marginBottom: "12px", 
+                          fontSize: "0.95rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          cursor: "pointer",
+                          userSelect: "none"
+                        }}
+                        onClick={() => setIsBreakdownExpanded(!isBreakdownExpanded)}
+                      >
+                        <span>{t('financialReport.breakdown')}</span>
+                        <span style={{ fontSize: "1.2rem", marginLeft: "8px" }}>
+                          {isBreakdownExpanded ? "▼" : "▶"}
+                        </span>
                       </div>
-                      <div style={{ marginTop: "8px" }}>
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.revenue')}
-                          </span>
-                          <span
+                      {isBreakdownExpanded && ( */}
+                      {/* <div style={{ fontWeight: "bold", color: "#ffffff", marginBottom: "12px", fontSize: "0.95rem" }}>
+                        {t('financialReport.breakdown')}
+                      </div> */}
+                      <div style={{ marginTop: "0px" }}>
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalRevenue")}
+                          </div>
+                          <div
                             style={{
                               color: "#41926f",
                               fontWeight: "bold",
-                              fontSize: "0.9rem",
+                              fontSize: "1.1rem",
                             }}
                           >
                             $
@@ -2833,17 +3583,91 @@ const MesobFinancial2 = () => {
                                 maximumFractionDigits: 2,
                               }
                             )}
-                          </span>
+                          </div>
                         </div>
-                        <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
-                            {t('financialReport.totalExpense')}
-                          </span>
-                          <span
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                          {Object.entries(revenues)
+                            .filter(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              return filteredItems.some(
+                                (item) =>
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                              );
+                            })
+                            .map(([purpose, amount]) => {
+                              const filteredItems = getFilteredItems();
+                              const totalAmount = filteredItems.reduce(
+                                (sum, item) => {
+                                  if (
+                                    item.transactionPurpose === purpose &&
+                                    item.transactionType === "Receive"
+                                  ) {
+                                    return (
+                                      sum + parseFloat(item.transactionAmount || 0)
+                                    );
+                                  }
+                                  return sum;
+                                },
+                                0
+                              );
+
+                              return (
+                                <div
+                                  key={purpose}
+                                  style={{
+                                    marginBottom: "8px",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <span style={{ color: "#ffffff", fontSize: "0.9rem" }}>
+                                    <span style={{ color: "#ffffff", fontSize: "0.9rem", marginLeft: "10px" }}>
+                                      {translatePurpose(purpose)}:
+                                    </span>
+                                  </span>
+                                  <span
+                                    style={{
+                                      color: "#41926f",
+                                      fontWeight: "bold",
+                                      fontSize: "0.9rem",
+                                    }}
+                                  >
+                                    $
+                                    {totalAmount.toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                        </div> */}
+                        <div
+                          style={{
+                            backgroundColor: "#1a2332",
+                            padding: "12px 15px",
+                            borderRadius: "6px",
+                            marginBottom: "12px",
+                            border: "1px solid #2a3444",
+                          }}
+                        >
+                          <div
+                            style={{
+                              marginBottom: "8px",
+                              color: "#ffffff",
+                              fontWeight: "bold",
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            {t("financialReport.totalExpense")}
+                          </div>
+                          <div
                             style={{
                               color: "#a7565d",
                               fontWeight: "bold",
-                              fontSize: "0.9rem",
+                              fontSize: "1.1rem",
                             }}
                           >
                             $
@@ -2853,23 +3677,32 @@ const MesobFinancial2 = () => {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
-                          </span>
+                          </div>
                         </div>
-                        <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
+                        {/* <div style={{ marginTop: "12px", marginBottom: "12px", borderTop: "1px solid #2a3444", paddingTop: "12px" }}>
                           {Object.entries(expenses)
                             .filter(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
-                              return filteredItems.some(
+                              // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                              const hasRegularExpense = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
                                   (item.transactionType === "Pay" ||
                                     (item.transactionType === "Payable" &&
                                       item.status !== "Paid"))
                               );
+                              const hasCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                              );
+                              return hasRegularExpense || hasCOGS;
                             })
                             .map(([purpose, amount]) => {
                               const filteredItems = getFilteredItems();
-                              const totalAmount = filteredItems.reduce(
+                              // Calculate total from regular expenses
+                              let totalAmount = filteredItems.reduce(
                                 (sum, item) => {
                                   if (
                                     item.transactionPurpose === purpose &&
@@ -2885,12 +3718,30 @@ const MesobFinancial2 = () => {
                                 },
                                 0
                               );
+                              // Add COGS amount
+                              filteredItems.forEach((item) => {
+                                if (
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
+                                ) {
+                                  totalAmount += parseFloat(item.originalAmount || 0);
+                                }
+                              });
 
                               const isPaid = filteredItems.some(
                                 (item) =>
                                   item.transactionPurpose === purpose &&
                                   item.transactionType === "Payable" &&
                                   item.status === "Paid"
+                              );
+
+                              // Check if this is a COGS expense
+                              const isCOGS = filteredItems.some(
+                                (item) =>
+                                  item.transactionType === "Receive" &&
+                                  item.subType === "sale_inventory" &&
+                                  (item.assetName === purpose || item.transactionPurpose === purpose)
                               );
 
                               return (
@@ -2908,9 +3759,11 @@ const MesobFinancial2 = () => {
                                   </span>
                                   <span
                                     style={{
-                                      color: isPaid
-                                        ? "#c7ae4f"
-                                        : "#a7565d",
+                                      color: isCOGS
+                                        ? "#a7565d"
+                                        : isPaid
+                                          ? "#c7ae4f"
+                                          : "#a7565d",
                                       fontWeight: "bold",
                                       fontSize: "0.9rem",
                                     }}
@@ -2924,8 +3777,9 @@ const MesobFinancial2 = () => {
                                 </div>
                               );
                             })}
-                        </div>
+                        </div> */}
                       </div>
+                      {/* )} Commented out closing bracket for dropdown */}
                     </div>
                   </div>
                 </CardBody>
@@ -3003,43 +3857,77 @@ const MesobFinancial2 = () => {
                       }}
                     >
                       <tbody>
-                        <tr>
+                        <tr
+                          onClick={() => setIsRevenueExpanded(!isRevenueExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
-                            style={{ padding: "8px", border: "1px solid #3a4555" }}
+                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>Revenue</strong>
+                            <strong>
+                              {t('financialReport.revenue')} {isRevenueExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
                         </tr>
-                        {Object.entries(revenues).map(([purpose, amount]) => (
-                          <tr key={`revenue-${purpose}`}>
-                            <td
-                              style={{
-                                padding: "8px",
-                                border: "1px solid #3a4555",
-                              }}
-                            >
-                              {purpose}
-                            </td>
-                            <td
-                              style={{
-                                backgroundColor: "#1a273a",
-                                color: "#ffffff",
-                                padding: "8px",
-                                border: "1px solid #3a4555",
-                                textAlign: "right",
-                              }}
-                            >
-                              $
-                              {amount.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </td>
-                          </tr>
-                        ))}
+
+                        {isRevenueExpanded && Object.entries(revenues)
+                          .filter(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            return filteredItems.some(
+                              (item) =>
+                                item.transactionPurpose === purpose &&
+                                item.transactionType === "Receive"
+                            );
+                          })
+                          .map(([purpose, amount]) => {
+                            const filteredItems = getFilteredItems();
+                            const totalAmount = filteredItems.reduce(
+                              (sum, item) => {
+                                if (
+                                  item.transactionPurpose === purpose &&
+                                  item.transactionType === "Receive"
+                                ) {
+                                  return (
+                                    sum + parseFloat(item.transactionAmount || 0)
+                                  );
+                                }
+                                return sum;
+                              },
+                              0
+                            );
+
+                            return (
+                              <tr key={`revenue-${purpose}`}>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    color: "#ffffff",
+                                  }}
+                                >
+                                  {t('financialReport.revenue')} ({translatePurpose(purpose)})
+                                </td>
+                                <td
+                                  style={{
+                                    backgroundColor: "#1a273a",
+                                    color: "#ffffff",
+                                    padding: "8px",
+                                    border: "1px solid #3a4555",
+                                    textAlign: "right",
+                                  }}
+                                >
+                                  $
+                                  {totalAmount.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         <tr>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#2b427d", fontWeight: "bold" }}
@@ -3066,31 +3954,45 @@ const MesobFinancial2 = () => {
                           </td>
                         </tr>
 
-                        <tr>
+                        <tr
+                          onClick={() => setIsExpenseExpanded(!isExpenseExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           >
-                            <strong>{t('financialReport.expenses')}</strong>
+                            <strong>
+                              {t('financialReport.expenses')} {isExpenseExpanded ? "▼" : "▶"}
+                            </strong>
                           </td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
                         </tr>
 
-                        {Object.entries(expenses)
+                        {isExpenseExpanded && Object.entries(expenses)
                           .filter(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            return filteredItems.some(
+                            // Check for regular expenses (Pay/Payable) OR COGS expenses (sale_inventory)
+                            const hasRegularExpense = filteredItems.some(
                               (item) =>
                                 item.transactionPurpose === purpose &&
                                 (item.transactionType === "Pay" ||
                                   (item.transactionType === "Payable" &&
                                     item.status !== "Paid"))
                             );
+                            const hasCOGS = filteredItems.some(
+                              (item) =>
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                            );
+                            return hasRegularExpense || hasCOGS;
                           })
                           .map(([purpose, amount]) => {
                             const filteredItems = getFilteredItems();
-                            const totalAmount = filteredItems.reduce(
+                            // Calculate total from regular expenses
+                            let totalAmount = filteredItems.reduce(
                               (sum, item) => {
                                 if (
                                   item.transactionPurpose === purpose &&
@@ -3107,6 +4009,16 @@ const MesobFinancial2 = () => {
                               },
                               0
                             );
+                            // Add COGS amount
+                            filteredItems.forEach((item) => {
+                              if (
+                                item.transactionType === "Receive" &&
+                                item.subType === "sale_inventory" &&
+                                (item.assetName === purpose || item.transactionPurpose === purpose)
+                              ) {
+                                totalAmount += parseFloat(item.originalAmount || 0);
+                              }
+                            });
 
                             return (
                               <tr key={`expense-${purpose}`}>
@@ -3227,130 +4139,96 @@ const MesobFinancial2 = () => {
                     >
                       <tbody>
                         <tr>
-                          <td
-                            style={{
-                              width: "40%",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                              color: "#ffffff",
-                            }}
-                          >
+                          <td style={{ width: "40%", padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>
                             <strong>{t('financialReport.assets')}</strong>
                           </td>
-                          <td
-                            style={{
-                              width: "30%",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                              color: "#ffffff",
-                            }}
-                          >
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
-                          <td
-                            style={{
-                              width: "30%",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                              color: "#ffffff",
-                            }}
-                          >
+                          <td style={{ width: "30%", textAlign: "right", padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>
                             <strong>{t('financialReport.amount2')}</strong>
                           </td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.cash')}
-                          </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(calculateTotalCash()).toLocaleString(
-                              "en-US",
-                              {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }
-                            )}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
-                        </tr>
-
-                        <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          >
-                            {t('financialReport.inventory')}
-                          </td>
-                          <td
-                            style={{
-                              color: "#ffffff",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {parseFloat(
-                              calculateTotalInventory()
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>{t('financialReport.currentAssets')}</td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}
-                          >
-                            <strong>{t('financialReport.totalAssets')}</strong>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}>{t('financialReport.cash')}</td>
+                          <td style={{ color: "#41926f", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalCash()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
-                          <td
-                            style={{
-                              color: "#41926f",
-                              fontWeight: "bold",
-                              textAlign: "right",
-                              padding: "8px",
-                              border: "1px solid #3a4555",
-                            }}
-                          >
-                            $
-                            {(
-                              parseFloat(calculateTotalCash()) +
-                              parseFloat(calculateTotalInventory())
-                            ).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr
+                          onClick={() => setIsInventoryExpanded(!isInventoryExpanded)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            {t('financialReport.inventory')} {isInventoryExpanded ? "▼" : "▶"}
                           </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {isInventoryExpanded && getInventoryBreakdown().map(({ name, balance }) => (
+                          <tr key={`bs2-inv-${name}`}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>
+                            <strong>{t('financialReport.totalInventory')}</strong>
+                          </td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalInventory()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                         </tr>
                         <tr>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}
-                          >
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}><strong>{t('financialReport.totalCurrentAssets')}</strong></td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}>{t('financialReport.fixedAssets')}</td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        {getFixedAssetBreakdown().map(({ name, balance }) => (
+                          <tr key={`bs2-${name}`}>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", paddingLeft: "20px" }}>{name}</td>
+                            <td style={{ color: "#ffffff", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                              $ {parseFloat(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}><strong>{t('financialReport.totalFixedAssets')}</strong></td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {parseFloat(calculateTotalFixedAssets()).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#22d3ee", fontWeight: "bold" }}><strong>{t('financialReport.totalAssets')}</strong></td>
+                          <td style={{ color: "#41926f", fontWeight: "bold", textAlign: "right", padding: "8px", border: "1px solid #3a4555" }}>
+                            $ {(parseFloat(calculateTotalCash()) + parseFloat(calculateTotalInventory()) + parseFloat(calculateTotalFixedAssets())).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
+                        </tr>
+                        <tr>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff", fontWeight: "bold" }}>
                             <strong>{t('financialReport.liabilitiesEquity')}</strong>
                           </td>
-                          <td
-                            style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
-                          ></td>
+                          <td style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}></td>
                           <td
                             style={{ padding: "8px", border: "1px solid #3a4555", color: "#ffffff" }}
                           ></td>
@@ -3533,6 +4411,9 @@ const MesobFinancial2 = () => {
                   onClick={() => {
                     setTransactionType("receive");
                     setPaymentMode(null);
+                    setReceiveSubMode(null);
+                    setReceiveSaleAssetName("");
+                    setReceiveSaleAssetCost(0);
                   }}
                 >
                   {t('financialReport.receivedCash')}
@@ -3606,6 +4487,50 @@ const MesobFinancial2 = () => {
                 </div>
               </FormGroup>
             )}
+            {/* Receive Cash: Select Action */}
+            {transactionType === "receive" && (
+              <FormGroup>
+                <Label>{t('financialReport.selectAction')}:</Label>
+                <div style={{ display: "flex", gap: "5px", marginBottom: "15px", flexWrap: "wrap" }}>
+                  <Button
+                    color={receiveSubMode === "saleCurrent" ? "primary" : "secondary"}
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setReceiveSubMode("saleCurrent");
+                      setReceiveSaleAssetName("");
+                      setReceiveSaleAssetCost(0);
+                      setSelectedSaleItem(null);
+                    }}
+                  >
+                    {t('financialReport.recordedEarlierAsCurrentAssets')}
+                  </Button>
+                  <Button
+                    color={receiveSubMode === "saleFixed" ? "primary" : "secondary"}
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setReceiveSubMode("saleFixed");
+                      setReceiveSaleAssetName("");
+                      setReceiveSaleAssetCost(0);
+                      setSelectedSaleItem(null);
+                    }}
+                  >
+                    {t('financialReport.recordedEarlierAsFixedAsset')}
+                  </Button>
+                  <Button
+                    color={receiveSubMode === "other" ? "primary" : "secondary"}
+                    className="transaction-action-btn"
+                    onClick={() => {
+                      setReceiveSubMode("other");
+                      setReceiveSaleAssetName("");
+                      setReceiveSaleAssetCost(0);
+                      setSelectedSaleItem(null);
+                    }}
+                  >
+                    {t('financialReport.otherIncome')}
+                  </Button>
+                </div>
+              </FormGroup>
+            )}
             {/* Show dropdown for recorded payment mode under Pay Cash */}
             {selectedBusinessType === "Other" && (
               <div className="manual-purpose-management">
@@ -3627,6 +4552,37 @@ const MesobFinancial2 = () => {
                 </Input>
                 <Button onClick={handleAddPurpose}>{t('financialReport.addPurpose')}</Button>
               </div>
+            )}
+
+            {/* Show action buttons for Haven't Yet Paid (Payable) */}
+            {transactionType === "Payable" && (
+              <FormGroup>
+                <Label>{t('financialReport.selectAction')}:</Label>
+                <div
+                  style={{ display: "flex", gap: "5px", marginBottom: "15px" }}
+                >
+                  <Button
+                    color="danger"
+                    className="transaction-action-btn action-expense"
+                    onClick={() => {
+                      setPayableSubMode("expense");
+                      setPaymentMode(null);
+                    }}
+                  >
+                    {t('financialReport.expense')}
+                  </Button>
+                  <Button
+                    color="warning"
+                    className="transaction-action-btn action-new-item"
+                    onClick={() => {
+                      setPayableSubMode("boughtItem");
+                      setPaymentMode(null);
+                    }}
+                  >
+                    {t('financialReport.boughtNewItem')}
+                  </Button>
+                </div>
+              </FormGroup>
             )}
 
             {transactionType === "pay" && paymentMode === "recorded" && (
@@ -3659,12 +4615,17 @@ const MesobFinancial2 = () => {
                       .filter(
                         (t) => t.status !== "Paid" && t.transactionAmount !== 0
                       )
-                      .map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.transactionPurpose} - $
-                          {t.transactionAmount.toFixed(2)}
-                        </option>
-                      ))}
+                      .map((t) => {
+                        // Use originalAmount for display (transactionAmount changes after partial payments)
+                        const displayAmount = t.originalAmount || t.transactionAmount;
+                        // Show assetName if available, otherwise transactionPurpose
+                        const displayName = t.assetName || t.transactionPurpose;
+                        return (
+                          <option key={t.id} value={t.id}>
+                            {displayName} - ${parseFloat(displayAmount).toFixed(2)}
+                          </option>
+                        );
+                      })}
                   </Input>
                 </FormGroup>
 
@@ -3703,20 +4664,19 @@ const MesobFinancial2 = () => {
                   <FormGroup>
                     <Label>{t('financialReport.partialPaymentAmount')}:</Label>
                     <Input
+                      className="no-number-spinner"
                       type="number"
                       value={remainingAmount}
                       onChange={(e) => {
                         const value = parseFloat(e.target.value);
                         setRemainingAmount(e.target.value);
 
-                        // Validate that partial payment is less than total amount
-                        if (
-                          value >= selectedUnpaidTransaction.transactionAmount
-                        ) {
+                        const currentRemaining = selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount;
+
+                        // Validate that partial payment is less than or equal to remaining amount
+                        if (value > currentRemaining) {
                           setPartialPaymentError(
-                            `Partial payment must be less than $${selectedUnpaidTransaction.transactionAmount.toFixed(
-                              2
-                            )}`
+                            `Partial payment cannot exceed $${currentRemaining.toFixed(2)}`
                           );
                         } else if (value <= 0) {
                           setPartialPaymentError(
@@ -3727,7 +4687,7 @@ const MesobFinancial2 = () => {
                         }
                       }}
                       min="0.01"
-                      max={selectedUnpaidTransaction.transactionAmount - 0.01}
+                      max={selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount}
                       step="0.01"
                       invalid={!!partialPaymentError}
                     />
@@ -3742,7 +4702,7 @@ const MesobFinancial2 = () => {
                     <small className="text-muted">
                       Maximum: $
                       {(
-                        selectedUnpaidTransaction.transactionAmount - 0.01
+                        selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount
                       ).toFixed(2)}
                     </small>
                   </FormGroup>
@@ -3786,8 +4746,7 @@ const MesobFinancial2 = () => {
                     paymentOption === "partial" &&
                     (!remainingAmount ||
                       partialPaymentError ||
-                      parseFloat(remainingAmount) >=
-                      selectedUnpaidTransaction.transactionAmount ||
+                      parseFloat(remainingAmount) > (selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount) ||
                       parseFloat(remainingAmount) <= 0)
                   }
                 >
@@ -3812,9 +4771,6 @@ const MesobFinancial2 = () => {
                     <option value="manual">{t('financialReport.enterManually')}</option>
                   </Input>
 
-
-
-                  {/* ----------  NEW VALIDATION FOR MANUAL DESCRIPTION ---------- */}
                   {isManual === "manual" && (
                     <FormGroup className="mt-2">
                       <Input
@@ -3823,16 +4779,12 @@ const MesobFinancial2 = () => {
                         value={manualPurpose}
                         onChange={(e) => {
                           setManualPurpose(e.target.value);
-                          // clear the error when the user starts typing
                           setFormErrors({ ...formErrors, manualPurpose: "" });
                         }}
                         invalid={!!formErrors.manualPurpose}
                       />
                       {formErrors.manualPurpose && (
-                        <div
-                          className="text-danger"
-                          style={{ fontSize: "0.875rem" }}
-                        >
+                        <div className="text-danger" style={{ fontSize: "0.875rem" }}>
                           {formErrors.manualPurpose}
                         </div>
                       )}
@@ -3841,8 +4793,29 @@ const MesobFinancial2 = () => {
                 </FormGroup>
 
                 <FormGroup>
+                  <Label>{t('financialReport.assetType')}:</Label>
+                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName("manual"); setAssetNameManual(""); }}>
+                    <option value="">{t('financialReport.selectAssetType')}</option>
+                    <option value="fixed">{t('financialReport.fixedAsset')}</option>
+                    <option value="current">{t('financialReport.currentAsset')}</option>
+                  </Input>
+                </FormGroup>
+                {assetType && (
+                  <FormGroup>
+                    <Label>{t('financialReport.itemName')}:</Label>
+                    <Input
+                      type="text"
+                      placeholder={t('financialReport.enterItemName')}
+                      value={assetNameManual}
+                      onChange={(e) => setAssetNameManual(e.target.value)}
+                    />
+                  </FormGroup>
+                )}
+
+                <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
                   <Input
+                    className="no-number-spinner"
                     type="number"
                     value={transactionAmount}
                     onChange={(e) => setTransactionAmount(e.target.value)}
@@ -3889,10 +4862,131 @@ const MesobFinancial2 = () => {
                 </Button>
               </>
             )}
-            {/* Show regular form fields for other cases */}
-            {(transactionType === "receive" ||
+            {transactionType === "Payable" && payableSubMode === "boughtItem" && (
+              <>
+                {/* <FormGroup>
+                  <Label>{t('financialReport.purpose')}:</Label>
+                  <Input type="select" value={transactionPurpose} onChange={(e) => setTransactionPurpose(e.target.value)}>
+                    <option value="">{t('financialReport.selectPurpose')}</option>
+                    {boughtNewItemPurposes.map((p, i) => <option key={i} value={p}>{p}</option>)}
+                    <option value="manual">{t('financialReport.enterManually')}</option>
+                  </Input>
+                  {transactionPurpose === "manual" && (
+                    <Input type="text" placeholder={t('financialReport.enterPurposeManually')} value={manualPurpose} onChange={(e) => setManualPurpose(e.target.value)} />
+                  )}
+                </FormGroup> */}
+                <FormGroup>
+                  <Label>{t('financialReport.assetType')}:</Label>
+                  <Input type="select" value={assetType} onChange={(e) => { setAssetType(e.target.value); setAssetName("manual"); setAssetNameManual(""); }}>
+                    <option value="">{t('financialReport.selectAssetType')}</option>
+                    <option value="fixed">{t('financialReport.fixedAsset')}</option>
+                    <option value="current">{t('financialReport.currentAsset')}</option>
+                  </Input>
+                </FormGroup>
+                {assetType && (
+                  <FormGroup>
+                    <Label>{t('financialReport.itemName')}:</Label>
+                    <Input
+                      type="text"
+                      placeholder={t('financialReport.enterItemName')}
+                      value={assetNameManual}
+                      onChange={(e) => setAssetNameManual(e.target.value)}
+                    />
+                  </FormGroup>
+                )}
+                <FormGroup>
+                  <Label>{t('financialReport.amount')}:</Label>
+                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
+                </FormGroup>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || !(assetNameManual || "").trim()}>
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                </Button>
+              </>
+            )}
+            {/* Receive: Recorded earlier as current assets */}
+            {transactionType === "receive" && receiveSubMode === "saleCurrent" && (
+              <>
+                <FormGroup>
+                  <Label>{t('financialReport.itemName')} ({t('financialReport.recordedEarlierAsCurrentAssets')}):</Label>
+                  <Input
+                    type="select"
+                    value={selectedSaleItem ? selectedSaleItem.id : ""}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const item = getCurrentAssetItems().find(i => String(i.id) === selectedId);
+                      if (item) {
+                        setSelectedSaleItem(item);
+                        setReceiveSaleAssetName(item.name);
+                        setReceiveSaleAssetCost(item.amount);
+                      } else {
+                        setSelectedSaleItem(null);
+                        setReceiveSaleAssetName("");
+                        setReceiveSaleAssetCost(0);
+                      }
+                    }}
+                  >
+                    <option value="">{t('financialReport.selectItem')}</option>
+                    {getCurrentAssetItems().map((item) => (
+                      <option key={item.id} value={item.id}>{item.displayName}</option>
+                    ))}
+                  </Input>
+                  {selectedSaleItem && (
+                    <small style={{ color: "#aaa" }}>Cost (book value): ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>{t('financialReport.amount')}:</Label>
+                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="e.g. 1500" />
+                </FormGroup>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                </Button>
+              </>
+            )}
+            {/* Receive: Recorded earlier as fixed asset */}
+            {transactionType === "receive" && receiveSubMode === "saleFixed" && (
+              <>
+                <FormGroup>
+                  <Label>{t('financialReport.itemName')} ({t('financialReport.recordedEarlierAsFixedAsset')}):</Label>
+                  <Input
+                    type="select"
+                    value={selectedSaleItem ? selectedSaleItem.id : ""}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const item = getFixedAssetItems().find(i => String(i.id) === selectedId);
+                      if (item) {
+                        setSelectedSaleItem(item);
+                        setReceiveSaleAssetName(item.name);
+                        setReceiveSaleAssetCost(item.amount);
+                      } else {
+                        setSelectedSaleItem(null);
+                        setReceiveSaleAssetName("");
+                        setReceiveSaleAssetCost(0);
+                      }
+                    }}
+                  >
+                    <option value="">{t('financialReport.selectItem')}</option>
+                    {getFixedAssetItems().map((item) => (
+                      <option key={item.id} value={item.id}>{item.displayName}</option>
+                    ))}
+                  </Input>
+                  {selectedSaleItem && (
+                    <small style={{ color: "#aaa" }}>Book value: ${parseFloat(selectedSaleItem.amount).toFixed(2)}</small>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>{t('financialReport.amount')}:</Label>
+                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="Sale amount" />
+                </FormGroup>
+                <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
+                  {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
+                </Button>
+              </>
+            )}
+            {/* Show regular form fields for other cases (Other income, Pay expense, Payable expense) */}
+            {((transactionType === "receive" && receiveSubMode === "other") ||
               (transactionType === "pay" && paymentMode === "new") ||
-              transactionType === "Payable") && (
+              (transactionType === "Payable" && payableSubMode === "expense")) && (
                 <>
                   <FormGroup>
                     <Label>{t('financialReport.purpose')}:</Label>
@@ -3903,7 +4997,7 @@ const MesobFinancial2 = () => {
                       onChange={(e) => setTransactionPurpose(e.target.value)}
                     >
                       <option value="">{t('financialReport.selectPurpose')}</option>
-                      {transactionType === "receive" && (
+                      {transactionType === "receive" && receiveSubMode === "other" && (
                         <>
                           {incomePurposes.map((purpose, index) => (
                             <option key={index} value={purpose}>
@@ -3923,13 +5017,19 @@ const MesobFinancial2 = () => {
                           <option value="manual">{t('financialReport.enterManually')}</option>
                         </>
                       )}
-                      {transactionType === "Payable" && (
+                      {transactionType === "Payable" && payableSubMode === "expense" && (
                         <>
-                          {payablePurposes.map((purpose, index) => (
-                            <option key={index} value={purpose}>
-                              {purpose}
-                            </option>
-                          ))}
+                          {payablePurposes
+                            .filter(
+                              (p) =>
+                                p !== t("businessTypes.payables.inventoryPurchases") &&
+                                p !== t("businessTypes.payables.inventoryAdjustments")
+                            )
+                            .map((purpose, index) => (
+                              <option key={index} value={purpose}>
+                                {purpose}
+                              </option>
+                            ))}
                           <option value="manual">{t('financialReport.enterManually')}</option>
                         </>
                       )}
@@ -3965,6 +5065,7 @@ const MesobFinancial2 = () => {
                   <FormGroup>
                     <Label>{t('financialReport.amount')}:</Label>
                     <Input
+                      className="no-number-spinner"
                       type="number"
                       value={transactionAmount}
                       onChange={(e) => setTransactionAmount(e.target.value)}
@@ -4023,7 +5124,7 @@ const MesobFinancial2 = () => {
           <ModalBody>
             {selectedReceipt?.receiptUrl && (
               <>
-                {selectedReceipt.receiptUrl.endsWith(".pdf") ? (
+                {(selectedReceipt.receiptUrl.includes(".pdf") || selectedReceipt.originalUrl?.includes(".pdf")) ? (
                   <object
                     data={selectedReceipt.receiptUrl}
                     type="application/pdf"
@@ -4087,6 +5188,7 @@ const MesobFinancial2 = () => {
               <FormGroup>
                 <Label>{t('financialReport.installmentAmount')}:</Label>
                 <Input
+                  className="no-number-spinner"
                   type="number"
                   value={installmentAmount}
                   onChange={(e) => setInstallmentAmount(e.target.value)}

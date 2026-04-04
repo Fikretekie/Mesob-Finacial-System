@@ -25,7 +25,7 @@ const CheckoutForm = ({ priceId }) => {
     name: "",
     phone: "03317766777",
     priceId: process.env.PRICE_ID,
-    description: "New customer from Mesob Financials",
+    description: "New customer from Meksovas",
   });
 
   const [loading, setLoading] = useState(false);
@@ -104,7 +104,7 @@ const CheckoutForm = ({ priceId }) => {
         if (paymentIntent.status === "succeeded") {
           showNotification(
             "success",
-            "🎉 Congratulations! Enjoy using Mesob Financial."
+            "🎉 Congratulations! Enjoy using Meksova."
           );
           setIsSubscribed(true);
         } else {
@@ -271,7 +271,7 @@ const CheckoutForm = ({ priceId }) => {
         </Card>
       ) : (
         <div className="text-center text-green-600 font-semibold mt-4">
-          🎉 Congratulations! Enjoy using Mesob Financial.
+          🎉 Congratulations! Enjoy using Meksova.
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import axios from "axios";
-import { API_BASE_URL } from "../../config/api";
+import { API_BASE_URL, apiUrl, ROUTES } from "../../config/api";
 import {
   Row,
   Col,
@@ -26,12 +26,15 @@ const styles = {
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
-    padding: "0.75rem",          // ← optimized padding
+    padding: "0.75rem 1rem",
+    boxSizing: "border-box",
   },
   wrapper: {
     width: "100%",
-    maxWidth: "560px",
-    marginTop: "1rem",
+    maxWidth: "min(96vw, 960px)",
+    marginTop: "0.5rem",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   /* gradient border card */
   gradientBorder: {
@@ -41,11 +44,11 @@ const styles = {
   card: {
     background: "#1c1e3d",
     borderRadius: "18px",
-    padding: "1.75rem 1.5rem",   // ← better spacing
+    padding: "clamp(1.25rem, 2vw, 1.75rem) clamp(1.25rem, 3vw, 2.25rem)",
   },
   heading: {
     textAlign: "center",
-    marginBottom: "1.25rem",
+    marginBottom: "1rem",
   },
   h2: {
     fontSize: "clamp(1.5rem, 6vw, 1.8rem)", // ← larger, more readable
@@ -68,14 +71,20 @@ const styles = {
     background: "#282d57",
     border: "1px solid rgba(59, 130, 246, 0.15)",
     borderRadius: "14px",
-    padding: "1.25rem",
-    marginBottom: "1.25rem",
+    padding: "clamp(1rem, 2vw, 1.35rem)",
+    marginBottom: "1rem",
+  },
+  featuresBoxGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    columnGap: "1.25rem",
+    rowGap: "0.65rem",
   },
   featureRow: {
     display: "flex",
     alignItems: "flex-start",
     gap: "0.75rem",
-    marginBottom: "0.75rem",
+    marginBottom: 0,
   },
   checkIcon: {
     color: "#8e94b3",
@@ -97,11 +106,13 @@ const styles = {
     color: "#64748b",
     fontSize: "clamp(0.8rem, 3vw, 0.9rem)",
     textAlign: "center",
-    marginTop: "1rem",
+    marginTop: "0.75rem",
+    marginBottom: 0,
     lineHeight: 1.6,
+    gridColumn: "1 / -1",
   },
   /* price */
-  priceWrap: { textAlign: "center", marginBottom: "1.25rem" },
+  priceWrap: { textAlign: "center", marginBottom: "1rem" },
   price: { 
     fontSize: "clamp(1.9rem, 8vw, 2.4rem)", // ← more prominent
     fontWeight: "700", 
@@ -299,7 +310,7 @@ const SubscriptionPlans = () => {
       setError("");
       const userId = getUserId();
       if (!userId) { setUserData(null); return; }
-      const response = await axios.get(`${backendBaseUrl}/Users/${userId}`);
+      const response = await axios.get(apiUrl(`${ROUTES.USERS}/${userId}`));
       setUserData(response.data.user || response.data);
     } catch (err) {
       if (err.response?.status === 404) setUserData(null);
@@ -382,31 +393,66 @@ const SubscriptionPlans = () => {
 
   const cancelStripeSubscription = async () => {
     try {
-      setCancelLoading(true); setError("");
-      if (!userData?.subscriptionId) { setError("Subscription ID missing."); return; }
-      await axios.delete(`${backendBaseUrl}/Subscription/${userData.subscriptionId}`);
+      setCancelLoading(true);
+      setError("");
+      if (!userData?.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+      await axios.delete(
+        apiUrl(`${ROUTES.SUBSCRIPTION}/${userData.subscriptionId}`)
+      );
+      setShowConfirmModal(false);
       await fetchUser();
       window.location.reload();
-    } catch { setError("Failed to cancel Stripe subscription."); }
-    finally { setCancelLoading(false); }
+    } catch (err) {
+      console.error("Cancel Stripe subscription:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to cancel Stripe subscription. Please try again."
+      );
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
+  /** DELETE /MesobFinancialSystem/PaypalSubscription/{id} → your Lambda (PayPal cancel + DynamoDB). */
   const cancelPaypalSubscription = async () => {
     try {
-      setCancelLoading(true); setError("");
-      if (!userData?.subscriptionId) { setError("Subscription ID missing."); return; }
-      await fetch(`${backendBaseUrl}/PaypalSubscription/${userData.subscriptionId}`, {
-        method: "DELETE", headers: { "Content-Type": "application/json" },
-      });
+      setCancelLoading(true);
+      setError("");
+      if (!userData?.subscriptionId) {
+        setError("Subscription ID missing.");
+        return;
+      }
+      await axios.delete(
+        apiUrl(
+          `${ROUTES.PAYPAL_SUBSCRIPTION}/${userData.subscriptionId}`
+        )
+      );
+      setShowConfirmModal(false);
       await fetchUser();
-    } catch { setError("Failed to cancel PayPal subscription."); }
-    finally { setCancelLoading(false); }
+      window.location.reload();
+    } catch (err) {
+      console.error("Cancel PayPal subscription:", err);
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Failed to cancel PayPal subscription. Please try again or cancel in your PayPal account."
+      );
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   const handleCancelSubscription = () => {
-    if (userData?.paymentType === "STRIPE") cancelStripeSubscription();
-    else if (userData?.paymentType === "PAYPAL") cancelPaypalSubscription();
-    else setError("Unable to determine payment type. Please contact support.");
+    const provider = (userData?.paymentType || "").toUpperCase();
+    if (provider === "STRIPE") cancelStripeSubscription();
+    else if (provider === "PAYPAL") cancelPaypalSubscription();
+    else
+      setError(
+        "Unable to determine payment type. Please contact support."
+      );
   };
 
   const getPaypalClientId = () =>
@@ -429,15 +475,35 @@ const SubscriptionPlans = () => {
   const isMobileLandscape = isMobile && isLandscape;
   const currentPriceId = plans[0].priceId[billingCycle];
 
+  /** Wider card on small screens: less outer + inner horizontal padding */
+  const pageStyleMobile = isMobile
+    ? { padding: "0.45rem max(0.3rem, env(safe-area-inset-left)) 0.5rem max(0.3rem, env(safe-area-inset-right))" }
+    : {};
+  const wrapperStyleMobile = isMobile
+    ? { maxWidth: "100%", width: "100%" }
+    : {};
+  const cardStyleMobile = isMobile
+    ? { padding: "1.1rem 0.65rem" }
+    : {};
+  const featuresBoxStyleMobile = isMobile
+    ? { padding: "0.85rem 0.55rem" }
+    : {};
+
   return (
     <>
       <Helmet>
-        <title>{t("subscription.title")} - Mesob Finance</title>
+        <title>{t("subscription.title")} - Meksova</title>
       </Helmet>
     
-      <div className="content" style={{marginTop:80}}>
-        <div style={styles.page}>
-          <div style={styles.wrapper}>
+      <div
+        className="content"
+        style={{
+          marginTop: 80,
+          ...(isMobile ? { paddingLeft: 0, paddingRight: 0 } : {}),
+        }}
+      >
+        <div style={{ ...styles.page, ...pageStyleMobile }}>
+          <div style={{ ...styles.wrapper, ...wrapperStyleMobile }}>
             {justSubscribed && (
               <div style={styles.successToast}>
                 🎉 {t("subscription.congratulations")}
@@ -448,7 +514,7 @@ const SubscriptionPlans = () => {
 
             {/* ── Gradient-border card ── */}
             <div style={styles.gradientBorder}>
-              <div style={styles.card}>
+              <div style={{ ...styles.card, ...cardStyleMobile }}>
 
                 {/* Header */}
                 <div style={styles.heading}>
@@ -462,9 +528,15 @@ const SubscriptionPlans = () => {
                 </div>
 
                 {/* Features */}
-                <div style={styles.featuresBox}>
+                <div
+                  style={{
+                    ...styles.featuresBox,
+                    ...featuresBoxStyleMobile,
+                    ...(isMobile ? {} : styles.featuresBoxGrid),
+                  }}
+                >
                   {features(t).map((f, i) => (
-                    <div key={i} style={{ ...styles.featureRow, marginBottom: i === features(t).length - 1 ? 0 : "0.75rem" }}>
+                    <div key={i} style={styles.featureRow}>
                       <FaCheck style={styles.checkIcon} />
                       <p style={styles.featureText}>
                         <span style={styles.featureBold}>{f.title}</span>{" "}
@@ -502,7 +574,10 @@ const SubscriptionPlans = () => {
                     <button
                       style={styles.cancelBtn}
                       disabled={cancelLoading}
-                      onClick={() => setShowConfirmModal(true)}
+                      onClick={() => {
+                        setError("");
+                        setShowConfirmModal(true);
+                      }}
                       onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
                     >
@@ -668,6 +743,11 @@ const SubscriptionPlans = () => {
             </ModalHeader>
             <ModalBody style={styles.confirmModalBody}>
               {t("subscription.unsubscribeMessage")}
+              {error ? (
+                <div style={{ ...styles.errorBox, marginTop: "1rem", marginBottom: 0 }}>
+                  ⚠️ {error}
+                </div>
+              ) : null}
             </ModalBody>
             <ModalFooter style={styles.modalFooter}>
               <button
@@ -679,7 +759,7 @@ const SubscriptionPlans = () => {
               <button
                 style={styles.dangerBtn}
                 disabled={cancelLoading}
-                onClick={() => { handleCancelSubscription(); setShowConfirmModal(false); }}
+                onClick={() => handleCancelSubscription()}
               >
                 {cancelLoading ? (
                   <><Spinner size="sm" /> {t("subscription.unsubscribing")}</>
