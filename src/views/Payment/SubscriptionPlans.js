@@ -3,7 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PanelHeader from "components/PanelHeader/PanelHeader";
 import { Helmet } from "react-helmet";
 import axios from "axios";
-import { API_BASE_URL, apiUrl, ROUTES } from "../../config/api";
+import {
+  API_BASE_URL,
+  apiUrl,
+  ROUTES,
+  getStripeMonthlyPriceId,
+} from "../../config/api";
 import {
   Row,
   Col,
@@ -349,9 +354,7 @@ const SubscriptionPlans = () => {
       name: t("subscription.pricingPlan"),
       price: { monthly: "$29.99/month", yearly: "$600/year" },
       priceId: {
-        monthly: window?.location.hostname.includes("localhost")
-          ? "price_1RlUF2Ahnp7DBxtxAWHdp8jw"
-          : "price_1SECeAAhnp7DBxtxSbajPWO3",
+        monthly: getStripeMonthlyPriceId(),
         yearly: "price_basic_yearly",
       },
       paypalPlanId: {
