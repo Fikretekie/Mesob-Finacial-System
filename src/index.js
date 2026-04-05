@@ -131,12 +131,12 @@ Amplify.configure({
         oauth: {
           region: "us-east-1",
           domain: cognitoDomain,
-          scopes: ["openid", "email", "phone"],
+          scopes: ["openid", "email", "profile"],
           redirectSignIn: [`${appOrigin}/oauth-redirect`, "http://localhost:3000/oauth-redirect"],
           redirectSignOut: [appOrigin, "http://localhost:3000"],
           responseType: "code",
           providers: [
-            { provider: "Google", scopes: ["openid", "email", "phone"], clientId: googleClientId },
+            { provider: "Google", scopes: ["openid", "email", "profile"], clientId: googleClientId },
             { provider: "SignInWithApple", clientId: isProduction ? "com.mesob.financial" : "com.mesob.financial.staging" },
           ],
         },
