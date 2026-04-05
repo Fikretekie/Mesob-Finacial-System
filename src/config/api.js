@@ -23,6 +23,34 @@ const ENV = getEnv();
 export { getEnv };
 export const CURRENT_ENV = ENV; // "staging" | "production" for logging
 
+/**
+ * Stripe **monthly** subscription Price ID (UI + PayPal selection matching).
+ * Uses {@link getEnv} (hostname: app.meksova.com → production, staging.meksova.com → staging).
+ * Optional REACT_APP_STRIPE_PRICE_MONTHLY_* vars are baked in at build time (CI secrets).
+ *
+ * Yearly plans use a fixed placeholder in SubscriptionPlans unless you extend this.
+ */
+export function getStripeMonthlyPriceId() {
+  const env = getEnv();
+  if (env === "production") {
+    return (
+      process.env.REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION ||
+      "price_1SECeAAhnp7DBxtxSbajPWO3"
+    );
+  }
+  if (env === "staging") {
+    return (
+      process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING ||
+      "price_1RlUF2Ahnp7DBxtxAWHdp8jw"
+    );
+  }
+  return (
+    process.env.REACT_APP_STRIPE_PRICE_MONTHLY_LOCAL ||
+    process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING ||
+    "price_1RlUF2Ahnp7DBxtxAWHdp8jw"
+  );
+}
+
 /** Cognito domain for current ENV (for OAuth userInfo URL). */
 const COGNITO_DOMAIN =
   ENV === "production"
