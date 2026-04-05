@@ -33,22 +33,23 @@ export const CURRENT_ENV = ENV; // "staging" | "production" for logging
 export function getStripeMonthlyPriceId() {
   const env = getEnv();
   if (env === "production") {
+    console.log("process.env.REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION");
+
     return (
-      process.env.REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION ||
-      "price_1SECeAAhnp7DBxtxSbajPWO3"
+      process.env.REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION
     );
   }
   if (env === "staging") {
+    console.log("process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING");
+
     return (
-      process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING ||
-      "price_1RlUF2Ahnp7DBxtxAWHdp8jw"
+      process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING
     );
   }
-  return (
-    process.env.REACT_APP_STRIPE_PRICE_MONTHLY_LOCAL ||
-    process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING ||
-    "price_1RlUF2Ahnp7DBxtxAWHdp8jw"
-  );
+  // return (
+  //   process.env.REACT_APP_STRIPE_PRICE_MONTHLY_LOCAL ||
+  //   process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING 
+  // );
 }
 
 /** Cognito domain for current ENV (for OAuth userInfo URL). */

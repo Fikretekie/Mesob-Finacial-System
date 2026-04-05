@@ -209,8 +209,12 @@ function Dashboard() {
 
   const getChartOptions = (title, data, labels, color = "#007BFF") => {
     return {
+      theme: {
+        mode: "dark",
+      },
       chart: {
         type: "area",
+        background: "transparent",
         toolbar: {
           show: true,
           tools: {
@@ -646,18 +650,42 @@ function Dashboard() {
       <div
         style={{
           position: "absolute",
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(255, 255, 255, 0.8)",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(16, 25, 38, 0.72)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           zIndex: 1000,
           borderRadius: "inherit",
         }}
+        aria-busy="true"
+        aria-live="polite"
       >
-        <div className="text-center">
-          <Spinner color="primary" />
-          <p className="mt-2">{text}</p>
+        <div className="text-center" style={{ padding: "0.5rem" }}>
+          <Spinner
+            color="light"
+            style={{
+              width: "1.85rem",
+              height: "1.85rem",
+              opacity: 0.95,
+            }}
+          />
+          <p
+            className="mt-2 mb-0"
+            style={{
+              color: "rgba(203, 213, 225, 0.95)",
+              fontSize: "0.8125rem",
+              fontWeight: 500,
+              letterSpacing: "0.03em",
+            }}
+          >
+            {text}
+          </p>
         </div>
       </div>
     );
@@ -1004,7 +1032,7 @@ function Dashboard() {
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="cashFlowChart">
@@ -1016,7 +1044,7 @@ function Dashboard() {
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="revenueChart">
@@ -1028,7 +1056,7 @@ function Dashboard() {
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="payableChart">
@@ -1040,7 +1068,7 @@ function Dashboard() {
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody>
+              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="expensesChart">
