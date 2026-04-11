@@ -993,7 +993,7 @@ const SignupPage = () => {
       //               <option value="Individual/Households">
       //                 Individual/Households
       //               </option>
-      //               <option value="Cafe">Resturant/Cafe</option>
+      //               <option value="Cafe">Restaurant / Café</option>
       //               <option value="Cleaning Services">Cleaning Services</option>
       //               <option value="⁠Beauty & Grooming">
       //                 ⁠Beauty & Grooming (Salons, Barbershops)
@@ -1150,7 +1150,7 @@ const SignupPage = () => {
                 <option value="Individual/Households">
                   Individual/Households
                 </option>
-                <option value="Cafe">Resturant/Cafe</option>
+                <option value="Cafe">Restaurant / Café</option>
                 <option value="Cleaning Services">Cleaning Services</option>
                 <option value="⁠Beauty & Grooming">
                   ⁠Beauty & Grooming (Salons, Barbershops)
