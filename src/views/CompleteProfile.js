@@ -169,7 +169,7 @@ const CompleteProfile = () => {
               <option value="Individual/Households">
                 Individual/Households
               </option>
-              <option value="Cafe">Cafe</option>
+              <option value="Cafe">Restaurant / Café</option>
               <option value="Other">Other</option>
             </select>
             {errors.businessType && (

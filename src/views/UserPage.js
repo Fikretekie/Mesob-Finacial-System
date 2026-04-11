@@ -110,7 +110,9 @@ function UserPage() {
         const user = response.data?.user;
         if (user) {
           // Save both the current and the original copy
-          const fullUser = { ...user, id: userId };
+          const legacyBusinessType =
+            user.businessType === "Resturant/Cafe" ? "Cafe" : user.businessType;
+          const fullUser = { ...user, id: userId, businessType: legacyBusinessType };
           setUserData(fullUser);
           setOriginalData(fullUser);
           // setUserData({ ...user, id: userId });
@@ -651,7 +653,7 @@ function UserPage() {
                             <option value="Individual/Households">
                               Individual/Households
                             </option>
-                            <option value="Resturant/Cafe">Resturant/Cafe</option>
+                            <option value="Cafe">Restaurant / Café</option>
                             <option value="Cleaning Services">Cleaning Services</option>
                             <option value="Beauty & Grooming">
                               Beauty & Grooming (Salons, Barbershops)
