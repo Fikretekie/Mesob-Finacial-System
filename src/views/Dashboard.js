@@ -35,7 +35,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
-import { faPlus, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faDownload, faSearch } from "@fortawesome/free-solid-svg-icons";
 import DownloadReportModal from "components/DownloadReportModal";
 
 ChartJS.register(
@@ -47,6 +47,201 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+function computeDashboardMetrics(
+  transactions,
+  initialCashBalance,
+  outstandingDebt,
+  dateRange,
+  searchQuery
+) {
+  const q = (searchQuery || "").trim().toLowerCase();
+  const matches = (tx) =>
+    !q || String(tx.transactionPurpose || "").toLowerCase().includes(q);
+
+  const sortedTransactions = [...(transactions || [])].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
+  let fromMs = null;
+  let toMs = null;
+  if (dateRange?.from && dateRange?.to) {
+    const a = new Date(dateRange.from);
+    a.setHours(0, 0, 0, 0);
+    fromMs = a.getTime();
+    const b = new Date(dateRange.to);
+    b.setHours(23, 59, 59, 999);
+    toMs = b.getTime();
+  }
+
+  const filteredForPdf = sortedTransactions.filter((tx) => {
+    if (!matches(tx)) return false;
+    if (fromMs == null || toMs == null) return true;
+    const t = new Date(tx.createdAt).getTime();
+    return t >= fromMs && t <= toMs;
+  });
+
+  const dateKeyOf = (createdAt) => {
+    const date = new Date(createdAt);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  let cashOnHand = initialCashBalance;
+  let payable = outstandingDebt;
+  let revenue = 0;
+  let expenses = 0;
+  let newItem = 0;
+  const dailyData = {};
+
+  const applyLedgerOnly = (tx) => {
+    const amount = parseFloat(tx.transactionAmount) || 0;
+    if (tx.transactionType === "Receive") {
+      cashOnHand += amount;
+    } else if (tx.transactionType === "Pay") {
+      cashOnHand -= amount;
+      if (tx.payableId) payable -= amount;
+    } else if (tx.transactionType === "Pay" && tx.subType === "New_Item") {
+      cashOnHand -= amount;
+    } else if (tx.transactionType === "New_Item") {
+      cashOnHand -= amount;
+    } else if (
+      tx.transactionType === "Payable" &&
+      (tx.status === "Payable" || tx.status === "Partially Paid")
+    ) {
+      payable += amount;
+    }
+  };
+
+  const applyTxToDay = (tx, dateKey) => {
+    const amount = parseFloat(tx.transactionAmount) || 0;
+    const m = matches(tx);
+
+    if (!dailyData[dateKey]) {
+      dailyData[dateKey] = {
+        date: dateKey,
+        cashOnHand,
+        revenue: 0,
+        payable,
+        expenses: 0,
+        newItem: 0,
+        paidPayables: 0,
+      };
+    }
+
+    if (tx.transactionType === "Receive") {
+      cashOnHand += amount;
+      if (m) {
+        revenue += amount;
+        dailyData[dateKey].revenue += amount;
+      }
+    } else if (tx.transactionType === "Pay") {
+      cashOnHand -= amount;
+      if (m) {
+        expenses += amount;
+        dailyData[dateKey].expenses += amount;
+      }
+      if (tx.payableId) {
+        payable -= amount;
+        if (m) dailyData[dateKey].paidPayables += amount;
+      }
+    } else if (
+      tx.transactionType === "Pay" &&
+      tx.subType === "New_Item"
+    ) {
+      newItem += m ? amount : 0;
+      cashOnHand -= amount;
+      if (m) {
+        expenses += amount;
+        dailyData[dateKey].expenses += amount;
+        dailyData[dateKey].newItem += amount;
+      }
+    } else if (tx.transactionType === "New_Item") {
+      newItem += m ? amount : 0;
+      cashOnHand -= amount;
+      if (m) {
+        expenses += amount;
+        dailyData[dateKey].expenses += amount;
+        dailyData[dateKey].newItem += amount;
+      }
+    } else if (
+      tx.transactionType === "Payable" &&
+      (tx.status === "Payable" || tx.status === "Partially Paid")
+    ) {
+      payable += amount;
+    }
+
+    dailyData[dateKey].payable = payable;
+    dailyData[dateKey].cashOnHand = cashOnHand;
+  };
+
+  if (fromMs == null || toMs == null) {
+    dailyData.Initial = {
+      date: "Initial Balance",
+      cashOnHand: initialCashBalance,
+      revenue: 0,
+      payable: outstandingDebt,
+      expenses: 0,
+      newItem: 0,
+      paidPayables: 0,
+    };
+
+    sortedTransactions.forEach((tx) => {
+      applyTxToDay(tx, dateKeyOf(tx.createdAt));
+    });
+  } else {
+    for (const tx of sortedTransactions) {
+      const t = new Date(tx.createdAt).getTime();
+      if (t >= fromMs) break;
+      applyLedgerOnly(tx);
+    }
+
+    dailyData[dateRange.from] = {
+      date: dateRange.from,
+      cashOnHand,
+      payable,
+      revenue: 0,
+      expenses: 0,
+      newItem: 0,
+      paidPayables: 0,
+    };
+
+    revenue = 0;
+    expenses = 0;
+    newItem = 0;
+
+    sortedTransactions.forEach((tx) => {
+      const t = new Date(tx.createdAt).getTime();
+      if (t < fromMs || t > toMs) return;
+      applyTxToDay(tx, dateKeyOf(tx.createdAt));
+    });
+
+    cashOnHand = initialCashBalance;
+    payable = outstandingDebt;
+    for (const tx of sortedTransactions) {
+      const t = new Date(tx.createdAt).getTime();
+      if (t > toMs) break;
+      applyLedgerOnly(tx);
+    }
+  }
+
+  const sortedDailyData = Object.values(dailyData).sort((a, b) => {
+    if (a.date === "Initial Balance") return -1;
+    if (b.date === "Initial Balance") return 1;
+    return new Date(a.date) - new Date(b.date);
+  });
+
+  return {
+    totalCashOnHand: cashOnHand,
+    totalExpenses: expenses,
+    totalrevenue: revenue,
+    totalPayable: payable,
+    monthlySales: sortedDailyData,
+    filteredTransactions: filteredForPdf,
+  };
+}
 
 function Dashboard() {
   const userId = localStorage.getItem("userId");
@@ -76,6 +271,24 @@ function Dashboard() {
   const [companyName, setCompanyName] = useState("");
   const [userSubscription, setUserSubscription] = useState(false);
   const [scheduleCount, setScheduleCount] = useState(0);
+
+  const [allTransactions, setAllTransactions] = useState([]);
+  const [dashboardDateRange, setDashboardDateRange] = useState(null);
+  const [dashboardSearchTerm, setDashboardSearchTerm] = useState("");
+  const [dashFromDate, setDashFromDate] = useState("");
+  const [dashToDate, setDashToDate] = useState("");
+  const [dashShowSearch, setDashShowSearch] = useState(false);
+
+  const dashboardDateRangeRef = useRef(null);
+  const dashboardSearchRef = useRef("");
+  const totalCashOnHandRef = useRef(0);
+
+  useEffect(() => {
+    dashboardDateRangeRef.current = dashboardDateRange;
+  }, [dashboardDateRange]);
+  useEffect(() => {
+    dashboardSearchRef.current = dashboardSearchTerm;
+  }, [dashboardSearchTerm]);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
@@ -155,25 +368,8 @@ function Dashboard() {
   // stale closure issues. All return plain "0.00" decimal strings — same format
   // as meksova.com2 — so DownloadReportModal's parseFloat() always works.
 
-  const calculateTotalCash = () => {
-    const safeItems = itemsRef.current || [];
-    const balance = initialBalanceRef.current || 0;
-
-    const totalReceived = safeItems.reduce((sum, item) => {
-      return sum + (item.transactionType === "Receive" ? parseFloat(item.transactionAmount || 0) : 0);
-    }, 0);
-
-    const newItemReceived = safeItems.reduce((sum, item) => {
-      return sum + (item.transactionType === "New_Item" ? parseFloat(item.transactionAmount || 0) : 0);
-    }, 0);
-
-    const totalPaid = safeItems.reduce((sum, item) => {
-      return sum + (item.transactionType === "Pay" ? parseFloat(item.transactionAmount || 0) : 0);
-    }, 0);
-
-    const totalCash = balance + totalReceived - totalPaid - newItemReceived;
-    return totalCash.toFixed(2); // plain decimal string, no commas
-  };
+  const calculateTotalCash = () =>
+    (totalCashOnHandRef.current || 0).toFixed(2);
 
   const calculateTotalRevenue = () => {
     return (totalrevenueRef.current || 0).toFixed(2);
@@ -439,100 +635,7 @@ function Dashboard() {
       const transactions = Array.isArray(raw)
         ? raw
         : (raw?.transactions || raw?.data || []);
-      setItems(transactions);
-      itemsRef.current = transactions; // sync ref immediately
-
-      let cashOnHand = initialCashBalance;
-      let expenses = 0;
-      let newItem = 0;
-      let revenue = 0;
-      let payable = outstandingDebt;
-
-      const dailyData = {
-        Initial: {
-          date: "Initial Balance",
-          cashOnHand: initialCashBalance,
-          revenue: 0,
-          payable: outstandingDebt,
-          expenses: 0,
-          newItem: 0,
-          paidPayables: 0,
-        },
-      };
-
-      const sortedTransactions = [...transactions].sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-      );
-
-      sortedTransactions.forEach((transaction) => {
-        const amount = parseFloat(transaction.transactionAmount);
-        const date = new Date(transaction.createdAt);
-        const dateKey = `${date.getFullYear()}-${String(
-          date.getMonth() + 1
-        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-        if (!dailyData[dateKey]) {
-          dailyData[dateKey] = {
-            date: dateKey,
-            cashOnHand: cashOnHand,
-            revenue: 0,
-            payable: payable,
-            expenses: 0,
-            newItem: 0,
-            paidPayables: 0,
-          };
-        }
-
-        if (transaction.transactionType === "Receive") {
-          cashOnHand += amount;
-          revenue += amount;
-          dailyData[dateKey].revenue += amount;
-        } else if (transaction.transactionType === "Pay") {
-          expenses += amount;
-          cashOnHand -= amount;
-          dailyData[dateKey].expenses += amount;
-
-          if (transaction.payableId) {
-            payable -= amount;
-            dailyData[dateKey].paidPayables += amount;
-          }
-        } else if (
-          transaction.transactionType === "Pay" &&
-          transaction.subType === "New_Item"
-        ) {
-          newItem += amount;
-          cashOnHand -= amount;
-          dailyData[dateKey].expenses += amount;
-          dailyData[dateKey].newItem += amount;
-        } else if (
-          transaction.transactionType === "Payable" &&
-          (transaction.status === "Payable" ||
-            transaction.status === "Partially Paid")
-        ) {
-          payable += amount;
-        }
-
-        dailyData[dateKey].payable = payable;
-        dailyData[dateKey].cashOnHand = cashOnHand;
-      });
-
-      setTotalCashOnHand(cashOnHand);
-      setTotalExpenses(expenses);
-      settotalRevenue(revenue);
-      setTotalPayable(payable);
-
-      // Sync computed totals to refs immediately
-      totalrevenueRef.current = revenue;
-      totalExpensesRef.current = expenses;
-      totalPayableRef.current = payable;
-
-      const sortedDailyData = Object.values(dailyData).sort((a, b) => {
-        if (a.date === "Initial Balance") return -1;
-        if (b.date === "Initial Balance") return 1;
-        return new Date(a.date) - new Date(b.date);
-      });
-
-      setMonthlySales(sortedDailyData);
+      setAllTransactions(transactions);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching financial data:", error);
@@ -541,6 +644,33 @@ function Dashboard() {
       setLoadingFinancialData(false);
     }
   };
+
+  useEffect(() => {
+    const result = computeDashboardMetrics(
+      allTransactions,
+      initialBalance,
+      initialoutstandingDebt,
+      dashboardDateRange,
+      dashboardSearchTerm
+    );
+    setTotalCashOnHand(result.totalCashOnHand);
+    setTotalExpenses(result.totalExpenses);
+    settotalRevenue(result.totalrevenue);
+    setTotalPayable(result.totalPayable);
+    setMonthlySales(result.monthlySales);
+    setItems(result.filteredTransactions);
+    itemsRef.current = result.filteredTransactions;
+    totalrevenueRef.current = result.totalrevenue;
+    totalExpensesRef.current = result.totalExpenses;
+    totalPayableRef.current = result.totalPayable;
+    totalCashOnHandRef.current = result.totalCashOnHand;
+  }, [
+    allTransactions,
+    dashboardDateRange,
+    dashboardSearchTerm,
+    initialBalance,
+    initialoutstandingDebt,
+  ]);
 
   const isTrialActive = () => {
     return new Date() < trialEndDate && scheduleCount < 4;
@@ -692,9 +822,15 @@ function Dashboard() {
   };
 
   const handleUserSelect = (selectedOption) => {
+    setDashboardDateRange(null);
+    setDashFromDate("");
+    setDashToDate("");
+    setDashboardSearchTerm("");
+    setDashShowSearch(false);
     if (!selectedOption) {
       setSelectedUserId(null);
       localStorage.removeItem("selectedUserId");
+      setAllTransactions([]);
       fetchFinancialData(null);
       return;
     }
@@ -703,6 +839,30 @@ function Dashboard() {
     localStorage.setItem("selectedUserId", uid);
     fetchFinancialData(uid);
   };
+
+  const filterActionsLocked =
+    userRole === 1
+      ? false
+      : !userSubscription && (!isTrialActive() || scheduleCount >= 4);
+  const dashboardFilterDisabled = userRole === 0 && !selectedUserId;
+
+  const handleDashboardFilterRun = () => {
+    if (!dashFromDate || !dashToDate) {
+      window.alert(t("financialReport.selectDates"));
+      return;
+    }
+    setDashboardDateRange({ from: dashFromDate, to: dashToDate });
+  };
+
+  const handleDashboardClearFilters = () => {
+    setDashFromDate("");
+    setDashToDate("");
+    setDashboardDateRange(null);
+    setDashboardSearchTerm("");
+    setDashShowSearch(false);
+  };
+
+  const showDashboardFilters = userRole !== 0 || selectedUserId;
 
   useEffect(() => {
     const persistedUserId = localStorage.getItem("selectedUserId");
@@ -742,73 +902,73 @@ function Dashboard() {
         <title>Dashboard - Meksova </title>
       </Helmet>
       {isMobile ?
-      <PanelHeader
-        size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
-        content={
-          <>
-            {isMobile && (
-          <div style={{
-            position: "absolute",
-            top: 0, left: 0, right: 0,
-            display: "flex",
-            marginTop: 70,
-                  justifyContent: 'center',
-            paddingLeft: 5,
-            paddingRight: 5,
-            gap: "10px",
-          }}>
-            <Button
-              onClick={() => setShowDownloadReportModal(true)}
-              disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-              style={{
-                backgroundColor: "#2b427d",
-                borderColor: "#2b427d",
-                color: "#ffffff",
-                height: "44px",
-                borderRadius: "10px",
-                width: "45%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "13px",
-                fontWeight: "600",
-                whiteSpace: "nowrap",
-                margin: 0,
-              }}
-            >
-              <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
-              {t('financialReport.downloadReport')}
-            </Button>
-
-            {userRole !== 0 && (
-              <Button
-                onClick={handleAddTransactionClick}
-                disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
-                style={{
-                  backgroundColor: "#41926f",
-                  borderColor: "#41926f",
-                  color: "#ffffff",
-                  height: "44px",
-                  borderRadius: "10px",
-                  width: "45%",
+        <PanelHeader
+          size={isMobileLandscape ? "md" : isMobile ? "sm" : "sm"}
+          content={
+            <>
+              {isMobile && (
+                <div style={{
+                  position: "absolute",
+                  top: 0, left: 0, right: 0,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  whiteSpace: "nowrap",
-                  margin: 0,
-                }}
-              >
-                <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
-                {t('dashboard.addTransaction')}
-              </Button>
-            )}
-          </div>
-            )}
-          </>
-        }
-      />
+                  marginTop: 70,
+                  justifyContent: 'center',
+                  paddingLeft: 5,
+                  paddingRight: 5,
+                  gap: "10px",
+                }}>
+                  <Button
+                    onClick={() => setShowDownloadReportModal(true)}
+                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                    style={{
+                      backgroundColor: "#2b427d",
+                      borderColor: "#2b427d",
+                      color: "#ffffff",
+                      height: "44px",
+                      borderRadius: "10px",
+                      width: "45%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      whiteSpace: "nowrap",
+                      margin: 0,
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
+                    {t('financialReport.downloadReport')}
+                  </Button>
+
+                  {userRole !== 0 && (
+                    <Button
+                      onClick={handleAddTransactionClick}
+                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                      style={{
+                        backgroundColor: "#41926f",
+                        borderColor: "#41926f",
+                        color: "#ffffff",
+                        height: "44px",
+                        borderRadius: "10px",
+                        width: "45%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        whiteSpace: "nowrap",
+                        margin: 0,
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
+                      {t('dashboard.addTransaction')}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          }
+        />
         : null}
       {userRole === 0 && (
         <div
@@ -871,6 +1031,276 @@ function Dashboard() {
 
       <div className="content" style={{ position: "relative", marginTop: isMobile ? 0 : 80 }}>
         <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
+
+        {showDashboardFilters && (
+          <Row style={{ marginBottom: "8px", marginTop: isMobile ? 8 : 12 }}>
+            <Col xs="12">
+              <Card style={{ backgroundColor: "#101926", border: "1px solid #2a3545" }}>
+                <CardBody style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "flex-start",
+                      flexWrap: isMobile ? "wrap" : "nowrap",
+                      gap: "10px",
+                      width: "100%",
+                      minWidth: 0,
+                      ...(isMobile
+                        ? {}
+                        : {
+                            overflowX: "auto",
+                            overflowY: "hidden",
+                            paddingBottom: "2px",
+                            WebkitOverflowScrolling: "touch",
+                          }),
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-end",
+                        gap: "15px",
+                        flexWrap: isMobile ? "wrap" : "nowrap",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <FormGroup
+                        style={{
+                          marginBottom: 0,
+                          minWidth: isMobile ? "150px" : "132px",
+                          maxWidth: isMobile ? "200px" : "180px",
+                          flex: isMobile ? undefined : "0 0 auto",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Label
+                          for="dashboardFromDate"
+                          style={{
+                            color: "#ffffff",
+                            marginBottom: "5px",
+                            fontSize: "0.875rem",
+                            lineHeight: "1.2",
+                          }}
+                        >
+                          {t("financialReport.from")}
+                        </Label>
+                        <Input
+                          type="date"
+                          id="dashboardFromDate"
+                          value={dashFromDate}
+                          onChange={(e) => setDashFromDate(e.target.value)}
+                          disabled={dashboardFilterDisabled}
+                          style={{
+                            backgroundColor: "#202a3a",
+                            color: "#ffffff",
+                            border: "1px solid #3a4555",
+                            borderRadius: "4px",
+                            height: "38px",
+                            padding: "6px 12px",
+                            width: "100%",
+                          }}
+                        />
+                      </FormGroup>
+                      <FormGroup
+                        style={{
+                          marginBottom: 0,
+                          minWidth: isMobile ? "150px" : "132px",
+                          maxWidth: isMobile ? "200px" : "180px",
+                          flex: isMobile ? undefined : "0 0 auto",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "flex-end",
+                        }}
+                      >
+                        <Label
+                          for="dashboardToDate"
+                          style={{
+                            color: "#ffffff",
+                            marginBottom: "5px",
+                            fontSize: "0.875rem",
+                            lineHeight: "1.2",
+                          }}
+                        >
+                          {t("financialReport.to")}
+                        </Label>
+                        <Input
+                          type="date"
+                          id="dashboardToDate"
+                          value={dashToDate}
+                          onChange={(e) => setDashToDate(e.target.value)}
+                          disabled={dashboardFilterDisabled}
+                          style={{
+                            backgroundColor: "#202a3a",
+                            color: "#ffffff",
+                            border: "1px solid #3a4555",
+                            borderRadius: "4px",
+                            height: "38px",
+                            padding: "6px 12px",
+                            width: "100%",
+                          }}
+                        />
+                      </FormGroup>
+                    </div>
+                    <FormGroup
+                      style={{
+                        marginBottom: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "flex-end",
+                        flex: isMobile ? "1 1 100%" : "1 1 0%",
+                        minWidth: isMobile ? "100%" : 0,
+                        maxWidth: isMobile ? "100%" : "none",
+                      }}
+                    >
+                      <Label
+                        aria-hidden
+                        style={{
+                          visibility: "hidden",
+                          color: "#ffffff",
+                          marginBottom: "5px",
+                          fontSize: "0.875rem",
+                          lineHeight: "1.2",
+                          userSelect: "none",
+                        }}
+                      >
+                        .
+                      </Label>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          flexWrap: isMobile ? "wrap" : "nowrap",
+                          minHeight: "38px",
+                          width: "100%",
+                          minWidth: 0,
+                        }}
+                      >
+                        <Button
+                          type="button"
+                          onClick={handleDashboardFilterRun}
+                          disabled={dashboardFilterDisabled || filterActionsLocked}
+                          style={{
+                            height: "38px",
+                            flexShrink: 0,
+                            backgroundColor: "#3d83f1",
+                            borderColor: "#3d83f1",
+                            color: "#ffffff",
+                            borderRadius: "4px",
+                            padding: "0 16px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {t("financialReport.run")}
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={handleDashboardClearFilters}
+                          disabled={dashboardFilterDisabled || filterActionsLocked}
+                          style={{
+                            height: "38px",
+                            flexShrink: 0,
+                            backgroundColor: "#888888",
+                            borderColor: "#888888",
+                            color: "#ffffff",
+                            borderRadius: "4px",
+                            padding: "0 16px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {t("financialReport.clearFilters")}
+                        </Button>
+                        {dashShowSearch ? (
+                          <div
+                            style={{
+                              position: "relative",
+                              flex: isMobile ? "1 1 100%" : "1 1 120px",
+                              minWidth: isMobile ? "100%" : "100px",
+                              maxWidth: isMobile ? "100%" : "240px",
+                            }}
+                          >
+                            <Input
+                              type="text"
+                              placeholder={t("financialReport.searchJournal")}
+                              value={dashboardSearchTerm}
+                              onChange={(e) => setDashboardSearchTerm(e.target.value)}
+                              onBlur={() => {
+                                if (dashboardSearchTerm.trim() === "") setDashShowSearch(false);
+                              }}
+                              disabled={dashboardFilterDisabled}
+                              style={{
+                                height: "38px",
+                                width: "100%",
+                                borderRadius: "4px",
+                                backgroundColor: "#202a3a",
+                                color: "#ffffff",
+                                border: "1px solid #3a4555",
+                                padding: "6px 12px",
+                                paddingRight: "35px",
+                              }}
+                            />
+                            <button
+                              type="button"
+                              aria-label="Close search"
+                              onClick={() => {
+                                setDashboardSearchTerm("");
+                                setDashShowSearch(false);
+                              }}
+                              style={{
+                                position: "absolute",
+                                right: "8px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                background: "none",
+                                border: "none",
+                                color: "#ffffff",
+                                cursor: "pointer",
+                                padding: 0,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span style={{ fontSize: "18px", lineHeight: 1 }}>×</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            aria-label={t("financialReport.searchJournal")}
+                            onClick={() => setDashShowSearch(true)}
+                            disabled={dashboardFilterDisabled}
+                            style={{
+                              height: "38px",
+                              width: "38px",
+                              flexShrink: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: "#202a3a",
+                              border: "1px solid #3a4555",
+                              borderRadius: "4px",
+                              color: "#ffffff",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faSearch} />
+                          </button>
+                        )}
+                      </div>
+                    </FormGroup>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        )}
 
         <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
@@ -1097,7 +1527,7 @@ function Dashboard() {
         calculateTotalExpenses={calculateTotalExpenses}
         calculateTotalPayable={calculateTotalPayable}
         calculateTotalInventory={calculateTotalInventory}
-        searchedDates={null}
+        searchedDates={dashboardDateRange}
         currentLanguage={i18n.language}
       />
     </>
