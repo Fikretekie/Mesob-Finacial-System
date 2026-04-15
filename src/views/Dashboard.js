@@ -243,6 +243,9 @@ function computeDashboardMetrics(
   };
 }
 
+const SUBSCRIPTION_ROUTE = "/customer/subscription";
+const SUBSCRIPTION_UPDATE_HINT = "Subscription update needed";
+
 function Dashboard() {
   const userId = localStorage.getItem("userId");
   const location = useLocation();
@@ -350,12 +353,6 @@ function Dashboard() {
       navigate("/customer/dashboard", { replace: true });
     }
   }, [userRole, location.pathname, navigate]);
-
-  const handleAddTransactionClick = () => {
-    navigate("/customer/financial-report", {
-      state: { openTransactionModal: true },
-    });
-  };
 
   const userOptions = users.map((user) => ({
     value: user.id,
@@ -672,8 +669,20 @@ function Dashboard() {
     initialoutstandingDebt,
   ]);
 
-  const isTrialActive = () => {
-    return new Date() < trialEndDate && scheduleCount < 4;
+  const isTrialActive = () =>
+    trialEndDate && new Date() < trialEndDate && scheduleCount < 4;
+
+  const isSubscriptionGateActive = () =>
+    userRole !== 1 && !userSubscription && !isTrialActive();
+
+  const handleAddTransactionClick = () => {
+    if (isSubscriptionGateActive()) {
+      navigate(SUBSCRIPTION_ROUTE);
+      return;
+    }
+    navigate("/customer/financial-report", {
+      state: { openTransactionModal: true },
+    });
   };
 
   const calculatePercentageChange = (currentValue, previousValue) => {
@@ -841,9 +850,7 @@ function Dashboard() {
   };
 
   const filterActionsLocked =
-    userRole === 1
-      ? false
-      : !userSubscription && (!isTrialActive() || scheduleCount >= 4);
+    userRole === 1 ? false : !userSubscription && !isTrialActive();
   const dashboardFilterDisabled = userRole === 0 && !selectedUserId;
 
   const handleDashboardFilterRun = () => {
@@ -918,8 +925,15 @@ function Dashboard() {
                   gap: "10px",
                 }}>
                   <Button
-                    onClick={() => setShowDownloadReportModal(true)}
-                    disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
+                    type="button"
+                    title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+                    onClick={() => {
+                      if (isSubscriptionGateActive()) {
+                        navigate(SUBSCRIPTION_ROUTE);
+                        return;
+                      }
+                      setShowDownloadReportModal(true);
+                    }}
                     style={{
                       backgroundColor: "#2b427d",
                       borderColor: "#2b427d",
@@ -934,6 +948,7 @@ function Dashboard() {
                       fontWeight: "600",
                       whiteSpace: "nowrap",
                       margin: 0,
+                      opacity: isSubscriptionGateActive() ? 0.5 : 1,
                     }}
                   >
                     <FontAwesomeIcon icon={faDownload} style={{ marginRight: "8px" }} />
@@ -942,8 +957,9 @@ function Dashboard() {
 
                   {userRole !== 0 && (
                     <Button
+                      type="button"
+                      title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
                       onClick={handleAddTransactionClick}
-                      disabled={userRole === 1 ? false : !userSubscription && !isTrialActive()}
                       style={{
                         backgroundColor: "#41926f",
                         borderColor: "#41926f",
@@ -958,6 +974,7 @@ function Dashboard() {
                         fontWeight: "600",
                         whiteSpace: "nowrap",
                         margin: 0,
+                        opacity: isSubscriptionGateActive() ? 0.5 : 1,
                       }}
                     >
                       <FontAwesomeIcon icon={faPlus} style={{ marginRight: "8px" }} />
@@ -1093,6 +1110,17 @@ function Dashboard() {
                           value={dashFromDate}
                           onChange={(e) => setDashFromDate(e.target.value)}
                           disabled={dashboardFilterDisabled}
+                          readOnly={!dashboardFilterDisabled && filterActionsLocked}
+                          title={
+                            !dashboardFilterDisabled && filterActionsLocked
+                              ? SUBSCRIPTION_UPDATE_HINT
+                              : undefined
+                          }
+                          onClick={() => {
+                            if (!dashboardFilterDisabled && filterActionsLocked) {
+                              navigate(SUBSCRIPTION_ROUTE);
+                            }
+                          }}
                           style={{
                             backgroundColor: "#202a3a",
                             color: "#ffffff",
@@ -1101,6 +1129,12 @@ function Dashboard() {
                             height: "38px",
                             padding: "6px 12px",
                             width: "100%",
+                            opacity:
+                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
+                            cursor:
+                              !dashboardFilterDisabled && filterActionsLocked
+                                ? "pointer"
+                                : undefined,
                           }}
                         />
                       </FormGroup>
@@ -1132,6 +1166,17 @@ function Dashboard() {
                           value={dashToDate}
                           onChange={(e) => setDashToDate(e.target.value)}
                           disabled={dashboardFilterDisabled}
+                          readOnly={!dashboardFilterDisabled && filterActionsLocked}
+                          title={
+                            !dashboardFilterDisabled && filterActionsLocked
+                              ? SUBSCRIPTION_UPDATE_HINT
+                              : undefined
+                          }
+                          onClick={() => {
+                            if (!dashboardFilterDisabled && filterActionsLocked) {
+                              navigate(SUBSCRIPTION_ROUTE);
+                            }
+                          }}
                           style={{
                             backgroundColor: "#202a3a",
                             color: "#ffffff",
@@ -1140,6 +1185,12 @@ function Dashboard() {
                             height: "38px",
                             padding: "6px 12px",
                             width: "100%",
+                            opacity:
+                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
+                            cursor:
+                              !dashboardFilterDisabled && filterActionsLocked
+                                ? "pointer"
+                                : undefined,
                           }}
                         />
                       </FormGroup>
@@ -1181,8 +1232,19 @@ function Dashboard() {
                       >
                         <Button
                           type="button"
-                          onClick={handleDashboardFilterRun}
-                          disabled={dashboardFilterDisabled || filterActionsLocked}
+                          title={
+                            !dashboardFilterDisabled && filterActionsLocked
+                              ? SUBSCRIPTION_UPDATE_HINT
+                              : undefined
+                          }
+                          onClick={() => {
+                            if (!dashboardFilterDisabled && filterActionsLocked) {
+                              navigate(SUBSCRIPTION_ROUTE);
+                              return;
+                            }
+                            handleDashboardFilterRun();
+                          }}
+                          disabled={dashboardFilterDisabled}
                           style={{
                             height: "38px",
                             flexShrink: 0,
@@ -1194,14 +1256,27 @@ function Dashboard() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            opacity:
+                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
                           }}
                         >
                           {t("financialReport.run")}
                         </Button>
                         <Button
                           type="button"
-                          onClick={handleDashboardClearFilters}
-                          disabled={dashboardFilterDisabled || filterActionsLocked}
+                          title={
+                            !dashboardFilterDisabled && filterActionsLocked
+                              ? SUBSCRIPTION_UPDATE_HINT
+                              : undefined
+                          }
+                          onClick={() => {
+                            if (!dashboardFilterDisabled && filterActionsLocked) {
+                              navigate(SUBSCRIPTION_ROUTE);
+                              return;
+                            }
+                            handleDashboardClearFilters();
+                          }}
+                          disabled={dashboardFilterDisabled}
                           style={{
                             height: "38px",
                             flexShrink: 0,
@@ -1213,6 +1288,8 @@ function Dashboard() {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            opacity:
+                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
                           }}
                         >
                           {t("financialReport.clearFilters")}
@@ -1274,7 +1351,19 @@ function Dashboard() {
                           <button
                             type="button"
                             aria-label={t("financialReport.searchJournal")}
-                            onClick={() => setDashShowSearch(true)}
+                            title={
+                              !dashboardFilterDisabled && filterActionsLocked
+                                ? SUBSCRIPTION_UPDATE_HINT
+                                : undefined
+                            }
+                            onClick={() => {
+                              if (dashboardFilterDisabled) return;
+                              if (filterActionsLocked) {
+                                navigate(SUBSCRIPTION_ROUTE);
+                                return;
+                              }
+                              setDashShowSearch(true);
+                            }}
                             disabled={dashboardFilterDisabled}
                             style={{
                               height: "38px",
@@ -1288,6 +1377,8 @@ function Dashboard() {
                               borderRadius: "4px",
                               color: "#ffffff",
                               cursor: "pointer",
+                              opacity:
+                                !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
                             }}
                           >
                             <FontAwesomeIcon icon={faSearch} />

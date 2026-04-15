@@ -69,8 +69,11 @@ function DemoNavbar(props) {
   const isTrialActive = () =>
     trialEndDate && new Date() < trialEndDate && scheduleCount < 4;
 
-  const buttonsDisabled =
+  const subscriptionGateActive =
     userRole === 1 ? false : !userSubscription && !isTrialActive();
+
+  const SUBSCRIPTION_ROUTE = "/customer/subscription";
+  const SUBSCRIPTION_UPDATE_HINT = "Subscription update needed";
 
   // ── Resize handler ──
   useEffect(() => {
@@ -152,12 +155,20 @@ function DemoNavbar(props) {
   };
 
   const handleAddTransactionClick = () => {
+    if (subscriptionGateActive) {
+      navigate(SUBSCRIPTION_ROUTE);
+      return;
+    }
     navigate("/customer/financial-report", {
       state: { openTransactionModal: true },
     });
   };
 
   const handleDownloadReportClick = () => {
+    if (subscriptionGateActive) {
+      navigate(SUBSCRIPTION_ROUTE);
+      return;
+    }
     if (location.pathname.includes("financial-report")) {
       // Financial-report page listens and opens its modal with full data
       window.dispatchEvent(new Event("mesob:downloadReport"));
@@ -322,9 +333,13 @@ function DemoNavbar(props) {
             {showNavbarActionButtons && (
               <>
                 <button
+                  type="button"
                   onClick={handleDownloadReportClick}
-                  disabled={buttonsDisabled}
-                  title={t("financialReport.downloadReport")}
+                  title={
+                    subscriptionGateActive
+                      ? SUBSCRIPTION_UPDATE_HINT
+                      : t("financialReport.downloadReport")
+                  }
                   style={{
                     backgroundColor: "#2b427d",
                     border: "1px solid #2b427d",
@@ -337,8 +352,8 @@ function DemoNavbar(props) {
                     justifyContent: "center",
                     fontSize: "11px",
                     whiteSpace: "nowrap",
-                    cursor: buttonsDisabled ? "not-allowed" : "pointer",
-                    opacity: buttonsDisabled ? 0.5 : 1,
+                    cursor: "pointer",
+                    opacity: subscriptionGateActive ? 0.5 : 1,
                     flexShrink: 0,
                   }}
                 >
@@ -351,9 +366,13 @@ function DemoNavbar(props) {
 
                 {userRole !== 0 && (
                   <button
+                    type="button"
                     onClick={handleAddTransactionClick}
-                    disabled={buttonsDisabled}
-                    title={t("financialReport.addTransaction")}
+                    title={
+                      subscriptionGateActive
+                        ? SUBSCRIPTION_UPDATE_HINT
+                        : t("financialReport.addTransaction")
+                    }
                     style={{
                       backgroundColor: "#41926f",
                       border: "1px solid #41926f",
@@ -366,8 +385,8 @@ function DemoNavbar(props) {
                       justifyContent: "center",
                       fontSize: "11px",
                       whiteSpace: "nowrap",
-                      cursor: buttonsDisabled ? "not-allowed" : "pointer",
-                      opacity: buttonsDisabled ? 0.5 : 1,
+                      cursor: "pointer",
+                      opacity: subscriptionGateActive ? 0.5 : 1,
                       flexShrink: 0,
                     }}
                   >
