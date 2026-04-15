@@ -16,7 +16,7 @@ const UserSubscriptionInfo = ({
   const renderSubscribeButton = () => {
     if (!userSubscription && (!isTrialActive() || scheduleCount >= 4)) {
       return (
-        <Button onClick={() => navigate("/subscription")}>Subscribe</Button>
+        <Button onClick={() => navigate("/customer/subscription")}>Subscribe</Button>
       );
     }
     return null;

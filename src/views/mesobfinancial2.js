@@ -41,6 +41,9 @@ import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
 import { getTranslatedBusinessPurposes, translatePurpose } from "utils/translatedBusinessTypes";
 
+const SUBSCRIPTION_ROUTE = "/customer/subscription";
+const SUBSCRIPTION_UPDATE_HINT = "Subscription update needed";
+
 const MesobFinancial2 = () => {
   const location = useLocation();
   const [items, setItems] = useState([]);
@@ -1192,9 +1195,13 @@ const MesobFinancial2 = () => {
     fetchUserSubscriptionData();
   }, []);
 
-  const isTrialActive = () => {
-    return new Date() < trialEndDate && scheduleCount < 4;
-  };
+  const isTrialActive = () =>
+    Boolean(trialEndDate) &&
+    new Date() < trialEndDate &&
+    scheduleCount < 4;
+
+  const isSubscriptionGateActive = () =>
+    userRole !== 1 && !userSubscription && !isTrialActive();
 
   const calculateFinancials = (transactions) => {
     const newRevenues = {};
@@ -2076,6 +2083,11 @@ const MesobFinancial2 = () => {
               id="fromDate"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
+              readOnly={isSubscriptionGateActive()}
+              title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+              onClick={() => {
+                if (isSubscriptionGateActive()) navigate(SUBSCRIPTION_ROUTE);
+              }}
               style={{
                 backgroundColor: "#202a3a",
                 color: "#ffffff",
@@ -2083,7 +2095,9 @@ const MesobFinancial2 = () => {
                 borderRadius: "4px",
                 height: "38px",
                 padding: "6px 12px",
-                width: "100%"
+                width: "100%",
+                opacity: isSubscriptionGateActive() ? 0.5 : 1,
+                cursor: isSubscriptionGateActive() ? "pointer" : undefined,
               }}
             />
           </FormGroup>
@@ -2113,6 +2127,11 @@ const MesobFinancial2 = () => {
               id="toDate"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
+              readOnly={isSubscriptionGateActive()}
+              title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+              onClick={() => {
+                if (isSubscriptionGateActive()) navigate(SUBSCRIPTION_ROUTE);
+              }}
               style={{
                 backgroundColor: "#202a3a",
                 color: "#ffffff",
@@ -2120,7 +2139,9 @@ const MesobFinancial2 = () => {
                 borderRadius: "4px",
                 height: "38px",
                 padding: "6px 12px",
-                width: "100%"
+                width: "100%",
+                opacity: isSubscriptionGateActive() ? 0.5 : 1,
+                cursor: isSubscriptionGateActive() ? "pointer" : undefined,
               }}
             />
           </FormGroup>
@@ -2136,8 +2157,15 @@ const MesobFinancial2 = () => {
           }}
         >
           <Button
-            onClick={handleRun}
-            disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
+            type="button"
+            title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+            onClick={() => {
+              if (isSubscriptionGateActive()) {
+                navigate(SUBSCRIPTION_ROUTE);
+                return;
+              }
+              handleRun();
+            }}
             style={{
               height: "38px",
               backgroundColor: "#3d83f1",
@@ -2147,14 +2175,22 @@ const MesobFinancial2 = () => {
               padding: "0 10px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              opacity: isSubscriptionGateActive() ? 0.5 : 1,
             }}
           >
             {t('financialReport.run')}
           </Button>
           <Button
-            onClick={handleClear}
-            disabled={userRole === 1 ? false : !userSubscription && (!isTrialActive() || scheduleCount >= 4)}
+            type="button"
+            title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+            onClick={() => {
+              if (isSubscriptionGateActive()) {
+                navigate(SUBSCRIPTION_ROUTE);
+                return;
+              }
+              handleClear();
+            }}
             style={{
               height: "38px",
               backgroundColor: "#888888",
@@ -2164,7 +2200,8 @@ const MesobFinancial2 = () => {
               padding: "0 10px",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              opacity: isSubscriptionGateActive() ? 0.5 : 1,
             }}
           >
             {t('financialReport.clearFilters')}
@@ -2211,11 +2248,24 @@ const MesobFinancial2 = () => {
               </button>
             </div>
           ) : (
-            <Search
-              size={18}
-              onClick={() => setShowSearchInput(true)}
-              style={{ cursor: "pointer", color: "#ffffff" }}
-            />
+            <span
+              title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+              style={{
+                display: "inline-flex",
+                cursor: "pointer",
+                opacity: isSubscriptionGateActive() ? 0.5 : 1,
+              }}
+              onClick={() => {
+                if (isSubscriptionGateActive()) {
+                  navigate(SUBSCRIPTION_ROUTE);
+                  return;
+                }
+                setShowSearchInput(true);
+              }}
+              role="presentation"
+            >
+              <Search size={18} color="#ffffff" />
+            </span>
           )}
         </div>
       </div>
@@ -2381,12 +2431,15 @@ const MesobFinancial2 = () => {
                     }}
                   >
                     <Button
-                      onClick={() => setShowDownloadReportModal(true)}
-                      disabled={
-                        userRole === 1
-                          ? false
-                          : !userSubscription && !isTrialActive()
-                      }
+                      type="button"
+                      title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+                      onClick={() => {
+                        if (isSubscriptionGateActive()) {
+                          navigate(SUBSCRIPTION_ROUTE);
+                          return;
+                        }
+                        setShowDownloadReportModal(true);
+                      }}
                       style={{
                         backgroundColor: "#2b427d",
                         borderColor: "#2b427d",
@@ -2396,7 +2449,8 @@ const MesobFinancial2 = () => {
                         padding: "0 16px",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center"
+                        justifyContent: "center",
+                        opacity: isSubscriptionGateActive() ? 0.5 : 1,
                       }}
                     >
                       <FontAwesomeIcon
@@ -2407,12 +2461,15 @@ const MesobFinancial2 = () => {
                     </Button>
                     {userRole !== 0 && (
                       <Button
-                        onClick={() => setShowAddTransaction(true)}
-                        disabled={
-                          userRole === 1
-                            ? false
-                            : !userSubscription && !isTrialActive()
-                        } // Enable for role 1 even if not subscribed/trial
+                        type="button"
+                        title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
+                        onClick={() => {
+                          if (isSubscriptionGateActive()) {
+                            navigate(SUBSCRIPTION_ROUTE);
+                            return;
+                          }
+                          setShowAddTransaction(true);
+                        }}
                         style={{
                           backgroundColor: "#11b981",
                           borderColor: "#11b981",
@@ -2422,7 +2479,8 @@ const MesobFinancial2 = () => {
                           padding: "0 16px",
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "center"
+                          justifyContent: "center",
+                          opacity: isSubscriptionGateActive() ? 0.5 : 1,
                         }}
                       >
                         <FontAwesomeIcon
