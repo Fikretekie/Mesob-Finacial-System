@@ -2993,7 +2993,7 @@ const MesobFinancial2 = () => {
                                     color: "#ffffff",
                                   }}
                                 >
-                                  {t('financialReport.revenue')} ({translatePurpose(purpose)})
+                                  {translatePurpose(purpose)}
                                 </td>
                                 <td
                                   style={{
@@ -3966,7 +3966,7 @@ const MesobFinancial2 = () => {
                                     color: "#ffffff",
                                   }}
                                 >
-                                  {t('financialReport.revenue')} ({translatePurpose(purpose)})
+                                  {translatePurpose(purpose)}
                                 </td>
                                 <td
                                   style={{
