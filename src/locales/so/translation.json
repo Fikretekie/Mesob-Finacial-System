@@ -350,15 +350,15 @@
       "of": "ka",
       "incomeEntry": "Gelitaanka Dakhliga",
       "expenseEntry": "Gelitaanka Kharashka"
-    },
-    "downloadReport": {
+  },
+  "downloadReport": {
       "title": "Soo Dejiso Warbixinta",
       "downloadFinancialReport": "Soo Dejiso Warbixinta Maaliyadeed",
       "downloadDashboard": "Soo Dejiso Xaashida Xogta",
       "downloadBoth": "Soo Dejiso Labadaba",
       "pdfNote": "Warbixinnadu waxay soo dejisan doonaan faylasha PDF ahaan"
-    },
-    "documents": {
+  },
+  "documents": {
       "title": "Dukumeentiyada",
       "subtitle": "Soo rar oo maamul dukumeentiyada muhimsan. Cabbirka ugu weyn:",
       "upload": "Soo rar dukumeenti",
@@ -404,5 +404,58 @@
       "originalSize": "Cabbirka asalka ah",
       "compressedSize": "Cabbirka la cadaadiyay",
       "fileTooBigNonImage": "Faylasha {{type}} si toos ah loogama cadaadin karo. Cabbirka faylku waa {{size}} — ugu badnaan {{max}} MB."
-      }
+  },
+  "auth": {
+    "login": {
+      "pageTitle": "Gal - Meksova",
+      "title": "Gal",
+      "welcome": "Ku soo dhawoow! Gal si aad u gasho",
+      "brandName": "Meksova",
+      "email": "Iimaylka",
+      "password": "Furaha sirta ah",
+      "emailPlaceholder": "Geli iimaylkaaga",
+      "passwordPlaceholder": "Geli furaha sirta ah",
+      "forgotPassword": "Ma ilowday furaha sirta ah?",
+      "submit": "Gal",
+      "pleaseWait": "Fadlan sug",
+      "or": "AMA",
+      "continueGoogle": "Ku sii wad Google",
+      "continueApple": "Ku sii wad Apple",
+      "processing": "Waa la socodsiinayaa...",
+      "processingGoogle": "Galitaanka Google waa la socodsiinayaa...",
+      "processingApple": "Galitaanka Apple waa la socodsiinayaa...",
+      "noAccount": "Weli xisaab ma haysatid?",
+      "signUp": "Is diiwaan geli",
+      "accountNotFound": "Xisaab lama helin. Fadlan is diiwaan geli ama la xiriir taageerada.",
+      "loginFailed": "Galitaanku wuu fashilmay. Fadlan mar kale isku day."
+    },
+    "marketing": {
+      "trustedBy": "Waxaa aamina boqolaal milkiilayaasha ganacsiga yaryar",
+      "headline": "Ujeedadu waa ilaalinta ganacsigaaga",
+      "headlineAccent": "& Wax badan",
+      "testimonial": "Meksova waa app aad u fiican oo aad u fudud in la isticmaalo. Waxay dhammaan rasiidhadaada hal meel ku haysaa, taasoo ka dhigaysa raadinta kharashyada iyo la macaamilka IRS stress-free. Aad ayaan ugu talinayaa!",
+      "testimonialAuthor": "Mohamed Hassan",
+      "learnMore": "WAX BADAN BARO",
+      "watermark": "maaliyadda caalamiga"
+    }
+  },
+  "landing": {
+    "nav": {
+      "home": "Guriga",
+      "services": "Adeegyada",
+      "about": "Naga saabsan",
+      "contact": "Xiriir",
+      "logIn": "Gal",
+      "getStarted": "Bilow bilaash"
+    },
+    "about": {
+      "tagline": "Ku saabsan meksova",
+      "title": "Wada shaqee",
+      "titleHighlight": "ganacsigaaga",
+      "story": "meksova waxay ka dhalatay halgankeenna maamulka iyo diiwaangelinta macaamilada maaliyadeed si sax ah oo hufan. Kadib markii aan la kulannay caqabadaha maareynta maaliyadeenna, waxaan gartay baahida loo qabo xal otomaatig ah oo adag. Markaas ayaan abuurnay meksova — nidaam loogu talagalay in la fududeeyo diiwaangelinta macaamilada maaliyadeed. meksova waxay isticmaashaa otomaatiga si ay ula socoto oo u diiwaangeliso macaamil kasta oo maalinlaha ah, iyadoo beddelaysa sida aad u maamusho maaliyadda ganacsigaaga. Madalkeennu wuxuu bixiyaa warbixinno xirfad leh oo fudud sida gelitaannada joornaalka, bayaannada dakhliga, iyo xisaabaha miisaanka. Nidaamkeennu wuxuu ka caawiyaa ganacsiyada inay wax ka qabtaan caqabadaha maaliyadeed ee caadiga ah. Qalabkeenna waxay kuu oggolaanayaan inaad hirgeliso istaraatiijiyado gaaban iyo kuwa dheer. U oggolow meksova inay kaa caawiso inaad si fudud u maamusho mustaqbalkaaga maaliyadeed.",
+      "missionTitle": "Ujeedadu waa ilaalinta ganacsigaaga & wax badan",
+      "missionSubtext": "La soco kharashyada, samee warbixinno diyaar u ah canshuurta, oo maamul rasiidhada si fudud — loogu talagalay milkiilayaasha ganacsiga yaryar. Isla markiiba bilow",
+      "discoverMore": "Wax badan baro"
+    }
   }
+}

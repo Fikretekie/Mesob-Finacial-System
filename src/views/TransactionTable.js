@@ -44,12 +44,13 @@ const TransactionTable = ({
       const amt = parseFloat(transaction.transactionAmount) || 0;
       const cost = parseFloat(transaction.originalAmount) || 0;
       const name = transaction.transactionPurpose || transaction.assetName || "";
-      // Single row with all values stacked
+      const gain = Math.max(0, amt - cost);
+      const loss = Math.max(0, cost - amt);
       journalRows.push({
         transaction,
         srNo,
         line: "sale_inventory",
-        saleData: { amt, cost, name },
+        saleData: { amt, cost, name, gain, loss },
         isFirst: true
       });
     } else if (transaction.transactionType === "Receive" && transaction.subType === "sale_fixed") {
@@ -94,7 +95,7 @@ const TransactionTable = ({
 
             // Sale Inventory — one grid (colSpan 3) so each label lines up with its debit/credit
             if (line === "sale_inventory") {
-              const { amt, cost, name } = saleData;
+              const { amt, cost, name, gain, loss } = saleData;
               const pillGreen = { backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 12px" };
               const pillRed = { backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 12px" };
               const dash = <span style={{ color: "#ffffff", fontSize: "14px" }}>-</span>;
@@ -108,17 +109,24 @@ const TransactionTable = ({
                       <div className="journal-sale-debit"><span style={pillGreen}>${fmt(amt)}</span></div>
                       <div className="journal-sale-credit">{dash}</div>
 
-                      <div className="journal-sale-txn">{t('financialReport.expense')} ({t('financialReport.cogs')})</div>
-                      <div className="journal-sale-debit"><span style={pillRed}>${fmt(cost)}</span></div>
-                      <div className="journal-sale-credit">{dash}</div>
-
-                      <div className="journal-sale-txn">{t('financialReport.revenue')}</div>
-                      <div className="journal-sale-debit">{dash}</div>
-                      <div className="journal-sale-credit"><span style={pillGreen}>${fmt(amt)}</span></div>
-
                       <div className="journal-sale-txn">{t('financialReport.inventory')} ({name})</div>
                       <div className="journal-sale-debit">{dash}</div>
                       <div className="journal-sale-credit"><span style={pillGreen}>${fmt(cost)}</span></div>
+
+                      {gain > 0 && (
+                        <>
+                          <div className="journal-sale-txn">{t('financialReport.gainOnSale')}</div>
+                          <div className="journal-sale-debit">{dash}</div>
+                          <div className="journal-sale-credit"><span style={pillGreen}>${fmt(gain)}</span></div>
+                        </>
+                      )}
+                      {loss > 0 && (
+                        <>
+                          <div className="journal-sale-txn">{t('financialReport.lossOnSale')}</div>
+                          <div className="journal-sale-debit"><span style={pillRed}>${fmt(loss)}</span></div>
+                          <div className="journal-sale-credit">{dash}</div>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>

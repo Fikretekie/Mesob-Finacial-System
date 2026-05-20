@@ -243,6 +243,61 @@
   color: #1a1a1a;
 }
 
+.asset-type-info-btn {
+  background: transparent;
+  border: none;
+  color: #3d83f1;
+  padding: 0;
+  cursor: pointer;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.asset-type-info-btn:hover,
+.asset-type-info-btn:focus {
+  color: #5a9aff;
+  outline: none;
+}
+
+.asset-type-info-popover {
+  z-index: 1060;
+}
+
+.asset-type-info-popover .popover {
+  background-color: #2a3444;
+  border-color: #3a4555;
+  max-width: 320px;
+}
+
+.asset-type-info-popover .popover-body {
+  color: #e8eaed;
+  font-size: 0.875rem;
+}
+
+.asset-type-info-popover .popover .arrow::before {
+  border-right-color: #3a4555;
+}
+
+.asset-type-info-item {
+  margin-bottom: 0.75rem;
+}
+
+.asset-type-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.asset-type-info-item strong {
+  color: #ffffff;
+}
+
+.asset-type-info-item p {
+  margin: 0.35rem 0 0;
+  color: #b8c0cc;
+  line-height: 1.4;
+}
+
 .navbar-toggle {
   display: none;
   position: absolute;

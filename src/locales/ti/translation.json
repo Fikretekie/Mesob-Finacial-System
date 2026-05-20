@@ -552,5 +552,58 @@
     "originalSize": "ናይ መጀመርያ መጠን",
     "compressedSize": "ዝጸቀጠ መጠን",
     "fileTooBigNonImage": "ፋይላት {{type}} ብኣውቶማቲክ ክጽቀጡ ኣይክእሉን። መጠን ፋይሊ {{size}} እዩ — ዝለዓለ ፍቑድ {{max}} ሜባ እዩ።"
+  },
+  "auth": {
+    "login": {
+      "pageTitle": "እተው - Meksova",
+      "title": "እተው",
+      "welcome": "እንቋዕ ብደሓን መጻእኩም! ንመጠቀም እተው",
+      "brandName": "Meksova",
+      "email": "ኢመይል",
+      "password": "መሕለፊ ቃል",
+      "emailPlaceholder": "ኢመይልኩም ኣእትዉ",
+      "passwordPlaceholder": "መሕለፊ ቃልኩም ኣእትዉ",
+      "forgotPassword": "መሕለፊ ቃል ረሲዕኩም?",
+      "submit": "እተው",
+      "pleaseWait": "በጃኹም ተጸበዩ",
+      "or": "ወይ",
+      "continueGoogle": "ብ Google ቀጽል",
+      "continueApple": "ብ Apple ቀጽል",
+      "processing": "ይሰርሕ ኣሎ...",
+      "processingGoogle": "ናይ Google እተው ይሰርሕ ኣሎ...",
+      "processingApple": "ናይ Apple እተው ይሰርሕ ኣሎ...",
+      "noAccount": "ክሳብ ሕጂ ኣካውንት የብልኩምን?",
+      "signUp": "ተመዝገቡ",
+      "accountNotFound": "ኣካውንት ኣይተረኽበን። በጃኹም ተመዝገቡ ወይ ሓገዝ ሓተቱ።",
+      "loginFailed": "እተው ኣይተኻእለን። በጃኹም ደጊምኩም ፈትኑ።"
+    },
+    "marketing": {
+      "trustedBy": "ብመቶታት ንእሽተይ ንግዲ ባለታት ዝኣመነ",
+      "headline": "ዕላማና ንግድኩም ምሕላው እዩ",
+      "headlineAccent": "& ተወሳኺ",
+      "testimonial": "Meksova ዓቢ ኣፕሊኬሽን እዩ ከምኡውን ኣዝዩ ቀሊል ክትጥቀሙሉ። ኩሉ ደረሰናትኩም ኣብ ሓንሳእ ቦታ ይሕዝ፣ ክፍሊት ምክትታልን ምስ IRS ምስራሕን ብዘይ ጭንቀት ይገብር። ብሓያል የመክሮ!",
+      "testimonialAuthor": "መሓመድ ሓሰን",
+      "learnMore": "ተወሳኺ ተማሃሩ",
+      "watermark": "ዓለምለኻዊ ፋይናንስ"
+    }
+  },
+  "landing": {
+    "nav": {
+      "home": "መእተዊ",
+      "services": "ኣገልግሎታት",
+      "about": "ዝዛመድና",
+      "contact": "ርክብ",
+      "logIn": "እተው",
+      "getStarted": "ብነጻ ጀምር"
+    },
+    "about": {
+      "tagline": "ብዛዕባ meksova",
+      "title": "ኣብ ሓባር ስራሕ ን",
+      "titleHighlight": "ንግድኩም",
+      "story": "meksova ካብ ናይ ገንዘባ ግብይታት ብትክክልን ብቕልጡፍን ንምምሕዳርን ንምዝገባን ዝነበረና ቃልሲ ተወሊዱ። ገንዘብና ንምምሕዳር ሽግራት ኣብ ዝረኸብናሉ ግዜ፣ ጽኑዕ ኣውቶማቲክ መፍትሒ እንዳድልዩ ኣለና። ንዝያዳ meksova ፈጢርና — ናይ ፋይናንስ ግብይታት ምዝገባ ንምቅላልን ንምምሕዳርን ዝተነድፈ ስርዓት። meksova ኣውቶሜሽን ተጠቒሙ ኩሉ ግብይት ኣብ መዓልታዊ ስራሕኩም ይከታተልን ይመዝግብን፣ ንገንዘብ ንግድኩም ከም ዝሓወስ ይገብር። መዝገባት፣ ናይ ኣታዊ መግለጺ (income statement)ን ቀሪ ሂሳብ (balance sheet)ን ዝኣመሰሉ ፕሮፌሽናልን ቀሊልን ጸብጻባት ይህብ። meksova ንዕድመ ንግድኩምን ዓወትን ንምምሕዳር ንዝሕግዝ መሳርሒታት ይህብ።",
+      "missionTitle": "ተልእኮና ንግድኩም ምሕላውን ብዙሕ ተወሳኺን እዩ",
+      "missionSubtext": "ክፍሊት ተኸታተሉ፡ ንግብራዊ ጸብጻባት ሃንጹ፡ ደረሰናት ብቐሊሉ ኣመሓድሩ — ንኣነስተይቲ ንግዲ ባለታት ዝተሃንጸ። ብኡ ንብረት ጀምሩ",
+      "discoverMore": "ተወሳኺ ተማሃሩ"
+    }
   }
 }

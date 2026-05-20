@@ -419,5 +419,58 @@
     "originalSize": "Tamaño original",
     "compressedSize": "Tamaño comprimido",
     "fileTooBigNonImage": "Los archivos {{type}} no se pueden comprimir automáticamente. El tamaño del archivo es {{size}} — el máximo permitido es {{max}} MB."
+  },
+  "auth": {
+    "login": {
+      "pageTitle": "Iniciar sesión - Meksova",
+      "title": "Iniciar sesión",
+      "welcome": "¡Bienvenido! Inicia sesión para acceder a",
+      "brandName": "Meksova",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "emailPlaceholder": "Introduce tu correo",
+      "passwordPlaceholder": "Introduce tu contraseña",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "submit": "Iniciar sesión",
+      "pleaseWait": "Por favor espera",
+      "or": "O",
+      "continueGoogle": "Continuar con Google",
+      "continueApple": "Continuar con Apple",
+      "processing": "Procesando...",
+      "processingGoogle": "Procesando inicio con Google...",
+      "processingApple": "Procesando inicio con Apple...",
+      "noAccount": "¿Aún no tienes cuenta?",
+      "signUp": "Regístrate",
+      "accountNotFound": "Cuenta no encontrada. Regístrate o contacta con soporte.",
+      "loginFailed": "Error al iniciar sesión. Inténtalo de nuevo."
+    },
+    "marketing": {
+      "trustedBy": "Con la confianza de cientos de pequeños empresarios",
+      "headline": "Nuestra misión es proteger tu negocio",
+      "headlineAccent": "y más",
+      "testimonial": "Meksova es una gran aplicación y muy fácil de usar. Guarda todos tus recibos en un solo lugar, lo que facilita el seguimiento de gastos y tratar con el IRS sin estrés. ¡La recomiendo mucho!",
+      "testimonialAuthor": "Mohamed Hassan",
+      "learnMore": "Saber más",
+      "watermark": "finanzas globales"
+    }
+  },
+  "landing": {
+    "nav": {
+      "home": "Inicio",
+      "services": "Servicios",
+      "about": "Acerca de",
+      "contact": "Contacto",
+      "logIn": "Iniciar sesión",
+      "getStarted": "Empieza gratis"
+    },
+    "about": {
+      "tagline": "Acerca de meksova",
+      "title": "Trabajemos juntos por",
+      "titleHighlight": "tu negocio",
+      "story": "meksova nació de nuestras propias dificultades para gestionar y registrar transacciones financieras con precisión y eficiencia. Tras enfrentar desafíos al manejar nuestras finanzas, comprendimos la necesidad de una solución automatizada y robusta. Entonces creamos meksova — un sistema diseñado para simplificar el registro de transacciones financieras. meksova aprovecha la automatización para rastrear y registrar cada transacción en tus operaciones diarias, transformando la forma en que gestionas las finanzas de tu negocio. Nuestra plataforma ofrece informes profesionales y fáciles de entender como asientos contables, estados de resultados y balances. Deja que meksova te ayude a tomar el control de tu futuro financiero con facilidad y confianza.",
+      "missionTitle": "Nuestra misión es proteger tu negocio y mucho más",
+      "missionSubtext": "Registra gastos, genera informes listos para impuestos y gestiona recibos sin esfuerzo — hecho para pequeños empresarios. Empieza ahora",
+      "discoverMore": "Descubre más"
+    }
   }
 }
