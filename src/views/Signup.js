@@ -56,6 +56,8 @@ const SignupPage = () => {
   const socialEmail = searchParams.get("email");
   const socialUserId = searchParams.get("userId");
   const socialName = searchParams.get("name");
+  const isSocialSignup =
+    provider === "Google" || provider === "Apple";
   const [isLoading, setIsLoading] = useState(false);
   const [socialAuth, setSocialAuth] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -180,8 +182,8 @@ const SignupPage = () => {
     else if (!/\S+@\S+\.\S+/.test(email))
       newErrors.email = "Please enter a valid email address.";
 
-    // Only validate password if not Google/Apple
-    if (provider !== "Google" && provider !== "Apple") {
+    // Only validate password for email signup
+    if (!isSocialSignup) {
       if (!password) newErrors.password = "Password is required.";
       else {
         const passwordError = validatePassword(password);
@@ -318,6 +320,7 @@ const SignupPage = () => {
 
         // For Google users, we don't need Cognito signup since they're already authenticated
         // Just save to backend database
+        console.log("socialUserId", socialUserId);
         const response = await axios.put(
           apiUrl(`${ROUTES.USERS}/${socialUserId}`),
           data
@@ -806,7 +809,7 @@ const SignupPage = () => {
 
             <div className="login-input-group">
               {/* Social Login Buttons FIRST */}
-              {!provider && (
+              {!isSocialSignup && (
                 <>
                   <button
                     onClick={handleGoogleSignUp}
@@ -855,75 +858,92 @@ const SignupPage = () => {
                 </>
               )}
 
-              {/* OR Separator with lines */}
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                margin: "20px 0",
-              }}>
-                <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
-                <span style={{
-                  padding: "0 15px",
-                  color: "#9ca5b0",
-                  fontSize: "13px",
-                  fontWeight: "400"
+              {!isSocialSignup && (
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  margin: "20px 0",
                 }}>
-                  OR CONTINUE WITH EMAIL
-                </span>
-                <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
-              </div>
+                  <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
+                  <span style={{
+                    padding: "0 15px",
+                    color: "#9ca5b0",
+                    fontSize: "13px",
+                    fontWeight: "400"
+                  }}>
+                    OR CONTINUE WITH EMAIL
+                  </span>
+                  <div style={{ flex: 1, height: "1px", backgroundColor: "#4a5568" }}></div>
+                </div>
+              )}
+
+              {isSocialSignup && (
+                <p style={{
+                  textAlign: "center",
+                  color: "#9ca5b0",
+                  fontSize: "14px",
+                  marginBottom: "20px",
+                }}>
+                  Signed in with {provider}. Confirm your email to continue.
+                </p>
+              )}
 
               {/* Email input */}
               <input
                 type="email"
                 placeholder="Email Address"
                 value={email}
+                readOnly={isSocialSignup}
                 onChange={(e) => {
-                  if (!provider) setEmail(e.target.value);
+                  if (!isSocialSignup) setEmail(e.target.value);
                   setErrors((prev) => ({ ...prev, email: "" }));
                 }}
                 style={{
                   ...styles.input,
                   borderColor: errors.email ? "red" : "#4a5568",
-                  backgroundColor: "#2d3748",
+                  backgroundColor: isSocialSignup ? "#1a202c" : "#2d3748",
+                  cursor: isSocialSignup ? "not-allowed" : "text",
                 }}
               />
               {errors.email && <p style={styles.error}>{errors.email}</p>}
 
-              {/* Password input */}
-              <div style={styles.inputContainer}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors((prev) => ({ ...prev, password: "" }));
-                  }}
-                  style={{
-                    ...styles.input,
-                    borderColor: errors.password ? "red" : "#4a5568",
-                    backgroundColor: "#2d3748",
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                >
-                  {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
-                </button>
-              </div>
-              {errors.password && <p style={styles.error}>{errors.password}</p>}
+              {!isSocialSignup && (
+                <>
+                  <div style={styles.inputContainer}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setErrors((prev) => ({ ...prev, password: "" }));
+                      }}
+                      style={{
+                        ...styles.input,
+                        borderColor: errors.password ? "red" : "#4a5568",
+                        backgroundColor: "#2d3748",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={styles.eyeIcon}
+                    >
+                      {showPassword ? <FaEyeSlash color="white" /> : <FaEye color="white" />}
+                    </button>
+                  </div>
+                  {errors.password && <p style={styles.error}>{errors.password}</p>}
 
-              <p style={{
-                fontSize: "12px",
-                color: "#9ca5b0",
-                marginTop: "-5px",
-                marginBottom: "20px"
-              }}>
-                At least 8 characters
-              </p>
+                  <p style={{
+                    fontSize: "12px",
+                    color: "#9ca5b0",
+                    marginTop: "-5px",
+                    marginBottom: "20px"
+                  }}>
+                    At least 8 characters
+                  </p>
+                </>
+              )}
 
               <button
                 onClick={handleNextStep}
@@ -938,7 +958,7 @@ const SignupPage = () => {
                 onMouseLeave={(e) => e.target.style.backgroundColor = "#3b82f6"}
                 disabled={isLoading}
               >
-                {isLoading ? "Loading..." : "Create Free Account"}
+                {isLoading ? "Loading..." : isSocialSignup ? "Continue" : "Create Free Account"}
               </button>
 
               <p style={{
