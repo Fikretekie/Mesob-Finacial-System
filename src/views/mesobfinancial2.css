@@ -272,8 +272,31 @@
 }
 
 .asset-type-info-popover .popover-body {
+  position: relative;
   color: #e8eaed;
   font-size: 0.875rem;
+  padding-top: 1.75rem;
+}
+
+.asset-type-info-close-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #b8c0cc;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.asset-type-info-close-btn:hover,
+.asset-type-info-close-btn:focus {
+  color: #ffffff;
+  outline: none;
 }
 
 .asset-type-info-popover .popover .arrow::before {

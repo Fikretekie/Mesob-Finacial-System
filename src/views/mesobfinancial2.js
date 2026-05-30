@@ -25,7 +25,7 @@ import Select from "react-select";
 import heic2any from "heic2any";
 import imageCompression from "browser-image-compression";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faDownload, faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faDownload, faCircleInfo, faTimes } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { apiUrl, ROUTES, S3_BUCKET_NAME, normalizeReceiptUrl } from "../config/api";
 import { Helmet } from "react-helmet";
@@ -67,11 +67,22 @@ const recordAssetSaleGainLoss = (transaction, newRevenues, newExpenses) => {
   }
 };
 
+const limitToTwoDecimals = (rawValue) => {
+  if (rawValue === "" || rawValue === null || rawValue === undefined) return "";
+  const value = String(rawValue);
+  const dotIndex = value.indexOf(".");
+  if (dotIndex === -1) return value;
+  const decimals = value.slice(dotIndex + 1);
+  if (decimals.length <= 2) return value;
+  return value.slice(0, dotIndex + 3);
+};
+
 const AssetTypeLabel = () => {
   const { t } = useTranslation();
   const [infoOpen, setInfoOpen] = useState(false);
   const targetId = React.useId().replace(/:/g, "");
   const toggle = () => setInfoOpen((prev) => !prev);
+  const close = () => setInfoOpen(false);
 
   return (
     <div className="asset-type-label-row" style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem" }}>
@@ -95,6 +106,14 @@ const AssetTypeLabel = () => {
         fade={false}
       >
         <PopoverBody>
+          <button
+            type="button"
+            className="asset-type-info-close-btn"
+            onClick={close}
+            aria-label={t("financialReport.close")}
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
           <div className="asset-type-info-item">
             <strong>{t("financialReport.currentAsset")}</strong>
             <p>{t("financialReport.currentAssetInfo")}</p>
@@ -4622,8 +4641,9 @@ const MesobFinancial2 = () => {
                       type="number"
                       value={remainingAmount}
                       onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        setRemainingAmount(e.target.value);
+                        const limited = limitToTwoDecimals(e.target.value);
+                        const value = parseFloat(limited);
+                        setRemainingAmount(limited);
 
                         const currentRemaining = selectedUnpaidTransaction.remainingAmount || selectedUnpaidTransaction.transactionAmount;
 
@@ -4739,8 +4759,9 @@ const MesobFinancial2 = () => {
                   <Input
                     className="no-number-spinner"
                     type="number"
+                    step="0.01"
                     value={transactionAmount}
-                    onChange={(e) => setTransactionAmount(e.target.value)}
+                    onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))}
                   />
                 </FormGroup>
                 <FormGroup>
@@ -4815,7 +4836,7 @@ const MesobFinancial2 = () => {
                 )}
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} />
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !assetType || !(assetNameManual || "").trim()}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4855,7 +4876,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="e.g. 1500" />
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="e.g. 1500" />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4895,7 +4916,7 @@ const MesobFinancial2 = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>{t('financialReport.amount')}:</Label>
-                  <Input className="no-number-spinner" type="number" value={transactionAmount} onChange={(e) => setTransactionAmount(e.target.value)} placeholder="Sale amount" />
+                  <Input className="no-number-spinner" type="number" step="0.01" value={transactionAmount} onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))} placeholder="Sale amount" />
                 </FormGroup>
                 <Button color="success" onClick={handleAddTransaction} disabled={isAddingTransaction || !selectedSaleItem || !transactionAmount}>
                   {isAddingTransaction ? <Spinner size="sm" /> : t('financialReport.save')}
@@ -4986,8 +5007,9 @@ const MesobFinancial2 = () => {
                     <Input
                       className="no-number-spinner"
                       type="number"
+                      step="0.01"
                       value={transactionAmount}
-                      onChange={(e) => setTransactionAmount(e.target.value)}
+                      onChange={(e) => setTransactionAmount(limitToTwoDecimals(e.target.value))}
                     />
                   </FormGroup>
                   {transactionType === "pay" && paymentMode === "new" && (
@@ -5109,8 +5131,9 @@ const MesobFinancial2 = () => {
                 <Input
                   className="no-number-spinner"
                   type="number"
+                  step="0.01"
                   value={installmentAmount}
-                  onChange={(e) => setInstallmentAmount(e.target.value)}
+                  onChange={(e) => setInstallmentAmount(limitToTwoDecimals(e.target.value))}
                   max={selectedUnpaidTransaction?.transactionAmount}
                 />
               </FormGroup>
