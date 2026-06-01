@@ -37,6 +37,15 @@ import i18n from "../i18n";
 import LanguageSelector from "components/Languageselector/LanguageSelector";
 import { faPlus, faDownload, faSearch } from "@fortawesome/free-solid-svg-icons";
 import DownloadReportModal from "components/DownloadReportModal";
+import BalanceValue from "components/BalanceValue";
+import {
+  FINANCIAL_COLORS,
+  getBalanceColor,
+  getBalanceCardStyle,
+} from "utils/financialColors";
+
+const CHART_TOOLBAR_DOWNLOAD_ICON =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>';
 
 ChartJS.register(
   CategoryScale,
@@ -411,7 +420,7 @@ function Dashboard() {
         toolbar: {
           show: true,
           tools: {
-            download: true,
+            download: CHART_TOOLBAR_DOWNLOAD_ICON,
             zoom: true,
             zoomin: true,
             zoomout: true,
@@ -569,28 +578,28 @@ function Dashboard() {
     t('dashboard.totalCashOnHandChart'),
     monthlySales.map((item) => item.cashOnHand),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#41926f"
+    FINANCIAL_COLORS.positive
   );
 
   const revenueChartData = getChartOptions(
     t('dashboard.revenueChart'),
     monthlySales.map((item) => item.revenue),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#2b427d"
+    FINANCIAL_COLORS.income
   );
 
   const payableChartData = getChartOptions(
     t('dashboard.totalPayableChart'),
     monthlySales.map((item) => item.payable),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#c7ae4f"
+    FINANCIAL_COLORS.payable
   );
 
   const expensesChartData = getChartOptions(
     t('dashboard.totalExpensesChart'),
     monthlySales.map((item) => item.expenses),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    "#a7565d"
+    FINANCIAL_COLORS.expense
   );
 
   const fetchFinancialData = async (uid = null) => {
@@ -961,8 +970,8 @@ function Dashboard() {
                       title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
                       onClick={handleAddTransactionClick}
                       style={{
-                        backgroundColor: "#41926f",
-                        borderColor: "#41926f",
+                        backgroundColor: FINANCIAL_COLORS.income,
+                        borderColor: FINANCIAL_COLORS.income,
                         color: "#ffffff",
                         height: "44px",
                         borderRadius: "10px",
@@ -1395,20 +1404,36 @@ function Dashboard() {
 
         <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card
+              className="card-stats"
+              style={{
+                position: "relative",
+                backgroundColor: "#101926",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
+                ...getBalanceCardStyle(parseFloat(calculateTotalCash())),
+              }}
+            >
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
-                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      <CardTitle tag="h3" style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+                        {loadingFinancialData ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <BalanceValue
+                            value={parseFloat(calculateTotalCash())}
+                            tooltip={t("financialReport.cashDeficitTooltip")}
+                            style={{ fontSize: "1.5rem" }}
+                          >
+                            {`$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          </BalanceValue>
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
-                        <p style={{ color: "#41926f", fontSize: "0.75rem", margin: 0 }}>
+                        <p style={{ color: getBalanceColor(parseFloat(calculateTotalCash())), fontSize: "0.75rem", margin: 0 }}>
                           {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
                         </p>
                       )}
@@ -1416,7 +1441,7 @@ function Dashboard() {
                   </Col>
                   <Col xs="4">
                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-dollar-sign" style={{ color: "#41926f", fontSize: isMobile ? "1.5rem" : "2rem" }} />
+                      <i className="fas fa-dollar-sign" style={{ color: getBalanceColor(parseFloat(calculateTotalCash())), fontSize: isMobile ? "1.5rem" : "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -1426,7 +1451,7 @@ function Dashboard() {
                       style={{
                         width: "98%",
                         height: "3px",
-                        backgroundColor: "#41926f",
+                        backgroundColor: getBalanceColor(parseFloat(calculateTotalCash())),
                         marginBottom: "8px",
                         borderRadius: "2px",
                       }}
@@ -1459,20 +1484,20 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #a7565d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalExpenses')}</p>
-                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.expense, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? <Spinner size="sm" /> : (
                           `$${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
-                        <p style={{ color: "#a7565d", fontSize: "0.75rem", margin: 0 }}>
+                        <p style={{ color: FINANCIAL_COLORS.expense, fontSize: "0.75rem", margin: 0 }}>
                           {calculatePercentageChange(totalExpenses, getPreviousMonthValues().expenses).text}
                         </p>
                       )}
@@ -1480,7 +1505,7 @@ function Dashboard() {
                   </Col>
                   <Col xs="4">
                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-chart-line" style={{ color: "#a7565d", fontSize: "2rem" }} />
+                      <i className="fas fa-chart-line" style={{ color: FINANCIAL_COLORS.expense, fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -1489,20 +1514,20 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #c7ae4f", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.payable}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalPayable')}</p>
-                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.payable, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? <Spinner size="sm" /> : (
                           `$${totalPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
-                        <p style={{ color: "#c7ae4f", fontSize: "0.75rem", margin: 0 }}>
+                        <p style={{ color: FINANCIAL_COLORS.payable, fontSize: "0.75rem", margin: 0 }}>
                           {calculatePercentageChange(totalPayable, getPreviousMonthValues().payable).text}
                         </p>
                       )}
@@ -1510,7 +1535,7 @@ function Dashboard() {
                   </Col>
                   <Col xs="4">
                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-credit-card" style={{ color: "#c7ae4f", fontSize: "2rem" }} />
+                      <i className="fas fa-credit-card" style={{ color: FINANCIAL_COLORS.payable, fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
@@ -1519,20 +1544,20 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: "4px solid #2b427d", borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.income}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
                   <Col xs="8">
                     <div className="numbers">
                       <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.revenue')}</p>
-                      <CardTitle tag="h3" style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
+                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.income, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
                         {loadingFinancialData ? <Spinner size="sm" /> : (
                           `$${totalrevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         )}
                       </CardTitle>
                       {!loadingFinancialData && (
-                        <p style={{ color: "#2b427d", fontSize: "0.75rem", margin: 0 }}>
+                        <p style={{ color: FINANCIAL_COLORS.income, fontSize: "0.75rem", margin: 0 }}>
                           {calculatePercentageChange(totalrevenue, getPreviousMonthValues().revenue).text}
                         </p>
                       )}
@@ -1540,7 +1565,7 @@ function Dashboard() {
                   </Col>
                   <Col xs="4">
                     <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-chart-line" style={{ color: "#2b427d", fontSize: "2rem" }} />
+                      <i className="fas fa-chart-line" style={{ color: FINANCIAL_COLORS.income, fontSize: "2rem" }} />
                     </div>
                   </Col>
                 </Row>
