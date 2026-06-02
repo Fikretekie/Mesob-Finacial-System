@@ -23,7 +23,7 @@ const CheckoutForm = ({ priceId }) => {
     createdAt: "",
     email: "",
     name: "",
-    phone: "03317766777",
+    phone: "+1 (614) 966-5005",
     priceId: process.env.PRICE_ID,
     description: "New customer from Meksovas",
   });

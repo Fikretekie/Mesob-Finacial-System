@@ -2,8 +2,25 @@ import React from "react";
 import { useState } from "react";
 import { BsTrashFill, BsReceipt } from "react-icons/bs";
 import "./TransactionTable.css";
-import colors from "variables/colors";
 import { useTranslation } from "react-i18next";
+import { translatePurpose } from "utils/translatedBusinessTypes";
+import {
+  FINANCIAL_COLORS,
+  SALE_LINE_COLORS,
+  getAmountPillStyle,
+  isExpenseTransaction,
+} from "utils/financialColors";
+
+const stripBrackets = (text) =>
+  (text ?? "")
+    .replace(/\s*\([^)]*\)/g, "")
+    .replace(/\s*\[[^\]]*\]/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+const formatJournalPurpose = (purpose) =>
+  stripBrackets(translatePurpose(purpose));
+
 const TransactionTable = ({
   items = [],
   handleDelete,
@@ -36,7 +53,6 @@ const TransactionTable = ({
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  // Build journal rows: sale_inventory and sale_fixed are now single rows with stacked values
   const journalRows = [];
   sortedTransactions.forEach((transaction, index) => {
     const srNo = sortedTransactions.length - index;
@@ -44,12 +60,13 @@ const TransactionTable = ({
       const amt = parseFloat(transaction.transactionAmount) || 0;
       const cost = parseFloat(transaction.originalAmount) || 0;
       const name = transaction.transactionPurpose || transaction.assetName || "";
-      // Single row with all values stacked
+      const gain = Math.max(0, amt - cost);
+      const loss = Math.max(0, cost - amt);
       journalRows.push({
         transaction,
         srNo,
         line: "sale_inventory",
-        saleData: { amt, cost, name },
+        saleData: { amt, cost, name, gain, loss },
         isFirst: true
       });
     } else if (transaction.transactionType === "Receive" && transaction.subType === "sale_fixed") {
@@ -58,7 +75,6 @@ const TransactionTable = ({
       const name = transaction.transactionPurpose || transaction.assetName || "";
       const gain = Math.max(0, amt - cost);
       const loss = Math.max(0, cost - amt);
-      // Single row with all values stacked
       journalRows.push({
         transaction,
         srNo,
@@ -71,9 +87,85 @@ const TransactionTable = ({
     }
   });
 
-  const isTrialActive = () => {
-    return new Date() < trialEndDate && scheduleCount < 4;
+  const renderSaleRow = (row, idx, lineKey) => {
+    const { transaction, srNo, saleData } = row;
+    const { amt, cost, name, gain, loss } = saleData;
+    const assetLabel =
+      lineKey === "sale_inventory"
+        ? stripBrackets(`${t("financialReport.inventory")} ${name}`)
+        : stripBrackets(name);
+    const fmt = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const pill = (color) => getAmountPillStyle(color);
+    const dash = <span style={{ color: "#ffffff", fontSize: "14px" }}>-</span>;
+
+    return (
+      <tr key={`${transaction.id || idx}-${lineKey}`}>
+        <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
+        <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
+        <td colSpan={3} className="journal-sale-cell">
+          <div className="journal-sale-grid">
+            <div className="journal-sale-txn journal-sale-txn-bold">{stripBrackets(t('financialReport.receive'))}</div>
+            <div className="journal-sale-debit"><span style={pill(SALE_LINE_COLORS.receive)}>${fmt(amt)}</span></div>
+            <div className="journal-sale-credit">{dash}</div>
+
+            <div className="journal-sale-txn">{assetLabel}</div>
+            <div className="journal-sale-debit">{dash}</div>
+            <div className="journal-sale-credit"><span style={pill(SALE_LINE_COLORS.inventory)}>${fmt(cost)}</span></div>
+
+            {gain > 0 && (
+              <>
+                <div className="journal-sale-txn">{t('financialReport.gainOnSale')}</div>
+                <div className="journal-sale-debit">{dash}</div>
+                <div className="journal-sale-credit"><span style={pill(SALE_LINE_COLORS.gain)}>${fmt(gain)}</span></div>
+              </>
+            )}
+            {loss > 0 && (
+              <>
+                <div className="journal-sale-txn">{t('financialReport.lossOnSale')}</div>
+                <div className="journal-sale-debit"><span style={pill(SALE_LINE_COLORS.loss)}>${fmt(loss)}</span></div>
+                <div className="journal-sale-credit">{dash}</div>
+              </>
+            )}
+          </div>
+        </td>
+        <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
+            <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />
+            {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc" }} />}
+          </div>
+        </td>
+      </tr>
+    );
   };
+
+  const getDebitColor = (transaction) => {
+    if (transaction.transactionType === "Receive") return FINANCIAL_COLORS.income;
+    if (transaction.transactionType === "Payable") {
+      if (isExpenseTransaction(transaction)) return FINANCIAL_COLORS.expense;
+      if (transaction.subType === "New_Item") return FINANCIAL_COLORS.asset;
+      return FINANCIAL_COLORS.payable;
+    }
+    if (["Pay", "New_Item"].includes(transaction.transactionType)) {
+      return FINANCIAL_COLORS.cashOut;
+    }
+    return FINANCIAL_COLORS.cashOut;
+  };
+
+  const getCreditColor = (transaction) => {
+    if (transaction.transactionType === "Receive") return FINANCIAL_COLORS.income;
+    if (transaction.transactionType === "Payable") {
+      if (isExpenseTransaction(transaction)) return FINANCIAL_COLORS.expense;
+      if (transaction.subType === "New_Item") return FINANCIAL_COLORS.asset;
+      return FINANCIAL_COLORS.payable;
+    }
+    if (["Pay", "New_Item"].includes(transaction.transactionType)) {
+      return transaction.transactionType === "New_Item"
+        ? FINANCIAL_COLORS.asset
+        : FINANCIAL_COLORS.cashOut;
+    }
+    return FINANCIAL_COLORS.income;
+  };
+
   return (
     <div className="table-container">
       <table className="transaction-table">
@@ -90,95 +182,16 @@ const TransactionTable = ({
         <tbody>
           {journalRows.map((row, idx) => {
             const { transaction, srNo, line, saleData } = row;
-            const fmt = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            // Sale Inventory — one grid (colSpan 3) so each label lines up with its debit/credit
-            if (line === "sale_inventory") {
-              const { amt, cost, name } = saleData;
-              const pillGreen = { backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 12px" };
-              const pillRed = { backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 12px" };
-              const dash = <span style={{ color: "#ffffff", fontSize: "14px" }}>-</span>;
-              return (
-                <tr key={`${transaction.id || idx}-sale-inv`}>
-                  <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px", }}>{formatDate(transaction.createdAt)}</td>
-                  <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
-                  <td colSpan={3} className="journal-sale-cell">
-                    <div className="journal-sale-grid">
-                      <div className="journal-sale-txn journal-sale-txn-bold">{t('financialReport.receive')}</div>
-                      <div className="journal-sale-debit"><span style={pillGreen}>${fmt(amt)}</span></div>
-                      <div className="journal-sale-credit">{dash}</div>
+            if (line === "sale_inventory") return renderSaleRow(row, idx, "sale_inventory");
+            if (line === "sale_fixed") return renderSaleRow(row, idx, "sale_fixed");
 
-                      <div className="journal-sale-txn">{t('financialReport.expense')} ({t('financialReport.cogs')})</div>
-                      <div className="journal-sale-debit"><span style={pillRed}>${fmt(cost)}</span></div>
-                      <div className="journal-sale-credit">{dash}</div>
-
-                      <div className="journal-sale-txn">{t('financialReport.revenue')}</div>
-                      <div className="journal-sale-debit">{dash}</div>
-                      <div className="journal-sale-credit"><span style={pillGreen}>${fmt(amt)}</span></div>
-
-                      <div className="journal-sale-txn">{t('financialReport.inventory')} ({name})</div>
-                      <div className="journal-sale-debit">{dash}</div>
-                      <div className="journal-sale-credit"><span style={pillGreen}>${fmt(cost)}</span></div>
-                    </div>
-                  </td>
-                  <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
-                      <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />
-                      {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc" }} />}
-                    </div>
-                  </td>
-                </tr>
-              );
-            }
-
-            // Sale Fixed Asset — same grid pattern so labels align with amounts
-            if (line === "sale_fixed") {
-              const { amt, cost, name, gain, loss } = saleData;
-              const pillGreen = { backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 12px" };
-              const pillRed = { backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 12px" };
-              const dash = <span style={{ color: "#ffffff", fontSize: "14px" }}>-</span>;
-              return (
-                <tr key={`${transaction.id || idx}-sale-fixed`}>
-                  <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{formatDate(transaction.createdAt)}</td>
-                  <td style={{ color: "#ffffff", verticalAlign: "top", paddingTop: "8px" }}>{srNo}</td>
-                  <td colSpan={3} className="journal-sale-cell">
-                    <div className="journal-sale-grid">
-                      <div className="journal-sale-txn journal-sale-txn-bold">{t('financialReport.receive')}</div>
-                      <div className="journal-sale-debit"><span style={pillGreen}>${fmt(amt)}</span></div>
-                      <div className="journal-sale-credit">{dash}</div>
-
-                      <div className="journal-sale-txn">{name}</div>
-                      <div className="journal-sale-debit">{dash}</div>
-                      <div className="journal-sale-credit"><span style={pillGreen}>${fmt(cost)}</span></div>
-
-                      {gain > 0 && (
-                        <>
-                          <div className="journal-sale-txn">{t('financialReport.gainOnSale')}</div>
-                          <div className="journal-sale-debit">{dash}</div>
-                          <div className="journal-sale-credit"><span style={pillGreen}>${fmt(gain)}</span></div>
-                        </>
-                      )}
-                      {loss > 0 && (
-                        <>
-                          <div className="journal-sale-txn">{t('financialReport.lossOnSale')}</div>
-                          <div className="journal-sale-debit"><span style={pillRed}>${fmt(loss)}</span></div>
-                          <div className="journal-sale-credit">{dash}</div>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                  <td className="transaction-table-actions" style={{ verticalAlign: "top", paddingTop: "8px" }}>
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center", justifyContent: "center" }}>
-                      <BsTrashFill className="delete-btn" onClick={() => isFeatureEnabled() && handleDelete(transaction)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#e10d05" : "#ccc", opacity: isFeatureEnabled() ? 1 : 0.5 }} />
-                      {transaction.receiptUrl && <BsReceipt className="receipt-btn" onClick={() => isFeatureEnabled() && handleReceiptClick(transaction.receiptUrl)} style={{ cursor: isFeatureEnabled() ? "pointer" : "not-allowed", color: isFeatureEnabled() ? "#007bff" : "#ccc" }} />}
-                    </div>
-                  </td>
-                </tr>
-              );
-            }
-
-            // Regular single-line transactions
             if (line === "single") {
+              const debitColor = getDebitColor(transaction);
+              const creditColor = getCreditColor(transaction);
+              const debitPill = getAmountPillStyle(debitColor, true);
+              const creditPill = getAmountPillStyle(creditColor, true);
+
               return (
                 <tr key={`${transaction.id || idx}-single`}>
                   <td style={{ color: "#ffffff" }}>{formatDate(transaction.createdAt)}</td>
@@ -186,23 +199,30 @@ const TransactionTable = ({
                   <td style={{ color: "#ffffff" }}>
                     {transaction.transactionType === "Receive" ? (
                       <>
-                        <div style={{ fontWeight: "bold" }}>{t('financialReport.receive')}</div>
-                        <div>{transaction.transactionPurpose}</div>
+                        <div style={{ fontWeight: "bold" }}>{stripBrackets(t('financialReport.receive'))}</div>
+                        <div>{formatJournalPurpose(transaction.transactionPurpose)}</div>
                       </>
                     ) : (
                       <>
                         <div>
-                          {/* For Payable+New_Item (asset purchase on credit), show "Purchases of (item name)" */}
                           {transaction.transactionType === "Payable" && transaction.subType === "New_Item"
-                            ? `${t('financialReport.purchasesOf')} (${transaction.assetName || transaction.transactionPurpose?.replace(/\s*\(Expense\)/gi, "") || "Item"})`
-                            : transaction.transactionPurpose}
-                          {/* Only add "Expense" label for regular Payable (not New_Item) and if purpose doesn't already contain it */}
+                            ? `${t('financialReport.purchasesOf')} ${formatJournalPurpose(transaction.assetName || transaction.transactionPurpose || "Item")}`
+                            : formatJournalPurpose(transaction.transactionPurpose)}
                           {transaction.transactionType === "Payable" &&
                             transaction.subType !== "New_Item" &&
+                            transaction.subType !== "Expense" &&
                             !transaction.transactionPurpose?.includes("(Expense)") ? " " + t('financialReport.expense') : ""}
                         </div>
                         <div style={{ fontWeight: "bold" }}>
-                          {transaction.transactionType === "Pay" ? t('financialReport.pay') : transaction.transactionType === "Payable" ? t('financialReport.payable') : transaction.transactionType === "New_Item" ? t('financialReport.pay') : transaction.transactionType}
+                          {stripBrackets(
+                            transaction.transactionType === "Pay"
+                              ? t('financialReport.pay')
+                              : transaction.transactionType === "Payable"
+                                ? t('financialReport.payable')
+                                : transaction.transactionType === "New_Item"
+                                  ? t('financialReport.pay')
+                                  : transaction.transactionType
+                          )}
                         </div>
                       </>
                     )}
@@ -210,7 +230,7 @@ const TransactionTable = ({
                   <td className="debit">
                     {transaction.transactionType === "Receive" && (
                       <>
-                        <div className="debit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
+                        <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
@@ -218,7 +238,7 @@ const TransactionTable = ({
                     )}
                     {transaction.transactionType === "Payable" && (
                       <>
-                        <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
+                        <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
                           $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
@@ -226,7 +246,7 @@ const TransactionTable = ({
                     )}
                     {["Pay", "New_Item"].includes(transaction.transactionType) && (
                       <>
-                        <div className="debit-value" style={{ backgroundColor: "#a7565d", color: "#000000", fontWeight: "bold", padding: "4px 8px", marginBottom: "4px", boxSizing: "border-box" }}>
+                        <div className="debit-value" style={{ ...debitPill, marginBottom: "4px" }}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div style={{ color: "#ffffff", fontSize: "14px" }}>-</div>
@@ -237,7 +257,7 @@ const TransactionTable = ({
                     {transaction.transactionType === "Receive" && (
                       <>
                         <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                        <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
+                        <div className="credit-value" style={creditPill}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </>
@@ -245,7 +265,7 @@ const TransactionTable = ({
                     {transaction.transactionType === "Payable" && (
                       <>
                         <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                        <div className="credit-value" style={{ backgroundColor: "#c7ae4f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
+                        <div className="credit-value" style={creditPill}>
                           $ {parseFloat(transaction.originalAmount || transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </>
@@ -253,7 +273,7 @@ const TransactionTable = ({
                     {["Pay", "New_Item"].includes(transaction.transactionType) && (
                       <>
                         <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>-</div>
-                        <div className="credit-value" style={{ backgroundColor: "#41926f", color: "#000000", fontWeight: "bold", padding: "4px 8px", boxSizing: "border-box" }}>
+                        <div className="credit-value" style={creditPill}>
                           $ {parseFloat(transaction.transactionAmount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </>

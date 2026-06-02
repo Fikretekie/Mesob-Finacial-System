@@ -1,5 +1,10 @@
 import React from "react";
 import "../assets/css/BalanceSheet.css";
+import {
+  FINANCIAL_COLORS,
+  getBalanceColor,
+  getNetIncomeColor,
+} from "utils/financialColors";
 
 const BalanceSheet = ({
   items = [],
@@ -76,14 +81,14 @@ const BalanceSheet = ({
           </tr>
           <tr>
             <td>Cash</td>
-            <td style={{ backgroundColor: "#fffd9d", textAlign: "right" }}>
+            <td style={{ backgroundColor: getBalanceColor(calculateTotalCash()), color: "#000", textAlign: "right" }}>
               ${calculateTotalCash()}
             </td>
             <td></td>
           </tr>
           <tr>
             <td>Inventory</td>
-            <td style={{ backgroundColor: "#fffd9d", textAlign: "right" }}>
+            <td style={{ backgroundColor: FINANCIAL_COLORS.asset, color: "#000", textAlign: "right" }}>
               ${calculateTotalInventory()}
             </td>
             <td></td>
@@ -98,7 +103,7 @@ const BalanceSheet = ({
           <tr>
             <td>Payable </td>
             <td></td>
-            <td style={{ backgroundColor: "#ff998d", textAlign: "right" }}>
+            <td style={{ backgroundColor: FINANCIAL_COLORS.payable, color: "#000", textAlign: "right" }}>
               ${calculateTotalPayable()}
             </td>
           </tr>
@@ -119,7 +124,15 @@ const BalanceSheet = ({
           <tr>
             <td>Retained earnings / Net income</td>
             <td></td>
-            <td style={{ backgroundColor: "#ffa6ff", textAlign: "right" }}>
+            <td
+              style={{
+                backgroundColor: getNetIncomeColor(
+                  parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses())
+                ),
+                color: "#000",
+                textAlign: "right",
+              }}
+            >
               $
               {(
                 parseFloat(calculateTotalRevenue()) -

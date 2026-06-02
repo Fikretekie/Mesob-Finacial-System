@@ -360,8 +360,8 @@
   "of": "sur",
   "incomeEntry": "Entrée de Revenu",
   "expenseEntry": "Entrée de Dépense"
-},
-"downloadReport": {
+  },
+  "downloadReport": {
   "title": "Télécharger le Rapport",
   "downloadFinancialReport": "Télécharger le Rapport Financier",
   "downloadDashboard": "Télécharger le Tableau de Bord",
@@ -414,5 +414,58 @@
     "originalSize": "Taille originale",
     "compressedSize": "Taille compressée",
     "fileTooBigNonImage": "Les fichiers {{type}} ne peuvent pas être compressés automatiquement. La taille du fichier est {{size}} — la taille maximale autorisée est {{max}} Mo."
+  },
+  "auth": {
+    "login": {
+      "pageTitle": "Connexion - Meksova",
+      "title": "Connexion",
+      "welcome": "Bienvenue ! Connectez-vous pour accéder à",
+      "brandName": "Meksova",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "emailPlaceholder": "Entrez votre e-mail",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "submit": "Connexion",
+      "pleaseWait": "Veuillez patienter",
+      "or": "OU",
+      "continueGoogle": "Continuer avec Google",
+      "continueApple": "Continuer avec Apple",
+      "processing": "Traitement...",
+      "processingGoogle": "Connexion Google en cours...",
+      "processingApple": "Connexion Apple en cours...",
+      "noAccount": "Pas encore de compte ?",
+      "signUp": "S'inscrire",
+      "accountNotFound": "Compte introuvable. Inscrivez-vous ou contactez le support.",
+      "loginFailed": "Échec de la connexion. Veuillez réessayer."
+    },
+    "marketing": {
+      "trustedBy": "Approuvé par des centaines de petits entrepreneurs",
+      "headline": "Notre mission est de protéger votre entreprise",
+      "headlineAccent": "et plus",
+      "testimonial": "Meksova est une excellente application, très facile à utiliser. Elle conserve tous vos reçus au même endroit, ce qui facilite le suivi des dépenses et les démarches fiscales sans stress. Je la recommande vivement !",
+      "testimonialAuthor": "Mohamed Hassan",
+      "learnMore": "En savoir plus",
+      "watermark": "finance mondiale"
     }
+  },
+  "landing": {
+    "nav": {
+      "home": "Accueil",
+      "services": "Services",
+      "about": "À propos",
+      "contact": "Contact",
+      "logIn": "Connexion",
+      "getStarted": "Commencer gratuitement"
+    },
+    "about": {
+      "tagline": "À propos de meksova",
+      "title": "Travaillons ensemble pour",
+      "titleHighlight": "votre entreprise",
+      "story": "meksova est né de nos propres difficultés à gérer et enregistrer les transactions financières avec précision et efficacité. Après avoir rencontré des défis dans la gestion de nos finances, nous avons compris le besoin d'une solution automatisée robuste. C'est alors que nous avons créé meksova — un système conçu pour simplifier l'enregistrement des transactions financières. meksova utilise l'automatisation pour suivre et enregistrer chaque transaction au quotidien, transformant la façon dont vous gérez les finances de votre entreprise. Notre plateforme offre des rapports professionnels et faciles à comprendre comme les écritures comptables, les états des résultats et les bilans. Laissez meksova vous aider à prendre le contrôle de votre avenir financier en toute confiance.",
+      "missionTitle": "Notre mission est de protéger votre entreprise et bien plus",
+      "missionSubtext": "Suivez les dépenses, générez des rapports prêts pour les impôts et gérez les reçus facilement — conçu pour les petits entrepreneurs. Commencez maintenant",
+      "discoverMore": "En savoir plus"
+    }
+  }
 }

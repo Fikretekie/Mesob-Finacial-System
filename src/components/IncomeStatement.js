@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../assets/css/IncomeStatement.css";
+import { FINANCIAL_COLORS, getNetIncomeColor } from "utils/financialColors";
 
 const IncomeStatement = ({ items = [] }) => {
   const [revenues, setRevenues] = useState({});
@@ -82,7 +83,7 @@ const IncomeStatement = ({ items = [] }) => {
               <td>
                 <strong>Total Revenue</strong>
               </td>
-              <td style={{ backgroundColor: "#ffa6ff", fontWeight: "bold" }}>
+              <td style={{ backgroundColor: FINANCIAL_COLORS.income, color: "#000", fontWeight: "bold" }}>
                 ${calculateTotalRevenue()}
               </td>
             </tr>
@@ -105,7 +106,7 @@ const IncomeStatement = ({ items = [] }) => {
               <td>
                 <strong>Total Expenses</strong>
               </td>
-              <td style={{ backgroundColor: "#ff998d" }}>
+              <td style={{ backgroundColor: FINANCIAL_COLORS.expense, color: "#000" }}>
                 ${calculateTotalExpenses()}
               </td>
             </tr>
@@ -120,7 +121,15 @@ const IncomeStatement = ({ items = [] }) => {
                     : "Net Income"}
                 </strong>
               </td>
-              <td style={{ backgroundColor: "#90EE90", fontWeight: "bold" }}>
+              <td
+                style={{
+                  backgroundColor: getNetIncomeColor(
+                    parseFloat(calculateTotalRevenue()) - parseFloat(calculateTotalExpenses())
+                  ),
+                  color: "#000",
+                  fontWeight: "bold",
+                }}
+              >
                 $
                 {(
                   parseFloat(calculateTotalRevenue()) -

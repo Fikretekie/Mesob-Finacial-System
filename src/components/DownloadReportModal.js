@@ -13,6 +13,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import html2canvas from 'html2canvas';
 import ReactApexChart from "react-apexcharts";
+import { FINANCIAL_COLORS } from "utils/financialColors";
 
 // English fallbacks when translation is missing (show English or key, never blank)
 const PDF_EN = {
@@ -186,10 +187,10 @@ const DownloadReportModal = ({
       legend: { show: false },
     });
 
-    setCashOnHandOptions(getChartOptions(pt("cashFlowTrend"), sortedDailyData.map((i) => i.cashOnHand), sortedDailyData.map((i) => formatDateLabel(i.date)), "#41926f"));
-    setRevenueOptions(getChartOptions(pt("revenueGrowth"), sortedDailyData.map((i) => i.revenue), sortedDailyData.map((i) => formatDateLabel(i.date)), "#2b427d"));
-    setPayableOptions(getChartOptions(pt("totalPayable"), sortedDailyData.map((i) => i.payable), sortedDailyData.map((i) => formatDateLabel(i.date)), "#c7ae4f"));
-    setExpensesOptions(getChartOptions(pt("totalExpenses"), sortedDailyData.map((i) => i.expenses), sortedDailyData.map((i) => formatDateLabel(i.date)), "#a7565d"));
+    setCashOnHandOptions(getChartOptions(pt("cashFlowTrend"), sortedDailyData.map((i) => i.cashOnHand), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.positive));
+    setRevenueOptions(getChartOptions(pt("revenueGrowth"), sortedDailyData.map((i) => i.revenue), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.income));
+    setPayableOptions(getChartOptions(pt("totalPayable"), sortedDailyData.map((i) => i.payable), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.payable));
+    setExpensesOptions(getChartOptions(pt("totalExpenses"), sortedDailyData.map((i) => i.expenses), sortedDailyData.map((i) => formatDateLabel(i.date)), FINANCIAL_COLORS.expense));
   }, [items, initialBalance, initialoutstandingDebt]);
 
   // Wait for hidden chart divs to be in the DOM (so dashboard-only PDF can capture them)
