@@ -103,8 +103,8 @@ const styles = {
     lineHeight: 1.5,
     margin: 0,
   },
-  featureBold: { 
-    fontWeight: "600", 
+  featureBold: {
+    fontWeight: "600",
     color: "#e2e8f0",
   },
   pitch: {
@@ -118,10 +118,10 @@ const styles = {
   },
   /* price */
   priceWrap: { textAlign: "center", marginBottom: "1rem" },
-  price: { 
+  price: {
     fontSize: "clamp(1.9rem, 8vw, 2.4rem)", // ← more prominent
-    fontWeight: "700", 
-    color: "#ffffff", 
+    fontWeight: "700",
+    color: "#ffffff",
     margin: 0,
     marginBottom: "0.25rem",
   },
@@ -359,8 +359,8 @@ const SubscriptionPlans = () => {
       },
       paypalPlanId: {
         monthly: window?.location.hostname.includes("localhost")
-          ? "P-75006919S65969906NDAXFNA"
-          : "P-1E453171T1240781XNDIUNGY",
+          ? "P-1E453171T1240781XNDIUNGY"
+          : "P-75006919S65969906NDAXFNA",
       },
     },
   ];
@@ -412,7 +412,7 @@ const SubscriptionPlans = () => {
       console.error("Cancel Stripe subscription:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to cancel Stripe subscription. Please try again."
+        "Failed to cancel Stripe subscription. Please try again."
       );
     } finally {
       setCancelLoading(false);
@@ -440,8 +440,8 @@ const SubscriptionPlans = () => {
       console.error("Cancel PayPal subscription:", err);
       setError(
         err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Failed to cancel PayPal subscription. Please try again or cancel in your PayPal account."
+        err.response?.data?.error ||
+        "Failed to cancel PayPal subscription. Please try again or cancel in your PayPal account."
       );
     } finally {
       setCancelLoading(false);
@@ -497,7 +497,7 @@ const SubscriptionPlans = () => {
       <Helmet>
         <title>{t("subscription.title")} - Meksova</title>
       </Helmet>
-    
+
       <div
         className="content"
         style={{
@@ -665,6 +665,11 @@ const SubscriptionPlans = () => {
                         Object.values(p.priceId).includes(selectedPriceId)
                       );
                       const planId = selectedPlan?.paypalPlanId?.monthly;
+                      console.log("planId", planId);
+                      console.log("selectedPlan", selectedPlan);
+                      console.log("plans", plans);
+                      console.log("selectedPriceId", selectedPriceId);
+
                       return (
                         <button
                           disabled={loading}
