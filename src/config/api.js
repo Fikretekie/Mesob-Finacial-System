@@ -34,14 +34,12 @@ export function getStripeMonthlyPriceId() {
   const env = getEnv();
   if (env === "production") {
     console.log("process.env.REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION");
-
     return (
       process.env.REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION
     );
   }
   if (env === "staging") {
     console.log("process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING");
-
     return (
       process.env.REACT_APP_STRIPE_PRICE_MONTHLY_STAGING
     );
