@@ -360,7 +360,7 @@ const SubscriptionPlans = () => {
       paypalPlanId: {
         monthly: window?.location.hostname.includes("localhost")
           ? "P-1E453171T1240781XNDIUNGY"
-          : "P-75006919S65969906NDAXFNA",
+          : "P-6F168158R7479781ENIS3BMQ",
       },
     },
   ];
