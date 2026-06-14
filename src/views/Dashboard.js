@@ -999,9 +999,14 @@ function Dashboard() {
       {userRole === 0 && (
         <div
           className="content "
-          style={{ marginBottom: "5px", minHeight: "100px", paddingInline: 15 }}
+          style={{
+            marginBottom: "5px",
+            minHeight: "100px",
+            paddingInline: 15,
+            marginTop: isMobile ? 8 : 80,
+          }}
         >
-          <Row style={{ marginTop: "34px" }}>
+          <Row style={{ marginTop: isMobile ? 8 : 12 }}>
             <Col xs={12}>
               <Card style={{ backgroundColor: "#101926" }}>
                 <CardHeader>
@@ -1075,11 +1080,11 @@ function Dashboard() {
                       ...(isMobile
                         ? {}
                         : {
-                            overflowX: "auto",
-                            overflowY: "hidden",
-                            paddingBottom: "2px",
-                            WebkitOverflowScrolling: "touch",
-                          }),
+                          overflowX: "auto",
+                          overflowY: "hidden",
+                          paddingBottom: "2px",
+                          WebkitOverflowScrolling: "touch",
+                        }),
                     }}
                   >
                     <div

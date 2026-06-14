@@ -69,6 +69,7 @@
     "netIncome": "Résultat Net",
     "netLoss": "Perte Nette",
     "selectUser": "Sélectionner un Utilisateur",
+    "selectUserToView": "Sélectionner un Utilisateur à Afficher:",
     "searchUser": "Rechercher ou sélectionner un utilisateur...",
     "editTransaction": "Modifier la Transaction",
     "type": "Type",
@@ -370,6 +371,9 @@
   },
   "documents": {
     "title": "Documents",
+    "selectUserToView": "Sélectionner un Utilisateur pour Voir les Documents:",
+    "searchUser": "Rechercher ou sélectionner un utilisateur...",
+    "pleaseSelectUser": "Veuillez sélectionner un utilisateur pour voir les documents.",
     "subtitle": "Téléchargez et gérez les fichiers importants. Taille max :",
     "upload": "Télécharger un document",
     "uploading": "Téléchargement…",

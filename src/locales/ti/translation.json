@@ -68,6 +68,7 @@
     "netIncome": "ተወሳኺ እቶት",
     "netLoss": "ተወሳኺ ምጥፋእ",
     "selectUser": "ተጠቃሚ ምረጽ",
+    "selectUserToView": "ንምርኣይ ተጠቃሚ ምረጽ:",
     "searchUser": "ተጠቃሚ ደልይ ወይ ምረጽ...",
     "editTransaction": "ግብይት ኣረምቲ",
     "type": "ዓይነት",
@@ -508,6 +509,9 @@
   },
   "documents": {
     "title": "ሰነድታት",
+    "selectUserToView": "ሰነድታት ንምርኣይ ተጠቃሚ ምረጽ:",
+    "searchUser": "ተጠቃሚ ደልይ ወይ ምረጽ...",
+    "pleaseSelectUser": "በጃኻ ሰነድታት ንምርኣይ ተጠቃሚ ምረጽ።",
     "subtitle": "ኣገዳስን ፋይላት ስቀል ኣስተዳድር። ከፍታዊ መጠን ፋይል:",
     "upload": "ሰነድ ስቀል",
     "uploading": "በማስቀመጥ ላይ…",

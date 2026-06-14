@@ -70,6 +70,7 @@
     "netIncome": "ተጨማሪ ገቢ",
     "netLoss": "ተጨማሪ ኪሳራ",
     "selectUser": "ተጠቃሚ ይምረጡ",
+    "selectUserToView": "ለማየት ተጠቃሚ ይምረጡ:",
     "searchUser": "ተጠቃሚ ይፈልጉ ወይም ይምረጡ...",
     "editTransaction": "ግብይት አርትዕ",
     "type": "ዓይነት",
@@ -510,6 +511,9 @@
     },
   "documents": {
     "title": "ሰነዶች",
+    "selectUserToView": "ሰነዶችን ለማየት ተጠቃሚ ይምረጡ:",
+    "searchUser": "ተጠቃሚ ይፈልጉ ወይም ይምረጡ...",
+    "pleaseSelectUser": "እባክዎ ሰነዶችን ለማየት ተጠቃሚ ይምረጡ።",
     "subtitle": "ጠቃሚ ፋይሎች ይስቀሉ ያስተዳድሩ። ከፍተኛ መጠን ፋይል:",
     "upload": "ሰነድ ይስቀሉ",
     "uploading": "በማስቀመጥ ላይ…",

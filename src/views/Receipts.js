@@ -351,7 +351,7 @@ const Receipts = ({ selectedUser }) => {
 
 
         {userRole === 0 && (
-          <Row style={{ margin: "0", paddingInline: 0 }}>
+          <Row style={{ margin: 0, paddingInline: 0, marginTop: isMobile ? 8 : 80 }}>
             <Col xs={12} style={{ paddingInline: 0 }}>
               <Card style={{ marginBottom: "5px", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#101926" }}></CardHeader>
@@ -436,7 +436,7 @@ const Receipts = ({ selectedUser }) => {
           </Row>
         )}
 
-        <Row style={{ marginTop: 80 }}>
+        <Row style={{ marginTop: userRole === 0 ? (isMobile ? 8 : 12) : 80 }}>
           <Col xs={12}>
             <Card style={{ backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <CardHeader style={{ backgroundColor: "#101926" }}>
