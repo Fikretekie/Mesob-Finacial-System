@@ -512,6 +512,8 @@
     "selectUserToView": "ሰነድታት ንምርኣይ ተጠቃሚ ምረጽ:",
     "searchUser": "ተጠቃሚ ደልይ ወይ ምረጽ...",
     "pleaseSelectUser": "በጃኻ ሰነድታት ንምርኣይ ተጠቃሚ ምረጽ።",
+    "adminSubtitle": "ብተመረጸ ተጠቃሚ ዝተስቀለ ሰነድታት ርአ።",
+    "adminNoDocuments": "እዚ ተጠቃሚ እስካሕ ሰነድታት የለዎም።",
     "subtitle": "ኣገዳስን ፋይላት ስቀል ኣስተዳድር። ከፍታዊ መጠን ፋይል:",
     "upload": "ሰነድ ስቀል",
     "uploading": "በማስቀመጥ ላይ…",

@@ -222,13 +222,14 @@ const Documents = () => {
   const [compressionInfo, setCompressionInfo] = useState(null); // { originalSize, compressedSize }
 
   const userRole = parseInt(localStorage.getItem("role") || "1", 10);
+  const isAdminView = userRole === 0;
   const [selectedUserId, setSelectedUserId] = useState(
     () => localStorage.getItem("selectedUserId") || null
   );
   const [users, setUsers] = useState([]);
 
   const effectiveUserId =
-    userRole === 0 ? selectedUserId : localStorage.getItem("userId");
+    isAdminView ? selectedUserId : localStorage.getItem("userId");
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -237,7 +238,7 @@ const Documents = () => {
   }, []);
 
   useEffect(() => {
-    if (userRole !== 0) return;
+    if (!isAdminView) return;
     const fetchUsers = async () => {
       try {
         const response = await axios.get(apiUrl(ROUTES.USERS));
@@ -248,16 +249,16 @@ const Documents = () => {
       }
     };
     fetchUsers();
-  }, [userRole, t]);
+  }, [isAdminView, t]);
 
   useEffect(() => {
-    if (userRole === 0 && !selectedUserId) {
+    if (isAdminView && !selectedUserId) {
       setDocuments([]);
       setLoading(false);
       return;
     }
     if (effectiveUserId) fetchDocuments(effectiveUserId);
-  }, [userRole, selectedUserId, effectiveUserId]);
+  }, [isAdminView, selectedUserId, effectiveUserId]);
 
   const notify = (place, message, type) => {
     if (notificationAlertRef.current)
@@ -273,7 +274,7 @@ const Documents = () => {
   const fetchDocuments = async (targetUserId) => {
     const uid =
       targetUserId ??
-      (userRole === 0 ? selectedUserId : localStorage.getItem("userId"));
+      (isAdminView ? selectedUserId : localStorage.getItem("userId"));
     if (!uid) return;
     setLoading(true);
     try {
@@ -610,16 +611,18 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       >
         <FaDownload />
       </Button>
-      <Button
-        size="sm"
-        disabled={deletingKey === (doc.key || doc.s3Key)}
-        style={{ backgroundColor: "#dc2626", borderColor: "#b91c1c", color: "#fff" }}
-        onClick={() => handleDelete(doc)}
-        aria-label={t("documents.delete")}
-        title={t("documents.delete")}
-      >
-        {deletingKey === (doc.key || doc.s3Key) ? <Spinner size="sm" /> : <FaTrash />}
-      </Button>
+      {!isAdminView && (
+        <Button
+          size="sm"
+          disabled={deletingKey === (doc.key || doc.s3Key)}
+          style={{ backgroundColor: "#dc2626", borderColor: "#b91c1c", color: "#fff" }}
+          onClick={() => handleDelete(doc)}
+          aria-label={t("documents.delete")}
+          title={t("documents.delete")}
+        >
+          {deletingKey === (doc.key || doc.s3Key) ? <Spinner size="sm" /> : <FaTrash />}
+        </Button>
+      )}
     </div>
   );
 
@@ -634,7 +637,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
         className="content"
         style={{ paddingInline: 15, backgroundColor: "#101926", minHeight: "100vh" }}
       >
-        {userRole === 0 && (
+        {isAdminView && (
           <Row style={{ margin: 0, paddingInline: 0, marginTop: isMobile ? 8 : 80 }}>
             <Col xs={12} style={{ paddingInline: 0 }}>
               <Card
@@ -685,7 +688,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
           </Row>
         )}
 
-        <Row style={{ marginTop: userRole === 0 ? (isMobile ? 8 : 12) : 80 }}>
+        <Row style={{ marginTop: isAdminView ? (isMobile ? 8 : 12) : 80 }}>
           <Col xs={12}>
             <Card
               style={{
@@ -701,28 +704,32 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                     {t("documents.title")}
                   </CardTitle>
                   <div className="d-flex flex-wrap align-items-center" style={{ gap: "14px" }}>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept={ACCEPT_TYPES}
-                      onChange={handleFileSelected}
-                      style={{ display: "none" }}
-                    />
-                    <Button
-                      color="primary"
-                      disabled={uploading || compressing || !effectiveUserId}
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{
-                        backgroundColor: "#3d83f1",
-                        borderColor: "#3d83f1",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      {uploading ? <Spinner size="sm" /> : <FaUpload />}
-                      {uploading ? t("documents.uploading") : t("documents.upload")}
-                    </Button>
+                    {!isAdminView && (
+                      <>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept={ACCEPT_TYPES}
+                          onChange={handleFileSelected}
+                          style={{ display: "none" }}
+                        />
+                        <Button
+                          color="primary"
+                          disabled={uploading || compressing || !effectiveUserId}
+                          onClick={() => fileInputRef.current?.click()}
+                          style={{
+                            backgroundColor: "#3d83f1",
+                            borderColor: "#3d83f1",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "8px",
+                          }}
+                        >
+                          {uploading ? <Spinner size="sm" /> : <FaUpload />}
+                          {uploading ? t("documents.uploading") : t("documents.upload")}
+                        </Button>
+                      </>
+                    )}
                     {documents.length > 0 && (
                       <Button
                         color="secondary"
@@ -743,13 +750,14 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                   </div>
                 </div>
                 <p className="mb-0 mt-2" style={{ color: "#94a3b8", fontSize: "0.875rem" }}>
-                  {t("documents.subtitle")} {MAX_FILE_SIZE_MB} MB.{" "}
-                  {t("documents.subtitleCompress")}
+                  {isAdminView
+                    ? t("documents.adminSubtitle")
+                    : `${t("documents.subtitle")} ${MAX_FILE_SIZE_MB} MB. ${t("documents.subtitleCompress")}`}
                 </p>
               </CardHeader>
 
               <CardBody style={{ backgroundColor: "#1a273a" }}>
-                {userRole === 0 && !selectedUserId ? (
+                {isAdminView && !selectedUserId ? (
                   <div className="text-center py-5" style={{ color: "#94a3b8" }}>
                     <p className="mb-0">{t("documents.pleaseSelectUser")}</p>
                   </div>
@@ -762,15 +770,19 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                   </div>
                 ) : documents.length === 0 ? (
                   <div className="text-center py-5" style={{ color: "#94a3b8" }}>
-                    <p className="mb-2">{t("documents.noDocuments")}</p>
-                    <Button
-                      color="primary"
-                      style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
-                      disabled={!effectiveUserId}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {t("documents.uploadFirst")}
-                    </Button>
+                    <p className={isAdminView ? "mb-0" : "mb-2"}>
+                      {isAdminView ? t("documents.adminNoDocuments") : t("documents.noDocuments")}
+                    </p>
+                    {!isAdminView && (
+                      <Button
+                        color="primary"
+                        style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
+                        disabled={!effectiveUserId}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {t("documents.uploadFirst")}
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <>

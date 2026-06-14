@@ -514,6 +514,8 @@
     "selectUserToView": "ሰነዶችን ለማየት ተጠቃሚ ይምረጡ:",
     "searchUser": "ተጠቃሚ ይፈልጉ ወይም ይምረጡ...",
     "pleaseSelectUser": "እባክዎ ሰነዶችን ለማየት ተጠቃሚ ይምረጡ።",
+    "adminSubtitle": "በተመረጠው ተጠቃሚ የተስቀሉ ሰነዶችን ይመልከቱ።",
+    "adminNoDocuments": "ይህ ተጠቃሚ እስካሁን ሰነዶች የሉትም።",
     "subtitle": "ጠቃሚ ፋይሎች ይስቀሉ ያስተዳድሩ። ከፍተኛ መጠን ፋይል:",
     "upload": "ሰነድ ይስቀሉ",
     "uploading": "በማስቀመጥ ላይ…",

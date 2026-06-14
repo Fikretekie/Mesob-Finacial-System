@@ -379,6 +379,8 @@
     "selectUserToView": "Seleccionar Usuario para Ver Documentos:",
     "searchUser": "Buscar o seleccionar un usuario...",
     "pleaseSelectUser": "Por favor, seleccione un usuario para ver los documentos.",
+    "adminSubtitle": "Ver los documentos subidos por el usuario seleccionado.",
+    "adminNoDocuments": "Este usuario aún no tiene documentos.",
     "subtitle": "Sube y gestiona archivos importantes. Tamaño máximo:",
     "upload": "Subir documento",
     "uploading": "Subiendo…",

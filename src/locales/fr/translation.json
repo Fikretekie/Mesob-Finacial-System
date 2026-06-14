@@ -374,6 +374,8 @@
     "selectUserToView": "Sélectionner un Utilisateur pour Voir les Documents:",
     "searchUser": "Rechercher ou sélectionner un utilisateur...",
     "pleaseSelectUser": "Veuillez sélectionner un utilisateur pour voir les documents.",
+    "adminSubtitle": "Consultez les documents téléchargés par l'utilisateur sélectionné.",
+    "adminNoDocuments": "Cet utilisateur n'a pas encore de documents.",
     "subtitle": "Téléchargez et gérez les fichiers importants. Taille max :",
     "upload": "Télécharger un document",
     "uploading": "Téléchargement…",
