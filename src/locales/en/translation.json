@@ -535,6 +535,8 @@
     "selectUserToView": "Select User to View Documents:",
     "searchUser": "Search or select a user...",
     "pleaseSelectUser": "Please select a user to view documents.",
+    "adminSubtitle": "View documents uploaded by the selected user.",
+    "adminNoDocuments": "This user has no documents yet.",
     "subtitle": "Upload and manage important files. Max file size:",
     "upload": "Upload document",
     "uploading": "Uploading…",
