@@ -2718,9 +2718,10 @@ const MesobFinancial2 = () => {
             marginBottom: "-30px",
             minHeight: "100px",
             paddingInline: 15,
+            marginTop: isMobile ? 8 : 80,
           }}
         >
-          <Row style={{ margin: "0", padding: 0 }}>
+          <Row style={{ margin: 0, padding: 0, marginTop: isMobile ? 8 : 12 }}>
             <Col xs={12} style={{ padding: 0 }}>
               <Card style={{ marginBottom: "5px" }}>
                 <CardHeader>

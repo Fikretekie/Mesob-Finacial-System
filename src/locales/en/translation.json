@@ -75,6 +75,7 @@
     "netLoss": "Net Loss",
     "cashDeficitTooltip": "Cash deficit — review expenses",
     "selectUser": "Select User",
+    "selectUserToView": "Select User to View:",
     "searchUser": "Search or select a user...",
     "editTransaction": "Edit Transaction",
     "type": "Type",
@@ -531,6 +532,9 @@
   },
   "documents": {
     "title": "Documents",
+    "selectUserToView": "Select User to View Documents:",
+    "searchUser": "Search or select a user...",
+    "pleaseSelectUser": "Please select a user to view documents.",
     "subtitle": "Upload and manage important files. Max file size:",
     "upload": "Upload document",
     "uploading": "Uploading…",

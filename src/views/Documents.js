@@ -20,6 +20,8 @@ import {
 } from "reactstrap";
 import { Helmet } from "react-helmet";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
+import Select from "react-select";
 import { FaUpload, FaDownload, FaEye, FaTrash, FaCompressArrowsAlt } from "react-icons/fa";
 import NotificationAlert from "react-notification-alert";
 import { apiUrl, ROUTES, S3_BUCKET_NAME } from "../config/api";
@@ -34,6 +36,49 @@ const ACCEPT_TYPES = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv";
 
 /** Compressible image MIME types */
 const COMPRESSIBLE_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp"];
+
+const userSelectStyles = {
+  control: (provided) => ({
+    ...provided,
+    minHeight: "38px",
+    height: "38px",
+    backgroundColor: "#202a3a !important",
+    borderColor: "#3a4555 !important",
+    color: "#ffffff !important",
+  }),
+  valueContainer: (provided) => ({
+    ...provided,
+    height: "38px",
+    padding: "0 6px",
+    color: "#ffffff !important",
+  }),
+  input: (provided) => ({
+    ...provided,
+    margin: "0px",
+    color: "#ffffff !important",
+  }),
+  indicatorsContainer: (provided) => ({
+    ...provided,
+    height: "38px",
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: "#ffffff !important",
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: "#9ca5b0 !important",
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: "#202a3a",
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused ? "#2a3444" : "#202a3a",
+    color: "#ffffff",
+  }),
+};
 
 /** Keep original extension if user omits it */
 function resolveUploadFileName(inputName, originalFileName) {
@@ -176,7 +221,14 @@ const Documents = () => {
   const [compressionModal, setCompressionModal] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState(null); // { originalSize, compressedSize }
 
-  const userId = localStorage.getItem("userId");
+  const userRole = parseInt(localStorage.getItem("role") || "1", 10);
+  const [selectedUserId, setSelectedUserId] = useState(
+    () => localStorage.getItem("selectedUserId") || null
+  );
+  const [users, setUsers] = useState([]);
+
+  const effectiveUserId =
+    userRole === 0 ? selectedUserId : localStorage.getItem("userId");
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -185,8 +237,27 @@ const Documents = () => {
   }, []);
 
   useEffect(() => {
-    if (userId) fetchDocuments();
-  }, [userId]);
+    if (userRole !== 0) return;
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(apiUrl(ROUTES.USERS));
+        setUsers(response.data || []);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        notify("tr", t("documents.errorList"), "danger");
+      }
+    };
+    fetchUsers();
+  }, [userRole, t]);
+
+  useEffect(() => {
+    if (userRole === 0 && !selectedUserId) {
+      setDocuments([]);
+      setLoading(false);
+      return;
+    }
+    if (effectiveUserId) fetchDocuments(effectiveUserId);
+  }, [userRole, selectedUserId, effectiveUserId]);
 
   const notify = (place, message, type) => {
     if (notificationAlertRef.current)
@@ -199,12 +270,15 @@ const Documents = () => {
       });
   };
 
-  const fetchDocuments = async () => {
-    if (!userId) return;
+  const fetchDocuments = async (targetUserId) => {
+    const uid =
+      targetUserId ??
+      (userRole === 0 ? selectedUserId : localStorage.getItem("userId"));
+    if (!uid) return;
     setLoading(true);
     try {
       const res = await fetch(
-        apiUrl(`${ROUTES.DOCUMENT}?userId=${encodeURIComponent(userId)}`)
+        apiUrl(`${ROUTES.DOCUMENT}?userId=${encodeURIComponent(uid)}`)
       );
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
@@ -256,7 +330,7 @@ const Documents = () => {
    */
   const handleFileSelected = async (e) => {
     const files = e.target.files;
-    if (!files?.length || !userId) return;
+    if (!files?.length || !effectiveUserId) return;
     const file = files[0];
   console.log("[Upload] File selected:", {
       name: file.name,
@@ -377,7 +451,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
     // Step 1 — get presigned URL from Lambda
     const presignRes = await fetch(
       apiUrl(
-        `${ROUTES.DOCUMENT}/presign?userId=${encodeURIComponent(userId)}&fileName=${encodeURIComponent(fileNameForApi)}&contentType=${encodeURIComponent(file.type || "application/octet-stream")}`
+        `${ROUTES.DOCUMENT}/presign?userId=${encodeURIComponent(effectiveUserId)}&fileName=${encodeURIComponent(fileNameForApi)}&contentType=${encodeURIComponent(file.type || "application/octet-stream")}`
       )
     );
 
@@ -403,7 +477,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
 
     console.log("[performUpload] ✅ Upload successful, key:", key);
     notify("tr", t("documents.uploadSuccess"), "success");
-    fetchDocuments();
+    fetchDocuments(effectiveUserId);
   } catch (err) {
     console.error("[performUpload] Error:", { message: err?.message, stack: err?.stack });
     notify("tr", t("documents.uploadError") + " " + (err.message || ""), "danger");
@@ -439,7 +513,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
 
   const handleDelete = async (item) => {
     const key = item.key || item.s3Key;
-    if (!key || !userId) {
+    if (!key || !effectiveUserId) {
       notify("tr", t("documents.noUrl"), "warning");
       return;
     }
@@ -452,7 +526,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: DOCUMENT_DELETE_ACTION,
-          userId,
+          userId: effectiveUserId,
           key,
         }),
       });
@@ -476,7 +550,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
         setPreviewItem(null);
         setPreviewUrl(null);
       }
-      fetchDocuments();
+      fetchDocuments(effectiveUserId);
     } catch (err) {
       console.error("Delete error:", err);
       notify("tr", `${t("documents.deleteError")} ${err.message || ""}`, "danger");
@@ -558,9 +632,60 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
 
       <div
         className="content"
-        style={{ paddingInline: 15, paddingTop: 80, backgroundColor: "#101926", minHeight: "100vh" }}
+        style={{ paddingInline: 15, backgroundColor: "#101926", minHeight: "100vh" }}
       >
-        <Row style={{ marginTop: 25 }}>
+        {userRole === 0 && (
+          <Row style={{ margin: 0, paddingInline: 0, marginTop: isMobile ? 8 : 80 }}>
+            <Col xs={12} style={{ paddingInline: 0 }}>
+              <Card
+                style={{
+                  marginBottom: "5px",
+                  backgroundColor: "#101926",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
+                  borderRadius: "8px",
+                }}
+              >
+                <CardHeader style={{ backgroundColor: "#101926" }} />
+                <CardBody style={{ paddingBottom: "15px", backgroundColor: "#101926" }}>
+                  <FormGroup style={{ marginBottom: 0 }}>
+                    <Label style={{ color: "#ffffff" }}>
+                      {t("documents.selectUserToView")}
+                    </Label>
+                    <Select
+                      options={users.map((user) => ({
+                        value: user.id,
+                        label: user.email,
+                      }))}
+                      value={
+                        users.find((u) => u.id === selectedUserId)
+                          ? {
+                              value: selectedUserId,
+                              label: users.find((u) => u.id === selectedUserId).email,
+                            }
+                          : null
+                      }
+                      onChange={(option) => {
+                        const userId = option ? option.value : null;
+                        setSelectedUserId(userId);
+                        if (userId) {
+                          localStorage.setItem("selectedUserId", userId);
+                        } else {
+                          localStorage.removeItem("selectedUserId");
+                        }
+                      }}
+                      isClearable
+                      isSearchable
+                      placeholder={t("documents.searchUser")}
+                      styles={userSelectStyles}
+                    />
+                  </FormGroup>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
+        <Row style={{ marginTop: userRole === 0 ? (isMobile ? 8 : 12) : 80 }}>
           <Col xs={12}>
             <Card
               style={{
@@ -585,7 +710,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                     />
                     <Button
                       color="primary"
-                      disabled={uploading || compressing || !userId}
+                      disabled={uploading || compressing || !effectiveUserId}
                       onClick={() => fileInputRef.current?.click()}
                       style={{
                         backgroundColor: "#3d83f1",
@@ -601,7 +726,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                     {documents.length > 0 && (
                       <Button
                         color="secondary"
-                        disabled={downloadingAll || !userId}
+                        disabled={downloadingAll || !effectiveUserId}
                         onClick={handleDownloadAll}
                         style={{
                           backgroundColor: "#0d9488",
@@ -624,7 +749,11 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
               </CardHeader>
 
               <CardBody style={{ backgroundColor: "#1a273a" }}>
-                {loading ? (
+                {userRole === 0 && !selectedUserId ? (
+                  <div className="text-center py-5" style={{ color: "#94a3b8" }}>
+                    <p className="mb-0">{t("documents.pleaseSelectUser")}</p>
+                  </div>
+                ) : loading ? (
                   <div className="text-center py-5">
                     <Spinner color="primary" />
                     <p className="mt-2" style={{ color: "#e2e8f0" }}>
@@ -637,6 +766,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                     <Button
                       color="primary"
                       style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
+                      disabled={!effectiveUserId}
                       onClick={() => fileInputRef.current?.click()}
                     >
                       {t("documents.uploadFirst")}

@@ -68,6 +68,7 @@
     "netIncome": "Dakhliga Saafi",
     "netLoss": "Khasaaraha Saafi",
     "selectUser": "Dooro Isticmaale",
+    "selectUserToView": "Dooro Isticmaale si aad u aragto:",
     "searchUser": "Raadi ama dooro isticmaale...",
     "editTransaction": "Wax Ka Badal Macaamil",
     "type": "Nooca",
@@ -360,6 +361,9 @@
   },
   "documents": {
       "title": "Dukumeentiyada",
+      "selectUserToView": "Dooro Isticmaale si aad u aragto Dukumeentiyada:",
+      "searchUser": "Raadi ama dooro isticmaale...",
+      "pleaseSelectUser": "Fadlan dooro isticmaale si aad u aragto dukumeentiyada.",
       "subtitle": "Soo rar oo maamul dukumeentiyada muhimsan. Cabbirka ugu weyn:",
       "upload": "Soo rar dukumeenti",
       "uploading": "Soo rogid…",
