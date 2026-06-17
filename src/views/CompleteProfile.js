@@ -19,6 +19,7 @@ const CompleteProfile = () => {
   const navigate = useNavigate();
 
   const email = localStorage.getItem("socialEmail");
+  
 
   const showNotification = (type, message) => {
     const options = {
