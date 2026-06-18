@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - staging
+      - staging2
 
 jobs:
   deploy:
@@ -90,3 +91,7 @@ jobs:
       - name: Deploy to Staging S3
         if: github.ref == 'refs/heads/staging'
         run: aws s3 sync ./build/ s3://staging.meksova.com
+
+      - name: Deploy to Staging2 S3
+        if: github.ref == 'refs/heads/staging2'
+        run: aws s3 sync ./build/ s3://staging2.meksova.com
