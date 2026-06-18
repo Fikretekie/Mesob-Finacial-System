@@ -51,6 +51,22 @@ jobs:
           REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
           EOF
 
+      - name: Create .env file (Staging)
+        if: github.ref == 'refs/heads/staging2'
+        run: |
+          cat > .env << EOF
+          REACT_APP_API_URL=${{ secrets.STAGING_API_URL }}
+          REACT_APP_ENV=staging
+          REACT_APP_S3_BUCKET=${{ secrets.STAGING2_S3_BUCKET }}
+          REACT_APP_STAGING_APP_URL=${{ secrets.STAGING2_APP_URL }}
+          REACT_APP_STAGING_COGNITO_USER_POOL_ID=${{ secrets.STAGING_COGNITO_USER_POOL_ID }}
+          REACT_APP_STAGING_COGNITO_CLIENT_ID=${{ secrets.STAGING_COGNITO_CLIENT_ID }}
+          REACT_APP_STAGING_COGNITO_DOMAIN=${{ secrets.STAGING_COGNITO_DOMAIN }}
+          REACT_APP_STAGING_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+          REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
+          REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
+          EOF
+
       - name: Debug - Show .env contents
         run: |
           echo "=== .env file contents ==="
