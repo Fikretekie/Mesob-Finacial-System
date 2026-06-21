@@ -5,12 +5,15 @@ on:
     branches:
       - main
       - staging
+      - fikrestagingtest
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -19,6 +22,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # Production Environment
       - name: Create .env file (Production)
         if: github.ref == 'refs/heads/main'
         run: |
@@ -35,6 +39,7 @@ jobs:
           REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION=${{ secrets.STRIPE_PRICE_MONTHLY_PRODUCTION }}
           EOF
 
+      # Staging Environment
       - name: Create .env file (Staging)
         if: github.ref == 'refs/heads/staging'
         run: |
@@ -51,26 +56,44 @@ jobs:
           REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
           EOF
 
-      - name: Debug - Show .env contents
+      # Fikre Test Environment
+      - name: Create .env file (Fikre Test)
+        if: github.ref == 'refs/heads/fikrestagingtest'
         run: |
-          echo "=== .env file contents ==="
-          cat .env
-          echo ""
-          echo "=== Check for empty values ==="
-          grep -E "^REACT_APP_STAGING.*=$" .env && echo "❌ Found empty staging vars!" || echo "✅ All staging vars have values"
+          cat > .env << EOF
+          REACT_APP_API_URL=${{ secrets.STAGING_API_URL }}
+          REACT_APP_ENV=fikrestagingtest
+          REACT_APP_S3_BUCKET=fikrestagingtest
+          REACT_APP_STAGING_APP_URL=${{ secrets.STAGING_APP_URL }}
+          REACT_APP_STAGING_COGNITO_USER_POOL_ID=${{ secrets.STAGING_COGNITO_USER_POOL_ID }}
+          REACT_APP_STAGING_COGNITO_CLIENT_ID=${{ secrets.STAGING_COGNITO_CLIENT_ID }}
+          REACT_APP_STAGING_COGNITO_DOMAIN=${{ secrets.STAGING_COGNITO_DOMAIN }}
+          REACT_APP_STAGING_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
+          REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
+          REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
+          EOF
 
-      - name: Verify .env exists (env is baked into build – no .env on S3)
+      - name: Verify .env Exists
         run: |
-          if [ ! -f .env ]; then echo "::error::No .env created. Check that workflow ran for main or staging."; exit 1; fi
-          echo "REACT_APP_ENV is set. Add GitHub Secrets if any REACT_APP_* values are empty."
+          if [ ! -f .env ]; then
+            echo "::error::No .env file was created."
+            exit 1
+          fi
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
 
       - name: Build React App
-        run: npm install --legacy-peer-deps && npm run build
+        run: npm run build
 
       - name: Deploy to Production S3
         if: github.ref == 'refs/heads/main'
-        run: aws s3 sync ./build/ s3://app.meksova.com
+        run: aws s3 sync ./build/ s3://app.meksova.com --delete
 
       - name: Deploy to Staging S3
         if: github.ref == 'refs/heads/staging'
-        run: aws s3 sync ./build/ s3://staging.meksova.com
+        run: aws s3 sync ./build/ s3://staging.meksova.com --delete
+
+      - name: Deploy to Fikre Test S3
+        if: github.ref == 'refs/heads/fikrestagingtest'
+        run: aws s3 sync ./build/ s3://fikrestagingtest --delete
