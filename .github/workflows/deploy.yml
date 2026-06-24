@@ -57,7 +57,7 @@ jobs:
           EOF
 
       # Fikre Test Environment
-      - name: Create .env file (Fikre Test)
+      - name: Create .env file (Fikre Test)1
         if: github.ref == 'refs/heads/fikrestagingtest'
         run: |
           cat > .env << EOF
