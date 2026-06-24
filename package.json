@@ -20,7 +20,6 @@
     "bootstrap": "4.6.2",
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.4.7",
-    "cross-env": "^7.0.3",
     "file-saver": "^2.0.5",
     "graceful-fs": "^4.2.11",
     "heic2any": "^0.0.4",
@@ -87,5 +86,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }
