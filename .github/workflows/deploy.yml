@@ -1,14 +1,14 @@
-name: Deploy to Amazon S3
+name: Deploy to S3 (Staging Only)
 
 on:
   push:
     branches:
-      - main
-      - staging
+      - nahomstagingtest
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -19,58 +19,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Create .env file (Production)
-        if: github.ref == 'refs/heads/main'
+      - name: Create .env file
         run: |
           cat > .env << EOF
-          REACT_APP_API_URL=${{ secrets.PRODUCTION_API_URL }}
-          REACT_APP_ENV=production
-          REACT_APP_S3_BUCKET=${{ secrets.PRODUCTION_S3_BUCKET }}
-          REACT_APP_PRODUCTION_APP_URL=${{ secrets.PRODUCTION_APP_URL }}
-          REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID=${{ secrets.PRODUCTION_COGNITO_USER_POOL_ID }}
-          REACT_APP_PRODUCTION_COGNITO_CLIENT_ID=${{ secrets.PRODUCTION_COGNITO_CLIENT_ID }}
-          REACT_APP_PRODUCTION_COGNITO_DOMAIN=${{ secrets.PRODUCTION_COGNITO_DOMAIN }}
-          REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID=${{ secrets.PRODUCTION_GOOGLE_CLIENT_ID }}
-          REACT_APP_PRODUCTION_APPLE_CLIENT_ID=${{ secrets.PRODUCTION_APPLE_CLIENT_ID }}
-          REACT_APP_STRIPE_PRICE_MONTHLY_PRODUCTION=${{ secrets.STRIPE_PRICE_MONTHLY_PRODUCTION }}
-          EOF
-
-      - name: Create .env file (Staging)
-        if: github.ref == 'refs/heads/staging'
-        run: |
-          cat > .env << EOF
-          REACT_APP_API_URL=${{ secrets.STAGING_API_URL }}
           REACT_APP_ENV=staging
-          REACT_APP_S3_BUCKET=${{ secrets.STAGING_S3_BUCKET }}
-          REACT_APP_STAGING_APP_URL=${{ secrets.STAGING_APP_URL }}
-          REACT_APP_STAGING_COGNITO_USER_POOL_ID=${{ secrets.STAGING_COGNITO_USER_POOL_ID }}
-          REACT_APP_STAGING_COGNITO_CLIENT_ID=${{ secrets.STAGING_COGNITO_CLIENT_ID }}
-          REACT_APP_STAGING_COGNITO_DOMAIN=${{ secrets.STAGING_COGNITO_DOMAIN }}
-          REACT_APP_STAGING_GOOGLE_CLIENT_ID=${{ secrets.STAGING_GOOGLE_CLIENT_ID }}
-          REACT_APP_STAGING_APPLE_CLIENT_ID=${{ secrets.STAGING_APPLE_CLIENT_ID }}
-          REACT_APP_STRIPE_PRICE_MONTHLY_STAGING=${{ secrets.STRIPE_PRICE_MONTHLY_STAGING }}
+          REACT_APP_API_URL=${{ secrets.STAGING_API_URL }}
+          REACT_APP_S3_BUCKET=nahomstagingtest
           EOF
 
-      - name: Debug - Show .env contents
-        run: |
-          echo "=== .env file contents ==="
-          cat .env
-          echo ""
-          echo "=== Check for empty values ==="
-          grep -E "^REACT_APP_STAGING.*=$" .env && echo "❌ Found empty staging vars!" || echo "✅ All staging vars have values"
-
-      - name: Verify .env exists (env is baked into build – no .env on S3)
-        run: |
-          if [ ! -f .env ]; then echo "::error::No .env created. Check that workflow ran for main or staging."; exit 1; fi
-          echo "REACT_APP_ENV is set. Add GitHub Secrets if any REACT_APP_* values are empty."
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
 
       - name: Build React App
-        run: npm install --legacy-peer-deps && npm run build
+        run: npm run build
 
-      - name: Deploy to Production S3
-        if: github.ref == 'refs/heads/main'
-        run: aws s3 sync ./build/ s3://app.meksova.com
-
-      - name: Deploy to Staging S3
-        if: github.ref == 'refs/heads/staging'
-        run: aws s3 sync ./build/ s3://staging.meksova.com
+      - name: Deploy to S3
+        run: aws s3 sync ./build/ s3://nahomstagingtest --delete
