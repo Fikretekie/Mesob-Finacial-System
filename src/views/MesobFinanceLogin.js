@@ -103,6 +103,11 @@ const MesobFinanceAuth = () => {
       const result = await response.json();
       if (result.message === "User registered successfully") {
         showNotification("success", "Sign up successful! Please log in.");
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'conversion', {
+            'send_to': 'AW-18245722845', // conversion ID/label from Google Ads
+          });
+        }
         setActiveTab("login");
       } else {
         showNotification("danger", "Sign up failed. Please try again.");
