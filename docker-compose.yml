@@ -1,0 +1,43 @@
+services:
+  # Production-like: builds the static bundle and serves it via Nginx on :8080
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_ENV: ${REACT_APP_ENV:-production}
+        REACT_APP_STAGING_APP_URL: ${REACT_APP_STAGING_APP_URL:-}
+        REACT_APP_PRODUCTION_APP_URL: ${REACT_APP_PRODUCTION_APP_URL:-}
+        REACT_APP_STAGING_GOOGLE_CLIENT_ID: ${REACT_APP_STAGING_GOOGLE_CLIENT_ID:-}
+        REACT_APP_STAGING_APPLE_CLIENT_ID: ${REACT_APP_STAGING_APPLE_CLIENT_ID:-}
+        REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID: ${REACT_APP_PRODUCTION_COGNITO_USER_POOL_ID:-}
+        REACT_APP_PRODUCTION_COGNITO_CLIENT_ID: ${REACT_APP_PRODUCTION_COGNITO_CLIENT_ID:-}
+        REACT_APP_PRODUCTION_COGNITO_DOMAIN: ${REACT_APP_PRODUCTION_COGNITO_DOMAIN:-}
+        REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID: ${REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID:-}
+        REACT_APP_PRODUCTION_APPLE_CLIENT_ID: ${REACT_APP_PRODUCTION_APPLE_CLIENT_ID:-}
+    image: mesob-financial-portal:local
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  # Local dev: hot-reloading dev server on :3000 (bind-mounts source, keeps node_modules in the container)
+  dev:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm ci --legacy-peer-deps && npm start"
+    environment:
+      - CI=true
+      - REACT_APP_ENV=${REACT_APP_ENV:-staging}
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - .:/app
+      - dev_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    profiles:
+      - dev
+
+volumes:
+  dev_node_modules:
