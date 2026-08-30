@@ -8,6 +8,7 @@ import AdminSubscriptions from "views/Payment/AdminSubscriptions";
 import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import MesobFinancial2 from "views/mesobfinancial2";
 import Documents from "views/Documents";
+import MileageTracker from "views/MileageTracker";
 
 const userRole = parseInt(localStorage.getItem("role"));
 console.log("userRole---=>>>", userRole);
@@ -94,6 +95,13 @@ const customerRoutes = [
     name: "Documents",
     icon: "files_box",
     component: <Documents />,
+    layout: "/customer",
+  },
+  {
+    path: "/mileage-tracker",
+    name: "Mileage Tracker",
+    icon: "location_pin",
+    component: <MileageTracker />,
     layout: "/customer",
   },
   {
