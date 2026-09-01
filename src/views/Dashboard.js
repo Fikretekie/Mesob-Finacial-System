@@ -409,7 +409,7 @@ function Dashboard() {
     }
   };
 
-  const getChartOptions = (title, data, labels, color = "#007BFF") => {
+  const getChartOptions = (title, data, labels, color = "var(--accent-solid)") => {
     return {
       theme: {
         mode: "dark",
@@ -516,7 +516,7 @@ function Dashboard() {
       },
       grid: {
         show: true,
-        borderColor: "#817646",
+        borderColor: "var(--accent)",
         strokeDashArray: 3,
         row: {
           colors: ["transparent", "transparent"],
@@ -944,8 +944,8 @@ function Dashboard() {
                       setShowDownloadReportModal(true);
                     }}
                     style={{
-                      backgroundColor: "#2b427d",
-                      borderColor: "#2b427d",
+                      backgroundColor: "var(--accent-solid)",
+                      borderColor: "var(--accent-solid)",
                       color: "#ffffff",
                       height: "44px",
                       borderRadius: "10px",
@@ -1008,7 +1008,7 @@ function Dashboard() {
         >
           <Row style={{ marginTop: isMobile ? 8 : 12 }}>
             <Col xs={12}>
-              <Card style={{ backgroundColor: "#101926" }}>
+              <Card style={{ backgroundColor: "var(--surface-2)" }}>
                 <CardHeader>
                   <CardTitle style={{ marginBottom: 0, color: "#ffffff" }} tag="h4">
                     {t('dashboard.selectUser')}
@@ -1030,25 +1030,25 @@ function Dashboard() {
                           ...provided,
                           minHeight: "38px",
                           height: "38px",
-                          backgroundColor: "#101926",
+                          backgroundColor: "var(--surface-2)",
                           color: "#ffffff",
                           borderColor: state.isFocused ? "#ffffff" : "#ffffff",
                           boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
-                          "&:hover": { borderColor: "#817646" },
+                          "&:hover": { borderColor: "var(--accent)" },
                         }),
                         valueContainer: (provided) => ({ ...provided, height: "38px", padding: "0 6px" }),
                         input: (provided) => ({ ...provided, margin: "0px", color: "#ffffff" }),
                         singleValue: (provided) => ({ ...provided, color: "#ffffff" }),
                         placeholder: (provided) => ({ ...provided, color: "#ffffff", opacity: 0.7 }),
                         indicatorsContainer: (provided) => ({ ...provided, height: "38px" }),
-                        menu: (provided) => ({ ...provided, backgroundColor: "#101926", border: "1px solid #ffffff" }),
-                        menuList: (provided) => ({ ...provided, backgroundColor: "#101926" }),
+                        menu: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)", border: "1px solid #ffffff" }),
+                        menuList: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)" }),
                         option: (provided, state) => ({
                           ...provided,
-                          backgroundColor: state.isSelected ? "#2b427d" : state.isFocused ? "#1a2332" : "#101926",
+                          backgroundColor: state.isSelected ? "var(--accent-solid)" : state.isFocused ? "var(--surface-1)" : "var(--surface-2)",
                           color: "#ffffff",
                           cursor: "pointer",
-                          "&:active": { backgroundColor: "#2b427d" },
+                          "&:active": { backgroundColor: "var(--accent-solid)" },
                         }),
                       }}
                     />
@@ -1066,7 +1066,7 @@ function Dashboard() {
         {showDashboardFilters && (
           <Row style={{ marginBottom: "8px", marginTop: isMobile ? 8 : 12 }}>
             <Col xs="12">
-              <Card style={{ backgroundColor: "#101926", border: "1px solid #2a3545" }}>
+              <Card style={{ backgroundColor: "var(--surface-2)", border: "1px solid var(--border)" }}>
                 <CardBody style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
                   <div
                     style={{
@@ -1136,9 +1136,9 @@ function Dashboard() {
                             }
                           }}
                           style={{
-                            backgroundColor: "#202a3a",
+                            backgroundColor: "var(--surface-3)",
                             color: "#ffffff",
-                            border: "1px solid #3a4555",
+                            border: "1px solid var(--border-strong)",
                             borderRadius: "4px",
                             height: "38px",
                             padding: "6px 12px",
@@ -1192,9 +1192,9 @@ function Dashboard() {
                             }
                           }}
                           style={{
-                            backgroundColor: "#202a3a",
+                            backgroundColor: "var(--surface-3)",
                             color: "#ffffff",
-                            border: "1px solid #3a4555",
+                            border: "1px solid var(--border-strong)",
                             borderRadius: "4px",
                             height: "38px",
                             padding: "6px 12px",
@@ -1262,8 +1262,8 @@ function Dashboard() {
                           style={{
                             height: "38px",
                             flexShrink: 0,
-                            backgroundColor: "#3d83f1",
-                            borderColor: "#3d83f1",
+                            backgroundColor: "var(--accent)",
+                            borderColor: "var(--accent)",
                             color: "#ffffff",
                             borderRadius: "4px",
                             padding: "0 16px",
@@ -1330,9 +1330,9 @@ function Dashboard() {
                                 height: "38px",
                                 width: "100%",
                                 borderRadius: "4px",
-                                backgroundColor: "#202a3a",
+                                backgroundColor: "var(--surface-3)",
                                 color: "#ffffff",
-                                border: "1px solid #3a4555",
+                                border: "1px solid var(--border-strong)",
                                 padding: "6px 12px",
                                 paddingRight: "35px",
                               }}
@@ -1386,8 +1386,8 @@ function Dashboard() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              backgroundColor: "#202a3a",
-                              border: "1px solid #3a4555",
+                              backgroundColor: "var(--surface-3)",
+                              border: "1px solid var(--border-strong)",
                               borderRadius: "4px",
                               color: "#ffffff",
                               cursor: "pointer",
@@ -1407,13 +1407,13 @@ function Dashboard() {
           </Row>
         )}
 
-        <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
+        <Row style={{ marginBottom: "5px", backgroundColor: "var(--surface-2)", marginTop: 22 }}>
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card
               className="card-stats"
               style={{
                 position: "relative",
-                backgroundColor: "#101926",
+                backgroundColor: "var(--surface-2)",
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
                 ...getBalanceCardStyle(parseFloat(calculateTotalCash())),
               }}
@@ -1465,7 +1465,7 @@ function Dashboard() {
                     <div
                       style={{
                         width: "100%",
-                        border: "1px solid #22d3ee",
+                        border: "1px solid var(--teal)",
                         borderRadius: "6px",
                         padding: isMobile ? "6px 1.25rem" : "8px 1.25rem",
                         display: "flex",
@@ -1489,7 +1489,7 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
@@ -1519,7 +1519,7 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.payable}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.payable}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
@@ -1549,7 +1549,7 @@ function Dashboard() {
           </Col>
 
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.income}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
+            <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.income}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
                 <Row>
@@ -1579,11 +1579,11 @@ function Dashboard() {
           </Col>
         </Row>
 
-        <Row style={{ backgroundColor: "#101926" }}>
+        <Row style={{ backgroundColor: "var(--surface-2)" }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
+              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="cashFlowChart">
@@ -1593,9 +1593,9 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
+              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="revenueChart">
@@ -1605,9 +1605,9 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
+              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="payableChart">
@@ -1617,9 +1617,9 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
+              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
                 <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="expensesChart">
