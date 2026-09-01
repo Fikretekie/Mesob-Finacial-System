@@ -1609,47 +1609,9 @@ function Dashboard() {
           })}
         </Row>
 
-        <p className="mk-eyebrow" style={{ margin: "20px 3px 10px" }}>
-          {t("dashboard.trends", "Trends · last 12 months")}
-        </p>
-        <Row style={{ marginTop: 0 }}>
-          <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card className="chart-card">
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ border: "none" }}>
-                <p className="chart-card__title">{t('dashboard.revenueChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="revenueChart">
-                  <ReactApexChart options={revenueChartData} series={revenueChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card className="chart-card">
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ border: "none" }}>
-                <p className="chart-card__title">{t('dashboard.totalPayableChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="payableChart">
-                  <ReactApexChart options={payableChartData} series={payableChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card className="chart-card">
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ border: "none" }}>
-                <p className="chart-card__title">{t('dashboard.totalExpensesChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="expensesChart">
-                  <ReactApexChart options={expensesChartData} series={expensesChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+        {/* Trends grid removed — the switchable overview chart + tile sparklines
+            cover every metric's trend (matches the overview design). The chart
+            data objects are still used by the hero metric selector above. */}
 
         {/* Recent activity + status — design concept, added on top of existing features */}
         <Row style={{ marginTop: 12 }}>
