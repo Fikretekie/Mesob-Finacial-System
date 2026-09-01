@@ -839,7 +839,7 @@ function Dashboard() {
   // Compact inline trend line for the stat tiles. Pure presentational,
   // built from the monthlySales series already loaded. `id` must be unique
   // per instance (gradient defs).
-  const Sparkline = ({ id, data = [], color = "var(--accent)", width = 76, height = 28 }) => {
+  const Sparkline = ({ id, data = [], color = "var(--accent)", width = 76, height = 28, fluid = false }) => {
     const nums = (data || []).map((n) => Number(n) || 0);
     if (nums.length < 2) return null;
     const min = Math.min(...nums);
@@ -855,8 +855,9 @@ function Dashboard() {
       .join(" ");
     const area = `${line} L${width.toFixed(1)},${height} L0,${height} Z`;
     return (
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none" aria-hidden="true" style={{ display: "block" }}>
+      <svg width={fluid ? "100%" : width} height={height} viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none" aria-hidden="true"
+        style={{ display: "block", width: fluid ? "100%" : undefined }}>
         <defs>
           <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor={color} stopOpacity="0.28" />
@@ -1472,73 +1473,41 @@ function Dashboard() {
               }}
             >
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
-                      <CardTitle tag="h3" style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          <BalanceValue
-                            value={parseFloat(calculateTotalCash())}
-                            tooltip={t("financialReport.cashDeficitTooltip")}
-                            style={{ fontSize: "1.5rem" }}
-                          >
-                            {`$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                          </BalanceValue>
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: getBalanceColor(parseFloat(calculateTotalCash())), fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
-                        </p>
-                      )}
-                      {!loadingFinancialData && (
-                        <div style={{ marginTop: 10 }}>
-                          <Sparkline id="sp-cash" data={monthlySales.map((m) => m.cashOnHand)} color={FINANCIAL_COLORS.asset} />
-                        </div>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-dollar-sign" style={{ color: getBalanceColor(parseFloat(calculateTotalCash())), fontSize: isMobile ? "1.5rem" : "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
+              <CardBody className="hero-body">
+                <p className="card-category" style={{ color: "var(--text-3)", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
+                <div className="hero-figure">
+                  <CardTitle tag="h3" style={{ margin: 0 }}>
+                    {loadingFinancialData ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      <BalanceValue
+                        value={parseFloat(calculateTotalCash())}
+                        tooltip={t("financialReport.cashDeficitTooltip")}
+                      >
+                        {`$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </BalanceValue>
+                    )}
+                  </CardTitle>
+                  {!loadingFinancialData && (
+                    <span className="hero-delta" style={{ color: getBalanceColor(parseFloat(calculateTotalCash())) }}>
+                      {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
+                    </span>
+                  )}
+                </div>
                 {!loadingFinancialData && (
-                  <div style={{ marginLeft: "-1.25rem", marginRight: "-1.25rem", marginTop: "10px", width: "calc(100% + 2.5rem)" }}>
-                    <div
-                      style={{
-                        width: "98%",
-                        height: "3px",
-                        backgroundColor: getBalanceColor(parseFloat(calculateTotalCash())),
-                        marginBottom: "8px",
-                        borderRadius: "2px",
-                      }}
-                      aria-hidden
-                    />
-                    <div
-                      style={{
-                        width: "100%",
-                        border: "1px solid var(--teal)",
-                        borderRadius: "6px",
-                        padding: isMobile ? "6px 1.25rem" : "8px 1.25rem",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: "4px",
-                      }}
-                    >
-                      <span style={{ color: "white", fontSize: isMobile ? "0.7rem" : "0.75rem", fontWeight: 600 }}>
-                        {t("dashboard.taxEstimation")}
-                      </span>
-                      <span style={{ color: "white", fontSize: isMobile ? "0.85rem" : "0.95rem", fontWeight: 600 }}>
-                        ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
+                  <div className="hero-spark">
+                    <Sparkline id="sp-cash-hero" data={monthlySales.map((m) => m.cashOnHand)} color={FINANCIAL_COLORS.asset} width={480} height={64} fluid />
+                  </div>
+                )}
+                {!loadingFinancialData && (
+                  <div className="hero-subline">
+                    <div>
+                      <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
+                      <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div>
+                      <span className="hk">{t("dashboard.totalPayable", "Payable")}</span>
+                      <span className="hv" style={{ color: FINANCIAL_COLORS.payable }}>${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
                   </div>
                 )}
