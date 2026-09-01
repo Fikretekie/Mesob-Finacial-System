@@ -104,6 +104,40 @@
 /* Hamburger bars readable on dark. */
 .navbar .navbar-toggler-bar { background: var(--text-1) !important; }
 
+/* ---- Dashboard overview header ---- */
+.dash-overview {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin: var(--sp-4) 0 var(--sp-5);
+}
+.dash-overview__title {
+  margin: var(--sp-1) 0 0;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.dash-overview__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dash-overview__meta::before {
+  content: "";
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 /* ---- Dashboard stat tiles → glass, Uplinq register ----
    !important beats the per-card inline styles without rewriting each card. */
 .card-stats {

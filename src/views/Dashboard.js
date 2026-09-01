@@ -1407,14 +1407,23 @@ function Dashboard() {
           </Row>
         )}
 
-        <Row style={{ marginBottom: "5px", backgroundColor: "var(--surface-2)", marginTop: 22 }}>
+        <div className="dash-overview">
+          <div>
+            <p className="mk-eyebrow">{t("dashboard.financialOverview", "Financial overview")}</p>
+            <h2 className="dash-overview__title">{t("dashboard.title", "Dashboard")}</h2>
+          </div>
+          <span className="dash-overview__meta">
+            {t("dashboard.booksCurrent", "Books current")} ·{" "}
+            {new Date().toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+          </span>
+        </div>
+
+        <Row style={{ marginBottom: "5px", marginTop: 0 }}>
           <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card
               className="card-stats"
               style={{
                 position: "relative",
-                backgroundColor: "var(--surface-2)",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
                 ...getBalanceCardStyle(parseFloat(calculateTotalCash())),
               }}
             >
