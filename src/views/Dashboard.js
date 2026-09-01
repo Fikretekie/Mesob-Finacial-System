@@ -839,6 +839,40 @@ function Dashboard() {
     );
   };
 
+  // Compact inline trend line for the stat tiles. Pure presentational,
+  // built from the monthlySales series already loaded. `id` must be unique
+  // per instance (gradient defs).
+  const Sparkline = ({ id, data = [], color = "var(--accent)", width = 76, height = 28 }) => {
+    const nums = (data || []).map((n) => Number(n) || 0);
+    if (nums.length < 2) return null;
+    const min = Math.min(...nums);
+    const max = Math.max(...nums);
+    const span = max - min || 1;
+    const stepX = width / (nums.length - 1);
+    const pts = nums.map((n, i) => [
+      i * stepX,
+      height - ((n - min) / span) * (height - 5) - 3,
+    ]);
+    const line = pts
+      .map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`)
+      .join(" ");
+    const area = `${line} L${width.toFixed(1)},${height} L0,${height} Z`;
+    return (
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none" aria-hidden="true" style={{ display: "block" }}>
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={color} stopOpacity="0.28" />
+            <stop offset="1" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill={`url(#${id})`} />
+        <path d={line} fill="none" stroke={color} strokeWidth="1.6"
+          strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    );
+  };
+
   const handleUserSelect = (selectedOption) => {
     setDashboardDateRange(null);
     setDashFromDate("");
@@ -1452,6 +1486,11 @@ function Dashboard() {
                           {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
                         </p>
                       )}
+                      {!loadingFinancialData && (
+                        <div style={{ marginTop: 10 }}>
+                          <Sparkline id="sp-cash" data={monthlySales.map((m) => m.cashOnHand)} color={FINANCIAL_COLORS.asset} />
+                        </div>
+                      )}
                     </div>
                   </Col>
                   <Col xs="4">
@@ -1516,6 +1555,11 @@ function Dashboard() {
                           {calculatePercentageChange(totalExpenses, getPreviousMonthValues().expenses).text}
                         </p>
                       )}
+                      {!loadingFinancialData && (
+                        <div style={{ marginTop: 10 }}>
+                          <Sparkline id="sp-exp" data={monthlySales.map((m) => m.expenses)} color={FINANCIAL_COLORS.expense} />
+                        </div>
+                      )}
                     </div>
                   </Col>
                   <Col xs="4">
@@ -1546,6 +1590,11 @@ function Dashboard() {
                           {calculatePercentageChange(totalPayable, getPreviousMonthValues().payable).text}
                         </p>
                       )}
+                      {!loadingFinancialData && (
+                        <div style={{ marginTop: 10 }}>
+                          <Sparkline id="sp-pay" data={monthlySales.map((m) => m.payable)} color={FINANCIAL_COLORS.payable} />
+                        </div>
+                      )}
                     </div>
                   </Col>
                   <Col xs="4">
@@ -1575,6 +1624,11 @@ function Dashboard() {
                         <p style={{ color: FINANCIAL_COLORS.income, fontSize: "0.75rem", margin: 0 }}>
                           {calculatePercentageChange(totalrevenue, getPreviousMonthValues().revenue).text}
                         </p>
+                      )}
+                      {!loadingFinancialData && (
+                        <div style={{ marginTop: 10 }}>
+                          <Sparkline id="sp-rev" data={monthlySales.map((m) => m.revenue)} color={FINANCIAL_COLORS.income} />
+                        </div>
                       )}
                     </div>
                   </Col>
