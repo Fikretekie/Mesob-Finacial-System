@@ -418,7 +418,7 @@ function Dashboard() {
         type: "area",
         background: "transparent",
         toolbar: {
-          show: true,
+          show: false,
           tools: {
             download: CHART_TOOLBAR_DOWNLOAD_ICON,
             zoom: true,
@@ -447,32 +447,22 @@ function Dashboard() {
       ],
       xaxis: {
         categories: labels,
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        tooltip: { enabled: false },
         labels: {
           rotate: -45,
           rotateAlways: false,
+          hideOverlappingLabels: true,
           style: {
-            fontSize: "11px",
-            colors: "#ffffff",
-          },
-        },
-        title: {
-          text: "Date",
-          style: {
-            fontSize: "12px",
-            fontWeight: 500,
-            color: "#ffffff",
+            fontSize: "10px",
+            colors: "#7B828E",
+            fontFamily: "JetBrains Mono, monospace",
           },
         },
       },
       yaxis: {
-        title: {
-          text: t('dashboard.amount'),
-          style: {
-            fontSize: "12px",
-            fontWeight: 500,
-            color: "#ffffff",
-          },
-        },
+        title: { text: "" },
         labels: {
           formatter: function (value) {
             if (!value) return "$0";
@@ -485,10 +475,12 @@ function Dashboard() {
             );
           },
           style: {
-            colors: "#ffffff",
+            colors: "#7B828E",
+            fontSize: "10px",
+            fontFamily: "JetBrains Mono, monospace",
           },
         },
-        tickAmount: 8,
+        tickAmount: 5,
         min: 0,
         max: function (max) {
           return max > 0 ? max * 1.1 : 100;
