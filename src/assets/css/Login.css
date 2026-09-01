@@ -1,26 +1,133 @@
 /* =========================================================================
-   Login / auth — premium dark fintech.
-   Consumes design tokens from assets/css/tokens.css. No raw hex here.
+   Auth — premium dark fintech, two-panel composition.
+   Left: brand + product glimpse over an ambient blue field.
+   Right: frosted glass sign-in card.
+   Consumes tokens.css. No raw hex.
    ========================================================================= */
 
-.login-container {
+.auth {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: var(--sp-6);
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
   font-family: var(--font-sans);
-  background:
-    radial-gradient(1100px 600px at 50% -10%, rgba(59, 130, 246, 0.14), transparent 60%),
-    radial-gradient(900px 520px at 100% 110%, rgba(59, 130, 246, 0.07), transparent 55%),
-    var(--bg);
+  background: var(--bg);
+  color: var(--text-1);
 }
 
-/* Card ---------------------------------------------------------------- */
+/* ---- Left: brand panel ---------------------------------------------- */
+.auth__brand {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(28px, 4vw, 56px);
+  border-right: 1px solid var(--border);
+  background:
+    radial-gradient(1000px 620px at 18% -8%, rgba(59, 130, 246, 0.18), transparent 58%),
+    radial-gradient(760px 520px at 92% 108%, rgba(59, 130, 246, 0.10), transparent 55%),
+    var(--surface-1);
+}
+
+/* faint oversized wordmark, structural not decorative */
+.auth__brand::after {
+  content: "";
+  position: absolute;
+  inset: auto -8% -18% auto;
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(59, 130, 246, 0.10), transparent);
+  pointer-events: none;
+}
+
+.auth__logo img { height: 44px; width: auto; display: block; }
+
+.auth__brand-body { max-width: 30rem; }
+
+.auth__eyebrow {
+  margin: 0 0 var(--sp-4);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.auth__headline {
+  margin: 0 0 var(--sp-5);
+  font-size: clamp(2rem, 3.6vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--text-1);
+}
+.auth__headline span { color: var(--accent); }
+
+.auth__sub {
+  margin: 0 0 var(--sp-8);
+  max-width: 26rem;
+  color: var(--text-2);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+/* product glimpse — two mini glass tiles */
+.auth__glimpse { display: flex; gap: var(--sp-3); max-width: 26rem; }
+
+.auth__tile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-1), var(--glass-inset);
+}
+
+.auth__tile-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.auth__tile-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.auth__tile-delta { font-family: var(--font-mono); font-size: 0.72rem; }
+.auth__tile-delta.up { color: var(--green); }
+
+.auth__brand-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Right: auth panel ---------------------------------------------- */
+.auth__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 56px);
+}
+
 .login-box {
   position: relative;
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   padding: var(--sp-8) var(--sp-8) var(--sp-6);
   text-align: center;
   background: var(--glass-bg);
@@ -29,41 +136,24 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-3), var(--glass-inset);
+  animation: auth-rise var(--dur) var(--ease) both;
 }
 
-/* Solid fallback where frosting is unavailable or unwanted. */
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .login-box { background: var(--surface-2); }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .login-box {
-    background: var(--surface-2);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-
-/* The lit top edge that says "this is a pane". */
 .login-box::before {
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
   height: 1px;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
 }
 
-.logo_img {
-  width: 76px;
-  height: auto;
-  margin-bottom: var(--sp-4);
-}
+.logo_img { width: 64px; height: auto; margin-bottom: var(--sp-4); }
 
 .login-box h2 {
   margin: 0 0 var(--sp-2);
   color: var(--text-1);
-  font-family: var(--font-sans);
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -71,31 +161,22 @@
 .login-welcome,
 .login-box > p {
   color: var(--text-2);
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   margin-bottom: var(--sp-6);
 }
-
 .login-brand,
-.login-box > p span {
-  color: var(--accent);
-  font-weight: 600;
-}
+.login-box > p span { color: var(--accent); font-weight: 600; }
 
-/* Inputs -------------------------------------------------------------- */
-.login-input-group {
-  margin-bottom: var(--sp-4);
-  text-align: left;
-}
-
+/* Inputs */
+.login-input-group { margin-bottom: var(--sp-4); text-align: left; }
 .login-input-group label {
   display: block;
   margin: 0 0 var(--sp-2);
   color: var(--text-2);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-
 .login-input-group input,
 .login-input-group input[type="email"],
 .login-input-group input[type="password"],
@@ -110,23 +191,14 @@
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   outline: none;
-  transition: border-color var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease);
 }
-
 .password-container input { padding-right: 46px; }
-
 .login-input-group input::placeholder,
-.password-container input::placeholder {
-  color: var(--text-3);
-  opacity: 1;
-}
-
+.password-container input::placeholder { color: var(--text-3); opacity: 1; }
 .login-input-group input:hover,
-.password-container input:hover {
-  border-color: var(--border-strong);
-}
-
+.password-container input:hover { border-color: var(--border-strong); }
 .login-input-group input:focus,
 .password-container input:focus {
   border-color: var(--accent);
@@ -134,150 +206,91 @@
   background: var(--surface-2);
 }
 
-/* Password reveal ----------------------------------------------------- */
-.password-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
+/* Password reveal */
+.password-container { position: relative; display: flex; align-items: center; }
 .toggle-password {
-  position: absolute;
-  top: 50%;
-  right: 3px;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: none;
-  border: none;
-  border-radius: var(--r-sm);
-  color: var(--text-3);
-  cursor: pointer;
+  position: absolute; top: 50%; right: 3px; transform: translateY(-50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  background: none; border: none; border-radius: var(--r-sm);
+  color: var(--text-3); cursor: pointer;
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
-
 .toggle-password:hover { color: var(--text-1); background: var(--surface-hover); }
 .toggle-password:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Forgot link --------------------------------------------------------- */
-.forgot-password-link {
-  display: flex;
-  justify-content: flex-end;
-  margin: calc(var(--sp-1) * -1) 0 var(--sp-5);
-}
-
+/* Forgot */
+.forgot-password-link { display: flex; justify-content: flex-end; margin: calc(var(--sp-1) * -1) 0 var(--sp-5); }
 .forgot-password-link a {
-  color: var(--text-2);
-  font-size: 0.85rem;
-  text-decoration: none;
+  color: var(--text-2); font-size: 0.85rem; text-decoration: none;
   transition: color var(--dur) var(--ease);
 }
-
 .forgot-password-link a:hover { color: var(--accent); }
 
-/* Primary button ------------------------------------------------------ */
+/* Primary button */
 .login-btn {
-  width: 100%;
-  min-height: 46px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
+  width: 100%; min-height: 46px;
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
   padding: 0 var(--sp-5);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--accent-ink);
-  background: var(--accent-solid);
-  border: none;
-  border-radius: var(--r-md);
-  cursor: pointer;
+  font-family: var(--font-sans); font-size: 1rem; font-weight: 700;
+  color: var(--accent-ink); background: var(--accent-solid);
+  border: none; border-radius: var(--r-md); cursor: pointer;
   transition: background var(--dur) var(--ease), transform var(--dur-fast) var(--ease),
     box-shadow var(--dur) var(--ease);
 }
-
-.login-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-2);
-}
-
+.login-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-2); }
 .login-btn:active:not(:disabled) { transform: translateY(0); }
 .login-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* Divider ------------------------------------------------------------- */
-.separator {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  margin: var(--sp-5) 0;
-}
+/* Divider */
+.separator { display: flex; align-items: center; gap: var(--sp-3); margin: var(--sp-5) 0; }
+.separator::before, .separator::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.separator span { color: var(--text-3); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
 
-.separator::before,
-.separator::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.separator span {
-  color: var(--text-3);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* Social buttons ------------------------------------------------------ */
+/* Social */
 .social-login-btn {
-  width: 100%;
-  min-height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-3);
-  margin-top: var(--sp-3);
-  padding: 0 var(--sp-4);
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-1) !important;
-  background: var(--surface-3) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--r-md);
-  cursor: pointer;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  width: 100%; min-height: 46px;
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
+  margin-top: var(--sp-3); padding: 0 var(--sp-4);
+  font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600;
+  color: var(--text-1) !important; background: var(--surface-3) !important;
+  border: 1px solid var(--border) !important; border-radius: var(--r-md); cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
-
-.social-login-btn:hover:not(:disabled) {
-  background: var(--surface-hover) !important;
-  border-color: var(--border-strong) !important;
-}
-
+.social-login-btn:hover:not(:disabled) { background: var(--surface-hover) !important; border-color: var(--border-strong) !important; transform: translateY(-1px); }
 .social-login-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .social-login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .social-icon { width: 20px; height: 20px; }
 
-/* Sign-up prompt ------------------------------------------------------ */
-.login-signup-prompt,
-.login-box form ~ p {
-  margin-top: var(--sp-5);
-  color: var(--text-2);
-  font-size: 0.9rem;
-}
-
+.login-signup-prompt, .login-box form ~ p { margin-top: var(--sp-5); color: var(--text-2); font-size: 0.9rem; }
 .login-box a { color: var(--accent); font-weight: 600; text-decoration: none; }
 .login-box a:hover { text-decoration: underline; }
-
 .loading-message { color: var(--text-2); margin-bottom: var(--sp-4); }
 
-/* Responsive ---------------------------------------------------------- */
-@media screen and (max-width: 480px) {
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fallbacks */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .login-box, .auth__tile { background: var(--surface-2); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .login-box, .auth__tile { background: var(--surface-2); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) { .login-box { animation: none; } }
+
+/* ---- Responsive: collapse to single column -------------------------- */
+@media (max-width: 860px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth__brand { display: none; }
+  .auth__panel { min-height: 100vh; background:
+    radial-gradient(1000px 560px at 50% -10%, rgba(59, 130, 246, 0.14), transparent 58%), var(--bg); }
+}
+
+@media (max-width: 480px) {
   .login-box { padding: var(--sp-6) var(--sp-5); }
-  .login-box h2 { font-size: 1.4rem; }
+  .login-box h2 { font-size: 1.35rem; }
 }

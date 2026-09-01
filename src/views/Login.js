@@ -488,8 +488,39 @@ const Login = () => {
       <Helmet>
         <title>Login - Meksova</title>
       </Helmet>
-      <div className="login-container">
-        <NotificationAlert ref={notificationAlertRef} />
+      <NotificationAlert ref={notificationAlertRef} />
+      <div className="auth">
+        <aside className="auth__brand">
+          <div className="auth__logo">
+            <img src={logo} alt="Meksova Finance" />
+          </div>
+          <div className="auth__brand-body">
+            <p className="auth__eyebrow">Meksova Finance</p>
+            <h1 className="auth__headline">
+              Your books, <span>always current.</span>
+            </h1>
+            <p className="auth__sub">
+              Track revenue, expenses, and cash in one place — reviewed and
+              ready when you sit down to make a decision.
+            </p>
+            <div className="auth__glimpse" aria-hidden="true">
+              <div className="auth__tile">
+                <span className="auth__tile-label">Cash on hand</span>
+                <span className="auth__tile-num">$87,091</span>
+                <span className="auth__tile-delta up">↗ 12.4%</span>
+              </div>
+              <div className="auth__tile">
+                <span className="auth__tile-label">Net this month</span>
+                <span className="auth__tile-num">+$61,720</span>
+                <span className="auth__tile-delta up">↗ 9.8%</span>
+              </div>
+            </div>
+          </div>
+          <div className="auth__brand-foot">
+            <span>Bilingual</span><span>·</span><span>Built for small business</span>
+          </div>
+        </aside>
+        <main className="auth__panel">
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
@@ -620,6 +651,7 @@ const Login = () => {
             </>
           )}
         </div>
+        </main>
       </div>
     </>
   );
