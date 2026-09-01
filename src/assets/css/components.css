@@ -22,9 +22,9 @@
   background: var(--glass-bg);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--card-border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-1), var(--glass-inset);
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow);
   padding: var(--sp-6);
 }
 

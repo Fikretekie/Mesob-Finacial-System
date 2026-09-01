@@ -200,9 +200,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   background: var(--glass-bg) !important;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border) !important;
+  border: 1px solid var(--card-border) !important;
   border-radius: var(--r-lg) !important;
-  box-shadow: var(--shadow-1), var(--glass-inset) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
 }
 
 /* Tiny wide-tracked uppercase label. */
@@ -289,9 +289,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   background: var(--glass-bg) !important;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border) !important;
+  border: 1px solid var(--card-border) !important;
   border-radius: var(--r-lg) !important;
-  box-shadow: var(--shadow-1), var(--glass-inset) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
 }
 .chart-card .card-body { background: transparent !important; }
 .chart-card__title {

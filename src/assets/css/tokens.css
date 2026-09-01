@@ -68,6 +68,11 @@
   --glass-blur:    saturate(150%) blur(18px);
   --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
+  /* ---- Blue accent border + glow for cards (tune here to taste) ----
+     Keep it restrained; higher alpha reads neon/AI. */
+  --card-border: rgba(59, 130, 246, 0.30);
+  --card-glow:   0 0 0 1px rgba(59, 130, 246, 0.16), 0 10px 30px rgba(59, 130, 246, 0.10);
+
   /* ---- Spacing scale (dense / dashboard) ---- */
   --sp-1: 4px;
   --sp-2: 8px;
