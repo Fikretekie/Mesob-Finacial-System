@@ -1450,7 +1450,19 @@ function Dashboard() {
         <div className="dash-overview">
           <div>
             <p className="mk-eyebrow">{t("dashboard.financialOverview", "Financial overview")}</p>
-            <h2 className="dash-overview__title">{t("dashboard.title", "Dashboard")}</h2>
+            <h2 className="dash-overview__title">
+              {(() => {
+                const h = new Date().getHours();
+                const g =
+                  h < 12
+                    ? t("dashboard.morning", "Good morning")
+                    : h < 18
+                      ? t("dashboard.afternoon", "Good afternoon")
+                      : t("dashboard.evening", "Good evening");
+                const nm = String(localStorage.getItem("user_name") || "").trim().split(" ")[0];
+                return nm ? `${g}, ${nm}` : g;
+              })()}
+            </h2>
           </div>
           <span className="dash-overview__meta">
             {t("dashboard.booksCurrent", "Books current")} ·{" "}
