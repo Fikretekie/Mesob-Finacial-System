@@ -9,6 +9,7 @@ import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import MesobFinancial2 from "views/mesobfinancial2";
 import Documents from "views/Documents";
 import MileageTracker from "views/MileageTracker";
+import TripHistory from "views/TripHistory";
 
 const userRole = parseInt(localStorage.getItem("role"));
 console.log("userRole---=>>>", userRole);
@@ -102,6 +103,13 @@ const customerRoutes = [
     name: "Mileage Tracker",
     icon: "location_pin",
     component: <MileageTracker />,
+    layout: "/customer",
+  },
+  {
+    path: "/trip-history",
+    name: "Trip History",
+    icon: "location_map-big",
+    component: <TripHistory />,
     layout: "/customer",
   },
   {
