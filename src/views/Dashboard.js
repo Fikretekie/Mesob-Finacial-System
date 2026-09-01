@@ -1515,8 +1515,20 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="7" md="12" xs="12" style={{ paddingLeft: 0, paddingRight: 0 }}>
-            <Row className="no-gutters-x">
+          <Col lg="7" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+            <Card className="chart-card" style={{ height: "100%" }}>
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
+              <CardBody style={{ border: "none", display: "flex", flexDirection: "column", height: "100%" }}>
+                <p className="chart-card__title">{t('dashboard.totalCashOnHandChart')}</p>
+                <div id="cashFlowChart" style={{ flex: 1, minHeight: 0 }}>
+                  <ReactApexChart options={cashOnHandChartData} series={cashOnHandChartData.series} type="area" height={280} />
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        <Row className="no-gutters-x" style={{ marginBottom: "5px" }}>
           <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
@@ -1621,8 +1633,6 @@ function Dashboard() {
               </CardBody>
             </Card>
           </Col>
-            </Row>
-          </Col>
         </Row>
 
         <p className="mk-eyebrow" style={{ margin: "20px 3px 10px" }}>
@@ -1630,18 +1640,6 @@ function Dashboard() {
         </p>
         <Row style={{ marginTop: 0 }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card className="chart-card">
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ border: "none" }}>
-                <p className="chart-card__title">{t('dashboard.totalCashOnHandChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="cashFlowChart">
-                  <ReactApexChart options={cashOnHandChartData} series={cashOnHandChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
             <Card className="chart-card">
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody style={{ border: "none" }}>
