@@ -9,15 +9,25 @@ import { Card, CardHeader, CardBody, CardTitle, Row, Col } from "reactstrap";
 
 const isLocalhost = window.location.href.includes('localhost');
 
+// CRA only inlines vars prefixed REACT_APP_ — without it these are always
+// undefined in the bundle.
 const stripePublishableKey = isLocalhost
-  ? process.env.PUBLISHABLE_KEY_TEST // Test key
-  : process.env.PUBLISHABLE_KEY; // Live key
+  ? process.env.REACT_APP_PUBLISHABLE_KEY_TEST // Test key
+  : process.env.REACT_APP_PUBLISHABLE_KEY; // Live key
 
-const stripePromise = loadStripe(stripePublishableKey);
-
+// Created on demand, not at module scope: index.js imports this file at boot,
+// so a top-level loadStripe() with a missing key threw
+// "IntegrationError: Missing value for Stripe()" on every page load.
+let stripePromise;
+const getStripe = () => {
+  if (!stripePublishableKey) return null;
+  if (!stripePromise) stripePromise = loadStripe(stripePublishableKey);
+  return stripePromise;
+};
 
 const SubscriptionPage = () => {
   const { priceId } = useParams();
+  const stripe = getStripe();
 
   return (
     <>
@@ -30,9 +40,16 @@ const SubscriptionPage = () => {
                 <CardTitle tag="h4">Subscribe</CardTitle>
               </CardHeader>
               <CardBody>
-                <Elements stripe={stripePromise}>
-                  <CheckoutForm priceId={priceId} />
-                </Elements>
+                {stripe ? (
+                  <Elements stripe={stripe}>
+                    <CheckoutForm priceId={priceId} />
+                  </Elements>
+                ) : (
+                  <p className="text-muted mb-0">
+                    Card payment is unavailable right now. Please try again later
+                    or contact support.
+                  </p>
+                )}
               </CardBody>
             </Card>
           </Col>

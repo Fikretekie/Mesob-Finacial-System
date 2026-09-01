@@ -9,8 +9,7 @@ import SubscriptionPlans from "views/Payment/SubscriptionPlans";
 import MesobFinancial2 from "views/mesobfinancial2";
 import Documents from "views/Documents";
 
-const userRole = parseInt(localStorage.getItem("role"));
-console.log("userRole---=>>>", userRole);
+const userRole = parseInt(localStorage.getItem("role"), 10);
 
 const adminRoutes = [
   {
