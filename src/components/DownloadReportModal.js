@@ -926,10 +926,10 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
 
   return (
     <Modal isOpen={isOpen} toggle={toggle} centered>
-      <ModalHeader toggle={toggle} style={{ backgroundColor: "#1a273a", color: "#ffffff", borderBottom: "1px solid #3a4555" }}>
+      <ModalHeader toggle={toggle} style={{ backgroundColor: "transparent", color: "var(--text-1)", borderBottom: "1px solid var(--border)" }}>
      {dt("title")}
       </ModalHeader>
-      <ModalBody style={{ backgroundColor: "#1a273a", padding: "25px" }}>
+      <ModalBody style={{ backgroundColor: "transparent", padding: "24px" }}>
         {/* Hidden off-screen charts for capture */}
         {cashOnHandOptions && (
           <div style={{ position: 'absolute', left: '-10000px', width: '500px', height: '300px' }}>
@@ -953,21 +953,21 @@ const addJournalEntries = (doc, pageWidth, pageHeight, yPos, fontName = "helveti
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <Button color="primary" onClick={() => generatePDF("financial")} disabled={isGenerating}
-            style={{ backgroundColor: "#2b427d", borderColor: "#2b427d", padding: "12px 20px", fontSize: "14px", fontWeight: "500", borderRadius: "6px" }}>
+          <Button onClick={() => generatePDF("financial")} disabled={isGenerating}
+            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border-strong)", color: "var(--text-1)", padding: "12px 20px", fontSize: "14px", fontWeight: "600", borderRadius: "var(--r-md)" }}>
             {isGenerating ? <Spinner size="sm" /> : dt("downloadFinancialReport")}
           </Button>
-          <Button color="info" onClick={() => generatePDF("dashboard")} disabled={isGenerating}
-            style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1", padding: "12px 20px", fontSize: "14px", fontWeight: "500", borderRadius: "6px" }}>
+          <Button onClick={() => generatePDF("dashboard")} disabled={isGenerating}
+            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border-strong)", color: "var(--text-1)", padding: "12px 20px", fontSize: "14px", fontWeight: "600", borderRadius: "var(--r-md)" }}>
             {isGenerating ? <Spinner size="sm" /> : dt("downloadDashboard")}
           </Button>
-          <Button color="success" onClick={() => generatePDF("both")} disabled={isGenerating}
-            style={{ backgroundColor: "#11b981", borderColor: "#11b981", padding: "12px 20px", fontSize: "14px", fontWeight: "500", borderRadius: "6px" }}>
+          <Button onClick={() => generatePDF("both")} disabled={isGenerating}
+            style={{ backgroundColor: "var(--accent-solid)", borderColor: "var(--accent-solid)", color: "#ffffff", padding: "12px 20px", fontSize: "14px", fontWeight: "700", borderRadius: "var(--r-md)" }}>
             {isGenerating ? <Spinner size="sm" /> : dt("downloadBoth")}
           </Button>
         </div>
 
-        <p style={{ color: "#888", fontSize: "12px", marginTop: "20px", textAlign: "center", marginBottom: "0" }}>
+        <p style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "20px", textAlign: "center", marginBottom: "0" }}>
           {dt("pdfNote")}
         </p>
       </ModalBody>
