@@ -104,6 +104,22 @@
 /* Hamburger bars readable on dark. */
 .navbar .navbar-toggler-bar { background: var(--text-1) !important; }
 
+/* ---- Native date/time inputs → dark UI (visible calendar icon + text) ---- */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: dark;
+}
+/* Make the picker indicator clearly visible on dark fields. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.75);
+  cursor: pointer;
+}
+
 /* ---- Dropdown menus → dark (account menu, etc.) ---- */
 .dropdown-menu {
   background: var(--surface-2) !important;
