@@ -1,0 +1,119 @@
+/* =========================================================================
+   App chrome — sidebar, top navbar, ambient field.
+   Overrides the Now UI Dashboard template defaults for signed-in screens.
+   Loaded after the template SCSS so source order wins. Built on tokens.
+   ========================================================================= */
+
+/* ---- Ambient blue field: gives glass panels something to frost ---- */
+.wrapper { background: var(--bg); }
+
+.main-panel {
+  background:
+    radial-gradient(900px 520px at 10% -8%, rgba(59, 130, 246, 0.10), transparent 55%),
+    radial-gradient(1000px 620px at 100% 0%, rgba(59, 130, 246, 0.06), transparent 50%),
+    var(--bg) !important;
+}
+
+/* ---- Sidebar → dark glass ---- */
+.sidebar {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--border);
+}
+
+/* Kill the Now UI coloured (blue) gradient overlays. */
+.sidebar:before,
+.sidebar:after,
+.sidebar[data-color="blue"]:after {
+  background-image: none !important;
+  background-color: transparent !important;
+  opacity: 0 !important;
+}
+
+.sidebar .logo {
+  border-bottom: 1px solid var(--border);
+}
+.sidebar .logo:after { display: none !important; }
+
+/* ---- Nav items ---- */
+.sidebar .sidebar-wrapper { padding: var(--sp-2); }
+
+.sidebar .nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 2px var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) !important;
+  color: var(--text-2) !important;
+  border-radius: var(--r-md);
+  opacity: 1 !important;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.sidebar .nav .nav-link i {
+  color: var(--text-3);
+  font-size: 1.05rem;
+  opacity: 1 !important;
+}
+
+.sidebar .nav .nav-link p { color: inherit; font-weight: 500; margin: 0; }
+
+.sidebar .nav .nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--text-1) !important;
+}
+.sidebar .nav .nav-link:hover i { color: var(--text-1); }
+
+/* Active row — blue "you are here" edge + tint (blue is our brand accent). */
+.sidebar .nav li.active > .nav-link {
+  position: relative;
+  background: var(--accent-soft) !important;
+  color: var(--text-1) !important;
+}
+.sidebar .nav li.active > .nav-link i { color: var(--accent); }
+.sidebar .nav li.active > .nav-link::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+/* Neutralise Now UI's own active pseudo-backgrounds. */
+.sidebar .nav li.active > a::before,
+.sidebar .nav li.active > a::after { opacity: 0 !important; }
+
+/* ---- Top navbar → glass ---- */
+.navbar.navbar-absolute {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none !important;
+}
+.navbar.navbar-absolute.navbar-transparent { background: transparent !important; }
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.navbar p,
+.navbar .now-ui-icons { color: var(--text-1) !important; }
+
+/* Hamburger bars readable on dark. */
+.navbar .navbar-toggler-bar { background: var(--text-1) !important; }
+
+/* ---- Fallbacks: solid where frosting is unavailable / unwanted ---- */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .sidebar,
+  .navbar.navbar-absolute { background: var(--surface-2) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sidebar,
+  .navbar.navbar-absolute {
+    background: var(--surface-2) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

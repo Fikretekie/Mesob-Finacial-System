@@ -33,7 +33,7 @@ function Sidebar(props) {
       <div className="sidebar" data-color={props.backgroundColor}>
         <div
           className="logo"
-          style={{ backgroundColor: "#101926", padding: "5px 12px 5px" }}
+          style={{ backgroundColor: "transparent", padding: "5px 12px 5px" }}
         >
           <a
             href="#"
