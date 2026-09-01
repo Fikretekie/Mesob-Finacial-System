@@ -104,14 +104,46 @@
 /* Hamburger bars readable on dark. */
 .navbar .navbar-toggler-bar { background: var(--text-1) !important; }
 
+/* ---- Dashboard stat tiles → glass, Uplinq register ----
+   !important beats the per-card inline styles without rewriting each card. */
+.card-stats {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset) !important;
+}
+
+/* Tiny wide-tracked uppercase label. */
+.card-stats .card-category {
+  font-family: var(--font-mono) !important;
+  font-size: 0.6875rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase;
+  color: var(--text-3) !important;
+}
+
+/* Medium-weight tabular mono figure (keeps its data colour from inline). */
+.card-stats .card-title {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em;
+}
+
 /* ---- Fallbacks: solid where frosting is unavailable / unwanted ---- */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .sidebar,
-  .navbar.navbar-absolute { background: var(--surface-2) !important; }
+  .navbar.navbar-absolute,
+  .card-stats { background: var(--surface-2) !important; }
 }
 @media (prefers-reduced-transparency: reduce) {
   .sidebar,
-  .navbar.navbar-absolute {
+  .navbar.navbar-absolute,
+  .card-stats {
     background: var(--surface-2) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
