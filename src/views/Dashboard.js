@@ -807,7 +807,7 @@ function Dashboard() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(16, 25, 38, 0.72)",
+          backgroundColor: "rgba(10, 10, 11, 0.66)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
           display: "flex",
@@ -1652,7 +1652,10 @@ function Dashboard() {
           </Col>
         </Row>
 
-        <Row style={{ marginTop: 12 }}>
+        <p className="mk-eyebrow" style={{ margin: "20px 3px 10px" }}>
+          {t("dashboard.trends", "Trends · last 12 months")}
+        </p>
+        <Row style={{ marginTop: 0 }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
             <Card className="chart-card">
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
