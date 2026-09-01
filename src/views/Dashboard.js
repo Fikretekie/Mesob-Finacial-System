@@ -1777,6 +1777,55 @@ function Dashboard() {
             </div>
           </Col>
           <Col lg="5" style={{ paddingInline: 3, marginBottom: 5 }}>
+            <div className="mk-card" style={{ position: "relative", marginBottom: 14 }}>
+              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
+                {t("dashboard.topExpenses", "Top expenses")}
+              </p>
+              {(() => {
+                const groups = {};
+                (allTransactions || []).forEach((tx) => {
+                  const isExp =
+                    tx.subType === "Expense" ||
+                    String(tx.transactionPurpose || "").includes("(Expense)");
+                  if (!isExp) return;
+                  const key =
+                    String(tx.transactionPurpose || "")
+                      .replace(/\s*\(Expense\)\s*/i, "")
+                      .trim() ||
+                    tx.subType ||
+                    t("dashboard.otherExpense", "Other");
+                  groups[key] = (groups[key] || 0) + Math.abs(Number(tx.amount) || 0);
+                });
+                const rows = Object.entries(groups)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5);
+                if (rows.length === 0) {
+                  return (
+                    <div className="dash-empty">
+                      {t("dashboard.noExpenses", "No expenses yet.")}
+                    </div>
+                  );
+                }
+                const max = rows[0][1] || 1;
+                return rows.map(([name, val], i) => (
+                  <div className="dash-bar" key={i}>
+                    <span className="dash-bar__nm" title={name}>{name}</span>
+                    <span className="dash-bar__track">
+                      <span
+                        className="dash-bar__fill"
+                        style={{
+                          width: `${Math.max(4, (val / max) * 100)}%`,
+                          backgroundColor: FINANCIAL_COLORS.expense,
+                        }}
+                      />
+                    </span>
+                    <span className="dash-bar__val">
+                      ${val.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                ));
+              })()}
+            </div>
             <div className="mk-card" style={{ position: "relative" }}>
               <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
                 {t("dashboard.status", "Status")}
