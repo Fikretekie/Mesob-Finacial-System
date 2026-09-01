@@ -271,6 +271,8 @@ function Dashboard() {
   const [users, setUsers] = useState([]);
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
+  // Which metric drives the big hero panel + overview chart (tiles select it).
+  const [heroMetric, setHeroMetric] = useState("cash");
   const [loadingFinancialData, setLoadingFinancialData] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingCompanyName, setLoadingCompanyName] = useState(false);
@@ -944,6 +946,35 @@ function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Metric registry — drives the interactive hero panel + overview chart.
+  const heroMetrics = {
+    cash: {
+      key: "cash", label: t("dashboard.cashOnHand"), value: parseFloat(calculateTotalCash()),
+      prev: getPreviousMonthValues().cashOnHand, color: FINANCIAL_COLORS.asset,
+      chart: cashOnHandChartData, chartTitle: t("dashboard.totalCashOnHandChart"),
+      spark: monthlySales.map((m) => m.cashOnHand),
+    },
+    revenue: {
+      key: "revenue", label: t("dashboard.revenue"), value: totalrevenue,
+      prev: getPreviousMonthValues().revenue, color: FINANCIAL_COLORS.income,
+      chart: revenueChartData, chartTitle: t("dashboard.revenueChart"),
+      spark: monthlySales.map((m) => m.revenue),
+    },
+    expenses: {
+      key: "expenses", label: t("dashboard.totalExpenses"), value: totalExpenses,
+      prev: getPreviousMonthValues().expenses, color: FINANCIAL_COLORS.expense,
+      chart: expensesChartData, chartTitle: t("dashboard.totalExpensesChart"),
+      spark: monthlySales.map((m) => m.expenses),
+    },
+    payable: {
+      key: "payable", label: t("dashboard.totalPayable"), value: totalPayable,
+      prev: getPreviousMonthValues().payable, color: FINANCIAL_COLORS.payable,
+      chart: payableChartData, chartTitle: t("dashboard.totalPayableChart"),
+      spark: monthlySales.map((m) => m.payable),
+    },
+  };
+  const activeMetric = heroMetrics[heroMetric] || heroMetrics.cash;
+
   return (
     <>
       <Helmet>
@@ -1469,46 +1500,52 @@ function Dashboard() {
               className="card-stats card-stats--hero"
               style={{
                 position: "relative",
-                ...getBalanceCardStyle(parseFloat(calculateTotalCash())),
+                ...getBalanceCardStyle(activeMetric.value),
               }}
             >
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody className="hero-body">
-                <p className="card-category" style={{ color: "var(--text-3)", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
+                <p className="card-category" style={{ marginBottom: "0.5rem" }}>{activeMetric.label}</p>
                 <div className="hero-figure">
                   <CardTitle tag="h3" style={{ margin: 0 }}>
                     {loadingFinancialData ? (
                       <Spinner size="sm" />
-                    ) : (
+                    ) : activeMetric.key === "cash" ? (
                       <BalanceValue
-                        value={parseFloat(calculateTotalCash())}
+                        value={activeMetric.value}
                         tooltip={t("financialReport.cashDeficitTooltip")}
                       >
-                        {`$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                       </BalanceValue>
+                    ) : (
+                      <span style={{ color: activeMetric.color }}>
+                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </span>
                     )}
                   </CardTitle>
                   {!loadingFinancialData && (
-                    <span className="hero-delta" style={{ color: getBalanceColor(parseFloat(calculateTotalCash())) }}>
-                      {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
+                    <span className="hero-delta" style={{ color: activeMetric.key === "cash" ? getBalanceColor(activeMetric.value) : activeMetric.color }}>
+                      {calculatePercentageChange(activeMetric.value, activeMetric.prev).text}
                     </span>
                   )}
                 </div>
                 {!loadingFinancialData && (
                   <div className="hero-spark">
-                    <Sparkline id="sp-cash-hero" data={monthlySales.map((m) => m.cashOnHand)} color={FINANCIAL_COLORS.asset} width={480} height={64} fluid />
+                    <Sparkline id="sp-hero" data={activeMetric.spark} color={activeMetric.color} width={480} height={64} fluid />
                   </div>
                 )}
                 {!loadingFinancialData && (
                   <div className="hero-subline">
                     <div>
-                      <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
-                      <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
+                      <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
-                    <div>
-                      <span className="hk">{t("dashboard.totalPayable", "Payable")}</span>
-                      <span className="hv" style={{ color: FINANCIAL_COLORS.payable }}>${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                    </div>
+                    {activeMetric.key === "cash" && (
+                      <div>
+                        <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
+                        <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardBody>
@@ -1519,9 +1556,9 @@ function Dashboard() {
             <Card className="chart-card" style={{ height: "100%" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody style={{ border: "none", display: "flex", flexDirection: "column", height: "100%" }}>
-                <p className="chart-card__title">{t('dashboard.totalCashOnHandChart')}</p>
+                <p className="chart-card__title">{activeMetric.chartTitle}</p>
                 <div id="cashFlowChart" style={{ flex: 1, minHeight: 0 }}>
-                  <ReactApexChart options={cashOnHandChartData} series={cashOnHandChartData.series} type="area" height={280} />
+                  <ReactApexChart options={activeMetric.chart} series={activeMetric.chart.series} type="area" height={280} />
                 </div>
               </CardBody>
             </Card>
@@ -1529,110 +1566,47 @@ function Dashboard() {
         </Row>
 
         <Row className="no-gutters-x" style={{ marginBottom: "5px" }}>
-          <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalExpenses')}</p>
-                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.expense, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: FINANCIAL_COLORS.expense, fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(totalExpenses, getPreviousMonthValues().expenses).text}
-                        </p>
+          {["cash", "revenue", "expenses", "payable"].map((key) => {
+            const m = heroMetrics[key];
+            const selected = key === heroMetric;
+            return (
+              <Col key={key} md="3" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+                <Card
+                  className={`card-stats card-stats--selectable${selected ? " is-selected" : ""}`}
+                  style={{ position: "relative", cursor: "pointer" }}
+                  onClick={() => setHeroMetric(key)}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selected}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setHeroMetric(key); }
+                  }}
+                >
+                  <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+                  <CardBody>
+                    <p className="card-category" style={{ marginBottom: "0.4rem" }}>{m.label}</p>
+                    <CardTitle tag="h3" style={{ color: m.color, margin: 0 }}>
+                      {loadingFinancialData ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        `$${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       )}
-                      {!loadingFinancialData && (
-                        <div style={{ marginTop: 10 }}>
-                          <Sparkline id="sp-exp" data={monthlySales.map((m) => m.expenses)} color={FINANCIAL_COLORS.expense} />
-                        </div>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-chart-line" style={{ color: FINANCIAL_COLORS.expense, fontSize: "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-          <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.payable}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalPayable')}</p>
-                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.payable, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${totalPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: FINANCIAL_COLORS.payable, fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(totalPayable, getPreviousMonthValues().payable).text}
-                        </p>
-                      )}
-                      {!loadingFinancialData && (
-                        <div style={{ marginTop: 10 }}>
-                          <Sparkline id="sp-pay" data={monthlySales.map((m) => m.payable)} color={FINANCIAL_COLORS.payable} />
-                        </div>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-credit-card" style={{ color: FINANCIAL_COLORS.payable, fontSize: "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-          <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.income}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.revenue')}</p>
-                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.income, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${totalrevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: FINANCIAL_COLORS.income, fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(totalrevenue, getPreviousMonthValues().revenue).text}
-                        </p>
-                      )}
-                      {!loadingFinancialData && (
-                        <div style={{ marginTop: 10 }}>
-                          <Sparkline id="sp-rev" data={monthlySales.map((m) => m.revenue)} color={FINANCIAL_COLORS.income} />
-                        </div>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-chart-line" style={{ color: FINANCIAL_COLORS.income, fontSize: "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
+                    </CardTitle>
+                    {!loadingFinancialData && (
+                      <p style={{ color: m.color, fontSize: "0.75rem", margin: "4px 0 0" }}>
+                        {calculatePercentageChange(m.value, m.prev).text}
+                      </p>
+                    )}
+                    {!loadingFinancialData && (
+                      <div style={{ marginTop: 8 }}>
+                        <Sparkline id={`sp-tile-${key}`} data={m.spark} color={m.color} />
+                      </div>
+                    )}
+                  </CardBody>
+                </Card>
+              </Col>
+            );
+          })}
         </Row>
 
         <p className="mk-eyebrow" style={{ margin: "20px 3px 10px" }}>

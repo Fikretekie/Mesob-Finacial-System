@@ -219,6 +219,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   color: var(--text-3) !important;
 }
 
+/* Selectable stat tiles — click to drive the hero panel + chart. */
+.card-stats--selectable { transition: transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease); }
+.card-stats--selectable:hover { transform: translateY(-2px); }
+.card-stats--selectable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card-stats--selectable.is-selected {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), 0 0 0 1px var(--accent), 0 10px 30px rgba(59,130,246,0.16) !important;
+}
+.card-stats--selectable.is-selected .card-category { color: var(--accent) !important; }
+
 /* Hero cash tile — dominant figure, full-width spark, supporting metrics. */
 .card-stats--hero { padding: var(--sp-2); }
 .card-stats--hero .hero-body { padding: var(--sp-6); display: flex; flex-direction: column; }
