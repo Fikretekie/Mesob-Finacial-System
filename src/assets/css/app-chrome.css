@@ -159,6 +159,12 @@
   color: var(--text-3) !important;
 }
 
+/* Hero cash tile — dominant figure, more room. */
+.card-stats--hero { padding: var(--sp-2) var(--sp-2) var(--sp-4); }
+.card-stats--hero .card-body { padding: var(--sp-5) var(--sp-5) var(--sp-4); }
+.card-stats--hero .card-title { font-size: clamp(2rem, 3.4vw, 2.9rem) !important; }
+.card-stats--hero .card-category { font-size: 0.75rem !important; }
+
 /* Medium-weight tabular mono figure (keeps its data colour from inline). */
 .card-stats .card-title {
   font-family: var(--font-mono) !important;

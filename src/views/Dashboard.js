@@ -1454,9 +1454,9 @@ function Dashboard() {
         </div>
 
         <Row style={{ marginBottom: "5px", marginTop: 0 }}>
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+          <Col lg="5" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card
-              className="card-stats"
+              className="card-stats card-stats--hero"
               style={{
                 position: "relative",
                 ...getBalanceCardStyle(parseFloat(calculateTotalCash())),
@@ -1537,7 +1537,9 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+          <Col lg="7" md="12" xs="12" style={{ paddingLeft: 0, paddingRight: 0 }}>
+            <Row className="no-gutters-x">
+          <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
@@ -1572,7 +1574,7 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+          <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.payable}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
@@ -1607,7 +1609,7 @@ function Dashboard() {
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+          <Col md="4" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card className="card-stats" style={{ position: "relative", backgroundColor: "var(--surface-2)", borderBottom: `4px solid ${FINANCIAL_COLORS.income}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <CardBody>
@@ -1640,6 +1642,8 @@ function Dashboard() {
                 </Row>
               </CardBody>
             </Card>
+          </Col>
+            </Row>
           </Col>
         </Row>
 
