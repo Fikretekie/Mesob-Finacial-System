@@ -23,10 +23,24 @@
   max-width: 420px;
   padding: var(--sp-8) var(--sp-8) var(--sp-6);
   text-align: center;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-3);
+  box-shadow: var(--shadow-3), var(--glass-inset);
+}
+
+/* Solid fallback where frosting is unavailable or unwanted. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .login-box { background: var(--surface-2); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .login-box {
+    background: var(--surface-2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 /* The lit top edge that says "this is a pane". */

@@ -57,6 +57,17 @@
   --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
   --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.55);
 
+  /* ---- Glassmorphism ----
+     Translucent dark panes that frost whatever sits behind them. Reads best
+     over the ambient blue field (glows), not flat black. Always paired with a
+     solid fallback (see @supports / reduced-transparency at file end). The
+     top inset hairline is the "lit edge" that sells it as glass. */
+  --glass-bg:      rgba(22, 24, 29, 0.62);   /* surface-2 @ ~62% */
+  --glass-bg-2:    rgba(28, 31, 38, 0.55);   /* lighter pane */
+  --glass-border:  rgba(255, 255, 255, 0.10);
+  --glass-blur:    saturate(150%) blur(18px);
+  --glass-inset:   inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
   /* ---- Spacing scale (dense / dashboard) ---- */
   --sp-1: 4px;
   --sp-2: 8px;

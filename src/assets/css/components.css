@@ -7,13 +7,38 @@
    Prefix: mk-  (Meksova)
    ========================================================================= */
 
-/* ---- Panel / card: flat, hairline border, minimal elevation ---- */
+/* ---- Glass surface (frosted translucent pane) ---- */
+.mk-glass {
+  position: relative;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-2), var(--glass-inset);
+}
+
+/* ---- Panel / card: glassy, hairline border, minimal elevation ---- */
 .mk-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-1), var(--glass-inset);
   padding: var(--sp-6);
+}
+
+/* Solid fallback when the browser can't frost, or the user wants less
+   transparency — a translucent pane over content becomes unreadable. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mk-glass, .mk-card { background: var(--surface-2); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .mk-glass, .mk-card {
+    background: var(--surface-2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .mk-card--flush { padding: 0; }
