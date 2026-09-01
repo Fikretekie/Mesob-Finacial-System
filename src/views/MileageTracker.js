@@ -1,25 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  CardTitle,
-  Row,
-  Col,
-  Button,
-  Badge,
-} from "reactstrap";
+import { useNavigate } from "react-router-dom";
+import { Card, CardBody, Button } from "reactstrap";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { haversineMiles } from "utils/geo";
+import { saveTrip } from "utils/tripStorage";
 
-// GPS readings less accurate than this (meters) are skipped — cell/wifi-based
-// location can jump hundreds of meters and would fake extra "distance driven".
 const MAX_ACCEPTABLE_ACCURACY_METERS = 50;
-
-// Ignore movement smaller than this between two readings — GPS jitter while
-// stationary (parked, stopped at a light) otherwise slowly adds up to fake miles.
 const MIN_MOVEMENT_MILES = 0.005; // ~8 meters
+
+const PURPOSE_OPTIONS = ["Client Visit", "Delivery", "Commute", "Other"];
 
 function formatElapsed(totalSeconds) {
   const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
@@ -28,22 +18,31 @@ function formatElapsed(totalSeconds) {
   return `${h}:${m}:${s}`;
 }
 
+function dateKeyOf(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function MileageTracker() {
+  const navigate = useNavigate();
+
   const [isTracking, setIsTracking] = useState(false);
   const [distanceMiles, setDistanceMiles] = useState(0);
-  const [pointCount, setPointCount] = useState(0);
   const [lastAccuracy, setLastAccuracy] = useState(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [error, setError] = useState("");
-  const [finishedTrip, setFinishedTrip] = useState(null);
+
+  const [pendingTrip, setPendingTrip] = useState(null); // { miles, durationSeconds, endedAt }
+  const [tripType, setTripType] = useState("business");
+  const [showNoteField, setShowNoteField] = useState(false);
+  const [note, setNote] = useState("");
+  const [purposeIndex, setPurposeIndex] = useState(0);
 
   const watchIdRef = useRef(null);
-  const lastPointRef = useRef(null); // { lat, lng }
+  const lastPointRef = useRef(null);
   const startTimeRef = useRef(null);
   const timerIdRef = useRef(null);
 
   useEffect(() => {
-    // Stop the browser's GPS watch if the user navigates away mid-trip
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -53,13 +52,11 @@ function MileageTracker() {
   }, []);
 
   const handlePosition = (position) => {
-    setError(""); // a good reading supersedes any earlier transient GPS error
+    setError("");
     const { latitude, longitude, accuracy } = position.coords;
     setLastAccuracy(accuracy);
 
-    if (accuracy > MAX_ACCEPTABLE_ACCURACY_METERS) {
-      return; // reading too imprecise to trust
-    }
+    if (accuracy > MAX_ACCEPTABLE_ACCURACY_METERS) return;
 
     const prev = lastPointRef.current;
     if (prev) {
@@ -67,19 +64,16 @@ function MileageTracker() {
       if (delta >= MIN_MOVEMENT_MILES) {
         setDistanceMiles((d) => d + delta);
         lastPointRef.current = { lat: latitude, lng: longitude };
-        setPointCount((c) => c + 1);
       }
-      // else: too small to count, keep prev as the reference point
     } else {
       lastPointRef.current = { lat: latitude, lng: longitude };
-      setPointCount(1);
     }
   };
 
   const handlePositionError = (err) => {
     setError(
       err.code === err.PERMISSION_DENIED
-        ? "Location permission denied. Allow location access in your browser to track mileage."
+        ? "Location permission denied. Allow location access to track mileage."
         : `Location error: ${err.message || "signal temporarily unavailable, retrying…"}`
     );
   };
@@ -91,9 +85,7 @@ function MileageTracker() {
     }
 
     setError("");
-    setFinishedTrip(null);
     setDistanceMiles(0);
-    setPointCount(0);
     setElapsedSeconds(0);
     lastPointRef.current = null;
     startTimeRef.current = Date.now();
@@ -121,85 +113,276 @@ function MileageTracker() {
       timerIdRef.current = null;
     }
     setIsTracking(false);
-    setFinishedTrip({
-      distanceMiles,
+    setTripType("business");
+    setShowNoteField(false);
+    setNote("");
+    setPurposeIndex(0);
+    setPendingTrip({
+      miles: distanceMiles,
       durationSeconds: elapsedSeconds,
-      endedAt: new Date().toISOString(),
+      endedAt: new Date(),
     });
+  };
+
+  const discardTrip = () => {
+    setPendingTrip(null);
+  };
+
+  const confirmSaveTrip = () => {
+    if (!pendingTrip) return;
+    const now = pendingTrip.endedAt;
+    saveTrip({
+      dateKey: dateKeyOf(now),
+      date: now.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      miles: Number(pendingTrip.miles.toFixed(2)),
+      durationSeconds: Math.round(pendingTrip.durationSeconds),
+      type: tripType,
+      purpose: PURPOSE_OPTIONS[purposeIndex],
+      note: note.trim(),
+    });
+    setPendingTrip(null);
+    navigate("/customer/trip-history");
   };
 
   return (
     <div className="content">
       <PanelHeader size="sm" />
-      <Row>
-        <Col md="8" className="mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle tag="h4">
-                Mileage Tracker{" "}
-                <Badge color={isTracking ? "success" : "secondary"}>
-                  {isTracking ? "Tracking" : "Idle"}
-                </Badge>
-              </CardTitle>
-              <p className="card-category">
-                Step 1 (frontend only): logs GPS while this tab is open.
-                Nothing is saved yet — this proves location capture works
-                before we wire it to the backend.
-              </p>
-            </CardHeader>
-            <CardBody>
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
 
-              <Row>
-                <Col md="4">
-                  <div className="text-center">
-                    <h2>{distanceMiles.toFixed(2)}</h2>
-                    <p className="card-category">Miles</p>
-                  </div>
-                </Col>
-                <Col md="4">
-                  <div className="text-center">
-                    <h2>{formatElapsed(elapsedSeconds)}</h2>
-                    <p className="card-category">Elapsed</p>
-                  </div>
-                </Col>
-                <Col md="4">
-                  <div className="text-center">
-                    <h2>{lastAccuracy != null ? `±${Math.round(lastAccuracy)}m` : "—"}</h2>
-                    <p className="card-category">
-                      GPS accuracy ({pointCount} points used)
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-
-              <div className="text-center" style={{ marginTop: "20px" }}>
-                {!isTracking ? (
-                  <Button color="success" onClick={startTrip}>
-                    Start Trip
-                  </Button>
-                ) : (
-                  <Button color="danger" onClick={stopTrip}>
-                    Stop Trip
-                  </Button>
-                )}
+      <div style={{ maxWidth: "420px", margin: "0 auto" }}>
+        <Card>
+          <CardBody
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "28px",
+              padding: "32px 20px",
+              minHeight: "420px",
+            }}
+          >
+            {error && (
+              <div className="alert alert-danger" style={{ width: "100%" }} role="alert">
+                {error}
               </div>
+            )}
 
-              {finishedTrip && (
-                <div className="alert alert-info" style={{ marginTop: "20px" }}>
-                  Trip ended: {finishedTrip.distanceMiles.toFixed(2)} miles in{" "}
-                  {formatElapsed(finishedTrip.durationSeconds)}. (Saving trips
-                  to your account is the next step — not built yet.)
-                </div>
-              )}
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
+            {!isTracking ? (
+              <Button
+                onClick={startTrip}
+                style={{
+                  width: "200px",
+                  height: "200px",
+                  borderRadius: "50%",
+                  background: "#096afa",
+                  border: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                  boxShadow: "0 8px 24px rgba(9,106,250,0.35)",
+                }}
+              >
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+                  <path d="M7 5l12 7-12 7V5z" />
+                </svg>
+                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px" }}>
+                  START TRIP
+                </span>
+              </Button>
+            ) : (
+              <Button
+                onClick={stopTrip}
+                style={{
+                  width: "200px",
+                  height: "200px",
+                  borderRadius: "50%",
+                  background: "#e53e3e",
+                  border: "none",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                  boxShadow: "0 0 0 10px rgba(229,62,62,0.15), 0 8px 24px rgba(229,62,62,0.35)",
+                }}
+              >
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+                  <rect x="5" y="5" width="14" height="14" rx="1.5" />
+                </svg>
+                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px" }}>
+                  STOP TRIP
+                </span>
+              </Button>
+            )}
+
+            <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                <span style={{ fontSize: "20px", fontWeight: 700 }}>{distanceMiles.toFixed(2)}</span>
+                <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "#9A9A9A", textTransform: "uppercase" }}>
+                  Miles
+                </span>
+              </div>
+              <div style={{ width: "1px", height: "32px", background: "#3a4555" }} />
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                <span style={{ fontSize: "20px", fontWeight: 700 }}>{formatElapsed(elapsedSeconds)}</span>
+                <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "#9A9A9A", textTransform: "uppercase" }}>
+                  Elapsed
+                </span>
+              </div>
+            </div>
+
+            {isTracking && (
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#11b981" }} />
+                <span style={{ fontSize: "12px", color: "#9A9A9A" }}>
+                  {lastAccuracy != null ? `GPS locked · ±${Math.round(lastAccuracy)}m accuracy` : "Waiting for GPS…"}
+                </span>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      {pendingTrip && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            zIndex: 1050,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              background: "#101926",
+              borderRadius: "14px 14px 0 0",
+              boxShadow: "0 -8px 30px rgba(0,0,0,0.45)",
+              padding: "20px 20px 28px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "#3a4555", alignSelf: "center" }} />
+
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "8px" }}>
+              <span style={{ fontSize: "26px", fontWeight: 700, color: "#00D97E" }}>
+                {pendingTrip.miles.toFixed(2)} mi
+              </span>
+              <span style={{ fontSize: "13px", color: "#9A9A9A" }}>
+                · {formatElapsed(pendingTrip.durationSeconds)}
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div
+                onClick={() => setTripType("business")}
+                style={{
+                  cursor: "pointer",
+                  background: tripType === "business" ? "rgba(9,106,250,0.14)" : "rgba(255,255,255,0.04)",
+                  border: `1.5px solid ${tripType === "business" ? "#096afa" : "#3a4555"}`,
+                  borderRadius: "3px",
+                  padding: "16px 10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={tripType === "business" ? "#096afa" : "#9A9A9A"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="7" width="18" height="12" rx="2" />
+                  <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>Business</span>
+              </div>
+              <div
+                onClick={() => setTripType("personal")}
+                style={{
+                  cursor: "pointer",
+                  background: tripType === "personal" ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                  border: `1.5px solid ${tripType === "personal" ? "#9A9A9A" : "#3a4555"}`,
+                  borderRadius: "3px",
+                  padding: "16px 10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9A9A9A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 11l8-7 8 7" />
+                  <path d="M6 10v9h12v-9" />
+                </svg>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#9A9A9A" }}>Personal</span>
+              </div>
+            </div>
+
+            {!showNoteField ? (
+              <div
+                onClick={() => setShowNoteField(true)}
+                style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#096afa" strokeWidth="2" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                <span style={{ fontSize: "13px", color: "#096afa", fontWeight: 600 }}>Add a note</span>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <select
+                  className="form-control"
+                  value={purposeIndex}
+                  onChange={(e) => setPurposeIndex(Number(e.target.value))}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                >
+                  {PURPOSE_OPTIONS.map((p, i) => (
+                    <option key={p} value={i}>{p}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Optional note…"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
+                />
+              </div>
+            )}
+
+            <Button
+              onClick={confirmSaveTrip}
+              style={{
+                width: "100%",
+                background: "#096afa",
+                border: "none",
+                borderRadius: "3px",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: "15px",
+                padding: "15px",
+                minHeight: "50px",
+              }}
+            >
+              Save Trip
+            </Button>
+            <Button
+              onClick={discardTrip}
+              style={{ width: "100%", background: "transparent", border: "none", color: "#9A9A9A", fontWeight: 600, fontSize: "13px" }}
+            >
+              Discard trip
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
