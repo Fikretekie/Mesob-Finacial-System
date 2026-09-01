@@ -493,7 +493,7 @@ const Login = () => {
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
-          <p style={{ color: "#9ca5b0" }}>Welcome! Login to access the <span style={{ color: "#3b83f6" }}>Meksova</span> </p>
+          <p className="login-welcome">Welcome! Login to access the <span className="login-brand">Meksova</span></p>
           {loading && (
             <div
               className="loading-message"
@@ -522,7 +522,7 @@ const Login = () => {
             <>
               <form onSubmit={handleSubmit}>
                 <div className="login-input-group">
-                  <label style={{ color: "#ffffff" }}>Email</label>
+                  <label>Email</label>
                   <input
                     type="email"
                     value={email}
@@ -533,7 +533,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="login-input-group">
-                  <label style={{ color: "#ffffff" }}>Password</label>
+                  <label>Password</label>
                   <div className="password-container">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -546,6 +546,8 @@ const Login = () => {
                     <button
                       type="button"
                       className="toggle-password"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-pressed={showPassword}
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FontAwesomeIcon
@@ -555,7 +557,7 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
-                <div className="forgot-password-link" style={{ marginTop: 10 }}>
+                <div className="forgot-password-link">
                   <Link to="/forgot-password">Forgot Password?</Link>
                 </div>
                 <button type="submit" className="login-btn" disabled={loading}>
@@ -568,8 +570,8 @@ const Login = () => {
                   )}
                 </button>
               </form>
-              <div className="separator" style={{ marginTop: 10 }}>
-                <span style={{ color: "#9ca5b0" }}>OR</span>
+              <div className="separator">
+                <span>OR</span>
               </div>
               <button
                 onClick={handleGoogleSignIn}
@@ -612,7 +614,7 @@ const Login = () => {
                   </>
                 )}
               </button>
-              <p style={{ marginTop: 10, color: "#9ca5b0" }}>
+              <p className="login-signup-prompt">
                 Don't have an account yet? <Link to="/signup">Sign up</Link>
               </p>
             </>
