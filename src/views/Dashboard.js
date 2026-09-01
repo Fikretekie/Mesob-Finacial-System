@@ -496,27 +496,32 @@ function Dashboard() {
       },
       stroke: {
         curve: "smooth",
-        width: 3,
+        width: 2.5,
         lineCap: "round",
       },
       fill: {
-        type: "solid",
-        opacity: 0.5,
+        type: "gradient",
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.32,
+          opacityTo: 0,
+          stops: [0, 100],
+        },
       },
       colors: [color],
       markers: {
-        size: 5,
+        size: 0,
         colors: [color],
-        strokeColors: "#ffffff",
+        strokeColors: color,
         strokeWidth: 2,
         hover: {
-          size: 7,
+          size: 6,
           sizeOffset: 3,
         },
       },
       grid: {
         show: true,
-        borderColor: "var(--accent)",
+        borderColor: "rgba(255,255,255,0.06)",
         strokeDashArray: 3,
         row: {
           colors: ["transparent", "transparent"],
@@ -553,7 +558,7 @@ function Dashboard() {
         enabled: false,
       },
       legend: {
-        show: true,
+        show: false,
         position: "top",
         horizontalAlign: "right",
         labels: {
