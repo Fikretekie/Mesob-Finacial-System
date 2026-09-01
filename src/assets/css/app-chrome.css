@@ -160,6 +160,10 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .modal-content .close:hover { color: var(--text-1); }
 
+/* Nested stat-tile row must not carry Bootstrap's -15px gutters, or it
+   bleeds left over the hero card. */
+.no-gutters-x { margin-left: 0 !important; margin-right: 0 !important; }
+
 /* ---- Dashboard overview header ---- */
 .dash-overview {
   display: flex;
