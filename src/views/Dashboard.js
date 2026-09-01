@@ -1588,12 +1588,12 @@ function Dashboard() {
           </Col>
         </Row>
 
-        <Row style={{ backgroundColor: "var(--surface-2)" }}>
+        <Row style={{ marginTop: 12 }}>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card className="chart-card">
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
+              <CardBody style={{ border: "none" }}>
+                <p className="chart-card__title">{t('dashboard.totalCashOnHandChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="cashFlowChart">
                   <ReactApexChart options={cashOnHandChartData} series={cashOnHandChartData.series} type="area" height={300} />
@@ -1602,10 +1602,10 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card className="chart-card">
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
+              <CardBody style={{ border: "none" }}>
+                <p className="chart-card__title">{t('dashboard.revenueChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="revenueChart">
                   <ReactApexChart options={revenueChartData} series={revenueChartData.series} type="area" height={300} />
@@ -1614,10 +1614,10 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card className="chart-card">
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
+              <CardBody style={{ border: "none" }}>
+                <p className="chart-card__title">{t('dashboard.totalPayableChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="payableChart">
                   <ReactApexChart options={payableChartData} series={payableChartData.series} type="area" height={300} />
@@ -1626,10 +1626,10 @@ function Dashboard() {
             </Card>
           </Col>
           <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "var(--surface-2)", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
+            <Card className="chart-card">
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "var(--surface-2)", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
+              <CardBody style={{ border: "none" }}>
+                <p className="chart-card__title">{t('dashboard.totalExpensesChart')}</p>
                 <h4 className="text-center mb-3"></h4>
                 <div id="expensesChart">
                   <ReactApexChart options={expensesChartData} series={expensesChartData.series} type="area" height={300} />

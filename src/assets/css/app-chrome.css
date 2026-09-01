@@ -168,16 +168,40 @@
   letter-spacing: -0.01em;
 }
 
+/* ---- Chart cards → glass with mono eyebrow titles ---- */
+.chart-card {
+  position: relative;
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset) !important;
+}
+.chart-card .card-body { background: transparent !important; }
+.chart-card__title {
+  text-align: left !important;
+  margin: 0 0 var(--sp-4) !important;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
 /* ---- Fallbacks: solid where frosting is unavailable / unwanted ---- */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .sidebar,
   .navbar.navbar-absolute,
-  .card-stats { background: var(--surface-2) !important; }
+  .card-stats,
+  .chart-card { background: var(--surface-2) !important; }
 }
 @media (prefers-reduced-transparency: reduce) {
   .sidebar,
   .navbar.navbar-absolute,
-  .card-stats {
+  .card-stats,
+  .chart-card {
     background: var(--surface-2) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
