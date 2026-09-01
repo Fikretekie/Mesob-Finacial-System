@@ -1639,6 +1639,117 @@ function Dashboard() {
             </Card>
           </Col>
         </Row>
+
+        {/* Recent activity + status — design concept, added on top of existing features */}
+        <Row style={{ marginTop: 12 }}>
+          <Col lg="7" style={{ paddingInline: 3, marginBottom: 5 }}>
+            <div className="mk-card" style={{ position: "relative" }}>
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
+                {t("dashboard.recentActivity", "Recent activity")}
+              </p>
+              {(() => {
+                const txs = (allTransactions || [])
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      new Date(b.date || b.createdAt || 0) -
+                      new Date(a.date || a.createdAt || 0)
+                  )
+                  .slice(0, 6);
+                if (txs.length === 0) {
+                  return (
+                    <div className="dash-empty">
+                      {t("dashboard.noActivity", "No transactions yet.")}
+                    </div>
+                  );
+                }
+                return txs.map((tx, i) => {
+                  const isExpense =
+                    tx.subType === "Expense" ||
+                    String(tx.transactionPurpose || "").includes("Expense") ||
+                    Number(tx.amount) < 0;
+                  const amt = Math.abs(Number(tx.amount) || 0);
+                  const when = tx.date || tx.createdAt;
+                  const name =
+                    tx.transactionPurpose ||
+                    tx.title ||
+                    tx.description ||
+                    t("dashboard.transaction", "Transaction");
+                  return (
+                    <div className="dash-tx" key={tx.id || i}>
+                      <span
+                        className="dash-tx__cat"
+                        style={{
+                          backgroundColor: isExpense
+                            ? FINANCIAL_COLORS.expense
+                            : FINANCIAL_COLORS.income,
+                        }}
+                      />
+                      <div>
+                        <div className="dash-tx__nm">{name}</div>
+                        <div className="dash-tx__sub">
+                          {when
+                            ? new Date(when).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : ""}
+                          {tx.subType ? ` · ${tx.subType}` : ""}
+                        </div>
+                      </div>
+                      <span
+                        className="dash-tx__amt"
+                        style={{
+                          color: isExpense
+                            ? FINANCIAL_COLORS.negative
+                            : FINANCIAL_COLORS.positive,
+                        }}
+                      >
+                        {isExpense ? "−" : "+"}$
+                        {amt.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </Col>
+          <Col lg="5" style={{ paddingInline: 3, marginBottom: 5 }}>
+            <div className="mk-card" style={{ position: "relative" }}>
+              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
+                {t("dashboard.status", "Status")}
+              </p>
+              <div className="dash-status__row">
+                <span className="dash-status__k">
+                  {t("dashboard.totalPayable", "Payable outstanding")}
+                </span>
+                <span className="mk-badge mk-badge--warn">
+                  ${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="dash-status__row">
+                <span className="dash-status__k">
+                  {t("dashboard.taxEstimation", "Tax set-aside")}
+                </span>
+                <span className="mk-badge mk-badge--info">
+                  ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="dash-status__row">
+                <span className="dash-status__k">
+                  {t("dashboard.recordedTransactions", "Recorded transactions")}
+                </span>
+                <span className="mk-badge mk-badge--ok">
+                  {(allTransactions || []).length}
+                </span>
+              </div>
+            </div>
+          </Col>
+        </Row>
       </div >
 
       {/* ── Download Report Modal ──────────────────────────────────────────── */}
