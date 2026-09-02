@@ -292,6 +292,8 @@ function Dashboard() {
   const [dashFromDate, setDashFromDate] = useState("");
   const [dashToDate, setDashToDate] = useState("");
   const [dashShowSearch, setDashShowSearch] = useState(false);
+  const [dashPreset, setDashPreset] = useState(null);
+  const [dashCustomOpen, setDashCustomOpen] = useState(false);
 
   const dashboardDateRangeRef = useRef(null);
   const dashboardSearchRef = useRef("");
@@ -946,6 +948,55 @@ function Dashboard() {
     setDashShowSearch(false);
   };
 
+  // Local YYYY-MM-DD (avoids the UTC day-shift that toISOString causes for
+  // users behind UTC). Matches the string a native date input produces.
+  const dashLocalYMD = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const applyDashPreset = (key) => {
+    if (dashboardFilterDisabled) return;
+    if (filterActionsLocked) {
+      navigate(SUBSCRIPTION_ROUTE);
+      return;
+    }
+    if (key === "custom") {
+      setDashPreset("custom");
+      setDashCustomOpen((v) => !v);
+      return;
+    }
+    const now = new Date();
+    const to = new Date();
+    let from;
+    if (key === "month") {
+      from = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (key === "30d") {
+      from = new Date();
+      from.setDate(from.getDate() - 29);
+    } else if (key === "quarter") {
+      const q = Math.floor(now.getMonth() / 3);
+      from = new Date(now.getFullYear(), q * 3, 1);
+    } else {
+      from = new Date(now.getFullYear(), 0, 1); // ytd
+    }
+    const f = dashLocalYMD(from);
+    const tt = dashLocalYMD(to);
+    setDashPreset(key);
+    setDashCustomOpen(false);
+    setDashFromDate(f);
+    setDashToDate(tt);
+    setDashboardDateRange({ from: f, to: tt });
+  };
+
+  const resetDashFilter = () => {
+    setDashPreset(null);
+    setDashCustomOpen(false);
+    handleDashboardClearFilters();
+  };
+
   const showDashboardFilters = userRole !== 0 || selectedUserId;
 
   useEffect(() => {
@@ -1160,350 +1211,6 @@ function Dashboard() {
       <div className="content" style={{ position: "relative", marginTop: isMobile ? 0 : 80 }}>
         <LoadingOverlay loading={loadingFinancialData} text="Loading financial data..." />
 
-        {showDashboardFilters && (
-          <Row style={{ marginBottom: "8px", marginTop: isMobile ? 8 : 12 }}>
-            <Col xs="12">
-              <Card style={{ backgroundColor: "var(--surface-2)", border: "1px solid var(--border)" }}>
-                <CardBody style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-end",
-                      justifyContent: "flex-start",
-                      flexWrap: isMobile ? "wrap" : "nowrap",
-                      gap: "10px",
-                      width: "100%",
-                      minWidth: 0,
-                      ...(isMobile
-                        ? {}
-                        : {
-                          overflowX: "auto",
-                          overflowY: "hidden",
-                          paddingBottom: "2px",
-                          WebkitOverflowScrolling: "touch",
-                        }),
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-end",
-                        gap: "15px",
-                        flexWrap: isMobile ? "wrap" : "nowrap",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <FormGroup
-                        style={{
-                          marginBottom: 0,
-                          minWidth: isMobile ? "150px" : "132px",
-                          maxWidth: isMobile ? "200px" : "180px",
-                          flex: isMobile ? undefined : "0 0 auto",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "flex-end",
-                        }}
-                      >
-                        <Label
-                          for="dashboardFromDate"
-                          style={{
-                            color: "#ffffff",
-                            marginBottom: "5px",
-                            fontSize: "0.875rem",
-                            lineHeight: "1.2",
-                          }}
-                        >
-                          {t("financialReport.from")}
-                        </Label>
-                        <Input
-                          type="date"
-                          id="dashboardFromDate"
-                          value={dashFromDate}
-                          onChange={(e) => setDashFromDate(e.target.value)}
-                          disabled={dashboardFilterDisabled}
-                          readOnly={!dashboardFilterDisabled && filterActionsLocked}
-                          title={
-                            !dashboardFilterDisabled && filterActionsLocked
-                              ? SUBSCRIPTION_UPDATE_HINT
-                              : undefined
-                          }
-                          onClick={() => {
-                            if (!dashboardFilterDisabled && filterActionsLocked) {
-                              navigate(SUBSCRIPTION_ROUTE);
-                            }
-                          }}
-                          style={{
-                            backgroundColor: "var(--surface-3)",
-                            color: "#ffffff",
-                            border: "1px solid var(--border-strong)",
-                            borderRadius: "var(--r-sm)",
-                            height: "38px",
-                            padding: "6px 12px",
-                            width: "100%",
-                            opacity:
-                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
-                            cursor:
-                              !dashboardFilterDisabled && filterActionsLocked
-                                ? "pointer"
-                                : undefined,
-                          }}
-                        />
-                      </FormGroup>
-                      <FormGroup
-                        style={{
-                          marginBottom: 0,
-                          minWidth: isMobile ? "150px" : "132px",
-                          maxWidth: isMobile ? "200px" : "180px",
-                          flex: isMobile ? undefined : "0 0 auto",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "flex-end",
-                        }}
-                      >
-                        <Label
-                          for="dashboardToDate"
-                          style={{
-                            color: "#ffffff",
-                            marginBottom: "5px",
-                            fontSize: "0.875rem",
-                            lineHeight: "1.2",
-                          }}
-                        >
-                          {t("financialReport.to")}
-                        </Label>
-                        <Input
-                          type="date"
-                          id="dashboardToDate"
-                          value={dashToDate}
-                          onChange={(e) => setDashToDate(e.target.value)}
-                          disabled={dashboardFilterDisabled}
-                          readOnly={!dashboardFilterDisabled && filterActionsLocked}
-                          title={
-                            !dashboardFilterDisabled && filterActionsLocked
-                              ? SUBSCRIPTION_UPDATE_HINT
-                              : undefined
-                          }
-                          onClick={() => {
-                            if (!dashboardFilterDisabled && filterActionsLocked) {
-                              navigate(SUBSCRIPTION_ROUTE);
-                            }
-                          }}
-                          style={{
-                            backgroundColor: "var(--surface-3)",
-                            color: "#ffffff",
-                            border: "1px solid var(--border-strong)",
-                            borderRadius: "var(--r-sm)",
-                            height: "38px",
-                            padding: "6px 12px",
-                            width: "100%",
-                            opacity:
-                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
-                            cursor:
-                              !dashboardFilterDisabled && filterActionsLocked
-                                ? "pointer"
-                                : undefined,
-                          }}
-                        />
-                      </FormGroup>
-                    </div>
-                    <FormGroup
-                      style={{
-                        marginBottom: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "flex-end",
-                        flex: isMobile ? "1 1 100%" : "1 1 0%",
-                        minWidth: isMobile ? "100%" : 0,
-                        maxWidth: isMobile ? "100%" : "none",
-                      }}
-                    >
-                      <Label
-                        aria-hidden
-                        style={{
-                          visibility: "hidden",
-                          color: "#ffffff",
-                          marginBottom: "5px",
-                          fontSize: "0.875rem",
-                          lineHeight: "1.2",
-                          userSelect: "none",
-                        }}
-                      >
-                        .
-                      </Label>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                          flexWrap: isMobile ? "wrap" : "nowrap",
-                          minHeight: "38px",
-                          width: "100%",
-                          minWidth: 0,
-                        }}
-                      >
-                        <Button
-                          type="button"
-                          title={
-                            !dashboardFilterDisabled && filterActionsLocked
-                              ? SUBSCRIPTION_UPDATE_HINT
-                              : undefined
-                          }
-                          onClick={() => {
-                            if (!dashboardFilterDisabled && filterActionsLocked) {
-                              navigate(SUBSCRIPTION_ROUTE);
-                              return;
-                            }
-                            handleDashboardFilterRun();
-                          }}
-                          disabled={dashboardFilterDisabled}
-                          style={{
-                            height: "38px",
-                            flexShrink: 0,
-                            backgroundColor: "var(--accent-solid)",
-                            borderColor: "var(--accent-solid)",
-                            color: "#ffffff",
-                            fontWeight: 600,
-                            borderRadius: "var(--r-sm)",
-                            padding: "0 18px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            opacity:
-                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
-                          }}
-                        >
-                          {t("financialReport.run")}
-                        </Button>
-                        <Button
-                          type="button"
-                          title={
-                            !dashboardFilterDisabled && filterActionsLocked
-                              ? SUBSCRIPTION_UPDATE_HINT
-                              : undefined
-                          }
-                          onClick={() => {
-                            if (!dashboardFilterDisabled && filterActionsLocked) {
-                              navigate(SUBSCRIPTION_ROUTE);
-                              return;
-                            }
-                            handleDashboardClearFilters();
-                          }}
-                          disabled={dashboardFilterDisabled}
-                          style={{
-                            height: "38px",
-                            flexShrink: 0,
-                            backgroundColor: "var(--surface-3)",
-                            borderColor: "var(--border-strong)",
-                            color: "#ffffff",
-                            borderRadius: "var(--r-sm)",
-                            padding: "0 16px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            opacity:
-                              !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
-                          }}
-                        >
-                          {t("financialReport.clearFilters")}
-                        </Button>
-                        {dashShowSearch ? (
-                          <div
-                            style={{
-                              position: "relative",
-                              flex: isMobile ? "1 1 100%" : "1 1 120px",
-                              minWidth: isMobile ? "100%" : "100px",
-                              maxWidth: isMobile ? "100%" : "240px",
-                            }}
-                          >
-                            <Input
-                              type="text"
-                              placeholder={t("financialReport.searchJournal")}
-                              value={dashboardSearchTerm}
-                              onChange={(e) => setDashboardSearchTerm(e.target.value)}
-                              onBlur={() => {
-                                if (dashboardSearchTerm.trim() === "") setDashShowSearch(false);
-                              }}
-                              disabled={dashboardFilterDisabled}
-                              style={{
-                                height: "38px",
-                                width: "100%",
-                                borderRadius: "var(--r-sm)",
-                                backgroundColor: "var(--surface-3)",
-                                color: "#ffffff",
-                                border: "1px solid var(--border-strong)",
-                                padding: "6px 12px",
-                                paddingRight: "35px",
-                              }}
-                            />
-                            <button
-                              type="button"
-                              aria-label="Close search"
-                              onClick={() => {
-                                setDashboardSearchTerm("");
-                                setDashShowSearch(false);
-                              }}
-                              style={{
-                                position: "absolute",
-                                right: "8px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                background: "none",
-                                border: "none",
-                                color: "#ffffff",
-                                cursor: "pointer",
-                                padding: 0,
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              <span style={{ fontSize: "18px", lineHeight: 1 }}>×</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            aria-label={t("financialReport.searchJournal")}
-                            title={
-                              !dashboardFilterDisabled && filterActionsLocked
-                                ? SUBSCRIPTION_UPDATE_HINT
-                                : undefined
-                            }
-                            onClick={() => {
-                              if (dashboardFilterDisabled) return;
-                              if (filterActionsLocked) {
-                                navigate(SUBSCRIPTION_ROUTE);
-                                return;
-                              }
-                              setDashShowSearch(true);
-                            }}
-                            disabled={dashboardFilterDisabled}
-                            style={{
-                              height: "38px",
-                              width: "38px",
-                              flexShrink: 0,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              backgroundColor: "var(--surface-3)",
-                              border: "1px solid var(--border-strong)",
-                              borderRadius: "var(--r-sm)",
-                              color: "#ffffff",
-                              cursor: "pointer",
-                              opacity:
-                                !dashboardFilterDisabled && filterActionsLocked ? 0.5 : 1,
-                            }}
-                          >
-                            <FontAwesomeIcon icon={faSearch} />
-                          </button>
-                        )}
-                      </div>
-                    </FormGroup>
-                  </div>
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        )}
 
         <div className="dash-overview">
           <div>
@@ -1530,6 +1237,156 @@ function Dashboard() {
             {new Date().toLocaleDateString(undefined, { month: "short", year: "numeric" })}
           </span>
         </div>
+
+        {showDashboardFilters && (
+          <div className="dash-filter" style={{ opacity: dashboardFilterDisabled ? 0.5 : 1 }}>
+            <div
+              className="dash-filter__presets"
+              role="group"
+              aria-label={t("financialReport.dateRange", "Date range")}
+            >
+              {[
+                { key: "month", label: t("dashboard.presetThisMonth", "This month") },
+                { key: "30d", label: t("dashboard.presetLast30", "Last 30 days") },
+                { key: "quarter", label: t("dashboard.presetQuarter", "Quarter") },
+                { key: "ytd", label: t("dashboard.presetYtd", "YTD") },
+              ].map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  className={`dash-preset${dashPreset === p.key ? " is-active" : ""}`}
+                  onClick={() => applyDashPreset(p.key)}
+                  disabled={dashboardFilterDisabled}
+                  title={
+                    !dashboardFilterDisabled && filterActionsLocked
+                      ? SUBSCRIPTION_UPDATE_HINT
+                      : undefined
+                  }
+                >
+                  {p.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={`dash-preset dash-preset--custom${
+                  dashPreset === "custom" || dashCustomOpen ? " is-active" : ""
+                }`}
+                aria-expanded={dashCustomOpen}
+                onClick={() => applyDashPreset("custom")}
+                disabled={dashboardFilterDisabled}
+                title={
+                  !dashboardFilterDisabled && filterActionsLocked
+                    ? SUBSCRIPTION_UPDATE_HINT
+                    : undefined
+                }
+              >
+                {t("dashboard.presetCustom", "Custom")}
+                <span
+                  className={`dash-preset__caret${dashCustomOpen ? " is-open" : ""}`}
+                  aria-hidden
+                >
+                  ▾
+                </span>
+              </button>
+              {(dashPreset || dashboardDateRange) && (
+                <button
+                  type="button"
+                  className="dash-preset dash-preset--clear"
+                  onClick={resetDashFilter}
+                  disabled={dashboardFilterDisabled}
+                >
+                  {t("financialReport.clearFilters", "Clear")}
+                </button>
+              )}
+
+              <div className="dash-filter__search">
+                {dashShowSearch ? (
+                  <div className="dash-filter__searchbox">
+                    <Input
+                      type="text"
+                      placeholder={t("financialReport.searchJournal")}
+                      value={dashboardSearchTerm}
+                      onChange={(e) => setDashboardSearchTerm(e.target.value)}
+                      onBlur={() => {
+                        if (dashboardSearchTerm.trim() === "") setDashShowSearch(false);
+                      }}
+                      disabled={dashboardFilterDisabled}
+                      className="dash-filter__date"
+                      style={{ paddingRight: "34px" }}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      aria-label="Close search"
+                      className="dash-filter__searchclose"
+                      onClick={() => {
+                        setDashboardSearchTerm("");
+                        setDashShowSearch(false);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="dash-preset dash-preset--icon"
+                    aria-label={t("financialReport.searchJournal")}
+                    title={
+                      !dashboardFilterDisabled && filterActionsLocked
+                        ? SUBSCRIPTION_UPDATE_HINT
+                        : t("financialReport.searchJournal")
+                    }
+                    onClick={() => {
+                      if (dashboardFilterDisabled) return;
+                      if (filterActionsLocked) {
+                        navigate(SUBSCRIPTION_ROUTE);
+                        return;
+                      }
+                      setDashShowSearch(true);
+                    }}
+                    disabled={dashboardFilterDisabled}
+                  >
+                    <FontAwesomeIcon icon={faSearch} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {dashCustomOpen && (
+              <div className="dash-filter__custom">
+                <label className="dash-filter__field">
+                  <span className="dash-filter__lbl">{t("financialReport.from")}</span>
+                  <Input
+                    type="date"
+                    value={dashFromDate}
+                    onChange={(e) => setDashFromDate(e.target.value)}
+                    disabled={dashboardFilterDisabled}
+                    className="dash-filter__date"
+                  />
+                </label>
+                <label className="dash-filter__field">
+                  <span className="dash-filter__lbl">{t("financialReport.to")}</span>
+                  <Input
+                    type="date"
+                    value={dashToDate}
+                    onChange={(e) => setDashToDate(e.target.value)}
+                    disabled={dashboardFilterDisabled}
+                    className="dash-filter__date"
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="dash-preset dash-preset--apply"
+                  onClick={handleDashboardFilterRun}
+                  disabled={dashboardFilterDisabled}
+                >
+                  {t("financialReport.run", "Apply")}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <Row style={{ marginBottom: "5px", marginTop: 0 }}>
           <Col lg="5" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
@@ -1566,11 +1423,48 @@ function Dashboard() {
                     </span>
                   )}
                 </div>
-                {!loadingFinancialData && (
-                  <div className="hero-spark">
-                    <Sparkline id="sp-hero" data={activeMetric.spark} color={activeMetric.color} width={480} height={64} fluid />
-                  </div>
-                )}
+                {!loadingFinancialData && (() => {
+                  const income = parseFloat(calculateTotalRevenue()) || 0;
+                  const outflow = parseFloat(calculateTotalExpenses()) || 0;
+                  const total = income + outflow;
+                  const inPct = total > 0 ? (income / total) * 100 : 50;
+                  const outPct = total > 0 ? (outflow / total) * 100 : 50;
+                  const net = income - outflow;
+                  const fmt = (n) =>
+                    `$${Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                  return (
+                    <div className="hero-flow">
+                      <div className="hero-flow__row">
+                        <span className="hero-flow__lbl">
+                          <span className="hero-flow__dot" style={{ background: FINANCIAL_COLORS.positive }} />
+                          {t("dashboard.moneyIn", "Money in")}
+                        </span>
+                        <span className="hero-flow__val">{fmt(income)}</span>
+                      </div>
+                      <div className="hero-flow__bar">
+                        <span style={{ width: `${inPct}%`, background: FINANCIAL_COLORS.positive, opacity: total > 0 ? 1 : 0.28 }} />
+                        <span style={{ width: `${outPct}%`, background: FINANCIAL_COLORS.negative, opacity: total > 0 ? 1 : 0.28 }} />
+                      </div>
+                      <div className="hero-flow__row">
+                        <span className="hero-flow__lbl">
+                          <span className="hero-flow__dot" style={{ background: FINANCIAL_COLORS.negative }} />
+                          {t("dashboard.moneyOut", "Money out")}
+                        </span>
+                        <span className="hero-flow__val">{fmt(outflow)}</span>
+                      </div>
+                      <div className="hero-flow__net">
+                        <span className="hk">{t("dashboard.netFlow", "Net this period")}</span>
+                        <span
+                          className="hv"
+                          style={{ color: net >= 0 ? FINANCIAL_COLORS.positive : FINANCIAL_COLORS.negative }}
+                        >
+                          {net < 0 ? "−" : "+"}
+                          {fmt(net)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
                 {!loadingFinancialData && (
                   <div className="hero-subline">
                     <div>
@@ -1676,7 +1570,7 @@ function Dashboard() {
         {/* Recent activity + status — design concept, added on top of existing features */}
         <Row style={{ marginTop: 12 }}>
           <Col lg="7" style={{ paddingInline: 3, marginBottom: 5 }}>
-            <div className="mk-card" style={{ position: "relative" }}>
+            <div className="mk-card dash-recent" style={{ position: "relative" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
               <div className="dash-panel-head">
                 <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}>
@@ -1779,24 +1673,82 @@ function Dashboard() {
                     </div>
                   );
                 }
-                const max = rows[0][1] || 1;
-                return rows.map(([name, val], i) => (
-                  <div className="dash-bar" key={i}>
-                    <span className="dash-bar__nm" title={name}>{name}</span>
-                    <span className="dash-bar__track">
-                      <span
-                        className="dash-bar__fill"
-                        style={{
-                          width: `${Math.max(4, (val / max) * 100)}%`,
-                          backgroundColor: FINANCIAL_COLORS.expense,
-                        }}
+                const totalExp = rows.reduce((s, [, v]) => s + v, 0);
+                const expenseColors = ["#A855F7", "#C084FC", "#8B5CF6", "#7C3AED", "#6D28D9"];
+                const donutOptions = {
+                  chart: {
+                    type: "donut",
+                    background: "transparent",
+                    fontFamily: "JetBrains Mono, monospace",
+                    toolbar: { show: false },
+                  },
+                  labels: rows.map(([name]) => name),
+                  colors: expenseColors,
+                  legend: { show: false },
+                  dataLabels: { enabled: false },
+                  stroke: { width: 2, colors: ["#0A0A0B"] },
+                  tooltip: {
+                    theme: "dark",
+                    y: {
+                      formatter: (v) =>
+                        `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                    },
+                  },
+                  plotOptions: {
+                    pie: {
+                      donut: {
+                        size: "72%",
+                        labels: {
+                          show: true,
+                          name: { color: "#AEB6C2", fontSize: "11px", offsetY: 2 },
+                          value: {
+                            color: "#F4F6F8",
+                            fontSize: "17px",
+                            fontWeight: 700,
+                            offsetY: 2,
+                            formatter: (v) =>
+                              `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                          },
+                          total: {
+                            show: true,
+                            showAlways: true,
+                            label: t("dashboard.totalExpenses", "Total"),
+                            color: "#7B828E",
+                            fontSize: "10px",
+                            formatter: () =>
+                              `$${totalExp.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                          },
+                        },
+                      },
+                    },
+                  },
+                };
+                return (
+                  <div className="dash-donut">
+                    <div className="dash-donut__chart">
+                      <ReactApexChart
+                        options={donutOptions}
+                        series={rows.map(([, v]) => v)}
+                        type="donut"
+                        height={172}
                       />
-                    </span>
-                    <span className="dash-bar__val">
-                      ${val.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                    </span>
+                    </div>
+                    <ul className="dash-donut__legend">
+                      {rows.map(([name, val], i) => (
+                        <li key={i}>
+                          <span
+                            className="dash-donut__dot"
+                            style={{ background: expenseColors[i % expenseColors.length] }}
+                          />
+                          <span className="dash-donut__nm" title={name}>{name}</span>
+                          <span className="dash-donut__val">
+                            ${val.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                ));
+                );
               })()}
             </div>
             <div className="mk-card" style={{ position: "relative" }}>

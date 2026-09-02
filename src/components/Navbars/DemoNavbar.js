@@ -344,13 +344,13 @@ function DemoNavbar(props) {
                     backgroundColor: "var(--surface-3)",
                     border: "1px solid var(--border-strong)",
                     color: "var(--text-1)",
-                    height: "32px",
+                    height: "36px",
                     borderRadius: "var(--r-sm)",
-                    padding: isLandscapeMobile ? "0 9px" : "0 10px",
+                    padding: isLandscapeMobile ? "0 9px" : "0 13px",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "11px",
+                    fontSize: "12px",
                     whiteSpace: "nowrap",
                     cursor: "pointer",
                     opacity: subscriptionGateActive ? 0.5 : 1,
@@ -377,13 +377,13 @@ function DemoNavbar(props) {
                       backgroundColor: "var(--accent-solid)",
                       border: "1px solid var(--accent-solid)",
                       color: "#ffffff",
-                      height: "32px",
+                      height: "36px",
                       borderRadius: "var(--r-sm)",
-                      padding: isLandscapeMobile ? "0 9px" : "0 10px",
+                      padding: isLandscapeMobile ? "0 9px" : "0 13px",
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "11px",
+                      fontSize: "12px",
                       whiteSpace: "nowrap",
                       cursor: "pointer",
                       opacity: subscriptionGateActive ? 0.5 : 1,
@@ -408,8 +408,21 @@ function DemoNavbar(props) {
                 toggle={accountDropdownToggle}
                 className="account-dropdown"
               >
-                <DropdownToggle caret nav>
-                  <i className="now-ui-icons users_single-02" />
+                <DropdownToggle caret nav className="account-toggle">
+                  <span className="account-avatar">
+                    {(localStorage.getItem("user_name") || "U")
+                      .trim()
+                      .split(/\s+/)
+                      .map((w) => w[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()}
+                  </span>
+                  {!isMobile && (
+                    <span className="account-name">
+                      {localStorage.getItem("user_name") || t("common.account", "Account")}
+                    </span>
+                  )}
                 </DropdownToggle>
                 <DropdownMenu right style={{ backgroundColor: "white" }}>
                   <DropdownItem onClick={toggleHelpModal}>
