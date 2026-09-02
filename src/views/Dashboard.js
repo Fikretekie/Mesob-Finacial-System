@@ -271,6 +271,8 @@ function Dashboard() {
   const [users, setUsers] = useState([]);
   const [trialEndDate, setTrialEndDate] = useState(null);
   const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
+  // Which metric drives the big hero panel + overview chart (tiles select it).
+  const [heroMetric, setHeroMetric] = useState("cash");
   const [loadingFinancialData, setLoadingFinancialData] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loadingCompanyName, setLoadingCompanyName] = useState(false);
@@ -409,7 +411,7 @@ function Dashboard() {
     }
   };
 
-  const getChartOptions = (title, data, labels, color = "#007BFF") => {
+  const getChartOptions = (title, data, labels, color = "var(--accent-solid)") => {
     return {
       theme: {
         mode: "dark",
@@ -418,7 +420,7 @@ function Dashboard() {
         type: "area",
         background: "transparent",
         toolbar: {
-          show: true,
+          show: false,
           tools: {
             download: CHART_TOOLBAR_DOWNLOAD_ICON,
             zoom: true,
@@ -447,32 +449,22 @@ function Dashboard() {
       ],
       xaxis: {
         categories: labels,
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        tooltip: { enabled: false },
         labels: {
           rotate: -45,
           rotateAlways: false,
+          hideOverlappingLabels: true,
           style: {
-            fontSize: "11px",
-            colors: "#ffffff",
-          },
-        },
-        title: {
-          text: "Date",
-          style: {
-            fontSize: "12px",
-            fontWeight: 500,
-            color: "#ffffff",
+            fontSize: "10px",
+            colors: "#7B828E",
+            fontFamily: "JetBrains Mono, monospace",
           },
         },
       },
       yaxis: {
-        title: {
-          text: t('dashboard.amount'),
-          style: {
-            fontSize: "12px",
-            fontWeight: 500,
-            color: "#ffffff",
-          },
-        },
+        title: { text: "" },
         labels: {
           formatter: function (value) {
             if (!value) return "$0";
@@ -485,10 +477,12 @@ function Dashboard() {
             );
           },
           style: {
-            colors: "#ffffff",
+            colors: "#7B828E",
+            fontSize: "10px",
+            fontFamily: "JetBrains Mono, monospace",
           },
         },
-        tickAmount: 8,
+        tickAmount: 5,
         min: 0,
         max: function (max) {
           return max > 0 ? max * 1.1 : 100;
@@ -496,27 +490,32 @@ function Dashboard() {
       },
       stroke: {
         curve: "smooth",
-        width: 3,
+        width: 2.5,
         lineCap: "round",
       },
       fill: {
-        type: "solid",
-        opacity: 0.5,
+        type: "gradient",
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.32,
+          opacityTo: 0,
+          stops: [0, 100],
+        },
       },
       colors: [color],
       markers: {
-        size: 5,
+        size: 0,
         colors: [color],
-        strokeColors: "#ffffff",
+        strokeColors: color,
         strokeWidth: 2,
         hover: {
-          size: 7,
+          size: 6,
           sizeOffset: 3,
         },
       },
       grid: {
         show: true,
-        borderColor: "#817646",
+        borderColor: "rgba(255,255,255,0.06)",
         strokeDashArray: 3,
         row: {
           colors: ["transparent", "transparent"],
@@ -553,7 +552,7 @@ function Dashboard() {
         enabled: false,
       },
       legend: {
-        show: true,
+        show: false,
         position: "top",
         horizontalAlign: "right",
         labels: {
@@ -802,7 +801,7 @@ function Dashboard() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(16, 25, 38, 0.72)",
+          backgroundColor: "rgba(10, 10, 11, 0.66)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
           display: "flex",
@@ -836,6 +835,41 @@ function Dashboard() {
           </p>
         </div>
       </div>
+    );
+  };
+
+  // Compact inline trend line for the stat tiles. Pure presentational,
+  // built from the monthlySales series already loaded. `id` must be unique
+  // per instance (gradient defs).
+  const Sparkline = ({ id, data = [], color = "var(--accent)", width = 76, height = 28, fluid = false }) => {
+    const nums = (data || []).map((n) => Number(n) || 0);
+    if (nums.length < 2) return null;
+    const min = Math.min(...nums);
+    const max = Math.max(...nums);
+    const span = max - min || 1;
+    const stepX = width / (nums.length - 1);
+    const pts = nums.map((n, i) => [
+      i * stepX,
+      height - ((n - min) / span) * (height - 5) - 3,
+    ]);
+    const line = pts
+      .map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`)
+      .join(" ");
+    const area = `${line} L${width.toFixed(1)},${height} L0,${height} Z`;
+    return (
+      <svg width={fluid ? "100%" : width} height={height} viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none" aria-hidden="true"
+        style={{ display: "block", width: fluid ? "100%" : undefined }}>
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={color} stopOpacity="0.28" />
+            <stop offset="1" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill={`url(#${id})`} />
+        <path d={line} fill="none" stroke={color} strokeWidth="1.6"
+          strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
     );
   };
 
@@ -912,6 +946,35 @@ function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Metric registry — drives the interactive hero panel + overview chart.
+  const heroMetrics = {
+    cash: {
+      key: "cash", label: t("dashboard.cashOnHand"), value: parseFloat(calculateTotalCash()),
+      prev: getPreviousMonthValues().cashOnHand, color: FINANCIAL_COLORS.asset,
+      chart: cashOnHandChartData, chartTitle: t("dashboard.totalCashOnHandChart"),
+      spark: monthlySales.map((m) => m.cashOnHand),
+    },
+    revenue: {
+      key: "revenue", label: t("dashboard.revenue"), value: totalrevenue,
+      prev: getPreviousMonthValues().revenue, color: FINANCIAL_COLORS.income,
+      chart: revenueChartData, chartTitle: t("dashboard.revenueChart"),
+      spark: monthlySales.map((m) => m.revenue),
+    },
+    expenses: {
+      key: "expenses", label: t("dashboard.totalExpenses"), value: totalExpenses,
+      prev: getPreviousMonthValues().expenses, color: FINANCIAL_COLORS.expense,
+      chart: expensesChartData, chartTitle: t("dashboard.totalExpensesChart"),
+      spark: monthlySales.map((m) => m.expenses),
+    },
+    payable: {
+      key: "payable", label: t("dashboard.totalPayable"), value: totalPayable,
+      prev: getPreviousMonthValues().payable, color: FINANCIAL_COLORS.payable,
+      chart: payableChartData, chartTitle: t("dashboard.totalPayableChart"),
+      spark: monthlySales.map((m) => m.payable),
+    },
+  };
+  const activeMetric = heroMetrics[heroMetric] || heroMetrics.cash;
+
   return (
     <>
       <Helmet>
@@ -944,8 +1007,8 @@ function Dashboard() {
                       setShowDownloadReportModal(true);
                     }}
                     style={{
-                      backgroundColor: "#2b427d",
-                      borderColor: "#2b427d",
+                      backgroundColor: "var(--accent-solid)",
+                      borderColor: "var(--accent-solid)",
                       color: "#ffffff",
                       height: "44px",
                       borderRadius: "10px",
@@ -1008,7 +1071,7 @@ function Dashboard() {
         >
           <Row style={{ marginTop: isMobile ? 8 : 12 }}>
             <Col xs={12}>
-              <Card style={{ backgroundColor: "#101926" }}>
+              <Card style={{ backgroundColor: "var(--surface-2)" }}>
                 <CardHeader>
                   <CardTitle style={{ marginBottom: 0, color: "#ffffff" }} tag="h4">
                     {t('dashboard.selectUser')}
@@ -1030,25 +1093,25 @@ function Dashboard() {
                           ...provided,
                           minHeight: "38px",
                           height: "38px",
-                          backgroundColor: "#101926",
+                          backgroundColor: "var(--surface-2)",
                           color: "#ffffff",
                           borderColor: state.isFocused ? "#ffffff" : "#ffffff",
                           boxShadow: state.isFocused ? "0 0 0 1px #ffffff" : "none",
-                          "&:hover": { borderColor: "#817646" },
+                          "&:hover": { borderColor: "var(--accent)" },
                         }),
                         valueContainer: (provided) => ({ ...provided, height: "38px", padding: "0 6px" }),
                         input: (provided) => ({ ...provided, margin: "0px", color: "#ffffff" }),
                         singleValue: (provided) => ({ ...provided, color: "#ffffff" }),
                         placeholder: (provided) => ({ ...provided, color: "#ffffff", opacity: 0.7 }),
                         indicatorsContainer: (provided) => ({ ...provided, height: "38px" }),
-                        menu: (provided) => ({ ...provided, backgroundColor: "#101926", border: "1px solid #ffffff" }),
-                        menuList: (provided) => ({ ...provided, backgroundColor: "#101926" }),
+                        menu: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)", border: "1px solid #ffffff" }),
+                        menuList: (provided) => ({ ...provided, backgroundColor: "var(--surface-2)" }),
                         option: (provided, state) => ({
                           ...provided,
-                          backgroundColor: state.isSelected ? "#2b427d" : state.isFocused ? "#1a2332" : "#101926",
+                          backgroundColor: state.isSelected ? "var(--accent-solid)" : state.isFocused ? "var(--surface-1)" : "var(--surface-2)",
                           color: "#ffffff",
                           cursor: "pointer",
-                          "&:active": { backgroundColor: "#2b427d" },
+                          "&:active": { backgroundColor: "var(--accent-solid)" },
                         }),
                       }}
                     />
@@ -1066,7 +1129,7 @@ function Dashboard() {
         {showDashboardFilters && (
           <Row style={{ marginBottom: "8px", marginTop: isMobile ? 8 : 12 }}>
             <Col xs="12">
-              <Card style={{ backgroundColor: "#101926", border: "1px solid #2a3545" }}>
+              <Card style={{ backgroundColor: "var(--surface-2)", border: "1px solid var(--border)" }}>
                 <CardBody style={{ paddingTop: "1rem", paddingBottom: "1rem" }}>
                   <div
                     style={{
@@ -1136,10 +1199,10 @@ function Dashboard() {
                             }
                           }}
                           style={{
-                            backgroundColor: "#202a3a",
+                            backgroundColor: "var(--surface-3)",
                             color: "#ffffff",
-                            border: "1px solid #3a4555",
-                            borderRadius: "4px",
+                            border: "1px solid var(--border-strong)",
+                            borderRadius: "var(--r-sm)",
                             height: "38px",
                             padding: "6px 12px",
                             width: "100%",
@@ -1192,10 +1255,10 @@ function Dashboard() {
                             }
                           }}
                           style={{
-                            backgroundColor: "#202a3a",
+                            backgroundColor: "var(--surface-3)",
                             color: "#ffffff",
-                            border: "1px solid #3a4555",
-                            borderRadius: "4px",
+                            border: "1px solid var(--border-strong)",
+                            borderRadius: "var(--r-sm)",
                             height: "38px",
                             padding: "6px 12px",
                             width: "100%",
@@ -1262,11 +1325,12 @@ function Dashboard() {
                           style={{
                             height: "38px",
                             flexShrink: 0,
-                            backgroundColor: "#3d83f1",
-                            borderColor: "#3d83f1",
+                            backgroundColor: "var(--accent-solid)",
+                            borderColor: "var(--accent-solid)",
                             color: "#ffffff",
-                            borderRadius: "4px",
-                            padding: "0 16px",
+                            fontWeight: 600,
+                            borderRadius: "var(--r-sm)",
+                            padding: "0 18px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -1294,10 +1358,10 @@ function Dashboard() {
                           style={{
                             height: "38px",
                             flexShrink: 0,
-                            backgroundColor: "#888888",
-                            borderColor: "#888888",
+                            backgroundColor: "var(--surface-3)",
+                            borderColor: "var(--border-strong)",
                             color: "#ffffff",
-                            borderRadius: "4px",
+                            borderRadius: "var(--r-sm)",
                             padding: "0 16px",
                             display: "flex",
                             alignItems: "center",
@@ -1329,10 +1393,10 @@ function Dashboard() {
                               style={{
                                 height: "38px",
                                 width: "100%",
-                                borderRadius: "4px",
-                                backgroundColor: "#202a3a",
+                                borderRadius: "var(--r-sm)",
+                                backgroundColor: "var(--surface-3)",
                                 color: "#ffffff",
-                                border: "1px solid #3a4555",
+                                border: "1px solid var(--border-strong)",
                                 padding: "6px 12px",
                                 paddingRight: "35px",
                               }}
@@ -1386,9 +1450,9 @@ function Dashboard() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              backgroundColor: "#202a3a",
-                              border: "1px solid #3a4555",
-                              borderRadius: "4px",
+                              backgroundColor: "var(--surface-3)",
+                              border: "1px solid var(--border-strong)",
+                              borderRadius: "var(--r-sm)",
                               color: "#ffffff",
                               cursor: "pointer",
                               opacity:
@@ -1407,226 +1471,305 @@ function Dashboard() {
           </Row>
         )}
 
-        <Row style={{ marginBottom: "5px", backgroundColor: "#101926", marginTop: 22 }}>
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+        <div className="dash-overview">
+          <div>
+            <p className="mk-eyebrow">{t("dashboard.financialOverview", "Financial overview")}</p>
+            <h2 className="dash-overview__title">
+              {(() => {
+                const h = new Date().getHours();
+                const g =
+                  h < 12
+                    ? t("dashboard.morning", "Good morning")
+                    : h < 18
+                      ? t("dashboard.afternoon", "Good afternoon")
+                      : t("dashboard.evening", "Good evening");
+                const nm = String(localStorage.getItem("user_name") || "").trim().split(" ")[0];
+                return nm ? `${g}, ${nm}` : g;
+              })()}
+            </h2>
+          </div>
+          <span className="dash-overview__meta">
+            {t("dashboard.booksCurrent", "Books current")} ·{" "}
+            {new Date().toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+          </span>
+        </div>
+
+        <Row style={{ marginBottom: "5px", marginTop: 0 }}>
+          <Col lg="5" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
             <Card
-              className="card-stats"
+              className="card-stats card-stats--hero"
               style={{
                 position: "relative",
-                backgroundColor: "#101926",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
-                ...getBalanceCardStyle(parseFloat(calculateTotalCash())),
+                ...getBalanceCardStyle(activeMetric.value),
               }}
             >
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.cashOnHand')}</p>
-                      <CardTitle tag="h3" style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? (
-                          <Spinner size="sm" />
-                        ) : (
-                          <BalanceValue
-                            value={parseFloat(calculateTotalCash())}
-                            tooltip={t("financialReport.cashDeficitTooltip")}
-                            style={{ fontSize: "1.5rem" }}
-                          >
-                            {`$${parseFloat(calculateTotalCash()).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                          </BalanceValue>
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: getBalanceColor(parseFloat(calculateTotalCash())), fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(parseFloat(calculateTotalCash()), getPreviousMonthValues().cashOnHand).text}
-                        </p>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-dollar-sign" style={{ color: getBalanceColor(parseFloat(calculateTotalCash())), fontSize: isMobile ? "1.5rem" : "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
+              <CardBody className="hero-body">
+                <p className="card-category" style={{ marginBottom: "0.5rem" }}>{activeMetric.label}</p>
+                <div className="hero-figure">
+                  <CardTitle tag="h3" style={{ margin: 0 }}>
+                    {loadingFinancialData ? (
+                      <Spinner size="sm" />
+                    ) : activeMetric.key === "cash" ? (
+                      <BalanceValue
+                        value={activeMetric.value}
+                        tooltip={t("financialReport.cashDeficitTooltip")}
+                      >
+                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </BalanceValue>
+                    ) : (
+                      <span style={{ color: activeMetric.color }}>
+                        {`$${activeMetric.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                      </span>
+                    )}
+                  </CardTitle>
+                  {!loadingFinancialData && (
+                    <span className="hero-delta" style={{ color: activeMetric.key === "cash" ? getBalanceColor(activeMetric.value) : activeMetric.color }}>
+                      {calculatePercentageChange(activeMetric.value, activeMetric.prev).text}
+                    </span>
+                  )}
+                </div>
                 {!loadingFinancialData && (
-                  <div style={{ marginLeft: "-1.25rem", marginRight: "-1.25rem", marginTop: "10px", width: "calc(100% + 2.5rem)" }}>
-                    <div
-                      style={{
-                        width: "98%",
-                        height: "3px",
-                        backgroundColor: getBalanceColor(parseFloat(calculateTotalCash())),
-                        marginBottom: "8px",
-                        borderRadius: "2px",
-                      }}
-                      aria-hidden
-                    />
-                    <div
-                      style={{
-                        width: "100%",
-                        border: "1px solid #22d3ee",
-                        borderRadius: "6px",
-                        padding: isMobile ? "6px 1.25rem" : "8px 1.25rem",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        flexWrap: "wrap",
-                        gap: "4px",
-                      }}
-                    >
-                      <span style={{ color: "white", fontSize: isMobile ? "0.7rem" : "0.75rem", fontWeight: 600 }}>
-                        {t("dashboard.taxEstimation")}
-                      </span>
-                      <span style={{ color: "white", fontSize: isMobile ? "0.85rem" : "0.95rem", fontWeight: 600 }}>
-                        ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
+                  <div className="hero-spark">
+                    <Sparkline id="sp-hero" data={activeMetric.spark} color={activeMetric.color} width={480} height={64} fluid />
+                  </div>
+                )}
+                {!loadingFinancialData && (
+                  <div className="hero-subline">
+                    <div>
+                      <span className="hk">{t("dashboard.previousMonth", "Prev. month")}</span>
+                      <span className="hv">${Number(activeMetric.prev || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     </div>
+                    {activeMetric.key === "cash" && (
+                      <div>
+                        <span className="hk">{t("dashboard.taxEstimation", "Tax set-aside")}</span>
+                        <span className="hv">${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardBody>
             </Card>
           </Col>
 
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.expense}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalExpenses')}</p>
-                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.expense, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: FINANCIAL_COLORS.expense, fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(totalExpenses, getPreviousMonthValues().expenses).text}
-                        </p>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-chart-line" style={{ color: FINANCIAL_COLORS.expense, fontSize: "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.payable}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.totalPayable')}</p>
-                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.payable, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${totalPayable.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: FINANCIAL_COLORS.payable, fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(totalPayable, getPreviousMonthValues().payable).text}
-                        </p>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-credit-card" style={{ color: FINANCIAL_COLORS.payable, fontSize: "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </Col>
-
-          <Col lg="3" md="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
-            <Card className="card-stats" style={{ position: "relative", backgroundColor: "#101926", borderBottom: `4px solid ${FINANCIAL_COLORS.income}`, borderImage: "none", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <CardBody>
-                <Row>
-                  <Col xs="8">
-                    <div className="numbers">
-                      <p className="card-category" style={{ color: "#ffffff", fontSize: "0.75rem", marginBottom: "0.5rem" }}>{t('dashboard.revenue')}</p>
-                      <CardTitle tag="h3" style={{ color: FINANCIAL_COLORS.income, fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.25rem" }}>
-                        {loadingFinancialData ? <Spinner size="sm" /> : (
-                          `$${totalrevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                        )}
-                      </CardTitle>
-                      {!loadingFinancialData && (
-                        <p style={{ color: FINANCIAL_COLORS.income, fontSize: "0.75rem", margin: 0 }}>
-                          {calculatePercentageChange(totalrevenue, getPreviousMonthValues().revenue).text}
-                        </p>
-                      )}
-                    </div>
-                  </Col>
-                  <Col xs="4">
-                    <div className="icon-big text-center" style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
-                      <i className="fas fa-chart-line" style={{ color: FINANCIAL_COLORS.income, fontSize: "2rem" }} />
-                    </div>
-                  </Col>
-                </Row>
+          <Col lg="7" md="12" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+            <Card className="chart-card" style={{ height: "100%" }}>
+              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
+              <CardBody style={{ border: "none", display: "flex", flexDirection: "column", height: "100%" }}>
+                <p className="chart-card__title">{activeMetric.chartTitle}</p>
+                <div id="cashFlowChart" style={{ flex: 1, minHeight: 0 }}>
+                  <ReactApexChart options={activeMetric.chart} series={activeMetric.chart.series} type="area" height={280} />
+                </div>
               </CardBody>
             </Card>
           </Col>
         </Row>
 
-        <Row style={{ backgroundColor: "#101926" }}>
-          <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalCashOnHandChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="cashFlowChart">
-                  <ReactApexChart options={cashOnHandChartData} series={cashOnHandChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
+        <Row className="no-gutters-x" style={{ marginBottom: "5px" }}>
+          {["cash", "revenue", "expenses", "payable"].map((key) => {
+            const m = heroMetrics[key];
+            const selected = key === heroMetric;
+            return (
+              <Col key={key} md="3" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
+                <Card
+                  className={`card-stats card-stats--selectable${selected ? " is-selected" : ""}`}
+                  style={{ position: "relative", cursor: "pointer" }}
+                  onClick={() => setHeroMetric(key)}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selected}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setHeroMetric(key); }
+                  }}
+                >
+                  <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+                  <CardBody>
+                    <p className="card-category" style={{ marginBottom: "0.4rem" }}>{m.label}</p>
+                    <CardTitle tag="h3" style={{ color: m.color, margin: 0 }}>
+                      {loadingFinancialData ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        `$${m.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      )}
+                    </CardTitle>
+                    {!loadingFinancialData && (
+                      <p style={{ color: m.color, fontSize: "0.75rem", margin: "4px 0 0" }}>
+                        {calculatePercentageChange(m.value, m.prev).text}
+                      </p>
+                    )}
+                    {!loadingFinancialData && (
+                      <div style={{ marginTop: 8 }}>
+                        <Sparkline id={`sp-tile-${key}`} data={m.spark} color={m.color} />
+                      </div>
+                    )}
+                  </CardBody>
+                </Card>
+              </Col>
+            );
+          })}
+        </Row>
+
+        {/* Trends grid removed — the switchable overview chart + tile sparklines
+            cover every metric's trend (matches the overview design). The chart
+            data objects are still used by the hero metric selector above. */}
+
+        {/* Recent activity + status — design concept, added on top of existing features */}
+        <Row style={{ marginTop: 12 }}>
+          <Col lg="7" style={{ paddingInline: 3, marginBottom: 5 }}>
+            <div className="mk-card" style={{ position: "relative" }}>
+              <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
+              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
+                {t("dashboard.recentActivity", "Recent activity")}
+              </p>
+              {(() => {
+                const txs = (allTransactions || [])
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      new Date(b.date || b.createdAt || 0) -
+                      new Date(a.date || a.createdAt || 0)
+                  )
+                  .slice(0, 6);
+                if (txs.length === 0) {
+                  return (
+                    <div className="dash-empty">
+                      {t("dashboard.noActivity", "No transactions yet.")}
+                    </div>
+                  );
+                }
+                return txs.map((tx, i) => {
+                  const isExpense =
+                    tx.subType === "Expense" ||
+                    String(tx.transactionPurpose || "").includes("Expense") ||
+                    Number(tx.amount) < 0;
+                  const amt = Math.abs(Number(tx.amount) || 0);
+                  const when = tx.date || tx.createdAt;
+                  const name =
+                    tx.transactionPurpose ||
+                    tx.title ||
+                    tx.description ||
+                    t("dashboard.transaction", "Transaction");
+                  return (
+                    <div className="dash-tx" key={tx.id || i}>
+                      <span
+                        className="dash-tx__cat"
+                        style={{
+                          backgroundColor: isExpense
+                            ? FINANCIAL_COLORS.expense
+                            : FINANCIAL_COLORS.income,
+                        }}
+                      />
+                      <div>
+                        <div className="dash-tx__nm">{name}</div>
+                        <div className="dash-tx__sub">
+                          {when
+                            ? new Date(when).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : ""}
+                          {tx.subType ? ` · ${tx.subType}` : ""}
+                        </div>
+                      </div>
+                      <span
+                        className="dash-tx__amt"
+                        style={{
+                          color: isExpense
+                            ? FINANCIAL_COLORS.negative
+                            : FINANCIAL_COLORS.positive,
+                        }}
+                      >
+                        {isExpense ? "−" : "+"}$
+                        {amt.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
           </Col>
-          <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.revenueChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="revenueChart">
-                  <ReactApexChart options={revenueChartData} series={revenueChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md={6} style={{ padding: 0, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalPayableChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="payableChart">
-                  <ReactApexChart options={payableChartData} series={payableChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md={6} style={{ paddingInline: 3, marginBottom: "5px" }}>
-            <Card style={{ position: "relative", backgroundColor: "#101926", boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)", borderRadius: "8px" }}>
-              <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
-              <CardBody style={{ backgroundColor: "#101926", border: "none" }}>
-                <p className="text-center mb-2" style={{ color: "#ffffff" }}>{t('dashboard.totalExpensesChart')}</p>
-                <h4 className="text-center mb-3"></h4>
-                <div id="expensesChart">
-                  <ReactApexChart options={expensesChartData} series={expensesChartData.series} type="area" height={300} />
-                </div>
-              </CardBody>
-            </Card>
+          <Col lg="5" style={{ paddingInline: 3, marginBottom: 5 }}>
+            <div className="mk-card" style={{ position: "relative", marginBottom: 14 }}>
+              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
+                {t("dashboard.topExpenses", "Top expenses")}
+              </p>
+              {(() => {
+                const groups = {};
+                (allTransactions || []).forEach((tx) => {
+                  const isExp =
+                    tx.subType === "Expense" ||
+                    String(tx.transactionPurpose || "").includes("(Expense)");
+                  if (!isExp) return;
+                  const key =
+                    String(tx.transactionPurpose || "")
+                      .replace(/\s*\(Expense\)\s*/i, "")
+                      .trim() ||
+                    tx.subType ||
+                    t("dashboard.otherExpense", "Other");
+                  groups[key] = (groups[key] || 0) + Math.abs(Number(tx.amount) || 0);
+                });
+                const rows = Object.entries(groups)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 5);
+                if (rows.length === 0) {
+                  return (
+                    <div className="dash-empty">
+                      {t("dashboard.noExpenses", "No expenses yet.")}
+                    </div>
+                  );
+                }
+                const max = rows[0][1] || 1;
+                return rows.map(([name, val], i) => (
+                  <div className="dash-bar" key={i}>
+                    <span className="dash-bar__nm" title={name}>{name}</span>
+                    <span className="dash-bar__track">
+                      <span
+                        className="dash-bar__fill"
+                        style={{
+                          width: `${Math.max(4, (val / max) * 100)}%`,
+                          backgroundColor: FINANCIAL_COLORS.expense,
+                        }}
+                      />
+                    </span>
+                    <span className="dash-bar__val">
+                      ${val.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                ));
+              })()}
+            </div>
+            <div className="mk-card" style={{ position: "relative" }}>
+              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
+                {t("dashboard.status", "Status")}
+              </p>
+              <div className="dash-status__row">
+                <span className="dash-status__k">
+                  {t("dashboard.totalPayable", "Payable outstanding")}
+                </span>
+                <span className="mk-badge mk-badge--warn">
+                  ${totalPayable.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="dash-status__row">
+                <span className="dash-status__k">
+                  {t("dashboard.taxEstimation", "Tax set-aside")}
+                </span>
+                <span className="mk-badge mk-badge--info">
+                  ${(parseFloat(calculateTotalCash()) * 0.3).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+              <div className="dash-status__row">
+                <span className="dash-status__k">
+                  {t("dashboard.recordedTransactions", "Recorded transactions")}
+                </span>
+                <span className="mk-badge mk-badge--ok">
+                  {(allTransactions || []).length}
+                </span>
+              </div>
+            </div>
           </Col>
         </Row>
       </div >
