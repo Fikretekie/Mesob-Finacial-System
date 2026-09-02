@@ -17,6 +17,9 @@ import { getUserCurrencyFromIP } from "./utils/currencyUtils";
 import "bootstrap/dist/css/bootstrap.css";
 import "assets/scss/now-ui-dashboard.scss?v1.5.0";
 import "assets/css/demo.css";
+import "assets/css/tokens.css";
+import "assets/css/components.css";
+import "assets/css/app-chrome.css";
 
 import AdminLayout from "layouts/Admin.js";
 import FinancialLayout from "layouts/financial.js";

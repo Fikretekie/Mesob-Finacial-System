@@ -1,0 +1,361 @@
+/* =========================================================================
+   App chrome — sidebar, top navbar, ambient field.
+   Overrides the Now UI Dashboard template defaults for signed-in screens.
+   Loaded after the template SCSS so source order wins. Built on tokens.
+   ========================================================================= */
+
+/* ---- Ambient blue field: gives glass panels something to frost ---- */
+.wrapper { background: var(--bg); }
+
+.main-panel {
+  background:
+    radial-gradient(900px 520px at 10% -8%, rgba(59, 130, 246, 0.10), transparent 55%),
+    radial-gradient(1000px 620px at 100% 0%, rgba(59, 130, 246, 0.06), transparent 50%),
+    var(--bg) !important;
+}
+
+/* ---- Sidebar → dark glass ---- */
+.sidebar {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--border);
+}
+
+/* Kill the Now UI coloured (blue) gradient overlays. */
+.sidebar:before,
+.sidebar:after,
+.sidebar[data-color="blue"]:after {
+  background-image: none !important;
+  background-color: transparent !important;
+  opacity: 0 !important;
+}
+
+.sidebar .logo {
+  border-bottom: 1px solid var(--border);
+}
+.sidebar .logo:after { display: none !important; }
+
+/* ---- Nav items ---- */
+.sidebar .sidebar-wrapper { padding: var(--sp-2); }
+
+.sidebar .nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 2px var(--sp-2);
+  padding: var(--sp-3) var(--sp-3) !important;
+  color: var(--text-2) !important;
+  border-radius: var(--r-md);
+  opacity: 1 !important;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.sidebar .nav .nav-link i {
+  color: var(--text-3);
+  font-size: 1.05rem;
+  opacity: 1 !important;
+}
+
+.sidebar .nav .nav-link p { color: inherit; font-weight: 500; margin: 0; }
+
+.sidebar .nav .nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--text-1) !important;
+}
+.sidebar .nav .nav-link:hover i { color: var(--text-1); }
+
+/* Active row — blue "you are here" edge + tint (blue is our brand accent). */
+.sidebar .nav li.active > .nav-link {
+  position: relative;
+  background: var(--accent-soft) !important;
+  color: var(--text-1) !important;
+}
+.sidebar .nav li.active > .nav-link i { color: var(--accent); }
+.sidebar .nav li.active > .nav-link::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+/* Neutralise Now UI's own active pseudo-backgrounds. */
+.sidebar .nav li.active > a::before,
+.sidebar .nav li.active > a::after { opacity: 0 !important; }
+
+/* ---- Top navbar → glass ---- */
+.navbar.navbar-absolute {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none !important;
+}
+.navbar.navbar-absolute.navbar-transparent { background: transparent !important; }
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.navbar p,
+.navbar .now-ui-icons { color: var(--text-1) !important; }
+
+/* Hamburger bars readable on dark. */
+.navbar .navbar-toggler-bar { background: var(--text-1) !important; }
+
+/* ---- Native date/time inputs → dark UI (visible calendar icon + text) ---- */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: dark;
+}
+/* Make the picker indicator clearly visible on dark fields. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.75);
+  cursor: pointer;
+}
+
+/* ---- Dropdown menus → dark (account menu, etc.) ---- */
+.dropdown-menu {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-2);
+}
+.dropdown-menu .dropdown-item { color: var(--text-2) !important; }
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+  background: var(--surface-hover) !important;
+  color: var(--text-1) !important;
+}
+.dropdown-menu .dropdown-divider { border-color: var(--border) !important; }
+
+/* ---- Modals → dark glass (applies to every reactstrap Modal) ---- */
+.modal-content {
+  background: var(--surface-2) !important;
+  color: var(--text-1);
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+.modal-content .modal-header,
+.modal-content .modal-body,
+.modal-content .modal-footer {
+  background: transparent !important;
+  border-color: var(--border) !important;
+  color: var(--text-1);
+}
+.modal-content .modal-title { color: var(--text-1); }
+.modal-content .close,
+.modal-content .btn-close {
+  color: var(--text-2);
+  opacity: 1;
+  text-shadow: none;
+}
+.modal-content .close:hover { color: var(--text-1); }
+
+/* Nested stat-tile row must not carry Bootstrap's -15px gutters, or it
+   bleeds left over the hero card. */
+.no-gutters-x { margin-left: 0 !important; margin-right: 0 !important; }
+
+/* ---- Dashboard overview header ---- */
+.dash-overview {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin: var(--sp-4) 0 var(--sp-5);
+}
+.dash-overview__title {
+  margin: var(--sp-1) 0 0;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.dash-overview__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dash-overview__meta::before {
+  content: "";
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ---- Dashboard stat tiles → glass, Uplinq register ----
+   !important beats the per-card inline styles without rewriting each card. */
+.card-stats {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
+}
+
+/* Tiny wide-tracked uppercase label. */
+.card-stats .card-category {
+  font-family: var(--font-mono) !important;
+  font-size: 0.6875rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase;
+  color: var(--text-3) !important;
+}
+
+/* Selectable stat tiles — click to drive the hero panel + chart. */
+.card-stats--selectable { transition: transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease); }
+.card-stats--selectable:hover { transform: translateY(-2px); }
+.card-stats--selectable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card-stats--selectable.is-selected {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), 0 0 0 1px var(--accent), 0 10px 30px rgba(59,130,246,0.16) !important;
+}
+.card-stats--selectable.is-selected .card-category { color: var(--accent) !important; }
+
+/* Hero cash tile — dominant figure, full-width spark, supporting metrics. */
+.card-stats--hero { padding: var(--sp-2); }
+.card-stats--hero .hero-body { padding: var(--sp-6); display: flex; flex-direction: column; }
+.card-stats--hero .card-category {
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase;
+  color: var(--text-3) !important;
+}
+.hero-figure { display: flex; align-items: baseline; gap: var(--sp-4); flex-wrap: wrap; }
+.card-stats--hero .card-title { font-size: clamp(2.2rem, 3.6vw, 3rem) !important; line-height: 1 !important; }
+.hero-delta { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 500; }
+.hero-spark { margin-top: var(--sp-5); }
+.hero-subline {
+  display: flex; gap: var(--sp-8);
+  margin-top: var(--sp-5); padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+.hero-subline > div { display: flex; flex-direction: column; gap: 5px; }
+.hero-subline .hk {
+  font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.hero-subline .hv {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 1rem; font-weight: 500; color: var(--text-1);
+}
+
+/* Medium-weight tabular mono figure (keeps its data colour from inline). */
+.card-stats .card-title {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Dashboard: recent activity feed + status ---- */
+.dash-tx {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.dash-tx:last-child { border-bottom: 0; }
+.dash-tx__cat { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dash-tx__nm { color: var(--text-1); font-size: 0.875rem; }
+.dash-tx__sub {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.dash-tx__amt {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.dash-status__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.dash-status__row:last-child { border-bottom: 0; }
+.dash-status__k { color: var(--text-2); font-size: 0.875rem; }
+.dash-empty {
+  padding: var(--sp-6) 0;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.85rem;
+}
+.dash-bar { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: 11px; }
+.dash-bar:last-child { margin-bottom: 0; }
+.dash-bar__nm {
+  font-size: 0.8rem; color: var(--text-2); width: 108px; flex: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dash-bar__track { flex: 1; height: 7px; border-radius: var(--r-pill); background: var(--surface-3); overflow: hidden; }
+.dash-bar__fill { height: 100%; border-radius: var(--r-pill); transition: width var(--dur) var(--ease); }
+.dash-bar__val {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 0.72rem; color: var(--text-2); width: 64px; text-align: right; flex: none;
+}
+
+/* ---- Chart cards → glass with mono eyebrow titles ---- */
+.chart-card {
+  position: relative;
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
+}
+.chart-card .card-body { background: transparent !important; }
+.chart-card__title {
+  text-align: left !important;
+  margin: 0 0 var(--sp-4) !important;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ---- Fallbacks: solid where frosting is unavailable / unwanted ---- */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .sidebar,
+  .navbar.navbar-absolute,
+  .card-stats,
+  .chart-card { background: var(--surface-2) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sidebar,
+  .navbar.navbar-absolute,
+  .card-stats,
+  .chart-card {
+    background: var(--surface-2) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
