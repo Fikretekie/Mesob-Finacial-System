@@ -341,11 +341,11 @@ function DemoNavbar(props) {
                       : t("financialReport.downloadReport")
                   }
                   style={{
-                    backgroundColor: "#2b427d",
-                    border: "1px solid #2b427d",
-                    color: "#ffffff",
+                    backgroundColor: "var(--surface-3)",
+                    border: "1px solid var(--border-strong)",
+                    color: "var(--text-1)",
                     height: "32px",
-                    borderRadius: "6px",
+                    borderRadius: "var(--r-sm)",
                     padding: isLandscapeMobile ? "0 9px" : "0 10px",
                     display: "inline-flex",
                     alignItems: "center",
@@ -374,11 +374,11 @@ function DemoNavbar(props) {
                         : t("financialReport.addTransaction")
                     }
                     style={{
-                      backgroundColor: "#41926f",
-                      border: "1px solid #41926f",
+                      backgroundColor: "var(--accent-solid)",
+                      border: "1px solid var(--accent-solid)",
                       color: "#ffffff",
                       height: "32px",
-                      borderRadius: "6px",
+                      borderRadius: "var(--r-sm)",
                       padding: isLandscapeMobile ? "0 9px" : "0 10px",
                       display: "inline-flex",
                       alignItems: "center",
