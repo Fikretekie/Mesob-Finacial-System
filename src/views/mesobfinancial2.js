@@ -2441,6 +2441,49 @@ const MesobFinancial2 = () => {
   const RunButtons = ({ onSelectRange, onClearFilters }) => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
+    const [preset, setPreset] = useState(null);
+    const [customOpen, setCustomOpen] = useState(false);
+
+    const ymd = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    };
+
+    const applyPreset = (key) => {
+      if (isSubscriptionGateActive()) {
+        navigate(SUBSCRIPTION_ROUTE);
+        return;
+      }
+      if (key === "custom") {
+        setPreset("custom");
+        setCustomOpen((v) => !v);
+        return;
+      }
+      const now = new Date();
+      const to = new Date();
+      let from;
+      if (key === "month") {
+        from = new Date(now.getFullYear(), now.getMonth(), 1);
+      } else if (key === "30d") {
+        from = new Date();
+        from.setDate(from.getDate() - 29);
+      } else if (key === "quarter") {
+        const q = Math.floor(now.getMonth() / 3);
+        from = new Date(now.getFullYear(), q * 3, 1);
+      } else {
+        from = new Date(now.getFullYear(), 0, 1);
+      }
+      const f = ymd(from);
+      const tt = ymd(to);
+      setPreset(key);
+      setCustomOpen(false);
+      setFromDate(f);
+      setToDate(tt);
+      onSelectRange({ from: f, to: tt });
+      setSearchedDates({ from: f, to: tt });
+    };
 
     const handleRun = () => {
       if (fromDate && toDate) {
@@ -2454,239 +2497,120 @@ const MesobFinancial2 = () => {
     const handleClear = () => {
       setFromDate("");
       setToDate("");
+      setPreset(null);
+      setCustomOpen(false);
       onClearFilters();
     };
 
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "flex-start",
-          flexWrap: "wrap",
-          gap: "10px",
-
-        }}
-      >
-        <div
-          className="clander"
-          style={{
-            display: "flex",
-            alignItems: "flex-end",
-            gap: "15px",
-          }}
-        >
-          <FormGroup
-            style={{
-              marginBottom: 0,
-              minWidth: "150px",
-              maxWidth: "200px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end"
-            }}
-          >
-            <Label
-              for="fromDate"
-              style={{
-                color: "#ffffff",
-                marginBottom: "5px",
-                fontSize: "0.875rem",
-                lineHeight: "1.2"
-              }}
-            >
-              {t('financialReport.from')}
-            </Label>
-            <Input
-              type="date"
-              id="fromDate"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              readOnly={isSubscriptionGateActive()}
+      <div className="dash-filter" style={{ margin: 0, opacity: isSubscriptionGateActive() ? 0.6 : 1 }}>
+        <div className="dash-filter__presets" role="group" aria-label={t("financialReport.dateRange", "Date range")}>
+          {[
+            { key: "month", label: t("dashboard.presetThisMonth", "This month") },
+            { key: "30d", label: t("dashboard.presetLast30", "Last 30 days") },
+            { key: "quarter", label: t("dashboard.presetQuarter", "Quarter") },
+            { key: "ytd", label: t("dashboard.presetYtd", "YTD") },
+          ].map((p) => (
+            <button
+              key={p.key}
+              type="button"
+              className={`dash-preset${preset === p.key ? " is-active" : ""}`}
+              onClick={() => applyPreset(p.key)}
               title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
-              onClick={() => {
-                if (isSubscriptionGateActive()) navigate(SUBSCRIPTION_ROUTE);
-              }}
-              style={{
-                backgroundColor: "var(--surface-3)",
-                color: "#ffffff",
-                border: "1px solid var(--border)",
-                borderRadius: "4px",
-                height: "38px",
-                padding: "6px 12px",
-                width: "100%",
-                opacity: isSubscriptionGateActive() ? 0.5 : 1,
-                cursor: isSubscriptionGateActive() ? "pointer" : undefined,
-              }}
-            />
-          </FormGroup>
-          <FormGroup
-            style={{
-              marginBottom: 0,
-              minWidth: "150px",
-              maxWidth: "200px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-end"
-            }}
-          >
-            <Label
-              for="toDate"
-              style={{
-                color: "#ffffff",
-                marginBottom: "5px",
-                fontSize: "0.875rem",
-                lineHeight: "1.2"
-              }}
             >
-              {t('financialReport.to')}
-            </Label>
-            <Input
-              type="date"
-              id="toDate"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              readOnly={isSubscriptionGateActive()}
-              title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
-              onClick={() => {
-                if (isSubscriptionGateActive()) navigate(SUBSCRIPTION_ROUTE);
-              }}
-              style={{
-                backgroundColor: "var(--surface-3)",
-                color: "#ffffff",
-                border: "1px solid var(--border)",
-                borderRadius: "4px",
-                height: "38px",
-                padding: "6px 12px",
-                width: "100%",
-                opacity: isSubscriptionGateActive() ? 0.5 : 1,
-                cursor: isSubscriptionGateActive() ? "pointer" : undefined,
-              }}
-            />
-          </FormGroup>
-        </div>
-        <div
-          className="buttonn"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-            height: "38px",
-            minHeight: "38px",
-          }}
-        >
-          <Button
+              {p.label}
+            </button>
+          ))}
+          <button
             type="button"
+            className={`dash-preset dash-preset--custom${preset === "custom" || customOpen ? " is-active" : ""}`}
+            aria-expanded={customOpen}
+            onClick={() => applyPreset("custom")}
             title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
-            onClick={() => {
-              if (isSubscriptionGateActive()) {
-                navigate(SUBSCRIPTION_ROUTE);
-                return;
-              }
-              handleRun();
-            }}
-            style={{
-              height: "38px",
-              backgroundColor: "var(--accent)",
-              borderColor: "var(--accent)",
-              color: "#ffffff",
-              borderRadius: "4px",
-              padding: "0 10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: isSubscriptionGateActive() ? 0.5 : 1,
-            }}
           >
-            {t('financialReport.run')}
-          </Button>
-          <Button
-            type="button"
-            title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
-            onClick={() => {
-              if (isSubscriptionGateActive()) {
-                navigate(SUBSCRIPTION_ROUTE);
-                return;
-              }
-              handleClear();
-            }}
-            style={{
-              height: "38px",
-              backgroundColor: "#888888",
-              borderColor: "#888888",
-              color: "#ffffff",
-              borderRadius: "4px",
-              padding: "0 10px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: isSubscriptionGateActive() ? 0.5 : 1,
-            }}
-          >
-            {t('financialReport.clearFilters')}
-          </Button>
-
-          {/* Search moved here - inline with Run/Clear */}
-          {showSearchInput ? (
-            <div style={{ position: "relative", width: "180px" }}>
-              <Input
-                type="text"
-                placeholder={t("financialReport.searchJournal")}
-                value={searchTerm}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSearchTerm(value);
-                  if (value.trim() === "") {
-                    setSearchTerm("");
-                    setShowSearchInput(false);
-                  }
-                }}
-                onBlur={() => {
-                  if (searchTerm.trim() === "") setShowSearchInput(false);
-                }}
-                style={{
-                  height: "38px",
-                  borderRadius: "4px",
-                  backgroundColor: "var(--surface-3)",
-                  color: "#ffffff",
-                  border: "1px solid var(--border)",
-                  padding: "6px 12px",
-                  paddingRight: "35px"
-                }}
-              />
-              <button
-                style={{
-                  position: "absolute", right: "8px", top: "50%",
-                  transform: "translateY(-50%)", background: "none",
-                  border: "none", color: "#ffffff", cursor: "pointer",
-                  padding: "0", display: "flex", alignItems: "center",
-                }}
-                onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
-              >
-                <FaTimesCircle size={18} />
-              </button>
-            </div>
-          ) : (
-            <span
-              title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
-              style={{
-                display: "inline-flex",
-                cursor: "pointer",
-                opacity: isSubscriptionGateActive() ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (isSubscriptionGateActive()) {
-                  navigate(SUBSCRIPTION_ROUTE);
-                  return;
-                }
-                setShowSearchInput(true);
-              }}
-              role="presentation"
-            >
-              <Search size={18} color="#ffffff" />
-            </span>
+            {t("dashboard.presetCustom", "Custom")}
+            <span className={`dash-preset__caret${customOpen ? " is-open" : ""}`} aria-hidden>▾</span>
+          </button>
+          {(preset || (selectedTimeRange && selectedTimeRange !== "all")) && (
+            <button type="button" className="dash-preset dash-preset--clear" onClick={handleClear}>
+              {t("financialReport.clearFilters", "Clear")}
+            </button>
           )}
+          <div className="dash-filter__search">
+            {showSearchInput ? (
+              <div className="dash-filter__searchbox">
+                <Input
+                  type="text"
+                  placeholder={t("financialReport.searchJournal")}
+                  value={searchTerm}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchTerm(value);
+                    if (value.trim() === "") {
+                      setSearchTerm("");
+                      setShowSearchInput(false);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (searchTerm.trim() === "") setShowSearchInput(false);
+                  }}
+                  className="dash-filter__date"
+                  style={{ paddingRight: "34px" }}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  aria-label="Close search"
+                  className="dash-filter__searchclose"
+                  onClick={() => { setSearchTerm(""); setShowSearchInput(false); }}
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="dash-preset dash-preset--icon"
+                aria-label={t("financialReport.searchJournal")}
+                title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : t("financialReport.searchJournal")}
+                onClick={() => {
+                  if (isSubscriptionGateActive()) {
+                    navigate(SUBSCRIPTION_ROUTE);
+                    return;
+                  }
+                  setShowSearchInput(true);
+                }}
+              >
+                <Search size={16} />
+              </button>
+            )}
+          </div>
         </div>
+        {customOpen && (
+          <div className="dash-filter__custom">
+            <label className="dash-filter__field">
+              <span className="dash-filter__lbl">{t("financialReport.from")}</span>
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="dash-filter__date"
+              />
+            </label>
+            <label className="dash-filter__field">
+              <span className="dash-filter__lbl">{t("financialReport.to")}</span>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="dash-filter__date"
+              />
+            </label>
+            <button type="button" className="dash-preset dash-preset--apply" onClick={handleRun}>
+              {t("financialReport.run", "Apply")}
+            </button>
+          </div>
+        )}
       </div>
     );
   };

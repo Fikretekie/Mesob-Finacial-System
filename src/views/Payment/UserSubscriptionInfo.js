@@ -16,7 +16,24 @@ const UserSubscriptionInfo = ({
   const renderSubscribeButton = () => {
     if (!userSubscription && (!isTrialActive() || scheduleCount >= 4)) {
       return (
-        <Button onClick={() => navigate("/customer/subscription")}>Subscribe</Button>
+        <Button
+          onClick={() => navigate("/customer/subscription")}
+          style={{
+            backgroundColor: "var(--accent-soft)",
+            borderColor: "var(--accent)",
+            color: "var(--accent)",
+            height: "38px",
+            borderRadius: "var(--r-sm)",
+            padding: "0 16px",
+            fontWeight: 600,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: 0,
+          }}
+        >
+          Subscribe
+        </Button>
       );
     }
     return null;

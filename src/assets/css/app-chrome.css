@@ -4,6 +4,18 @@
    Loaded after the template SCSS so source order wins. Built on tokens.
    ========================================================================= */
 
+/* ---- Standard fonts: retire the template's Montserrat (and stray Arial).
+   Inter for UI text/headings; the mono rules below (eyebrows, figures) win
+   via higher specificity / !important, so figures stay JetBrains Mono. ---- */
+body,
+.wrapper,
+.main-panel,
+h1, h2, h3, h4, h5, h6,
+.card-title, .card-category,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-sans);
+}
+
 /* ---- Ambient blue field: gives glass panels something to frost ---- */
 .wrapper { background: var(--bg); }
 
@@ -774,3 +786,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
 ::-webkit-scrollbar-corner { background: transparent; }
+
+/* ---- Standard numerals: figures in the mono face + tabular, like the
+   dashboard. Amount cells in the report tables are right-aligned; the
+   summary/statement value blocks are bold ≥1.05rem figures. ---- */
+.main-panel { font-variant-numeric: tabular-nums; }
+.main-panel td[style*="text-align: right"],
+.main-panel td[style*="text-align:right"],
+.main-panel [style*="font-size: 1.1rem"][style*="font-weight: bold"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
