@@ -950,25 +950,25 @@ function Dashboard() {
   const heroMetrics = {
     cash: {
       key: "cash", label: t("dashboard.cashOnHand"), value: parseFloat(calculateTotalCash()),
-      prev: getPreviousMonthValues().cashOnHand, color: FINANCIAL_COLORS.asset,
+      prev: getPreviousMonthValues().cashOnHand, color: FINANCIAL_COLORS.asset, icon: "fas fa-wallet",
       chart: cashOnHandChartData, chartTitle: t("dashboard.totalCashOnHandChart"),
       spark: monthlySales.map((m) => m.cashOnHand),
     },
     revenue: {
       key: "revenue", label: t("dashboard.revenue"), value: totalrevenue,
-      prev: getPreviousMonthValues().revenue, color: FINANCIAL_COLORS.income,
+      prev: getPreviousMonthValues().revenue, color: FINANCIAL_COLORS.income, icon: "fas fa-arrow-up",
       chart: revenueChartData, chartTitle: t("dashboard.revenueChart"),
       spark: monthlySales.map((m) => m.revenue),
     },
     expenses: {
       key: "expenses", label: t("dashboard.totalExpenses"), value: totalExpenses,
-      prev: getPreviousMonthValues().expenses, color: FINANCIAL_COLORS.expense,
+      prev: getPreviousMonthValues().expenses, color: FINANCIAL_COLORS.expense, icon: "fas fa-arrow-down",
       chart: expensesChartData, chartTitle: t("dashboard.totalExpensesChart"),
       spark: monthlySales.map((m) => m.expenses),
     },
     payable: {
       key: "payable", label: t("dashboard.totalPayable"), value: totalPayable,
-      prev: getPreviousMonthValues().payable, color: FINANCIAL_COLORS.payable,
+      prev: getPreviousMonthValues().payable, color: FINANCIAL_COLORS.payable, icon: "fas fa-file-invoice",
       chart: payableChartData, chartTitle: t("dashboard.totalPayableChart"),
       spark: monthlySales.map((m) => m.payable),
     },
@@ -1487,6 +1487,10 @@ function Dashboard() {
                 return nm ? `${g}, ${nm}` : g;
               })()}
             </h2>
+            <p className="dash-overview__sub">
+              {t("dashboard.overviewSubtitle", "Here's your financial overview for")}{" "}
+              {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+            </p>
           </div>
           <span className="dash-overview__meta">
             {t("dashboard.booksCurrent", "Books current")} ·{" "}
@@ -1556,7 +1560,21 @@ function Dashboard() {
             <Card className="chart-card" style={{ height: "100%" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading chart..." />
               <CardBody style={{ border: "none", display: "flex", flexDirection: "column", height: "100%" }}>
-                <p className="chart-card__title">{activeMetric.chartTitle}</p>
+                <div className="dash-panel-head" style={{ marginBottom: 8 }}>
+                  <span className="mk-chip mk-chip--sm" style={{ backgroundColor: `${activeMetric.color}26`, color: activeMetric.color }}>
+                    <i className={activeMetric.icon} />
+                  </span>
+                  <div>
+                    <span className="chart-card__title" style={{ display: "block", margin: 0 }}>{activeMetric.chartTitle}</span>
+                    {!loadingFinancialData && (
+                      <span className="chart-card__sub">
+                        ${activeMetric.value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        {" · "}
+                        {calculatePercentageChange(activeMetric.value, activeMetric.prev).text}
+                      </span>
+                    )}
+                  </div>
+                </div>
                 <div id="cashFlowChart" style={{ flex: 1, minHeight: 0 }}>
                   <ReactApexChart options={activeMetric.chart} series={activeMetric.chart.series} type="area" height={280} />
                 </div>
@@ -1573,7 +1591,13 @@ function Dashboard() {
               <Col key={key} md="3" sm="6" xs="12" style={{ paddingLeft: "3px", paddingRight: "3px", marginBottom: "4px" }}>
                 <Card
                   className={`card-stats card-stats--selectable${selected ? " is-selected" : ""}`}
-                  style={{ position: "relative", cursor: "pointer" }}
+                  style={{
+                    position: "relative",
+                    cursor: "pointer",
+                    "--tile-tint": `${m.color}1f`,
+                    "--tile-border": `${m.color}59`,
+                    "--tile-ring": m.color,
+                  }}
                   onClick={() => setHeroMetric(key)}
                   role="button"
                   tabIndex={0}
@@ -1584,8 +1608,13 @@ function Dashboard() {
                 >
                   <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
                   <CardBody>
-                    <p className="card-category" style={{ marginBottom: "0.4rem" }}>{m.label}</p>
-                    <CardTitle tag="h3" style={{ color: m.color, margin: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                      <span className="mk-chip" style={{ backgroundColor: `${m.color}26`, color: m.color }}>
+                        <i className={m.icon} />
+                      </span>
+                      <span className="card-category" style={{ margin: 0 }}>{m.label}</span>
+                    </div>
+                    <CardTitle tag="h3" style={{ color: "var(--text-1)", margin: 0 }}>
                       {loadingFinancialData ? (
                         <Spinner size="sm" />
                       ) : (
@@ -1593,12 +1622,10 @@ function Dashboard() {
                       )}
                     </CardTitle>
                     {!loadingFinancialData && (
-                      <p style={{ color: m.color, fontSize: "0.75rem", margin: "4px 0 0" }}>
-                        {calculatePercentageChange(m.value, m.prev).text}
-                      </p>
-                    )}
-                    {!loadingFinancialData && (
-                      <div style={{ marginTop: 8 }}>
+                      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8, marginTop: 6 }}>
+                        <span style={{ color: m.color, fontSize: "0.75rem" }}>
+                          {calculatePercentageChange(m.value, m.prev).text}
+                        </span>
                         <Sparkline id={`sp-tile-${key}`} data={m.spark} color={m.color} />
                       </div>
                     )}
@@ -1618,9 +1645,15 @@ function Dashboard() {
           <Col lg="7" style={{ paddingInline: 3, marginBottom: 5 }}>
             <div className="mk-card" style={{ position: "relative" }}>
               <LoadingOverlay loading={loadingFinancialData} text="Loading..." />
-              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
-                {t("dashboard.recentActivity", "Recent activity")}
-              </p>
+              <div className="dash-panel-head">
+                <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "var(--accent-soft)", color: "var(--accent)" }}>
+                  <i className="fas fa-clock" />
+                </span>
+                <span className="mk-eyebrow">{t("dashboard.recentActivity", "Recent activity")}</span>
+                <button type="button" className="dash-viewall" onClick={() => navigate("/customer/financial-report")}>
+                  {t("dashboard.viewAll", "View all")} →
+                </button>
+              </div>
               {(() => {
                 const txs = (allTransactions || [])
                   .slice()
@@ -1684,9 +1717,12 @@ function Dashboard() {
           </Col>
           <Col lg="5" style={{ paddingInline: 3, marginBottom: 5 }}>
             <div className="mk-card" style={{ position: "relative", marginBottom: 14 }}>
-              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
-                {t("dashboard.topExpenses", "Top expenses")}
-              </p>
+              <div className="dash-panel-head">
+                <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "rgba(168,85,247,0.14)", color: FINANCIAL_COLORS.expense }}>
+                  <i className="fas fa-chart-pie" />
+                </span>
+                <span className="mk-eyebrow">{t("dashboard.topExpenses", "Top expenses")}</span>
+              </div>
               {(() => {
                 const groups = {};
                 (allTransactions || []).forEach((tx) => {
@@ -1731,9 +1767,12 @@ function Dashboard() {
               })()}
             </div>
             <div className="mk-card" style={{ position: "relative" }}>
-              <p className="mk-eyebrow" style={{ marginBottom: 14 }}>
-                {t("dashboard.status", "Status")}
-              </p>
+              <div className="dash-panel-head">
+                <span className="mk-chip mk-chip--sm" style={{ backgroundColor: "rgba(0,217,126,0.14)", color: FINANCIAL_COLORS.positive }}>
+                  <i className="fas fa-circle-check" />
+                </span>
+                <span className="mk-eyebrow">{t("dashboard.status", "Status")}</span>
+              </div>
               <div className="dash-status__row">
                 <span className="dash-status__k">
                   {t("dashboard.totalPayable", "Payable outstanding")}

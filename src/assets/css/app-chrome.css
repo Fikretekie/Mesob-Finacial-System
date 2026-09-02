@@ -42,9 +42,9 @@
 .sidebar .nav .nav-link {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  margin: 2px var(--sp-2);
-  padding: var(--sp-3) var(--sp-3) !important;
+  gap: 13px;
+  margin: 3px 4px;
+  padding: 11px 12px !important;
   color: var(--text-2) !important;
   border-radius: var(--r-md);
   opacity: 1 !important;
@@ -53,11 +53,22 @@
 
 .sidebar .nav .nav-link i {
   color: var(--text-3);
-  font-size: 1.05rem;
+  font-size: 1.2rem;
+  min-width: 22px;
+  text-align: center;
   opacity: 1 !important;
 }
 
-.sidebar .nav .nav-link p { color: inherit; font-weight: 500; margin: 0; }
+/* 13px title-case labels (was 10px cramped uppercase). */
+.sidebar .nav .nav-link p {
+  color: inherit;
+  font-size: 0.82rem !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none !important;
+  margin: 0;
+}
+.sidebar .nav li.active > .nav-link p { font-weight: 600; }
 
 .sidebar .nav .nav-link:hover {
   background: var(--surface-hover);
@@ -202,6 +213,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
   letter-spacing: -0.015em;
 }
+.dash-overview__sub {
+  margin: 4px 0 0;
+  color: var(--text-2);
+  font-size: 0.95rem;
+}
 .dash-overview__meta {
   display: inline-flex;
   align-items: center;
@@ -240,15 +256,56 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   color: var(--text-3) !important;
 }
 
-/* Selectable stat tiles — click to drive the hero panel + chart. */
-.card-stats--selectable { transition: transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease); }
+/* Selectable stat tiles — colour-coded per metric, click to drive the hero.
+   --tile-tint / --tile-border / --tile-ring are set inline per metric. */
+.card-stats--selectable {
+  background: linear-gradient(135deg, var(--tile-tint, transparent) 0%, var(--glass-bg) 62%) !important;
+  border: 1px solid var(--tile-border, var(--card-border)) !important;
+  transition: transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
 .card-stats--selectable:hover { transform: translateY(-2px); }
 .card-stats--selectable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .card-stats--selectable.is-selected {
-  border-color: var(--accent) !important;
-  box-shadow: var(--shadow-1), var(--glass-inset), 0 0 0 1px var(--accent), 0 10px 30px rgba(59,130,246,0.16) !important;
+  border-color: var(--tile-ring, var(--accent)) !important;
+  box-shadow: 0 0 0 1px var(--tile-ring, var(--accent)), var(--shadow-2), var(--glass-inset) !important;
 }
-.card-stats--selectable.is-selected .card-category { color: var(--accent) !important; }
+
+/* Coloured icon chip on cards / panel headers. */
+.mk-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex: none;
+}
+.mk-chip--sm { width: 30px; height: 30px; border-radius: 9px; font-size: 0.85rem; }
+
+/* Panel header row: icon chip + eyebrow + optional action. */
+.dash-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.dash-panel-head .mk-eyebrow { margin: 0; }
+.dash-viewall {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.dash-viewall:hover { color: var(--accent-hover); }
 
 /* Hero cash tile — dominant figure, full-width spark, supporting metrics. */
 .card-stats--hero { padding: var(--sp-2); }
@@ -352,6 +409,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
 }
 .chart-card .card-body { background: transparent !important; }
+.chart-card__sub {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
 .chart-card__title {
   text-align: left !important;
   margin: 0 0 var(--sp-4) !important;
