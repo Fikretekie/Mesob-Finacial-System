@@ -2816,7 +2816,7 @@ const MesobFinancial2 = () => {
         <Container fluid style={{ paddingInline: 0 }}>
           <Row>
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
-              <Card style={{ backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", paddingBottom: 8, borderRadius: "8px" }}>
+              <Card style={{ backgroundColor: "#1a273a", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", paddingBottom: 8, borderRadius: "8px" }}>
                 <CardHeader
                   style={{
                     display: "flex",
@@ -2861,11 +2861,11 @@ const MesobFinancial2 = () => {
                         setShowDownloadReportModal(true);
                       }}
                       style={{
-                        backgroundColor: "#2b427d",
-                        borderColor: "#2b427d",
-                        color: "#ffffff",
+                        backgroundColor: "var(--surface-3)",
+                        borderColor: "var(--border-strong)",
+                        color: "var(--text-1)",
                         height: "38px",
-                        borderRadius: "4px",
+                        borderRadius: "var(--r-sm)",
                         padding: "0 16px",
                         display: "flex",
                         alignItems: "center",
@@ -2891,11 +2891,11 @@ const MesobFinancial2 = () => {
                           setShowAddTransaction(true);
                         }}
                         style={{
-                          backgroundColor: "#11b981",
-                          borderColor: "#11b981",
+                          backgroundColor: "var(--accent-solid)",
+                          borderColor: "var(--accent-solid)",
                           color: "#ffffff",
                           height: "38px",
-                          borderRadius: "4px",
+                          borderRadius: "var(--r-sm)",
                           padding: "0 16px",
                           display: "flex",
                           alignItems: "center",
@@ -2933,7 +2933,7 @@ const MesobFinancial2 = () => {
               md={3}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
+              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
                     {t('financialReport.summary')}
@@ -3330,7 +3330,7 @@ const MesobFinancial2 = () => {
               md={6}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.4)", borderRadius: "8px" }}>
+              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "#1a273a", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
                     {t('financialReport.incomeStatement')}
@@ -3696,7 +3696,7 @@ const MesobFinancial2 = () => {
           {/* Mobile View */}
           <Row className="d-flex d-md-none" style={{ marginTop: "3px" }}>
             <Col xs={12} style={{ paddingLeft: "1px", paddingRight: "1px" }}>
-              <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
+              <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle style={{ fontWeight: 600, color: "#22d3ee" }} tag="h4">
                     {t('financialReport.summary')}
@@ -4064,7 +4064,7 @@ const MesobFinancial2 = () => {
                 </CardBody>
               </Card>
 
-              <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
+              <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
                     {t('financialReport.incomeStatement')}
@@ -4100,7 +4100,7 @@ const MesobFinancial2 = () => {
                 </CardBody>
               </Card>
 
-              <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "0 8px 24px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5)", borderRadius: "8px" }}>
+              <Card style={{ marginBottom: "5px", backgroundColor: "#1a273a", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "#1a273a" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "#22d3ee" }}>
                     {t('financialReport.balanceSheet')}
