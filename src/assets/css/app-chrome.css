@@ -284,7 +284,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* ---- Dashboard stat tiles → glass, Uplinq register ----
    !important beats the per-card inline styles without rewriting each card. */
 .card-stats {
-  background: var(--glass-bg) !important;
+  background: var(--glass-sheen), var(--glass-bg) !important;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--card-border) !important;
@@ -305,7 +305,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* Selectable stat tiles — colour-coded per metric, click to drive the hero.
    --tile-tint / --tile-border / --tile-ring are set inline per metric. */
 .card-stats--selectable {
-  background: linear-gradient(135deg, var(--tile-tint, transparent) 0%, var(--glass-bg) 62%) !important;
+  background: var(--glass-sheen), linear-gradient(135deg, var(--tile-tint, transparent) 0%, var(--glass-bg) 62%) !important;
   border: 1px solid var(--tile-border, var(--card-border)) !important;
   transition: transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
@@ -526,7 +526,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* ---- Chart cards → glass with mono eyebrow titles ---- */
 .chart-card {
   position: relative;
-  background: var(--glass-bg) !important;
+  background: var(--glass-sheen), var(--glass-bg) !important;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--card-border) !important;
@@ -555,7 +555,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    Now UI's plain .card is 3px-radius solid; bring it into the glass system.
    .card-stats / .chart-card keep their own more-specific !important rules. */
 .main-panel .card:not(.card-stats):not(.chart-card) {
-  background: var(--glass-bg) !important;
+  background: var(--glass-sheen), var(--glass-bg) !important;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--card-border) !important;

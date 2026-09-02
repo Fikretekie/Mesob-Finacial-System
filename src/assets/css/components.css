@@ -19,7 +19,7 @@
 
 /* ---- Panel / card: glassy, hairline border, minimal elevation ---- */
 .mk-card {
-  background: var(--glass-bg);
+  background: var(--glass-sheen), var(--glass-bg);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--card-border);
