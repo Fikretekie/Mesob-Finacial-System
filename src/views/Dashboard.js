@@ -1638,27 +1638,25 @@ function Dashboard() {
                   );
                 }
                 return txs.map((tx, i) => {
-                  const isExpense =
-                    tx.subType === "Expense" ||
-                    String(tx.transactionPurpose || "").includes("Expense") ||
-                    Number(tx.amount) < 0;
-                  const amt = Math.abs(Number(tx.amount) || 0);
-                  const when = tx.date || tx.createdAt;
+                  const type = tx.transactionType;
+                  const isIncome = type === "Receive";
+                  const isExpense = type === "Pay" || type === "New_Item";
+                  const amt = Math.abs(parseFloat(tx.transactionAmount) || 0);
+                  const when = tx.createdAt || tx.date;
                   const name =
                     tx.transactionPurpose ||
                     tx.title ||
                     tx.description ||
                     t("dashboard.transaction", "Transaction");
+                  const rowColor = isIncome
+                    ? FINANCIAL_COLORS.positive
+                    : isExpense
+                      ? FINANCIAL_COLORS.negative
+                      : FINANCIAL_COLORS.payable;
+                  const sign = isIncome ? "+" : isExpense ? "−" : "";
                   return (
                     <div className="dash-tx" key={tx.id || i}>
-                      <span
-                        className="dash-tx__cat"
-                        style={{
-                          backgroundColor: isExpense
-                            ? FINANCIAL_COLORS.expense
-                            : FINANCIAL_COLORS.income,
-                        }}
-                      />
+                      <span className="dash-tx__cat" style={{ backgroundColor: rowColor }} />
                       <div>
                         <div className="dash-tx__nm">{name}</div>
                         <div className="dash-tx__sub">
@@ -1668,18 +1666,11 @@ function Dashboard() {
                                 day: "numeric",
                               })
                             : ""}
-                          {tx.subType ? ` · ${tx.subType}` : ""}
+                          {type ? ` · ${type}` : ""}
                         </div>
                       </div>
-                      <span
-                        className="dash-tx__amt"
-                        style={{
-                          color: isExpense
-                            ? FINANCIAL_COLORS.negative
-                            : FINANCIAL_COLORS.positive,
-                        }}
-                      >
-                        {isExpense ? "−" : "+"}$
+                      <span className="dash-tx__amt" style={{ color: rowColor }}>
+                        {sign}$
                         {amt.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
@@ -1700,16 +1691,14 @@ function Dashboard() {
                 const groups = {};
                 (allTransactions || []).forEach((tx) => {
                   const isExp =
-                    tx.subType === "Expense" ||
-                    String(tx.transactionPurpose || "").includes("(Expense)");
+                    tx.transactionType === "Pay" || tx.transactionType === "New_Item";
                   if (!isExp) return;
                   const key =
                     String(tx.transactionPurpose || "")
                       .replace(/\s*\(Expense\)\s*/i, "")
                       .trim() ||
-                    tx.subType ||
                     t("dashboard.otherExpense", "Other");
-                  groups[key] = (groups[key] || 0) + Math.abs(Number(tx.amount) || 0);
+                  groups[key] = (groups[key] || 0) + Math.abs(parseFloat(tx.transactionAmount) || 0);
                 });
                 const rows = Object.entries(groups)
                   .sort((a, b) => b[1] - a[1])
