@@ -1092,9 +1092,9 @@ function Dashboard() {
                       setShowDownloadReportModal(true);
                     }}
                     style={{
-                      backgroundColor: "var(--accent-solid)",
-                      borderColor: "var(--accent-solid)",
-                      color: "#ffffff",
+                      backgroundColor: "var(--surface-3)",
+                      borderColor: "var(--border-strong)",
+                      color: "var(--text-1)",
                       height: "44px",
                       borderRadius: "10px",
                       width: "45%",
@@ -1118,8 +1118,8 @@ function Dashboard() {
                       title={isSubscriptionGateActive() ? SUBSCRIPTION_UPDATE_HINT : undefined}
                       onClick={handleAddTransactionClick}
                       style={{
-                        backgroundColor: FINANCIAL_COLORS.income,
-                        borderColor: FINANCIAL_COLORS.income,
+                        backgroundColor: "var(--accent-solid)",
+                        borderColor: "var(--accent-solid)",
                         color: "#ffffff",
                         height: "44px",
                         borderRadius: "10px",
