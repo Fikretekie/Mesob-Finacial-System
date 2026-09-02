@@ -488,12 +488,43 @@ const Login = () => {
       <Helmet>
         <title>Login - Meksova</title>
       </Helmet>
-      <div className="login-container">
-        <NotificationAlert ref={notificationAlertRef} />
+      <NotificationAlert ref={notificationAlertRef} />
+      <div className="auth">
+        <aside className="auth__brand">
+          <div className="auth__logo">
+            <img src={logo} alt="Meksova Finance" />
+          </div>
+          <div className="auth__brand-body">
+            <p className="auth__eyebrow">Meksova Finance</p>
+            <h1 className="auth__headline">
+              Your books, <span>always current.</span>
+            </h1>
+            <p className="auth__sub">
+              Track revenue, expenses, and cash in one place — reviewed and
+              ready when you sit down to make a decision.
+            </p>
+            <div className="auth__glimpse" aria-hidden="true">
+              <div className="auth__tile">
+                <span className="auth__tile-label">Cash on hand</span>
+                <span className="auth__tile-num">$87,091</span>
+                <span className="auth__tile-delta up">↗ 12.4%</span>
+              </div>
+              <div className="auth__tile">
+                <span className="auth__tile-label">Net this month</span>
+                <span className="auth__tile-num">+$61,720</span>
+                <span className="auth__tile-delta up">↗ 9.8%</span>
+              </div>
+            </div>
+          </div>
+          <div className="auth__brand-foot">
+            <span>Bilingual</span><span>·</span><span>Built for small business</span>
+          </div>
+        </aside>
+        <main className="auth__panel">
         <div className="login-box">
           <img src={logo} alt="Logo" className="logo_img" />
           <h2>Login</h2>
-          <p style={{ color: "#9ca5b0" }}>Welcome! Login to access the <span style={{ color: "#3b83f6" }}>Meksova</span> </p>
+          <p className="login-welcome">Welcome! Login to access the <span className="login-brand">Meksova</span></p>
           {loading && (
             <div
               className="loading-message"
@@ -522,7 +553,7 @@ const Login = () => {
             <>
               <form onSubmit={handleSubmit}>
                 <div className="login-input-group">
-                  <label style={{ color: "#ffffff" }}>Email</label>
+                  <label>Email</label>
                   <input
                     type="email"
                     value={email}
@@ -533,7 +564,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="login-input-group">
-                  <label style={{ color: "#ffffff" }}>Password</label>
+                  <label>Password</label>
                   <div className="password-container">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -546,6 +577,8 @@ const Login = () => {
                     <button
                       type="button"
                       className="toggle-password"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-pressed={showPassword}
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FontAwesomeIcon
@@ -555,7 +588,7 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
-                <div className="forgot-password-link" style={{ marginTop: 10 }}>
+                <div className="forgot-password-link">
                   <Link to="/forgot-password">Forgot Password?</Link>
                 </div>
                 <button type="submit" className="login-btn" disabled={loading}>
@@ -568,8 +601,8 @@ const Login = () => {
                   )}
                 </button>
               </form>
-              <div className="separator" style={{ marginTop: 10 }}>
-                <span style={{ color: "#9ca5b0" }}>OR</span>
+              <div className="separator">
+                <span>OR</span>
               </div>
               <button
                 onClick={handleGoogleSignIn}
@@ -612,12 +645,13 @@ const Login = () => {
                   </>
                 )}
               </button>
-              <p style={{ marginTop: 10, color: "#9ca5b0" }}>
+              <p className="login-signup-prompt">
                 Don't have an account yet? <Link to="/signup">Sign up</Link>
               </p>
             </>
           )}
         </div>
+        </main>
       </div>
     </>
   );
