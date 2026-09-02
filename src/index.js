@@ -141,12 +141,20 @@ Amplify.configure({
         oauth: {
           region: "us-east-1",
           domain: cognitoDomain,
+<<<<<<< HEAD
           scopes: oauthScopes,
+=======
+          scopes: ["openid", "email", "profile"],
+>>>>>>> claude/mesob-financial-portal-features-yuv3i8
           redirectSignIn: [`${appOrigin}/oauth-redirect`, "http://localhost:3000/oauth-redirect"],
           redirectSignOut: [appOrigin, "http://localhost:3000"],
           responseType: "code",
           providers: [
+<<<<<<< HEAD
             { provider: "Google", scopes: oauthScopes, clientId: googleClientId },
+=======
+            { provider: "Google", scopes: ["openid", "email", "profile"], clientId: googleClientId },
+>>>>>>> claude/mesob-financial-portal-features-yuv3i8
             { provider: "SignInWithApple", clientId: isProduction ? "com.mesob.financial" : "com.mesob.financial.staging" },
           ],
         },

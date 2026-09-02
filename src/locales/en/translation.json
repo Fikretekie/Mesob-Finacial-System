@@ -572,8 +572,46 @@
     "nameDocumentEmpty": "Please enter a file name.",
     "uploadConfirm": "Upload",
     "subtitleCompress": "Large images will be automatically compressed.",
-    "fileTooBigNonImage": "File too large ({{size}}). {{type}} files cannot be compressed automatically. Please reduce the file size to under {{max}} MB before uploading."
+        "fileTooBigNonImage": "File too large ({{size}}). {{type}} files cannot be compressed automatically. Please reduce the file size to under {{max}} MB before uploading."
    },
+  "mileageTracker": {
+    "startTrip": "Start Trip",
+    "stopTrip": "Stop Trip",
+    "saving": "Saving…",
+    "saveTrip": "Save Trip",
+    "discardTrip": "Discard trip",
+    "miles": "Miles",
+    "elapsed": "Elapsed",
+    "gpsLocked": "GPS locked · ±{{meters}}m accuracy",
+    "waitingForGps": "Waiting for GPS…",
+    "business": "Business",
+    "personal": "Personal",
+    "addNote": "Add a note",
+    "notePlaceholder": "Optional note…",
+    "purposeClientVisit": "Client Visit",
+    "purposeDelivery": "Delivery",
+    "purposeCommute": "Commute",
+    "purposeOther": "Other",
+    "permissionDenied": "Location permission denied. Allow location access to track mileage.",
+    "locationError": "Location error: {{message}}",
+    "signalUnavailable": "signal temporarily unavailable, retrying…",
+    "noGpsSupport": "This browser does not support GPS location.",
+    "saveError": "Could not save trip. Check your connection and try again."
+  },
+  "tripHistory": {
+    "loading": "Loading trips…",
+    "loadError": "Could not load trips. Check your connection and try again.",
+    "businessMiles": "Business Miles",
+    "thisYear": "This Year",
+    "estDeduction": "Est. Deduction",
+    "perMile": "{{rate}} / mile",
+    "thisMonth": "This Month",
+    "trips": "Trips",
+    "allTime": "All Time",
+    "noTrips": "No trips recorded for this day",
+    "miTotal": "mi total",
+    "min": "min"
+  },
   "auth": {
     "login": {
       "pageTitle": "Login - Meksova",

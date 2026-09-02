@@ -147,6 +147,8 @@ export function normalizeReceiptUrl(rawUrl) {
 /** Route path segments (no leading slash; append to API_BASE_URL). */
 export const ROUTES = {
   USERS: "Users",
+   MILEAGE_TRIP: "MileageTrip",
+  USERS: "Users",
   TRANSACTION: "Transaction",
   RECEIPT: "Receipt",
   BACKUP: "backup",
