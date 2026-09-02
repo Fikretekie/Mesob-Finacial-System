@@ -559,7 +559,45 @@
     "compressionError": "መጨመቅ አልተሳካም። እንደገና ይሞክሩ።",
     "originalSize": "የመጀመሪያ መጠን",
     "compressedSize": "የተጨመቀ መጠን",
-    "fileTooBigNonImage": "{{type}} ፋይሎች በራስ-ሰር ሊጨመቁ አይችሉም። የፋይሉ መጠን {{size}} ነው — ከፍተኛው {{max}} ሜባ ነው።"
+      "fileTooBigNonImage": "{{type}} ፋይሎች በራስ-ሰር ሊጨመቁ አይችሉም። የፋይሉ መጠን {{size}} ነው — ከፍተኛው {{max}} ሜባ ነው።"
+  },
+  "mileageTracker": {
+    "startTrip": "ጉዞ ጀምር",
+    "stopTrip": "ጉዞ አቁም",
+    "saving": "በማስቀመጥ ላይ…",
+    "saveTrip": "ጉዞ አስቀምጥ",
+    "discardTrip": "ጉዞ ሰርዝ",
+    "miles": "ማይል",
+    "elapsed": "ያለፈ ጊዜ",
+    "gpsLocked": "ጂፒኤስ ተይዟል · ትክክለኛነት ±{{meters}}ሜ",
+    "waitingForGps": "ጂፒኤስ በመጠበቅ ላይ…",
+    "business": "ንግድ",
+    "personal": "የግል",
+    "addNote": "ማስታወሻ ጨምር",
+    "notePlaceholder": "አማራጭ ማስታወሻ…",
+    "purposeClientVisit": "የደንበኛ ጉብኝት",
+    "purposeDelivery": "ማድረስ",
+    "purposeCommute": "የስራ ጉዞ",
+    "purposeOther": "ሌላ",
+    "permissionDenied": "የአካባቢ ፈቃድ ተከልክሏል። ማይል ለመከታተል የአካባቢ መዳረሻ ይፍቀዱ።",
+    "locationError": "የአካባቢ ስህተት: {{message}}",
+    "signalUnavailable": "ምልክቱ ለጊዜው አይገኝም፣ በድጋሚ በመሞከር ላይ…",
+    "noGpsSupport": "ይህ አሳሽ የጂፒኤስ አካባቢን አይደግፍም።",
+    "saveError": "ጉዞውን ማስቀመጥ አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።"
+  },
+  "tripHistory": {
+    "loading": "ጉዞዎች በመጫን ላይ…",
+    "loadError": "ጉዞዎችን መጫን አልተቻለም። ግንኙነትዎን ያረጋግጡ እና እንደገና ይሞክሩ።",
+    "businessMiles": "የንግድ ማይል",
+    "thisYear": "በዚህ ዓመት",
+    "estDeduction": "የተገመተ ቅናሽ",
+    "perMile": "{{rate}} / ማይል",
+    "thisMonth": "በዚህ ወር",
+    "trips": "ጉዞዎች",
+    "allTime": "ጠቅላላ ጊዜ",
+    "noTrips": "ለዚህ ቀን የተመዘገበ ጉዞ የለም",
+    "miTotal": "ማይል በጠቅላላ",
+    "min": "ደቂቃ"
   },
   "auth": {
     "login": {

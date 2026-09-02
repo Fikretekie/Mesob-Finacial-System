@@ -439,7 +439,45 @@
     "compressionError": "فشل الضغط. يرجى المحاولة مرة أخرى.",
     "originalSize": "الحجم الأصلي",
     "compressedSize": "الحجم بعد الضغط",
-    "fileTooBigNonImage": "لا يمكن ضغط ملفات {{type}} تلقائياً. حجم الملف {{size}} — الحد الأقصى المسموح به {{max}} ميغابايت."
+       "fileTooBigNonImage": "لا يمكن ضغط ملفات {{type}} تلقائياً. حجم الملف {{size}} — الحد الأقصى المسموح به {{max}} ميغابايت."
+  },
+  "mileageTracker": {
+    "startTrip": "بدء الرحلة",
+    "stopTrip": "إيقاف الرحلة",
+    "saving": "جاري الحفظ…",
+    "saveTrip": "حفظ الرحلة",
+    "discardTrip": "تجاهل الرحلة",
+    "miles": "الأميال",
+    "elapsed": "الوقت المنقضي",
+    "gpsLocked": "تم تحديد الموقع · دقة ±{{meters}} م",
+    "waitingForGps": "في انتظار إشارة GPS…",
+    "business": "عمل",
+    "personal": "شخصي",
+    "addNote": "إضافة ملاحظة",
+    "notePlaceholder": "ملاحظة اختيارية…",
+    "purposeClientVisit": "زيارة عميل",
+    "purposeDelivery": "توصيل",
+    "purposeCommute": "تنقل يومي",
+    "purposeOther": "أخرى",
+    "permissionDenied": "تم رفض إذن الموقع. اسمح بالوصول إلى الموقع لتتبع المسافة المقطوعة.",
+    "locationError": "خطأ في الموقع: {{message}}",
+    "signalUnavailable": "الإشارة غير متاحة مؤقتاً، تتم إعادة المحاولة…",
+    "noGpsSupport": "هذا المتصفح لا يدعم تحديد الموقع GPS.",
+    "saveError": "تعذر حفظ الرحلة. تحقق من اتصالك وحاول مرة أخرى."
+  },
+  "tripHistory": {
+    "loading": "جاري تحميل الرحلات…",
+    "loadError": "تعذر تحميل الرحلات. تحقق من اتصالك وحاول مرة أخرى.",
+    "businessMiles": "أميال العمل",
+    "thisYear": "هذا العام",
+    "estDeduction": "الخصم التقديري",
+    "perMile": "{{rate}} / ميل",
+    "thisMonth": "هذا الشهر",
+    "trips": "الرحلات",
+    "allTime": "منذ البداية",
+    "noTrips": "لا توجد رحلات مسجلة لهذا اليوم",
+    "miTotal": "ميل إجمالاً",
+    "min": "دقيقة"
   },
   "auth": {
     "login": {
