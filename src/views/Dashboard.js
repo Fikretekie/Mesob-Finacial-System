@@ -1473,7 +1473,6 @@ function Dashboard() {
 
         <div className="dash-overview">
           <div>
-            <p className="mk-eyebrow">{t("dashboard.financialOverview", "Financial overview")}</p>
             <h2 className="dash-overview__title">
               {(() => {
                 const h = new Date().getHours();

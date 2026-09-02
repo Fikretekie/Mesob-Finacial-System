@@ -206,23 +206,28 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   margin: var(--sp-4) 0 var(--sp-5);
 }
 .dash-overview__title {
-  margin: var(--sp-1) 0 0;
+  margin: 0;
   color: var(--text-1);
   font-family: var(--font-sans);
-  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 .dash-overview__sub {
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   color: var(--text-2);
-  font-size: 0.95rem;
+  font-size: 0.98rem;
 }
+/* "Books current" status pill (matches the reference). */
 .dash-overview__meta {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  color: var(--text-3);
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text-2);
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.06em;
@@ -232,7 +237,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   content: "";
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.18);
 }
 
 /* ---- Dashboard stat tiles → glass, Uplinq register ----
