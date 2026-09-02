@@ -419,7 +419,45 @@
     "compressionError": "La compression a échoué. Veuillez réessayer.",
     "originalSize": "Taille originale",
     "compressedSize": "Taille compressée",
-    "fileTooBigNonImage": "Les fichiers {{type}} ne peuvent pas être compressés automatiquement. La taille du fichier est {{size}} — la taille maximale autorisée est {{max}} Mo."
+       "fileTooBigNonImage": "Les fichiers {{type}} ne peuvent pas être compressés automatiquement. La taille du fichier est {{size}} — la taille maximale autorisée est {{max}} Mo."
+  },
+  "mileageTracker": {
+    "startTrip": "Démarrer le trajet",
+    "stopTrip": "Arrêter le trajet",
+    "saving": "Enregistrement…",
+    "saveTrip": "Enregistrer le trajet",
+    "discardTrip": "Ignorer le trajet",
+    "miles": "Miles",
+    "elapsed": "Écoulé",
+    "gpsLocked": "GPS verrouillé · précision de ±{{meters}}m",
+    "waitingForGps": "En attente du signal GPS…",
+    "business": "Professionnel",
+    "personal": "Personnel",
+    "addNote": "Ajouter une note",
+    "notePlaceholder": "Note facultative…",
+    "purposeClientVisit": "Visite client",
+    "purposeDelivery": "Livraison",
+    "purposeCommute": "Trajet domicile-travail",
+    "purposeOther": "Autre",
+    "permissionDenied": "Accès à la localisation refusé. Autorisez la localisation pour suivre le kilométrage.",
+    "locationError": "Erreur de localisation : {{message}}",
+    "signalUnavailable": "signal temporairement indisponible, nouvelle tentative…",
+    "noGpsSupport": "Ce navigateur ne prend pas en charge la localisation GPS.",
+    "saveError": "Impossible d'enregistrer le trajet. Vérifiez votre connexion et réessayez."
+  },
+  "tripHistory": {
+    "loading": "Chargement des trajets…",
+    "loadError": "Impossible de charger les trajets. Vérifiez votre connexion et réessayez.",
+    "businessMiles": "Miles professionnels",
+    "thisYear": "Cette année",
+    "estDeduction": "Déduction est.",
+    "perMile": "{{rate}} / mile",
+    "thisMonth": "Ce mois-ci",
+    "trips": "Trajets",
+    "allTime": "Depuis le début",
+    "noTrips": "Aucun trajet enregistré ce jour",
+    "miTotal": "mi au total",
+    "min": "min"
   },
   "auth": {
     "login": {

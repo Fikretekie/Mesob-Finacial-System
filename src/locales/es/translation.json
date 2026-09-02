@@ -424,7 +424,45 @@
     "compressionError": "Error al comprimir. Por favor, inténtalo de nuevo.",
     "originalSize": "Tamaño original",
     "compressedSize": "Tamaño comprimido",
-    "fileTooBigNonImage": "Los archivos {{type}} no se pueden comprimir automáticamente. El tamaño del archivo es {{size}} — el máximo permitido es {{max}} MB."
+       "fileTooBigNonImage": "Los archivos {{type}} no se pueden comprimir automáticamente. El tamaño del archivo es {{size}} — el máximo permitido es {{max}} MB."
+  },
+  "mileageTracker": {
+    "startTrip": "Iniciar viaje",
+    "stopTrip": "Detener viaje",
+    "saving": "Guardando…",
+    "saveTrip": "Guardar viaje",
+    "discardTrip": "Descartar viaje",
+    "miles": "Millas",
+    "elapsed": "Transcurrido",
+    "gpsLocked": "GPS activo · precisión de ±{{meters}}m",
+    "waitingForGps": "Esperando señal GPS…",
+    "business": "Negocio",
+    "personal": "Personal",
+    "addNote": "Añadir una nota",
+    "notePlaceholder": "Nota opcional…",
+    "purposeClientVisit": "Visita a cliente",
+    "purposeDelivery": "Entrega",
+    "purposeCommute": "Desplazamiento",
+    "purposeOther": "Otro",
+    "permissionDenied": "Permiso de ubicación denegado. Permite el acceso a la ubicación para registrar el kilometraje.",
+    "locationError": "Error de ubicación: {{message}}",
+    "signalUnavailable": "señal no disponible temporalmente, reintentando…",
+    "noGpsSupport": "Este navegador no admite la ubicación GPS.",
+    "saveError": "No se pudo guardar el viaje. Verifica tu conexión e inténtalo de nuevo."
+  },
+  "tripHistory": {
+    "loading": "Cargando viajes…",
+    "loadError": "No se pudieron cargar los viajes. Verifica tu conexión e inténtalo de nuevo.",
+    "businessMiles": "Millas de negocio",
+    "thisYear": "Este año",
+    "estDeduction": "Deducción est.",
+    "perMile": "{{rate}} / milla",
+    "thisMonth": "Este mes",
+    "trips": "Viajes",
+    "allTime": "Todo el tiempo",
+    "noTrips": "No hay viajes registrados este día",
+    "miTotal": "mi. en total",
+    "min": "min"
   },
   "auth": {
     "login": {

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardBody, Button } from "reactstrap";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
@@ -24,6 +25,7 @@ function dateKeyOf(d) {
 
 function MileageTracker() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [isTracking, setIsTracking] = useState(false);
   const [distanceMiles, setDistanceMiles] = useState(0);
@@ -36,6 +38,7 @@ function MileageTracker() {
   const [showNoteField, setShowNoteField] = useState(false);
   const [note, setNote] = useState("");
   const [purposeIndex, setPurposeIndex] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   const watchIdRef = useRef(null);
   const lastPointRef = useRef(null);
@@ -73,14 +76,14 @@ function MileageTracker() {
   const handlePositionError = (err) => {
     setError(
       err.code === err.PERMISSION_DENIED
-        ? "Location permission denied. Allow location access to track mileage."
-        : `Location error: ${err.message || "signal temporarily unavailable, retrying…"}`
+        ? t("mileageTracker.permissionDenied")
+        : t("mileageTracker.locationError", { message: err.message || t("mileageTracker.signalUnavailable") })
     );
   };
 
   const startTrip = () => {
     if (!("geolocation" in navigator)) {
-      setError("This browser does not support GPS location.");
+      setError(t("mileageTracker.noGpsSupport"));
       return;
     }
 
@@ -128,21 +131,28 @@ function MileageTracker() {
     setPendingTrip(null);
   };
 
-  const confirmSaveTrip = () => {
+  const confirmSaveTrip = async () => {
     if (!pendingTrip) return;
+    setIsSaving(true);
     const now = pendingTrip.endedAt;
-    saveTrip({
-      dateKey: dateKeyOf(now),
-      date: now.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
-      miles: Number(pendingTrip.miles.toFixed(2)),
-      durationSeconds: Math.round(pendingTrip.durationSeconds),
-      type: tripType,
-      purpose: PURPOSE_OPTIONS[purposeIndex],
-      note: note.trim(),
-    });
-    setPendingTrip(null);
-    navigate("/customer/trip-history");
+    try {
+      await saveTrip({
+        dateKey: dateKeyOf(now),
+        date: now.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        miles: Number(pendingTrip.miles.toFixed(2)),
+        durationSeconds: Math.round(pendingTrip.durationSeconds),
+        type: tripType,
+        purpose: PURPOSE_OPTIONS[purposeIndex],
+        note: note.trim(),
+      });
+      setPendingTrip(null);
+      navigate("/customer/trip-history");
+    } catch (err) {
+      setError(t("mileageTracker.saveError"));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -188,8 +198,8 @@ function MileageTracker() {
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
                   <path d="M7 5l12 7-12 7V5z" />
                 </svg>
-                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px" }}>
-                  START TRIP
+                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                  {t("mileageTracker.startTrip")}
                 </span>
               </Button>
             ) : (
@@ -212,8 +222,8 @@ function MileageTracker() {
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
                   <rect x="5" y="5" width="14" height="14" rx="1.5" />
                 </svg>
-                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px" }}>
-                  STOP TRIP
+                <span style={{ fontWeight: 700, fontSize: "15px", color: "#fff", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                  {t("mileageTracker.stopTrip")}
                 </span>
               </Button>
             )}
@@ -222,14 +232,14 @@ function MileageTracker() {
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                 <span style={{ fontSize: "20px", fontWeight: 700 }}>{distanceMiles.toFixed(2)}</span>
                 <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "#9A9A9A", textTransform: "uppercase" }}>
-                  Miles
+                  {t("mileageTracker.miles")}
                 </span>
               </div>
               <div style={{ width: "1px", height: "32px", background: "#3a4555" }} />
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                 <span style={{ fontSize: "20px", fontWeight: 700 }}>{formatElapsed(elapsedSeconds)}</span>
                 <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.6px", color: "#9A9A9A", textTransform: "uppercase" }}>
-                  Elapsed
+                  {t("mileageTracker.elapsed")}
                 </span>
               </div>
             </div>
@@ -238,7 +248,9 @@ function MileageTracker() {
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#11b981" }} />
                 <span style={{ fontSize: "12px", color: "#9A9A9A" }}>
-                  {lastAccuracy != null ? `GPS locked · ±${Math.round(lastAccuracy)}m accuracy` : "Waiting for GPS…"}
+                  {lastAccuracy != null
+                    ? t("mileageTracker.gpsLocked", { meters: Math.round(lastAccuracy) })
+                    : t("mileageTracker.waitingForGps")}
                 </span>
               </div>
             )}
@@ -301,7 +313,7 @@ function MileageTracker() {
                   <rect x="3" y="7" width="18" height="12" rx="2" />
                   <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 </svg>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>Business</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>{t("mileageTracker.business")}</span>
               </div>
               <div
                 onClick={() => setTripType("personal")}
@@ -321,7 +333,7 @@ function MileageTracker() {
                   <path d="M4 11l8-7 8 7" />
                   <path d="M6 10v9h12v-9" />
                 </svg>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#9A9A9A" }}>Personal</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#9A9A9A" }}>{t("mileageTracker.personal")}</span>
               </div>
             </div>
 
@@ -333,7 +345,7 @@ function MileageTracker() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#096afa" strokeWidth="2" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
-                <span style={{ fontSize: "13px", color: "#096afa", fontWeight: 600 }}>Add a note</span>
+                <span style={{ fontSize: "13px", color: "#096afa", fontWeight: 600 }}>{t("mileageTracker.addNote")}</span>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -350,7 +362,7 @@ function MileageTracker() {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Optional note…"
+                  placeholder={t("mileageTracker.notePlaceholder")}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   style={{ background: "rgba(255,255,255,0.05)", border: "1px solid #3a4555", color: "#fff" }}
@@ -360,6 +372,7 @@ function MileageTracker() {
 
             <Button
               onClick={confirmSaveTrip}
+              disabled={isSaving}
               style={{
                 width: "100%",
                 background: "#096afa",
@@ -372,13 +385,14 @@ function MileageTracker() {
                 minHeight: "50px",
               }}
             >
-              Save Trip
+              {isSaving ? t("mileageTracker.saving") : t("mileageTracker.saveTrip")}
             </Button>
             <Button
               onClick={discardTrip}
+              disabled={isSaving}
               style={{ width: "100%", background: "transparent", border: "none", color: "#9A9A9A", fontWeight: 600, fontSize: "13px" }}
             >
-              Discard trip
+              {t("mileageTracker.discardTrip")}
             </Button>
           </div>
         </div>

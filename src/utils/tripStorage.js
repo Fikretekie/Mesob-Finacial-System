@@ -1,66 +1,43 @@
-/**
- * Interim trip data layer — browser localStorage, scoped per user.
- *
- * Every function here is written the way the future API calls will be:
- * takes/returns plain trip objects, one function per operation. Once the
- * real backend (DynamoDB + Lambda) exists, only the bodies of these
- * functions change to axios calls — nothing that imports this module
- * needs to change.
- */
+import axios from "axios";
+import { apiUrl, ROUTES } from "config/api";
 
-const STORAGE_KEY_PREFIX = "mesob_trips_";
-
-function storageKey() {
-  const userId = localStorage.getItem("userId") || "anonymous";
-  return `${STORAGE_KEY_PREFIX}${userId}`;
+function currentUserId() {
+  return localStorage.getItem("userId") || "anonymous";
 }
 
-export function getTrips() {
-  try {
-    const raw = localStorage.getItem(storageKey());
-    const trips = raw ? JSON.parse(raw) : [];
-    return Array.isArray(trips) ? trips : [];
-  } catch {
-    return [];
-  }
+/** Fetches all trips for the current user from the backend. */
+export async function fetchTrips() {
+  const userId = currentUserId();
+  const res = await axios.get(apiUrl(ROUTES.MILEAGE_TRIP), { params: { userId } });
+  return Array.isArray(res.data) ? res.data : [];
 }
 
-export function saveTrip(trip) {
-  const trips = getTrips();
-  const withId = { id: `trip_${Date.now()}`, ...trip };
-  trips.unshift(withId);
-  localStorage.setItem(storageKey(), JSON.stringify(trips));
-  return withId;
+/** Saves one trip to the backend. Returns the saved trip (with its tripId). */
+export async function saveTrip(trip) {
+  const userId = currentUserId();
+  const res = await axios.post(apiUrl(ROUTES.MILEAGE_TRIP), { userId, trip });
+  return res.data;
 }
 
-export function deleteTrip(tripId) {
-  const trips = getTrips().filter((t) => t.id !== tripId);
-  localStorage.setItem(storageKey(), JSON.stringify(trips));
+/** Trips for one calendar day (dateKey format: YYYY-MM-DD), from an already-fetched list. */
+export function getTripsForDay(trips, dateKey) {
+  return trips.filter((t) => t.dateKey === dateKey);
 }
 
-/** Trips for one calendar day (dateKey format: YYYY-MM-DD). */
-export function getTripsForDay(dateKey) {
-  return getTrips().filter((t) => t.dateKey === dateKey);
-}
-
-/** Summary stats for a given month (monthKey format: YYYY-MM). */
-export function getMonthSummary(monthKey) {
-  const trips = getTrips().filter((t) => t.dateKey.startsWith(monthKey));
-  const businessMiles = trips
+/** Summary stats for a given month (monthKey format: YYYY-MM), from an already-fetched list. */
+export function getMonthSummary(trips, monthKey) {
+  const monthTrips = trips.filter((t) => t.dateKey.startsWith(monthKey));
+  const businessMiles = monthTrips
     .filter((t) => t.type === "business")
     .reduce((sum, t) => sum + t.miles, 0);
-  const personalMiles = trips
+  const personalMiles = monthTrips
     .filter((t) => t.type === "personal")
     .reduce((sum, t) => sum + t.miles, 0);
-  return {
-    businessMiles,
-    personalMiles,
-    tripCount: trips.length,
-  };
+  return { businessMiles, personalMiles, tripCount: monthTrips.length };
 }
 
-export function getYearBusinessMiles(year) {
-  return getTrips()
+export function getYearBusinessMiles(trips, year) {
+  return trips
     .filter((t) => t.dateKey.startsWith(String(year)) && t.type === "business")
     .reduce((sum, t) => sum + t.miles, 0);
 }

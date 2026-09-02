@@ -409,7 +409,45 @@
       "compressionError": "Cadaadinta waxay ku guuldarowday. Fadlan isku day mar kale.",
       "originalSize": "Cabbirka asalka ah",
       "compressedSize": "Cabbirka la cadaadiyay",
-      "fileTooBigNonImage": "Faylasha {{type}} si toos ah loogama cadaadin karo. Cabbirka faylku waa {{size}} — ugu badnaan {{max}} MB."
+           "fileTooBigNonImage": "Faylasha {{type}} si toos ah loogama cadaadin karo. Cabbirka faylku waa {{size}} — ugu badnaan {{max}} MB."
+  },
+  "mileageTracker": {
+    "startTrip": "Bilow Safarka",
+    "stopTrip": "Jooji Safarka",
+    "saving": "Kaydinta…",
+    "saveTrip": "Kaydi Safarka",
+    "discardTrip": "Iska daa safarka",
+    "miles": "Mayl",
+    "elapsed": "Waqti la joogsaday",
+    "gpsLocked": "GPS-ku waa xasilloon · saxnaanta ±{{meters}}m",
+    "waitingForGps": "Sugaya calaamadda GPS…",
+    "business": "Ganacsi",
+    "personal": "Shakhsi",
+    "addNote": "Ku dar qoraal",
+    "notePlaceholder": "Qoraal ikhtiyaari ah…",
+    "purposeClientVisit": "Booqasho Macaamil",
+    "purposeDelivery": "Gaarsiin",
+    "purposeCommute": "Safarka shaqada",
+    "purposeOther": "Wax kale",
+    "permissionDenied": "Ogolaanshaha goobta waa la diiday. Ogolow gelitaanka goobta si aad u raadraacdo maylka.",
+    "locationError": "Khalad goob: {{message}}",
+    "signalUnavailable": "calaamaddu waxay ku mahtay ku maqan, isku dayaya mar kale…",
+    "noGpsSupport": "Biraawsarkani ma taageerayo goobta GPS.",
+    "saveError": "Safarka lama kaydin karin. Hubi xiriirkaaga oo isku day mar kale."
+  },
+  "tripHistory": {
+    "loading": "Safarada waa la soo dejinayaa…",
+    "loadError": "Safarada lama soo dejin karin. Hubi xiriirkaaga oo isku day mar kale.",
+    "businessMiles": "Maylka Ganacsiga",
+    "thisYear": "Sanadkan",
+    "estDeduction": "Qiyaasta Dhaafitaanka",
+    "perMile": "{{rate}} / mayl",
+    "thisMonth": "Bishan",
+    "trips": "Safarada",
+    "allTime": "Wakhtiga oo dhan",
+    "noTrips": "Maalintan safar looma diiwaan gelin",
+    "miTotal": "mayl wadarta",
+    "min": "daq"
   },
   "auth": {
     "login": {
