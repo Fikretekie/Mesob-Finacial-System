@@ -412,9 +412,43 @@ function Dashboard() {
   };
 
   const getChartOptions = (title, data, labels, color = "var(--accent-solid)") => {
+    const lastIdx = Array.isArray(data) ? data.length - 1 : -1;
+    const lastVal = lastIdx >= 0 ? Number(data[lastIdx]) || 0 : 0;
     return {
       theme: {
         mode: "dark",
+      },
+      // Emphasised endpoint with a value callout on the last data point.
+      annotations: {
+        points:
+          lastIdx >= 0
+            ? [
+                {
+                  x: labels[lastIdx],
+                  y: lastVal,
+                  marker: {
+                    size: 5,
+                    fillColor: color,
+                    strokeColor: "#0A0A0B",
+                    strokeWidth: 2,
+                    radius: 2,
+                  },
+                  label: {
+                    text: `$${lastVal.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+                    borderColor: color,
+                    borderWidth: 1,
+                    offsetY: -2,
+                    style: {
+                      background: "#16181D",
+                      color: "#F4F6F8",
+                      fontSize: "11px",
+                      fontFamily: "JetBrains Mono, monospace",
+                      padding: { left: 8, right: 8, top: 4, bottom: 4 },
+                    },
+                  },
+                },
+              ]
+            : [],
       },
       chart: {
         type: "area",
