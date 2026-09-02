@@ -72,6 +72,13 @@ const googleClientId = isProduction
   ? process.env.REACT_APP_PRODUCTION_GOOGLE_CLIENT_ID
   : process.env.REACT_APP_STAGING_GOOGLE_CLIENT_ID;
 
+// OAuth scopes per env: production's Cognito app client allows "profile",
+// staging's does not (requesting it returns invalid_scope). Verified against
+// each pool's /oauth2/authorize. Keep production as-is; drop profile on staging.
+const oauthScopes = isProduction
+  ? ["openid", "email", "profile"]
+  : ["openid", "email"];
+
 const authConfigOk =
   Boolean(cognitoUserPoolId) && Boolean(cognitoClientId) && Boolean(cognitoDomain);
 
@@ -134,12 +141,12 @@ Amplify.configure({
         oauth: {
           region: "us-east-1",
           domain: cognitoDomain,
-          scopes: ["openid", "email", "profile"],
+          scopes: oauthScopes,
           redirectSignIn: [`${appOrigin}/oauth-redirect`, "http://localhost:3000/oauth-redirect"],
           redirectSignOut: [appOrigin, "http://localhost:3000"],
           responseType: "code",
           providers: [
-            { provider: "Google", scopes: ["openid", "email", "profile"], clientId: googleClientId },
+            { provider: "Google", scopes: oauthScopes, clientId: googleClientId },
             { provider: "SignInWithApple", clientId: isProduction ? "com.mesob.financial" : "com.mesob.financial.staging" },
           ],
         },
