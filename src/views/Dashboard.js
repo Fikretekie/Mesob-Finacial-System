@@ -577,7 +577,7 @@ function Dashboard() {
     t('dashboard.totalCashOnHandChart'),
     monthlySales.map((item) => item.cashOnHand),
     monthlySales.map((item) => formatDateLabel(item.date)),
-    FINANCIAL_COLORS.positive
+    FINANCIAL_COLORS.asset
   );
 
   const revenueChartData = getChartOptions(
