@@ -76,15 +76,15 @@ function UserPage() {
   const profileTabLinkStyle = (isActive) => ({
     cursor: "pointer",
     backgroundColor: "#000000",
-    color: isActive ? "#22d3ee" : "#94a3b8",
-    borderColor: "#2d3a4f",
+    color: isActive ? "var(--text-1)" : "var(--text-3)",
+    borderColor: "var(--border)",
     ...(isCompactProfile && {
       width: "100%",
       maxWidth: "100%",
       textAlign: "center",
       boxSizing: "border-box",
       borderRadius: "8px",
-      border: `1px solid ${isActive ? "#22d3ee" : "#2d3a4f"}`,
+      border: `1px solid ${isActive ? "var(--text-1)" : "var(--border)"}`,
       whiteSpace: "normal",
       lineHeight: 1.25,
     }),
@@ -504,14 +504,14 @@ function UserPage() {
           >
             <Card
               style={{
-                backgroundColor: "#101926",
+                backgroundColor: "var(--surface-2)",
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
                 maxWidth: "100%",
               }}
             >
               <CardHeader
                 style={{
-                  backgroundColor: "#101926",
+                  backgroundColor: "var(--surface-2)",
                   padding: isUltraNarrow ? "0.5rem 0.35rem" : isVeryNarrow ? "0.65rem 0.5rem" : undefined,
                 }}
               >
@@ -528,7 +528,7 @@ function UserPage() {
                   tabs
                   className={`profile-page-nav${isCompactProfile ? " flex-column align-items-stretch" : ""}`}
                   style={{
-                    borderBottom: isCompactProfile ? "none" : "1px solid #2d3a4f",
+                    borderBottom: isCompactProfile ? "none" : "1px solid var(--border)",
                     marginTop: "12px",
                     gap: isCompactProfile ? "6px" : 0,
                     width: "100%",
@@ -567,7 +567,7 @@ function UserPage() {
               </CardHeader>
               <CardBody
                 style={{
-                  backgroundColor: "#101926",
+                  backgroundColor: "var(--surface-2)",
                   padding: isUltraNarrow ? "0.5rem 0.35rem" : isVeryNarrow ? "0.65rem 0.5rem" : undefined,
                 }}
               >
@@ -586,7 +586,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -599,7 +599,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="email"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -614,7 +614,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -627,7 +627,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -642,7 +642,7 @@ function UserPage() {
                             name="businessType"
                             value={userData.businessType || ""}
                             onChange={handleInputChange}
-                            style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                            style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                           >
                             <option value="">Select Business Type</option>
                             <option value="Trucking">Trucking</option>
@@ -673,7 +673,7 @@ function UserPage() {
                             disabled
                             type="text"
                             placeholder="Not specified"
-                            style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                            style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                           />
                         )}
                       </FormGroup>
@@ -689,7 +689,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -702,7 +702,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -715,7 +715,7 @@ function UserPage() {
                           onChange={handleInputChange}
                           disabled={!isEditing}
                           type="text"
-                          style={{ backgroundColor: "#202a3a", color: "#ffffff", border: "1px solid #3a4555", borderRadius: "4px" }}
+                          style={{ backgroundColor: "var(--surface-3)", color: "#ffffff", border: "1px solid var(--border)", borderRadius: "4px" }}
                         />
                       </FormGroup>
                     </Col>
@@ -800,7 +800,7 @@ function UserPage() {
                   </TabPane>
                   <TabPane tabId="2">
                     {loadingSubscription ? (
-                      <div style={{ padding: "40px", textAlign: "center", color: "#94a3b8" }}>
+                      <div style={{ padding: "40px", textAlign: "center", color: "var(--text-3)" }}>
                         <div className="spinner-border text-primary" role="status">
                           <span className="sr-only">Loading...</span>
                         </div>
@@ -810,11 +810,11 @@ function UserPage() {
                       <div style={{ padding: "20px" }}>
                         {/* Subscription Status Card */}
                         <div style={{
-                          backgroundColor: "#0d1a2b",
+                          backgroundColor: "var(--surface-2)",
                           borderRadius: "12px",
                           padding: "24px",
                           marginBottom: "24px",
-                          border: "1px solid #1e3a5f",
+                          border: "1px solid var(--surface-3)",
                           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)"
                         }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
@@ -822,7 +822,7 @@ function UserPage() {
                             
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <span style={{
-                                  backgroundColor: subscriptionData.subscriptionDetails.status === "active" ? "#10b981" : "#f59e0b",
+                                  backgroundColor: subscriptionData.subscriptionDetails.status === "active" ? "var(--accent-solid)" : "#f59e0b",
                                   color: "#ffffff",
                                   padding: "4px 12px",
                                   borderRadius: "12px",
@@ -832,7 +832,7 @@ function UserPage() {
                                 }}>
                                   {subscriptionData.subscriptionDetails.status === "active" ? "✓ Active" : subscriptionData.subscriptionDetails.status}
                                 </span>
-                                <span style={{ color: "#94a3b8", fontSize: "14px" }}>
+                                <span style={{ color: "var(--text-3)", fontSize: "14px" }}>
                                   {subscriptionData.paymentType || "STRIPE"}
                                 </span>
                               </div>
@@ -841,7 +841,7 @@ function UserPage() {
                               <div style={{ fontSize: "32px", fontWeight: "700", color: "#ffffff" }}>
                                 ${subscriptionData.subscriptionDetails.amount}
                               </div>
-                              <div style={{ color: "#94a3b8", fontSize: "14px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "14px" }}>
                                 per {subscriptionData.subscriptionDetails.interval}
                               </div>
                             </div>
@@ -854,29 +854,29 @@ function UserPage() {
                             gap: "16px",
                             marginTop: "24px",
                             paddingTop: "24px",
-                            borderTop: "1px solid #1e3a5f"
+                            borderTop: "1px solid var(--surface-3)"
                           }}>
                             <div>
-                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px", marginBottom: "4px" }}>
                                 Subscription ID
                               </div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px", fontFamily: "monospace", wordBreak: "break-all" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px", fontFamily: "monospace", wordBreak: "break-all" }}>
                                 {subscriptionData.subscriptionId}
                               </div>
                             </div>
                             <div>
-                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px", marginBottom: "4px" }}>
                                 Provider
                               </div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px", textTransform: "capitalize" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px", textTransform: "capitalize" }}>
                                 {subscriptionData.subscriptionDetails.provider || "Stripe"}
                               </div>
                             </div>
                             <div>
-                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px", marginBottom: "4px" }}>
                                 Next Billing Date
                               </div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px" }}>
                                 {new Date(subscriptionData.subscriptionDetails.nextBillingDate).toLocaleDateString("en-US", {
                                   year: "numeric",
                                   month: "long",
@@ -885,26 +885,26 @@ function UserPage() {
                               </div>
                             </div>
                             <div>
-                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px", marginBottom: "4px" }}>
                                 Billing Cycle
                               </div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px", textTransform: "capitalize" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px", textTransform: "capitalize" }}>
                                 {subscriptionData.subscriptionDetails.interval}ly
                               </div>
                             </div>
                             <div>
-                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px", marginBottom: "4px" }}>
                                 Currency
                               </div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px", textTransform: "uppercase" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px", textTransform: "uppercase" }}>
                                 {subscriptionData.subscriptionDetails.currency}
                               </div>
                             </div>
                             <div>
-                              <div style={{ color: "#64748b", fontSize: "12px", marginBottom: "4px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px", marginBottom: "4px" }}>
                                 Auto-Renewal
                               </div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px" }}>
                                 {subscriptionData.subscriptionDetails.cancelAtPeriodEnd ? "Disabled (Canceling)" : "Enabled"}
                               </div>
                             </div>
@@ -941,17 +941,17 @@ function UserPage() {
  {/* Invoices Section */}
  {subscriptionData.invoices && subscriptionData.invoices.length > 0 && (
                           <div style={{
-                            backgroundColor: "#0d1a2b",
+                            backgroundColor: "var(--surface-2)",
                             borderRadius: "12px",
                             padding: "24px",
                             marginBottom: "24px",
-                            border: "1px solid #1e3a5f"
+                            border: "1px solid var(--surface-3)"
                           }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                               <h5 style={{ color: "#ffffff", fontSize: "16px", fontWeight: "600", margin: 0 }}>
                                 Billing History
                               </h5>
-                              <span style={{ color: "#64748b", fontSize: "14px" }}>
+                              <span style={{ color: "var(--text-3)", fontSize: "14px" }}>
                                 {subscriptionData.invoiceCount || subscriptionData.invoices.length} {subscriptionData.invoices.length === 1 ? 'Invoice' : 'Invoices'}
                               </span>
                             </div>
@@ -959,37 +959,37 @@ function UserPage() {
                             <div style={{ overflowX: "auto" }}>
                               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                                 <thead>
-                                  <tr style={{ borderBottom: "1px solid #1e3a5f" }}>
-                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                  <tr style={{ borderBottom: "1px solid var(--surface-3)" }}>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "var(--text-3)", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
                                       Invoice
                                     </th>
-                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "var(--text-3)", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
                                       Date
                                     </th>
-                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "var(--text-3)", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
                                       Amount
                                     </th>
-                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                    <th style={{ padding: "12px 8px", textAlign: "left", color: "var(--text-3)", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
                                       Status
                                     </th>
-                                    <th style={{ padding: "12px 8px", textAlign: "right", color: "#64748b", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
+                                    <th style={{ padding: "12px 8px", textAlign: "right", color: "var(--text-3)", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
                                       Actions
                                     </th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {subscriptionData.invoices.map((invoice, index) => (
-                                    <tr key={invoice.invoiceId || index} style={{ borderBottom: "1px solid #1e3a5f" }}>
+                                    <tr key={invoice.invoiceId || index} style={{ borderBottom: "1px solid var(--surface-3)" }}>
                                       <td style={{ padding: "16px 8px" }}>
-                                        <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "500", marginBottom: "4px" }}>
+                                        <div style={{ color: "var(--text-1)", fontSize: "14px", fontWeight: "500", marginBottom: "4px" }}>
                                           {invoice.invoiceNumber || invoice.invoiceId}
                                         </div>
-                                        <div style={{ color: "#64748b", fontSize: "12px" }}>
+                                        <div style={{ color: "var(--text-3)", fontSize: "12px" }}>
                                           {invoice.description || `${invoice.frequency || 'Monthly'} Subscription`}
                                         </div>
                                       </td>
                                       <td style={{ padding: "16px 8px" }}>
-                                        <div style={{ color: "#e2e8f0", fontSize: "14px" }}>
+                                        <div style={{ color: "var(--text-1)", fontSize: "14px" }}>
                                           {new Date(invoice.paidAt || invoice.createdAt).toLocaleDateString("en-US", {
                                             year: "numeric",
                                             month: "short",
@@ -998,17 +998,17 @@ function UserPage() {
                                         </div>
                                       </td>
                                       <td style={{ padding: "16px 8px" }}>
-                                        <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "500" }}>
+                                        <div style={{ color: "var(--text-1)", fontSize: "14px", fontWeight: "500" }}>
                                           ${invoice.amountPaid || invoice.amount}
                                         </div>
-                                        <div style={{ color: "#64748b", fontSize: "12px" }}>
+                                        <div style={{ color: "var(--text-3)", fontSize: "12px" }}>
                                           {(invoice.currency || 'USD').toUpperCase()}
                                         </div>
                                       </td>
                                       <td style={{ padding: "16px 8px" }}>
                                         <span style={{
-                                          backgroundColor: invoice.status === "paid" ? "#10b98120" : invoice.status === "open" ? "#f59e0b20" : "#ef444420",
-                                          color: invoice.status === "paid" ? "#10b981" : invoice.status === "open" ? "#f59e0b" : "#ef4444",
+                                          backgroundColor: invoice.status === "paid" ? "var(--accent-solid)20" : invoice.status === "open" ? "#f59e0b20" : "#ef444420",
+                                          color: invoice.status === "paid" ? "var(--accent-solid)" : invoice.status === "open" ? "#f59e0b" : "#ef4444",
                                           padding: "4px 10px",
                                           borderRadius: "12px",
                                           fontSize: "12px",
@@ -1026,8 +1026,8 @@ function UserPage() {
                                               target="_blank"
                                               rel="noopener noreferrer"
                                               style={{
-                                                backgroundColor: "#1e3a5f",
-                                                color: "#22d3ee",
+                                                backgroundColor: "var(--surface-3)",
+                                                color: "var(--text-1)",
                                                 padding: "6px 12px",
                                                 borderRadius: "6px",
                                                 fontSize: "12px",
@@ -1037,8 +1037,8 @@ function UserPage() {
                                                 gap: "4px",
                                                 transition: "background-color 0.2s"
                                               }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "#2d4a6f"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "#1e3a5f"}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--border)"}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = "var(--surface-3)"}
                                             >
                                               📄 PDF
                                             </a>
@@ -1049,8 +1049,8 @@ function UserPage() {
                                               target="_blank"
                                               rel="noopener noreferrer"
                                               style={{
-                                                backgroundColor: "#1e3a5f",
-                                                color: "#22d3ee",
+                                                backgroundColor: "var(--surface-3)",
+                                                color: "var(--text-1)",
                                                 padding: "6px 12px",
                                                 borderRadius: "6px",
                                                 fontSize: "12px",
@@ -1060,8 +1060,8 @@ function UserPage() {
                                                 gap: "4px",
                                                 transition: "background-color 0.2s"
                                               }}
-                                              onMouseEnter={(e) => e.target.style.backgroundColor = "#2d4a6f"}
-                                              onMouseLeave={(e) => e.target.style.backgroundColor = "#1e3a5f"}
+                                              onMouseEnter={(e) => e.target.style.backgroundColor = "var(--border)"}
+                                              onMouseLeave={(e) => e.target.style.backgroundColor = "var(--surface-3)"}
                                             >
                                               🔗 View
                                             </a>
@@ -1079,11 +1079,11 @@ function UserPage() {
 
                         {/* Payment Method Card */}
                         <div style={{
-                          backgroundColor: "#0d1a2b",
+                          backgroundColor: "var(--surface-2)",
                           borderRadius: "12px",
                           padding: "24px",
                           marginBottom: "24px",
-                          border: "1px solid #1e3a5f"
+                          border: "1px solid var(--surface-3)"
                         }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                             <h5 style={{ color: "#ffffff", fontSize: "16px", fontWeight: "600", margin: 0 }}>
@@ -1092,8 +1092,8 @@ function UserPage() {
                             <Button
                               size="sm"
                               style={{
-                                backgroundColor: "#3d83f1",
-                                borderColor: "#3d83f1",
+                                backgroundColor: "var(--accent)",
+                                borderColor: "var(--accent)",
                                 fontSize: "12px",
                                 padding: "6px 16px"
                               }}
@@ -1113,7 +1113,7 @@ function UserPage() {
 
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                             <div style={{
-                              backgroundColor: "#1e3a5f",
+                              backgroundColor: "var(--surface-3)",
                               padding: "12px",
                               borderRadius: "8px",
                               fontSize: "24px"
@@ -1121,10 +1121,10 @@ function UserPage() {
                               {subscriptionData.paymentType === "STRIPE" ? "💳" : "🅿️"}
                             </div>
                             <div>
-                              <div style={{ color: "#e2e8f0", fontSize: "14px", fontWeight: "500" }}>
+                              <div style={{ color: "var(--text-1)", fontSize: "14px", fontWeight: "500" }}>
                                 {subscriptionData.paymentType === "STRIPE" ? "Credit/Debit Card (Stripe)" : "PayPal"}
                               </div>
-                              <div style={{ color: "#64748b", fontSize: "12px" }}>
+                              <div style={{ color: "var(--text-3)", fontSize: "12px" }}>
                                 {subscriptionData.paymentType === "STRIPE" ? "Managed via Stripe" : "Managed via PayPal"}
                               </div>
                             </div>
@@ -1135,10 +1135,10 @@ function UserPage() {
 
                         {/* Actions */}
                         <div style={{
-                          backgroundColor: "#0d1a2b",
+                          backgroundColor: "var(--surface-2)",
                           borderRadius: "12px",
                           padding: "24px",
-                          border: "1px solid #1e3a5f"
+                          border: "1px solid var(--surface-3)"
                         }}>
                           <h5 style={{ color: "#ffffff", marginBottom: "16px", fontSize: "16px", fontWeight: "600" }}>
                             Manage Subscription
@@ -1146,8 +1146,8 @@ function UserPage() {
                           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                             <Button
                               style={{
-                                backgroundColor: "#3d83f1",
-                                borderColor: "#3d83f1",
+                                backgroundColor: "var(--accent)",
+                                borderColor: "var(--accent)",
                                 fontSize: "14px"
                               }}
                               onClick={() => navigate(location.pathname.includes("admin") ? "/admin/subscriptions" : "/customer/subscription")}
@@ -1167,7 +1167,7 @@ function UserPage() {
                               {cancelLoading ? <><Spinner size="sm" /> Cancelling...</> : "Cancel Subscription"}
                             </Button>
                           </div>
-                          <p style={{ color: "#64748b", fontSize: "12px", marginTop: "16px", marginBottom: 0 }}>
+                          <p style={{ color: "var(--text-3)", fontSize: "12px", marginTop: "16px", marginBottom: 0 }}>
                             Need help? Contact our support team at info@meksova.com
                           </p>
                         </div>
@@ -1175,19 +1175,19 @@ function UserPage() {
                     ) : (
                       <div style={{ padding: "40px", textAlign: "center" }}>
                         <div style={{
-                          backgroundColor: "#0d1a2b",
+                          backgroundColor: "var(--surface-2)",
                           borderRadius: "12px",
                           padding: "40px",
-                          border: "1px solid #1e3a5f"
+                          border: "1px solid var(--surface-3)"
                         }}>
                           <div style={{ fontSize: "48px", marginBottom: "16px" }}>📋</div>
                           <h4 style={{ color: "#ffffff", marginBottom: "12px" }}>No Active Subscription</h4>
-                          <p style={{ color: "#94a3b8", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>
+                          <p style={{ color: "var(--text-3)", marginBottom: "24px", maxWidth: "400px", margin: "0 auto 24px" }}>
                             Subscribe to Pro Plan to unlock unlimited transactions, advanced reports, and more features.
                           </p>
                           <Button
                             color="primary"
-                            style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1", fontSize: "14px" }}
+                            style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", fontSize: "14px" }}
                             onClick={() => navigate(location.pathname.includes("admin") ? "/admin/subscriptions" : "/customer/subscription")}
                           >
                             View Plans & Subscribe
@@ -1201,9 +1201,9 @@ function UserPage() {
                       style={{
                         marginTop: "12px",
                         padding: "15px",
-                        backgroundColor: "#0d1a2b",
+                        backgroundColor: "var(--surface-2)",
                         borderRadius: "8px",
-                        border: "1px solid #1e3a5f",
+                        border: "1px solid var(--surface-3)",
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
@@ -1212,7 +1212,7 @@ function UserPage() {
                           Data Management
                         </span>
                       </div>
-                      <p style={{ color: "#a0aec0", fontSize: "13px", marginBottom: "12px", lineHeight: "1.4" }}>
+                      <p style={{ color: "var(--text-3)", fontSize: "13px", marginBottom: "12px", lineHeight: "1.4" }}>
                         Reset all accounting records and start fresh. Make sure to download your reports first.
                       </p>
                       <Button
@@ -1241,11 +1241,11 @@ function UserPage() {
       <Modal isOpen={showResetModal} toggle={() => { setShowResetModal(false); setResetConfirmText(""); }}>
         <ModalHeader
           toggle={() => { setShowResetModal(false); setResetConfirmText(""); }}
-          style={{ backgroundColor: "#1a273a", border: "none" }}
+          style={{ backgroundColor: "var(--surface-2)", border: "none" }}
         >
           <span style={{ color: "#e53e3e", fontWeight: "bold" }}>Reset All Transactions</span>
         </ModalHeader>
-        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
+        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "#ffffff" }}>
           <p style={{ color: "#ffffff", marginBottom: "12px" }}>
             This will permanently delete <strong>all transactions</strong> and reset your dashboard balances to zero.
           </p>
@@ -1259,9 +1259,9 @@ function UserPage() {
             value={resetConfirmText}
             onChange={(e) => setResetConfirmText(e.target.value)}
             style={{
-              backgroundColor: "#0d1a2b",
+              backgroundColor: "var(--surface-2)",
               color: "#ffffff",
-              border: "1px solid #3a4555",
+              border: "1px solid var(--border)",
               marginBottom: "20px",
             }}
           />
@@ -1269,7 +1269,7 @@ function UserPage() {
             <Button
               onClick={handleDownloadReport}
               disabled={isWorking}
-              style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1", color: "#ffffff", flex: "1" }}
+              style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "#ffffff", flex: "1" }}
             >
               {isWorking ? "Downloading..." : "Download Financial Report"}
             </Button>
@@ -1295,11 +1295,11 @@ function UserPage() {
       <Modal isOpen={showCancelModal} toggle={() => setShowCancelModal(false)}>
         <ModalHeader
           toggle={() => setShowCancelModal(false)}
-          style={{ backgroundColor: "#1a273a", border: "none" }}
+          style={{ backgroundColor: "var(--surface-2)", border: "none" }}
         >
           <span style={{ color: "#e53e3e", fontWeight: "bold" }}>Cancel Subscription</span>
         </ModalHeader>
-        <ModalBody style={{ backgroundColor: "#1a273a", color: "#ffffff" }}>
+        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "#ffffff" }}>
           <p style={{ color: "#ffffff", marginBottom: "12px" }}>
             Are you sure you want to cancel your subscription?
           </p>
@@ -1315,22 +1315,22 @@ function UserPage() {
                 : "the end of the billing period"}
             </strong>.
           </p>
-          <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+          <p style={{ color: "var(--text-3)", fontSize: "14px" }}>
             After cancellation, you'll lose access to:
           </p>
-          <ul style={{ color: "#94a3b8", fontSize: "14px", marginBottom: "20px" }}>
+          <ul style={{ color: "var(--text-3)", fontSize: "14px", marginBottom: "20px" }}>
             <li>Unlimited transactions</li>
             <li>Advanced financial reports</li>
             <li>Balance sheet and income statement</li>
             <li>Receipt management</li>
           </ul>
         </ModalBody>
-        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
+        <ModalFooter style={{ backgroundColor: "var(--surface-2)", borderTop: "1px solid var(--border)" }}>
           <Button
             color="secondary"
             onClick={() => setShowCancelModal(false)}
             disabled={cancelLoading}
-            style={{ backgroundColor: "#475569", borderColor: "#475569" }}
+            style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border)" }}
           >
             Keep Subscription
           </Button>
