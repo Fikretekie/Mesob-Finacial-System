@@ -35,7 +35,7 @@ import TransactionTable from "./TransactionTable";
 import DownloadReportModal from "components/DownloadReportModal";
 import { setSelectedUser } from "../store/userSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { Search } from "lucide-react";
+import { Search, Maximize2, Minimize2 } from "lucide-react";
 import { FaTimesCircle } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
 import UserSubscriptionInfo from "./Payment/UserSubscriptionInfo";
@@ -183,6 +183,14 @@ const MesobFinancial2 = () => {
   const [companyName, setcompanyName] = useState();
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchInput, setShowSearchInput] = useState(false);
+  // Which report card is expanded to fullscreen (null = none).
+  const [expandedCard, setExpandedCard] = useState(null);
+  useEffect(() => {
+    if (!expandedCard) return;
+    const onKey = (e) => { if (e.key === "Escape") setExpandedCard(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expandedCard]);
   const [showInstallmentModal, setShowInstallmentModal] = useState(false);
   const [showDownloadReportModal, setShowDownloadReportModal] = useState(false);
   const [installmentAmount, setInstallmentAmount] = useState("");
@@ -2438,6 +2446,19 @@ const MesobFinancial2 = () => {
     }
   };
 
+  // Fullscreen expand/collapse toggle for a report card header.
+  const ExpandToggle = ({ id }) => (
+    <button
+      type="button"
+      className="card-expand-btn"
+      aria-label={expandedCard === id ? "Collapse" : "Expand"}
+      title={expandedCard === id ? "Collapse" : "Expand"}
+      onClick={() => setExpandedCard((c) => (c === id ? null : id))}
+    >
+      {expandedCard === id ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+    </button>
+  );
+
   const RunButtons = ({ onSelectRange, onClearFilters }) => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
@@ -2850,6 +2871,11 @@ const MesobFinancial2 = () => {
 
           {/* 2x2 Grid Layout for Summary, Journal Entry, Income Statement, Balance Sheet */}
 
+          {/* Click-away backdrop for an expanded report card */}
+          {expandedCard && (
+            <div className="report-backdrop" onClick={() => setExpandedCard(null)} />
+          )}
+
           {/* Desktop View */}
           <Row className="d-none d-md-flex" style={{ marginTop: "3px" }}>
             <Col
@@ -2857,11 +2883,12 @@ const MesobFinancial2 = () => {
               md={3}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
+              <Card className={`report-card${expandedCard === "summary" ? " is-expanded" : ""}`} style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "transparent" }}>
                   <CardTitle style={{ fontWeight: 600, color: "var(--text-1)" }} tag="h4">
                     {t('financialReport.summary')}
                   </CardTitle>
+                  <ExpandToggle id="summary" />
                 </CardHeader>
                 <CardBody
                   style={{
@@ -3201,11 +3228,12 @@ const MesobFinancial2 = () => {
               md={9}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", borderRadius: "8px" }}>
+              <Card className={`report-card${expandedCard === "journal" ? " is-expanded" : ""}`} style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "transparent" }}>
                   <CardTitle style={{ fontWeight: 600, color: "var(--text-1)" }} tag="h4">
                     {t('financialReport.journalEntry')}
                   </CardTitle>
+                  <ExpandToggle id="journal" />
                 </CardHeader>
                 <CardBody
                   style={{
@@ -3254,11 +3282,12 @@ const MesobFinancial2 = () => {
               md={6}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
+              <Card className={`report-card${expandedCard === "income" ? " is-expanded" : ""}`} style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", boxShadow: "var(--shadow-1), var(--glass-inset), var(--card-glow)", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "transparent" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "var(--text-1)" }}>
                     {t('financialReport.incomeStatement')}
                   </CardTitle>
+                  <ExpandToggle id="income" />
                 </CardHeader>
                 <CardBody
                   style={{
@@ -3296,11 +3325,12 @@ const MesobFinancial2 = () => {
               md={6}
               style={{ paddingLeft: "1px", paddingRight: "1px" }}
             >
-              <Card style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", borderRadius: "8px" }}>
+              <Card className={`report-card${expandedCard === "balance" ? " is-expanded" : ""}`} style={{ marginBottom: "5px", height: "480px", backgroundColor: "transparent", borderRadius: "8px" }}>
                 <CardHeader style={{ backgroundColor: "transparent" }}>
                   <CardTitle tag="h4" style={{ fontWeight: 600, color: "var(--text-1)" }}>
                     {t('financialReport.balanceSheet')}
                   </CardTitle>
+                  <ExpandToggle id="balance" />
                 </CardHeader>
                 <CardBody
                   style={{

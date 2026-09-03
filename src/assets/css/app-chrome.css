@@ -26,12 +26,19 @@ h1, h2, h3, h4, h5, h6,
     var(--bg) !important;
 }
 
-/* ---- Sidebar → dark glass ---- */
+/* ---- Sidebar → uniform with the app background ----
+   (was a lighter glass panel; user wanted the left column to read as one
+   surface with the app, not a distinct strip). Solid --bg, no backdrop. */
 .sidebar {
-  background: var(--glass-bg) !important;
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  border-right: 1px solid var(--border);
+  background: var(--bg) !important;
+  /* Visible full-height divider so the nav column reads as separated. */
+  border-right: 1px solid var(--border-strong);
+}
+/* The actually-visible sidebar surface is .sidebar-wrapper — the template
+   paints it navy (#101926), which read as a distinct tinted strip vs the
+   app background. Match it to --bg so the whole column is one uniform dark. */
+.sidebar .sidebar-wrapper {
+  background: var(--bg) !important;
 }
 
 /* Kill the Now UI coloured (blue) gradient overlays. */
@@ -43,8 +50,10 @@ h1, h2, h3, h4, h5, h6,
   opacity: 0 !important;
 }
 
+/* No divider under the logo — it sits on one seamless, uniform sidebar
+   surface with the nav below (template draws a border + :after line). */
 .sidebar .logo {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0 !important;
 }
 .sidebar .logo:after { display: none !important; }
 
@@ -796,4 +805,55 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .main-panel [style*="font-size: 1.1rem"][style*="font-weight: bold"] {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* ---- Report cards: expand-to-fullscreen ---- */
+.card-expand-btn {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.card-expand-btn:hover { color: var(--text-1); border-color: var(--accent); background: var(--surface-hover); }
+/* Put the title and the expand button on one row. */
+.report-card > .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* Expanded state → fill the viewport, show everything (no inner clipping). */
+.report-card.is-expanded {
+  position: fixed !important;
+  inset: 20px !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: calc(100vh - 40px) !important;
+  margin: 0 !important;
+  z-index: 3000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+.report-card.is-expanded > .card-body {
+  height: auto !important;
+  max-height: none !important;
+  flex: 1 1 auto !important;
+  overflow: auto !important;
+}
+.report-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2999;
+  background: rgba(0, 0, 0, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
