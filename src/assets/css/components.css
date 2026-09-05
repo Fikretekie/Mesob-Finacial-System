@@ -1,0 +1,154 @@
+/* =========================================================================
+   Meksova Finance — reusable UI primitives (premium dark fintech).
+   Uplinq-referenced: flat hairline panels on near-black, tiny wide-tracked
+   uppercase labels, medium-weight big figures, generous space, green/red
+   reserved for data deltas. Built on tokens.css. Use these classes across
+   screens instead of re-inventing per-view inline styles.
+   Prefix: mk-  (Meksova)
+   ========================================================================= */
+
+/* ---- Glass surface (frosted translucent pane) ---- */
+.mk-glass {
+  position: relative;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-2), var(--glass-inset);
+}
+
+/* ---- Panel / card: glassy, hairline border, minimal elevation ---- */
+.mk-card {
+  background: var(--glass-sheen), var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow);
+  padding: var(--sp-6);
+}
+
+/* Solid fallback when the browser can't frost, or the user wants less
+   transparency — a translucent pane over content becomes unreadable. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mk-glass, .mk-card { background: var(--surface-2); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .mk-glass, .mk-card {
+    background: var(--surface-2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.mk-card--flush { padding: 0; }
+.mk-card--interactive { transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease); }
+.mk-card--interactive:hover { border-color: var(--border-strong); }
+
+/* ---- Eyebrow / stat label: 9-11px, wide tracking, muted ---- */
+.mk-eyebrow {
+  margin: 0;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;      /* 11px */
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ---- Stat tile: eyebrow + big figure + delta ---- */
+.mk-stat { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.mk-stat__value {
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 500;          /* medium, not bold — Uplinq register */
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.mk-stat__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;      /* 13px */
+  font-weight: 500;
+}
+
+/* Data semantics — the only place green/red live */
+.mk-delta-up   { color: var(--green); }
+.mk-delta-down { color: var(--red); }
+.mk-pos { color: var(--green); }
+.mk-neg { color: var(--red); }
+.mk-zero { color: var(--text-3); }
+
+/* ---- Badge / chip ---- */
+.mk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  background: var(--surface-3);
+}
+
+.mk-badge--ok   { color: var(--green);  border-color: rgba(0, 217, 126, 0.35); background: var(--accent-soft); background: rgba(0, 217, 126, 0.10); }
+.mk-badge--warn { color: var(--amber);  border-color: rgba(255, 165, 59, 0.35); background: rgba(255, 165, 59, 0.10); }
+.mk-badge--info { color: var(--accent); border-color: rgba(59, 130, 246, 0.35); background: var(--accent-soft); }
+
+/* ---- Divider / hairline ---- */
+.mk-divider { height: 1px; background: var(--border); border: 0; margin: var(--sp-4) 0; }
+
+/* ---- List row (transactions, expenses): label left, figure right ---- */
+.mk-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.mk-row:last-child { border-bottom: 0; }
+.mk-row__amt {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+/* ---- Primary / secondary buttons (reusable beyond auth) ---- */
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: 0 var(--sp-4);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    transform var(--dur-fast) var(--ease);
+}
+.mk-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mk-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.mk-btn--primary { color: var(--accent-ink); background: var(--accent-solid); }
+.mk-btn--primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-2); }
+
+.mk-btn--ghost { color: var(--text-1); background: var(--surface-3); border-color: var(--border); }
+.mk-btn--ghost:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--border-strong); }

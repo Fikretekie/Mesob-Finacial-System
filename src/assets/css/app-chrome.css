@@ -1,0 +1,859 @@
+/* =========================================================================
+   App chrome — sidebar, top navbar, ambient field.
+   Overrides the Now UI Dashboard template defaults for signed-in screens.
+   Loaded after the template SCSS so source order wins. Built on tokens.
+   ========================================================================= */
+
+/* ---- Standard fonts: retire the template's Montserrat (and stray Arial).
+   Inter for UI text/headings; the mono rules below (eyebrows, figures) win
+   via higher specificity / !important, so figures stay JetBrains Mono. ---- */
+body,
+.wrapper,
+.main-panel,
+h1, h2, h3, h4, h5, h6,
+.card-title, .card-category,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-sans);
+}
+
+/* ---- Ambient blue field: gives glass panels something to frost ---- */
+.wrapper { background: var(--bg); }
+
+.main-panel {
+  background:
+    radial-gradient(900px 520px at 10% -8%, rgba(59, 130, 246, 0.10), transparent 55%),
+    radial-gradient(1000px 620px at 100% 0%, rgba(59, 130, 246, 0.06), transparent 50%),
+    var(--bg) !important;
+}
+
+/* ---- Sidebar → uniform with the app background ----
+   (was a lighter glass panel; user wanted the left column to read as one
+   surface with the app, not a distinct strip). Solid --bg, no backdrop. */
+.sidebar {
+  background: var(--bg) !important;
+  /* Visible full-height divider so the nav column reads as separated. */
+  border-right: 1px solid var(--border-strong);
+}
+/* The actually-visible sidebar surface is .sidebar-wrapper — the template
+   paints it navy (#101926), which read as a distinct tinted strip vs the
+   app background. Match it to --bg so the whole column is one uniform dark. */
+.sidebar .sidebar-wrapper {
+  background: var(--bg) !important;
+}
+
+/* Kill the Now UI coloured (blue) gradient overlays. */
+.sidebar:before,
+.sidebar:after,
+.sidebar[data-color="blue"]:after {
+  background-image: none !important;
+  background-color: transparent !important;
+  opacity: 0 !important;
+}
+
+/* No divider under the logo — it sits on one seamless, uniform sidebar
+   surface with the nav below (template draws a border + :after line). */
+.sidebar .logo {
+  border-bottom: 0 !important;
+}
+.sidebar .logo:after { display: none !important; }
+
+/* ---- Nav items ---- */
+.sidebar .sidebar-wrapper { padding: var(--sp-2); }
+
+.sidebar .nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 3px 4px;
+  padding: 11px 12px !important;
+  color: var(--text-2) !important;
+  border-radius: var(--r-md);
+  opacity: 1 !important;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.sidebar .nav .nav-link i {
+  color: var(--text-3);
+  font-size: 1.2rem;
+  min-width: 22px;
+  text-align: center;
+  opacity: 1 !important;
+}
+
+/* 13px title-case labels (was 10px cramped uppercase). */
+.sidebar .nav .nav-link p {
+  color: inherit;
+  font-size: 0.82rem !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none !important;
+  margin: 0;
+}
+.sidebar .nav li.active > .nav-link p { font-weight: 600; }
+
+.sidebar .nav .nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--text-1) !important;
+}
+.sidebar .nav .nav-link:hover i { color: var(--text-1); }
+
+/* Active row — blue "you are here" edge + tint (blue is our brand accent). */
+.sidebar .nav li.active > .nav-link {
+  position: relative;
+  background: var(--accent-soft) !important;
+  color: var(--text-1) !important;
+}
+.sidebar .nav li.active > .nav-link i { color: var(--accent); }
+.sidebar .nav li.active > .nav-link::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+/* Neutralise Now UI's own active pseudo-backgrounds. */
+.sidebar .nav li.active > a::before,
+.sidebar .nav li.active > a::after { opacity: 0 !important; }
+
+/* ---- Top navbar → glass ---- */
+.navbar.navbar-absolute {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none !important;
+}
+.navbar.navbar-absolute.navbar-transparent { background: transparent !important; }
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.navbar p,
+.navbar .now-ui-icons { color: var(--text-1) !important; }
+
+/* Hamburger bars readable on dark. */
+.navbar .navbar-toggler-bar { background: var(--text-1) !important; }
+
+/* Language selector pill: retire the off-brand #5e72e4 border → token. */
+.navbar .language-selector-wrapper .dropdown { border: 0 !important; }
+.navbar .language-toggle {
+  background: var(--surface-3) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  color: var(--text-1) !important;
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center;
+  padding: 0 12px !important;
+}
+.navbar .language-toggle:hover {
+  background: var(--surface-hover) !important;
+  border-color: var(--border-strong) !important;
+}
+/* Company name in the navbar → clean, not a raw floating H3. */
+.navbar h3 {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  color: var(--text-1) !important;
+  letter-spacing: -0.01em;
+  margin: 0 !important;
+}
+
+/* Account dropdown → avatar chip (initials + name). */
+.navbar .account-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 12px 3px 3px !important;
+  min-height: 36px !important;
+  background: var(--surface-3) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-pill) !important;
+  color: var(--text-1) !important;
+}
+.navbar .account-toggle:hover { background: var(--surface-hover) !important; border-color: var(--border-strong) !important; }
+.navbar .account-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-solid));
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  flex: none;
+}
+.navbar .account-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-1);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Native date/time inputs → dark UI (visible calendar icon + text) ---- */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"] {
+  color-scheme: dark;
+}
+/* Make the picker indicator clearly visible on dark fields. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.75);
+  cursor: pointer;
+}
+
+/* ---- Dropdown menus → dark (account menu, etc.) ---- */
+.dropdown-menu {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-md) !important;
+  box-shadow: var(--shadow-2);
+}
+.dropdown-menu .dropdown-item { color: var(--text-2) !important; }
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+  background: var(--surface-hover) !important;
+  color: var(--text-1) !important;
+}
+.dropdown-menu .dropdown-divider { border-color: var(--border) !important; }
+
+/* ---- Modals → dark glass (applies to every reactstrap Modal) ---- */
+.modal-content {
+  background: var(--surface-2) !important;
+  color: var(--text-1);
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+.modal-content .modal-header,
+.modal-content .modal-body,
+.modal-content .modal-footer {
+  background: transparent !important;
+  border-color: var(--border) !important;
+  color: var(--text-1);
+}
+.modal-content .modal-title { color: var(--text-1); }
+.modal-content .close,
+.modal-content .btn-close {
+  color: var(--text-2);
+  opacity: 1;
+  text-shadow: none;
+}
+.modal-content .close:hover { color: var(--text-1); }
+
+/* Nested stat-tile row must not carry Bootstrap's -15px gutters, or it
+   bleeds left over the hero card. */
+.no-gutters-x { margin-left: 0 !important; margin-right: 0 !important; }
+
+/* ---- Dashboard overview header ---- */
+.dash-overview {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin: var(--sp-4) 0 var(--sp-5);
+}
+.dash-overview__title {
+  margin: 0;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.dash-overview__sub {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  font-size: 0.98rem;
+}
+/* "Books current" status pill (matches the reference). */
+.dash-overview__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dash-overview__meta::before {
+  content: "";
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 217, 126, 0.18);
+}
+
+/* ---- Dashboard stat tiles → glass, Uplinq register ----
+   !important beats the per-card inline styles without rewriting each card. */
+.card-stats {
+  background: var(--glass-sheen), var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
+}
+
+/* Tiny wide-tracked uppercase label. */
+.card-stats .card-category {
+  font-family: var(--font-mono) !important;
+  font-size: 0.6875rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase;
+  color: var(--text-3) !important;
+}
+
+/* Selectable stat tiles — colour-coded per metric, click to drive the hero.
+   --tile-tint / --tile-border / --tile-ring are set inline per metric. */
+.card-stats--selectable {
+  background: var(--glass-sheen), linear-gradient(135deg, var(--tile-tint, transparent) 0%, var(--glass-bg) 62%) !important;
+  border: 1px solid var(--tile-border, var(--card-border)) !important;
+  transition: transform var(--dur-fast) var(--ease), border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+.card-stats--selectable:hover { transform: translateY(-2px); }
+.card-stats--selectable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.card-stats--selectable.is-selected {
+  border-color: var(--tile-ring, var(--accent)) !important;
+  box-shadow: 0 0 0 1px var(--tile-ring, var(--accent)), var(--shadow-2), var(--glass-inset) !important;
+}
+
+/* Coloured icon chip on cards / panel headers. */
+.mk-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex: none;
+}
+.mk-chip--sm { width: 30px; height: 30px; border-radius: 9px; font-size: 0.85rem; }
+
+/* Panel header row: icon chip + eyebrow + optional action. */
+.dash-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.dash-panel-head .mk-eyebrow { margin: 0; }
+.dash-viewall {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.dash-viewall:hover { color: var(--accent-hover); }
+
+/* Hero cash tile — dominant figure, full-width spark, supporting metrics. */
+.card-stats--hero { padding: var(--sp-2); height: 100%; }
+.card-stats--hero .hero-body { padding: var(--sp-6); display: flex; flex-direction: column; height: 100%; }
+.card-stats--hero .card-category {
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.09em !important;
+  text-transform: uppercase;
+  color: var(--text-3) !important;
+}
+.hero-figure { display: flex; align-items: baseline; gap: var(--sp-4); flex-wrap: wrap; }
+.card-stats--hero .card-title { font-size: clamp(2.2rem, 3.6vw, 3rem) !important; line-height: 1 !important; }
+.hero-delta { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 500; }
+.hero-spark { margin-top: var(--sp-5); }
+.hero-spark > * { width: 100%; }
+
+/* Period money-flow: always present (unlike the trend spark, which is empty
+   before there's history), so it fills the hero beside the taller chart with
+   real, useful content — money in vs out and the net for the range. */
+.hero-flow {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+  margin-top: var(--sp-5);
+  min-height: 84px;
+}
+.hero-flow__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.hero-flow__lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.hero-flow__dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.hero-flow__val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-1);
+}
+.hero-flow__bar {
+  display: flex;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-3);
+}
+.hero-flow__bar > span { display: block; height: 100%; }
+.hero-flow__net {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-top: 2px;
+}
+.hero-flow__net .hk {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.hero-flow__net .hv {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.hero-subline {
+  display: flex; gap: var(--sp-8);
+  margin-top: var(--sp-5); padding-top: var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+.hero-subline > div { display: flex; flex-direction: column; gap: 5px; }
+.hero-subline .hk {
+  font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.hero-subline .hv {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 1rem; font-weight: 500; color: var(--text-1);
+}
+
+/* Medium-weight tabular mono figure (keeps its data colour from inline). */
+.card-stats .card-title {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Dashboard: recent activity feed + status ---- */
+.dash-tx {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.dash-tx:last-child { border-bottom: 0; }
+.dash-tx__cat { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dash-tx__nm { color: var(--text-1); font-size: 0.875rem; }
+.dash-tx__sub {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.dash-tx__amt {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.dash-status__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.dash-status__row:last-child { border-bottom: 0; }
+.dash-status__k { color: var(--text-2); font-size: 0.875rem; }
+.dash-empty {
+  padding: var(--sp-6) 0;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.85rem;
+}
+/* Recent activity fills its column (it sits beside the taller Top-expenses +
+   Status stack) so there's no void beneath it. Its empty state centres. */
+.dash-recent {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.dash-recent .dash-empty {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dash-bar { display: flex; align-items: center; gap: var(--sp-3); margin-bottom: 11px; }
+.dash-bar:last-child { margin-bottom: 0; }
+.dash-bar__nm {
+  font-size: 0.8rem; color: var(--text-2); width: 108px; flex: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.dash-bar__track { flex: 1; height: 7px; border-radius: var(--r-pill); background: var(--surface-3); overflow: hidden; }
+.dash-bar__fill { height: 100%; border-radius: var(--r-pill); transition: width var(--dur) var(--ease); }
+.dash-bar__val {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 0.72rem; color: var(--text-2); width: 64px; text-align: right; flex: none;
+}
+
+/* ---- Chart cards → glass with mono eyebrow titles ---- */
+.chart-card {
+  position: relative;
+  background: var(--glass-sheen), var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow) !important;
+}
+.chart-card .card-body { background: transparent !important; }
+.chart-card__sub {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+.chart-card__title {
+  text-align: left !important;
+  margin: 0 0 var(--sp-4) !important;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ---- Generic content cards (filter toolbar, user-selector) ----
+   Now UI's plain .card is 3px-radius solid; bring it into the glass system.
+   .card-stats / .chart-card keep their own more-specific !important rules. */
+.main-panel .card:not(.card-stats):not(.chart-card) {
+  background: var(--glass-sheen), var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow-1), var(--glass-inset), var(--card-glow);
+}
+.main-panel .card:not(.card-stats):not(.chart-card) > .card-body { border-radius: var(--r-lg); }
+/* Labels inside utility cards (From/To, Select user) → eyebrow style. */
+.main-panel .card:not(.card-stats):not(.chart-card) label {
+  font-family: var(--font-mono) !important;
+  font-size: 0.7rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--text-3) !important;
+}
+
+/* ---- Fallbacks: solid where frosting is unavailable / unwanted ---- */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .sidebar,
+  .navbar.navbar-absolute,
+  .card-stats,
+  .chart-card { background: var(--surface-2) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sidebar,
+  .navbar.navbar-absolute,
+  .card-stats,
+  .chart-card {
+    background: var(--surface-2) !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ---- Dashboard date-range filter: preset pills (replaces the old card) ---- */
+.dash-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 2px 0 16px;
+}
+.dash-filter__presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dash-preset {
+  appearance: none;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.dash-preset:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-1);
+}
+.dash-preset:disabled { cursor: default; }
+.dash-preset.is-active {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: var(--accent);
+  color: var(--text-1);
+}
+.dash-preset--clear {
+  border-style: dashed;
+  color: var(--text-3);
+}
+.dash-preset__caret {
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+.dash-preset__caret.is-open { transform: rotate(180deg); }
+.dash-preset--icon {
+  width: 34px;
+  padding: 0;
+  justify-content: center;
+}
+.dash-filter__search { margin-left: auto; }
+.dash-filter__searchbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.dash-filter__searchbox .dash-filter__date { width: 200px; }
+.dash-filter__searchclose {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+.dash-filter__custom {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.dash-filter__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+}
+.dash-filter__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+.dash-filter .dash-filter__date {
+  height: 36px;
+  padding: 6px 12px;
+  border-radius: var(--r-sm);
+  background: var(--surface-3);
+  color: var(--text-1);
+  border: 1px solid var(--border-strong);
+  color-scheme: dark;
+  font-size: 13px;
+}
+.dash-preset--apply {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: #fff;
+  height: 36px;
+}
+.dash-preset--apply:hover:not(:disabled) {
+  background: var(--accent-solid);
+  color: #fff;
+  filter: brightness(1.08);
+}
+@media (max-width: 767px) {
+  .dash-filter__search { margin-left: 0; }
+  .dash-filter__searchbox { width: 100%; }
+  .dash-filter__searchbox .dash-filter__date { width: 100%; }
+}
+
+/* ---- Top expenses donut (replaces the flat bar list; from the reference) ---- */
+.dash-donut {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+.dash-donut__chart { width: 172px; flex: none; }
+.dash-donut__legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 150px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.dash-donut__legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dash-donut__dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.dash-donut__nm {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.dash-donut__val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  color: var(--text-1);
+  flex: none;
+}
+
+/* ---- Dark, slim scrollbars (browser default light bars look off on dark,
+   e.g. the Journal Entry table's horizontal bar on the Financial Report) ---- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.20) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* ---- Standard numerals: figures in the mono face + tabular, like the
+   dashboard. Amount cells in the report tables are right-aligned; the
+   summary/statement value blocks are bold ≥1.05rem figures. ---- */
+.main-panel { font-variant-numeric: tabular-nums; }
+.main-panel td[style*="text-align: right"],
+.main-panel td[style*="text-align:right"],
+.main-panel [style*="font-size: 1.1rem"][style*="font-weight: bold"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Report cards: expand-to-fullscreen ---- */
+.card-expand-btn {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.card-expand-btn:hover { color: var(--text-1); border-color: var(--accent); background: var(--surface-hover); }
+/* Put the title and the expand button on one row. */
+.report-card > .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+/* Expanded state → fill the viewport, show everything (no inner clipping). */
+.report-card.is-expanded {
+  position: fixed !important;
+  inset: 20px !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: calc(100vh - 40px) !important;
+  margin: 0 !important;
+  z-index: 3000 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+.report-card.is-expanded > .card-body {
+  height: auto !important;
+  max-height: none !important;
+  flex: 1 1 auto !important;
+  overflow: auto !important;
+}
+.report-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2999;
+  background: rgba(0, 0, 0, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}

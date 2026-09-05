@@ -117,7 +117,7 @@ const handleDownload = async (url) => {
     return (
       <div
         style={{
-          background: "#1c1e3d",
+          background: "var(--surface-3)",
           border: "1px solid rgba(59, 130, 246, 0.15)",
           borderRadius: "12px",
           padding: "1rem",
@@ -136,7 +136,7 @@ const handleDownload = async (url) => {
         {/* File Number */}
         <p
           style={{
-            color: "#64748b",
+            color: "var(--text-3)",
             fontSize: "0.75rem",
             margin: "0 0 0.5rem 0",
             textTransform: "uppercase",
@@ -149,7 +149,7 @@ const handleDownload = async (url) => {
         {/* File Name */}
         <p
           style={{
-            color: "#e2e8f0",
+            color: "var(--text-1)",
             fontSize: "clamp(0.8rem, 3.5vw, 0.95rem)",
             fontWeight: "500",
             margin: "0 0 1rem 0",
@@ -164,7 +164,7 @@ const handleDownload = async (url) => {
         <Button
           style={{
             width: "100%",
-            background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+            background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%)",
             border: "none",
             borderRadius: "8px",
             color: "#fff",
@@ -220,7 +220,7 @@ const handleDownload = async (url) => {
           marginTop: isMobile ? "80px" : "60px",
           paddingInline: isMobile ? "1.25rem" : "1.5rem",
           paddingBlock: "1.5rem",
-          backgroundColor: "#101926",
+          backgroundColor: "var(--surface-2)",
           minHeight: "100vh",
         }}
       >
@@ -244,7 +244,7 @@ const handleDownload = async (url) => {
                   </h2>
                   <p
                     style={{
-                      color: "#64748b",
+                      color: "var(--text-3)",
                       fontSize: "0.9rem",
                       margin: 0,
                     }}
@@ -272,7 +272,7 @@ const handleDownload = async (url) => {
                   >
                     <p
                       style={{
-                        color: "#94a3b8",
+                        color: "var(--text-3)",
                         fontSize: "0.95rem",
                         margin: 0,
                       }}
@@ -286,12 +286,12 @@ const handleDownload = async (url) => {
               /* Desktop View - Original Table */
               <Card
                 style={{
-                  backgroundColor: "#101926",
+                  backgroundColor: "var(--surface-2)",
                   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
                   borderRadius: "8px",
                 }}
               >
-                <CardHeader style={{ backgroundColor: "#101926" }}>
+                <CardHeader style={{ backgroundColor: "var(--surface-2)" }}>
                   <div
                     style={{
                       display: "flex",
@@ -300,31 +300,31 @@ const handleDownload = async (url) => {
                       alignItems: "center",
                     }}
                   >
-                    <CardTitle tag="h4" style={{ color: "#2b427d" }}>
+                    <CardTitle tag="h4" style={{ color: "var(--accent-solid)" }}>
                       {t("backupCSV.title")}
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardBody style={{ backgroundColor: "#101926" }}>
+                <CardBody style={{ backgroundColor: "var(--surface-2)" }}>
                   {backupUrls.length > 0 ? (
-                    <Table responsive style={{ backgroundColor: "#101926" }}>
+                    <Table responsive style={{ backgroundColor: "var(--surface-2)" }}>
                       <thead>
                         <tr>
-                          <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>
+                          <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
                             {t("backupCSV.backupFile")}
                           </th>
-                          <th style={{ color: "#ffffff", borderColor: "#3a4555" }}>
+                          <th style={{ color: "#ffffff", borderColor: "var(--border)" }}>
                             {t("backupCSV.actions")}
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {backupUrls.map((url, index) => (
-                          <tr key={index} style={{ borderColor: "#3a4555" }}>
-                            <td style={{ color: "#ffffff", borderColor: "#3a4555" }}>
+                          <tr key={index} style={{ borderColor: "var(--border)" }}>
+                            <td style={{ color: "#ffffff", borderColor: "var(--border)" }}>
                               {url.split("/").pop()}
                             </td>
-                            <td style={{ borderColor: "#3a4555" }}>
+                            <td style={{ borderColor: "var(--border)" }}>
                               <Button
                                 style={{ marginRight: "10px" }}
                                 color="primary"

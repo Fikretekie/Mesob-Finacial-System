@@ -42,8 +42,8 @@ const userSelectStyles = {
     ...provided,
     minHeight: "38px",
     height: "38px",
-    backgroundColor: "#202a3a !important",
-    borderColor: "#3a4555 !important",
+    backgroundColor: "var(--surface-3) !important",
+    borderColor: "var(--border) !important",
     color: "#ffffff !important",
   }),
   valueContainer: (provided) => ({
@@ -67,15 +67,15 @@ const userSelectStyles = {
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: "#9ca5b0 !important",
+    color: "var(--text-3) !important",
   }),
   menu: (provided) => ({
     ...provided,
-    backgroundColor: "#202a3a",
+    backgroundColor: "var(--surface-3)",
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isFocused ? "#2a3444" : "#202a3a",
+    backgroundColor: state.isFocused ? "var(--border)" : "var(--surface-3)",
     color: "#ffffff",
   }),
 };
@@ -594,7 +594,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       {isPreviewable(doc) && (
         <Button
           size="sm"
-          style={{ backgroundColor: "#2d3a4f", borderColor: "#2d3a4f", color: "#e2e8f0" }}
+          style={{ backgroundColor: "var(--surface-3)", borderColor: "var(--border)", color: "var(--text-1)" }}
           onClick={() => handlePreview(doc)}
           aria-label={t("documents.preview")}
           title={t("documents.preview")}
@@ -604,7 +604,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       )}
       <Button
         size="sm"
-        style={{ backgroundColor: "#0d9488", borderColor: "#0d9488", color: "#fff" }}
+        style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)", color: "#fff" }}
         onClick={() => handleDownload(doc)}
         aria-label={t("documents.download")}
         title={t("documents.download")}
@@ -635,7 +635,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
 
       <div
         className="content"
-        style={{ paddingInline: 15, backgroundColor: "#101926", minHeight: "100vh" }}
+        style={{ paddingInline: 15, backgroundColor: "var(--surface-2)", minHeight: "100vh" }}
       >
         {isAdminView && (
           <Row style={{ margin: 0, paddingInline: 0, marginTop: isMobile ? 8 : 80 }}>
@@ -643,13 +643,13 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
               <Card
                 style={{
                   marginBottom: "5px",
-                  backgroundColor: "#101926",
+                  backgroundColor: "var(--surface-2)",
                   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3)",
                   borderRadius: "8px",
                 }}
               >
-                <CardHeader style={{ backgroundColor: "#101926" }} />
-                <CardBody style={{ paddingBottom: "15px", backgroundColor: "#101926" }}>
+                <CardHeader style={{ backgroundColor: "var(--surface-2)" }} />
+                <CardBody style={{ paddingBottom: "15px", backgroundColor: "var(--surface-2)" }}>
                   <FormGroup style={{ marginBottom: 0 }}>
                     <Label style={{ color: "#ffffff" }}>
                       {t("documents.selectUserToView")}
@@ -692,15 +692,15 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
           <Col xs={12}>
             <Card
               style={{
-                backgroundColor: "#1a273a",
+                backgroundColor: "var(--surface-2)",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
                 borderRadius: "8px",
-                border: "1px solid #2d3a4f",
+                border: "1px solid var(--border)",
               }}
             >
-              <CardHeader style={{ backgroundColor: "#1a273a", borderBottom: "1px solid #2d3a4f" }}>
+              <CardHeader style={{ backgroundColor: "var(--surface-2)", borderBottom: "1px solid var(--border)" }}>
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                  <CardTitle tag="h4" className="mb-0" style={{ color: "#22d3ee" }}>
+                  <CardTitle tag="h4" className="mb-0" style={{ color: "var(--text-1)" }}>
                     {t("documents.title")}
                   </CardTitle>
                   <div className="d-flex flex-wrap align-items-center" style={{ gap: "14px" }}>
@@ -718,8 +718,8 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                           disabled={uploading || compressing || !effectiveUserId}
                           onClick={() => fileInputRef.current?.click()}
                           style={{
-                            backgroundColor: "#3d83f1",
-                            borderColor: "#3d83f1",
+                            backgroundColor: "var(--accent)",
+                            borderColor: "var(--accent)",
                             display: "inline-flex",
                             alignItems: "center",
                             gap: "8px",
@@ -736,8 +736,8 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                         disabled={downloadingAll || !effectiveUserId}
                         onClick={handleDownloadAll}
                         style={{
-                          backgroundColor: "#0d9488",
-                          borderColor: "#0d9488",
+                          backgroundColor: "var(--accent)",
+                          borderColor: "var(--accent)",
                           display: "inline-flex",
                           alignItems: "center",
                           gap: "8px",
@@ -749,34 +749,34 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                     )}
                   </div>
                 </div>
-                <p className="mb-0 mt-2" style={{ color: "#94a3b8", fontSize: "0.875rem" }}>
+                <p className="mb-0 mt-2" style={{ color: "var(--text-3)", fontSize: "0.875rem" }}>
                   {isAdminView
                     ? t("documents.adminSubtitle")
                     : `${t("documents.subtitle")} ${MAX_FILE_SIZE_MB} MB. ${t("documents.subtitleCompress")}`}
                 </p>
               </CardHeader>
 
-              <CardBody style={{ backgroundColor: "#1a273a" }}>
+              <CardBody style={{ backgroundColor: "var(--surface-2)" }}>
                 {isAdminView && !selectedUserId ? (
-                  <div className="text-center py-5" style={{ color: "#94a3b8" }}>
+                  <div className="text-center py-5" style={{ color: "var(--text-3)" }}>
                     <p className="mb-0">{t("documents.pleaseSelectUser")}</p>
                   </div>
                 ) : loading ? (
                   <div className="text-center py-5">
                     <Spinner color="primary" />
-                    <p className="mt-2" style={{ color: "#e2e8f0" }}>
+                    <p className="mt-2" style={{ color: "var(--text-1)" }}>
                       {t("documents.loading")}
                     </p>
                   </div>
                 ) : documents.length === 0 ? (
-                  <div className="text-center py-5" style={{ color: "#94a3b8" }}>
+                  <div className="text-center py-5" style={{ color: "var(--text-3)" }}>
                     <p className={isAdminView ? "mb-0" : "mb-2"}>
                       {isAdminView ? t("documents.adminNoDocuments") : t("documents.noDocuments")}
                     </p>
                     {!isAdminView && (
                       <Button
                         color="primary"
-                        style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
+                        style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)" }}
                         disabled={!effectiveUserId}
                         onClick={() => fileInputRef.current?.click()}
                       >
@@ -793,19 +793,19 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                             key={doc.key || doc.id || idx}
                             style={{
                               padding: "12px",
-                              backgroundColor: "#0d1321",
+                              backgroundColor: "var(--surface-2)",
                               borderRadius: "8px",
-                              border: "1px solid #2d3a4f",
+                              border: "1px solid var(--border)",
                             }}
                           >
                             <div
-                              style={{ color: "#e2e8f0", fontWeight: 500, marginBottom: "8px" }}
+                              style={{ color: "var(--text-1)", fontWeight: 500, marginBottom: "8px" }}
                             >
                               {doc.name || doc.fileName || doc.key?.split("/").pop() || "—"}
                             </div>
                             <div
                               style={{
-                                color: "#94a3b8",
+                                color: "var(--text-3)",
                                 fontSize: "0.875rem",
                                 marginBottom: "8px",
                               }}
@@ -820,38 +820,38 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                         ))}
                       </div>
                     ) : (
-                      <Table responsive style={{ backgroundColor: "#1a273a" }}>
+                      <Table responsive style={{ backgroundColor: "var(--surface-2)" }}>
                         <thead>
                           <tr>
-                            <th style={{ color: "#94a3b8", borderColor: "#2d3a4f" }}>
+                            <th style={{ color: "var(--text-3)", borderColor: "var(--border)" }}>
                               {t("documents.name")}
                             </th>
-                            <th style={{ color: "#94a3b8", borderColor: "#2d3a4f" }}>
+                            <th style={{ color: "var(--text-3)", borderColor: "var(--border)" }}>
                               {t("documents.size")}
                             </th>
-                            <th style={{ color: "#94a3b8", borderColor: "#2d3a4f" }}>
+                            <th style={{ color: "var(--text-3)", borderColor: "var(--border)" }}>
                               {t("documents.date")}
                             </th>
-                            <th style={{ color: "#94a3b8", borderColor: "#2d3a4f" }}>
+                            <th style={{ color: "var(--text-3)", borderColor: "var(--border)" }}>
                               {t("documents.actions")}
                             </th>
                           </tr>
                         </thead>
                         <tbody>
                           {documents.map((doc, idx) => (
-                            <tr key={doc.key || doc.id || idx} style={{ borderColor: "#2d3a4f" }}>
-                              <td style={{ color: "#e2e8f0", borderColor: "#2d3a4f" }}>
+                            <tr key={doc.key || doc.id || idx} style={{ borderColor: "var(--border)" }}>
+                              <td style={{ color: "var(--text-1)", borderColor: "var(--border)" }}>
                                 {doc.name || doc.fileName || doc.key?.split("/").pop() || "—"}
                               </td>
-                              <td style={{ color: "#94a3b8", borderColor: "#2d3a4f" }}>
+                              <td style={{ color: "var(--text-3)", borderColor: "var(--border)" }}>
                                 {formatSize(doc.size)}
                               </td>
-                              <td style={{ color: "#94a3b8", borderColor: "#2d3a4f" }}>
+                              <td style={{ color: "var(--text-3)", borderColor: "var(--border)" }}>
                                 {doc.uploadedAt
                                   ? new Date(doc.uploadedAt).toLocaleDateString()
                                   : "—"}
                               </td>
-                              <td style={{ borderColor: "#2d3a4f" }}>{renderActions(doc)}</td>
+                              <td style={{ borderColor: "var(--border)" }}>{renderActions(doc)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -867,24 +867,24 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
 
       {/* ── Compression Progress Modal ──────────────────────────────────────── */}
       <Modal isOpen={compressionModal} backdrop="static" keyboard={false} style={{ maxWidth: "420px" }}>
-        <ModalHeader style={{ backgroundColor: "#1a273a", color: "#e2e8f0", borderBottom: "1px solid #2d3a4f" }}>
+        <ModalHeader style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)", borderBottom: "1px solid var(--border)" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-            <FaCompressArrowsAlt style={{ color: "#22d3ee" }} />
+            <FaCompressArrowsAlt style={{ color: "var(--text-1)" }} />
             {compressing ? t("documents.compressing") : t("documents.compressionDone")}
           </span>
         </ModalHeader>
-        <ModalBody style={{ backgroundColor: "#1a273a", color: "#e2e8f0" }}>
+        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)" }}>
           {compressionInfo && (
-            <div className="mb-3" style={{ fontSize: "0.875rem", color: "#94a3b8" }}>
+            <div className="mb-3" style={{ fontSize: "0.875rem", color: "var(--text-3)" }}>
               <div style={{ marginBottom: "4px" }}>
-                {t("documents.originalSize")}: <strong style={{ color: "#e2e8f0" }}>{formatSize(compressionInfo.originalSize)}</strong>
+                {t("documents.originalSize")}: <strong style={{ color: "var(--text-1)" }}>{formatSize(compressionInfo.originalSize)}</strong>
               </div>
               {compressionInfo.compressedSize != null && (
                 <div>
                   {t("documents.compressedSize")}:{" "}
                   <strong style={{ color: "#4ade80" }}>{formatSize(compressionInfo.compressedSize)}</strong>
                   {" "}
-                  <span style={{ color: "#64748b" }}>
+                  <span style={{ color: "var(--text-3)" }}>
                     (−{Math.round((1 - compressionInfo.compressedSize / compressionInfo.originalSize) * 100)}%)
                   </span>
                 </div>
@@ -893,10 +893,10 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
           )}
           <Progress
             value={compressionProgress}
-            style={{ height: "8px", backgroundColor: "#0d1321" }}
+            style={{ height: "8px", backgroundColor: "var(--surface-2)" }}
             color={compressionProgress === 100 ? "success" : "info"}
           />
-          <p className="mb-0 mt-2" style={{ color: "#64748b", fontSize: "0.8rem" }}>
+          <p className="mb-0 mt-2" style={{ color: "var(--text-3)", fontSize: "0.8rem" }}>
             {compressing
               ? t("documents.compressionHint")
               : t("documents.compressionSuccessHint")}
@@ -908,13 +908,13 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       <Modal isOpen={uploadNameModal} toggle={closeUploadNameModal} style={{ maxWidth: "480px" }}>
         <ModalHeader
           toggle={closeUploadNameModal}
-          style={{ backgroundColor: "#1a273a", color: "#e2e8f0", borderBottom: "1px solid #2d3a4f" }}
+          style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)", borderBottom: "1px solid var(--border)" }}
         >
           {t("documents.nameDocumentTitle")}
         </ModalHeader>
-        <ModalBody style={{ backgroundColor: "#1a273a", color: "#e2e8f0" }}>
+        <ModalBody style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)" }}>
           <FormGroup>
-            <Label for="doc-upload-name" style={{ color: "#94a3b8" }}>
+            <Label for="doc-upload-name" style={{ color: "var(--text-3)" }}>
               {t("documents.nameDocumentLabel")}
             </Label>
             <Input
@@ -925,21 +925,21 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
               onKeyDown={(e) => {
                 if (e.key === "Enter") { e.preventDefault(); confirmUploadWithName(); }
               }}
-              style={{ backgroundColor: "#0d1321", borderColor: "#2d3a4f", color: "#e2e8f0" }}
+              style={{ backgroundColor: "var(--surface-2)", borderColor: "var(--border)", color: "var(--text-1)" }}
               autoFocus
             />
-            <p className="mb-0 mt-2 small" style={{ color: "#64748b" }}>
+            <p className="mb-0 mt-2 small" style={{ color: "var(--text-3)" }}>
               {t("documents.nameDocumentHint")}
             </p>
           </FormGroup>
         </ModalBody>
-        <ModalFooter style={{ backgroundColor: "#1a273a", borderTop: "1px solid #2d3a4f" }}>
+        <ModalFooter style={{ backgroundColor: "var(--surface-2)", borderTop: "1px solid var(--border)" }}>
           <Button color="secondary" outline onClick={closeUploadNameModal}>
             {t("common.cancel")}
           </Button>
           <Button
             color="primary"
-            style={{ backgroundColor: "#3d83f1", borderColor: "#3d83f1" }}
+            style={{ backgroundColor: "var(--accent)", borderColor: "var(--accent)" }}
             disabled={!uploadDisplayName.trim()}
             onClick={confirmUploadWithName}
           >
@@ -957,12 +957,12 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
       >
         <ModalHeader
           toggle={() => { setPreviewModal(false); setPreviewItem(null); setPreviewUrl(null); }}
-          style={{ backgroundColor: "#1a273a", color: "#e2e8f0", borderBottom: "1px solid #2d3a4f" }}
+          style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)", borderBottom: "1px solid var(--border)" }}
         >
           {previewItem?.name || previewItem?.fileName || t("documents.preview")}
         </ModalHeader>
         <ModalBody
-          style={{ backgroundColor: "#1a273a", color: "#e2e8f0", minHeight: "400px" }}
+          style={{ backgroundColor: "var(--surface-2)", color: "var(--text-1)", minHeight: "400px" }}
         >
           {previewLoading ? (
             <div className="text-center py-5">
@@ -984,7 +984,7 @@ const compressed = await compressImage(file, COMPRESSION_TARGET_BYTES, (pct) => 
                       href={previewUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: "#22d3ee" }}
+                      style={{ color: "var(--text-1)" }}
                     >
                       {t("documents.openPdf")}
                     </a>
