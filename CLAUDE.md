@@ -87,6 +87,35 @@ stack on merged history).
   (specifically the mileage tracker) as a native Android app via Capacitor,
   primarily to get **background GPS tracking** (the current implementation
   is foreground-only, tied to the browser tab being open/active).
+  **Progress so far (done on the user's own machine, not this sandbox):**
+  - `@capacitor/core`, `@capacitor/cli`, `@capacitor/android` installed
+    (needed `--legacy-peer-deps` — this project has a pre-existing
+    unrelated peer-dep conflict between `i18next` and `react-scripts`'s
+    TypeScript version; unrelated to Capacitor).
+  - `npx cap init` run — app name **Meksova**, package ID
+    **`com.meksova.app`**, `webDir: 'build'` (auto-detected correctly for
+    CRA, no manual fix needed).
+  - `npx cap add android` run — native `android/` project created and
+    committed (commit `5c9779e Add Capacitor Android platform`).
+  - Android Studio installed, JDK 21 set up, an emulator created (**Pixel
+    10 Pro XL**, API 37.1 "CinnamonBun"/Android 17.0).
+  - **First successful build + run achieved**: the native app launched on
+    the emulator and showed the real login screen with the Meksova logo —
+    confirms the whole pipeline works (React app → Capacitor → native
+    Android build → running app).
+  - **Not done yet**: wiring up an actual native GPS plugin
+    (`@capacitor/geolocation`) so `MileageTracker.js` uses Capacitor's
+    Geolocation API instead of the browser's `navigator.geolocation` —
+    needed for real background tracking to work natively (the point of
+    this whole effort). Also still need: Android location permissions in
+    `AndroidManifest.xml` (`ACCESS_FINE_LOCATION`, and
+    `ACCESS_BACKGROUND_LOCATION` for background tracking specifically),
+    and eventually testing on a real phone (emulator GPS has to be faked
+    manually, real device wasn't set up — user chose emulator first for
+    less setup friction).
+  - Minor housekeeping not yet done: `android/.idea/*` (Android Studio's
+    local editor settings) got committed along with the native project —
+    harmless, but normally these'd be gitignored; can clean up later.
 
 ## User's own machine (separate from this sandbox)
 
@@ -131,4 +160,5 @@ access (see below). Track their setup progress here as it happens:
 - Don't add abstractions/error-handling beyond what's asked.
 - Only commit/push when explicitly asked; never force-push or rewrite
   history without explicit permission.
+
 
