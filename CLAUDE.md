@@ -65,9 +65,13 @@ stack on merged history).
      counters correctly; Trip History renders stat tiles, day picker, and
      per-trip cards correctly once given trip data. No bugs found, no code
      changes were needed — the feature is complete and working as built.
-5. Design-system foundation, two-panel premium login, modernized dashboard,
-   navbar/sidebar/download-modal fixes — ported from a `staging`-only
-   branch onto this feature branch (commits `2e22daa`..`8306927`).
+5. Two-panel premium login, modernized dashboard, navbar/sidebar/
+   download-modal fixes — ported from a `staging`-only branch onto this
+   feature branch (commits `2e22daa`..`8306927`). **Correction**: despite
+   the commit message, this port did NOT actually include the CSS
+   design-token foundation itself (`tokens.css`/`components.css`/
+   `app-chrome.css`) — see item 4's Capacitor sub-bullets for how that gap
+   was found and fixed later (commit `939e3a6`).
 6. Google OAuth login fix (invalid_scope, env-aware OAuth scopes) on staging.
 7. Docker support for the frontend (multi-stage build + Nginx) —
    `DOCKER.md`.
@@ -103,16 +107,58 @@ stack on merged history).
     the emulator and showed the real login screen with the Meksova logo —
     confirms the whole pipeline works (React app → Capacitor → native
     Android build → running app).
-  - **Not done yet**: wiring up an actual native GPS plugin
-    (`@capacitor/geolocation`) so `MileageTracker.js` uses Capacitor's
-    Geolocation API instead of the browser's `navigator.geolocation` —
-    needed for real background tracking to work natively (the point of
-    this whole effort). Also still need: Android location permissions in
-    `AndroidManifest.xml` (`ACCESS_FINE_LOCATION`, and
-    `ACCESS_BACKGROUND_LOCATION` for background tracking specifically),
-    and eventually testing on a real phone (emulator GPS has to be faked
-    manually, real device wasn't set up — user chose emulator first for
-    less setup friction).
+  - **Native GPS wired in and verified** (commit
+    `af56c0b Add native GPS tracking via Capacitor Geolocation plugin`):
+    `MileageTracker.js` now branches on `Capacitor.isNativePlatform()` —
+    uses `@capacitor/geolocation`'s `requestPermissions()`/`watchPosition()`/
+    `clearWatch()` natively, falls back to `navigator.geolocation` on web.
+    Added `ACCESS_COARSE_LOCATION`/`ACCESS_FINE_LOCATION`/
+    `ACCESS_BACKGROUND_LOCATION` to `AndroidManifest.xml`. Tested on the
+    emulator: permission prompt appeared, tracking UI showed
+    "GPS locked · 15m accuracy" — a real GPS fix via the native plugin,
+    confirmed working end to end.
+  - **Cognito login fixed for local/emulator builds**: local dev and the
+    emulator build had no Cognito config at all (`.env.example` only has
+    *production* Cognito values; the *staging* ones
+    `REACT_APP_STAGING_COGNITO_USER_POOL_ID/CLIENT_ID/DOMAIN` only exist as
+    encrypted GitHub Actions secrets, never committed anywhere). Fixed by
+    pulling the actual values from the AWS Cognito console (staging user
+    pool) into a local, gitignored `.env`:
+    `REACT_APP_STAGING_COGNITO_USER_POOL_ID=us-east-1_LLKrPQAEc`,
+    `REACT_APP_STAGING_COGNITO_CLIENT_ID=2i6coavlspj05qk9v92914romf`,
+    `REACT_APP_STAGING_COGNITO_DOMAIN=us-east-1llkrpqaec.auth.us-east-1.amazoncognito.com`
+    (no `https://` prefix — the code adds that itself). Login now works
+    with real `staging@meksova.com`-style credentials on localhost and the
+    emulator. **Known separate issue, not fixed**: Google/social login
+    doesn't work inside the native app — Google blocks OAuth from embedded
+    WebViews (which is what a Capacitor login screen runs in by default).
+    Fixing that needs routing OAuth through a system browser tab (e.g.
+    `@capacitor/browser` + Android Custom Tabs) plus a deep-link redirect
+    handler — not started.
+  - **Design-system gap found and fixed** (commit
+    `939e3a6 Bring design-system foundation up to date with staging`): the
+    emulator was showing a visibly older UI than the live
+    `staging.meksova.com`. Root cause: this branch's CSS design-system
+    "port" (referenced in this file's Features list, item 5) never actually
+    included `src/assets/css/tokens.css` / `components.css` /
+    `app-chrome.css` (staging's real design-token foundation) or the 3
+    `index.js` imports for them — those files plus 5 pages that reference
+    their tokens (`mesobfinancial2.js`, `CSVReports.js`, `Documents.js`,
+    `Receipts.js`, `UserPage.js`) were pulled directly from `origin/staging`
+    (verified our branch never independently touched those 5 files, so a
+    direct copy was safe — no conflicts). If staging design work outpaces
+    this branch again, check `git diff --stat <merge-base> origin/staging`
+    for files staging changed that we never touched, and pull those
+    directly rather than cherry-picking individual commits.
+  - **Not done yet**: true **background** GPS tracking (screen locked /
+    app switched away) — `@capacitor/geolocation` only reliably tracks
+    while the app is foregrounded; Android kills location updates for
+    backgrounded apps without a foreground service. Needs a plugin built
+    for that specifically (e.g. `@capacitor-community/background-geolocation`),
+    which adds its own setup (persistent notification, battery-optimization
+    prompts). Also still need: testing on a real phone (emulator GPS has to
+    be faked manually via Extended Controls, real device wasn't set up —
+    user chose emulator first for less setup friction).
   - Minor housekeeping not yet done: `android/.idea/*` (Android Studio's
     local editor settings) got committed along with the native project —
     harmless, but normally these'd be gitignored; can clean up later.
@@ -160,5 +206,3 @@ access (see below). Track their setup progress here as it happens:
 - Don't add abstractions/error-handling beyond what's asked.
 - Only commit/push when explicitly asked; never force-push or rewrite
   history without explicit permission.
-
-
