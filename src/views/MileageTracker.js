@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, Button } from "reactstrap";
+import { Capacitor } from "@capacitor/core";
+import { Geolocation } from "@capacitor/geolocation";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { haversineMiles } from "utils/geo";
@@ -48,7 +50,11 @@ function MileageTracker() {
   useEffect(() => {
     return () => {
       if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
+        if (Capacitor.isNativePlatform()) {
+          Geolocation.clearWatch({ id: watchIdRef.current });
+        } else {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+        }
       }
       if (timerIdRef.current) clearInterval(timerIdRef.current);
     };
@@ -75,29 +81,40 @@ function MileageTracker() {
 
   const handlePositionError = (err) => {
     setError(
-      err.code === err.PERMISSION_DENIED
+      err.code != null && err.code === err.PERMISSION_DENIED
         ? t("mileageTracker.permissionDenied")
         : t("mileageTracker.locationError", { message: err.message || t("mileageTracker.signalUnavailable") })
     );
   };
 
-  const startTrip = () => {
-    if (!("geolocation" in navigator)) {
-      setError(t("mileageTracker.noGpsSupport"));
-      return;
-    }
-
+  const startTrip = async () => {
     setError("");
     setDistanceMiles(0);
     setElapsedSeconds(0);
     lastPointRef.current = null;
     startTimeRef.current = Date.now();
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      handlePosition,
-      handlePositionError,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
-    );
+    if (Capacitor.isNativePlatform()) {
+      const permission = await Geolocation.requestPermissions();
+      if (permission.location !== "granted" && permission.coarseLocation !== "granted") {
+        setError(t("mileageTracker.permissionDenied"));
+        return;
+      }
+      watchIdRef.current = await Geolocation.watchPosition(
+        { enableHighAccuracy: true, timeout: 15000 },
+        (position, err) => (err ? handlePositionError(err) : handlePosition(position))
+      );
+    } else {
+      if (!("geolocation" in navigator)) {
+        setError(t("mileageTracker.noGpsSupport"));
+        return;
+      }
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        handlePosition,
+        handlePositionError,
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+      );
+    }
 
     timerIdRef.current = setInterval(() => {
       setElapsedSeconds((Date.now() - startTimeRef.current) / 1000);
@@ -106,9 +123,13 @@ function MileageTracker() {
     setIsTracking(true);
   };
 
-  const stopTrip = () => {
+  const stopTrip = async () => {
     if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
+      if (Capacitor.isNativePlatform()) {
+        await Geolocation.clearWatch({ id: watchIdRef.current });
+      } else {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
       watchIdRef.current = null;
     }
     if (timerIdRef.current) {
