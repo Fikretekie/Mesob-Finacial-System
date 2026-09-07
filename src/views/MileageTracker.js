@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, Button } from "reactstrap";
-import { Capacitor } from "@capacitor/core";
-import { Geolocation } from "@capacitor/geolocation";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 
 import PanelHeader from "components/PanelHeader/PanelHeader.js";
 import { haversineMiles } from "utils/geo";
 import { saveTrip } from "utils/tripStorage";
+
+const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
 
 const MAX_ACCEPTABLE_ACCURACY_METERS = 50;
 const MIN_MOVEMENT_MILES = 0.005; // ~8 meters
@@ -51,7 +52,7 @@ function MileageTracker() {
     return () => {
       if (watchIdRef.current !== null) {
         if (Capacitor.isNativePlatform()) {
-          Geolocation.clearWatch({ id: watchIdRef.current });
+          BackgroundGeolocation.removeWatcher({ id: watchIdRef.current });
         } else {
           navigator.geolocation.clearWatch(watchIdRef.current);
         }
@@ -80,8 +81,10 @@ function MileageTracker() {
   };
 
   const handlePositionError = (err) => {
+    const isPermissionDenied =
+      err.code === "NOT_AUTHORIZED" || (err.code != null && err.code === err.PERMISSION_DENIED);
     setError(
-      err.code != null && err.code === err.PERMISSION_DENIED
+      isPermissionDenied
         ? t("mileageTracker.permissionDenied")
         : t("mileageTracker.locationError", { message: err.message || t("mileageTracker.signalUnavailable") })
     );
@@ -95,15 +98,21 @@ function MileageTracker() {
     startTimeRef.current = Date.now();
 
     if (Capacitor.isNativePlatform()) {
-      const permission = await Geolocation.requestPermissions();
-      if (permission.location !== "granted" && permission.coarseLocation !== "granted") {
-        setError(t("mileageTracker.permissionDenied"));
+      try {
+        watchIdRef.current = await BackgroundGeolocation.addWatcher(
+          {
+            backgroundTitle: "Meksova is tracking your trip",
+            backgroundMessage: "Tap to return to the app.",
+            requestPermissions: true,
+            stale: false,
+            distanceFilter: 0,
+          },
+          (position, err) => (err ? handlePositionError(err) : handlePosition({ coords: position }))
+        );
+      } catch (err) {
+        handlePositionError(err);
         return;
       }
-      watchIdRef.current = await Geolocation.watchPosition(
-        { enableHighAccuracy: true, timeout: 15000 },
-        (position, err) => (err ? handlePositionError(err) : handlePosition(position))
-      );
     } else {
       if (!("geolocation" in navigator)) {
         setError(t("mileageTracker.noGpsSupport"));
@@ -126,7 +135,7 @@ function MileageTracker() {
   const stopTrip = async () => {
     if (watchIdRef.current !== null) {
       if (Capacitor.isNativePlatform()) {
-        await Geolocation.clearWatch({ id: watchIdRef.current });
+        await BackgroundGeolocation.removeWatcher({ id: watchIdRef.current });
       } else {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
